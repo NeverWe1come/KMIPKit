@@ -754,6 +754,7 @@ const PUBLIC_KEY: u32 = 0x0042_006D;
 const PRIVATE_KEY: u32 = 0x0042_0064;
 const SPLIT_KEY: u32 = 0x0042_0089;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
@@ -1611,6 +1612,38 @@ fn client_can_repeat_get_wrapping_attribute_names(
     // §7.18 Table 370 permits repeated Attribute Name Text Strings in a Key
     // Wrapping Specification; §6.1.19 Table 220 carries that structure in Get.
     request.is_some()
+}
+
+fn client_get_wrapping_specification_has_key_information(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(GET_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload.children().iter().all(|field| {
+                    if field.tag().raw() != KEY_WRAPPING_SPECIFICATION {
+                        return true;
+                    }
+
+                    field.with_value(|value| match value {
+                        ValueView::Structure(specification) => {
+                            key_wrapping_data_has_key_information(&specification)
+                        }
+                        _ => false,
+                    })
+                })
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_can_include_request_time_stamp(
@@ -5285,6 +5318,30 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.18-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_get_wrapping_specification_has_key_information),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.18-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_get_wrapping_specification_has_key_information),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },

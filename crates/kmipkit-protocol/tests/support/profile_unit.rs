@@ -58,6 +58,7 @@ const GET_OPERATION: u32 = 0x0000_000A;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
 const KEY_WRAPPING_SPECIFICATION_TAG: u32 = 0x0042_0047;
 const ENCRYPTION_KEY_INFORMATION_TAG: u32 = 0x0042_0036;
+const MAC_SIGNATURE_KEY_INFORMATION_TAG: u32 = 0x0042_004E;
 const WRAPPING_METHOD_TAG: u32 = 0x0042_009E;
 const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
@@ -445,6 +446,44 @@ fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage
             tagged(
                 KEY_WRAPPING_SPECIFICATION_TAG,
                 Value::structure(wrapping_specification),
+            ),
+        ]),
+    )
+}
+
+fn get_request_with_wrapping_key_information(
+    include_encryption: bool,
+    include_mac_signature: bool,
+) -> crate::RequestMessage {
+    let mut wrapping_specification = vec![tagged(WRAPPING_METHOD_TAG, Value::enumeration(1))];
+    if include_encryption {
+        wrapping_specification.push(tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("encryption-key".to_owned()),
+            )])),
+        ));
+    }
+    if include_mac_signature {
+        wrapping_specification.push(tagged(
+            MAC_SIGNATURE_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("mac-key".to_owned()),
+            )])),
+        ));
+    }
+    request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapped-object".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::structure(structure(wrapping_specification)),
             ),
         ]),
     )
@@ -1977,47 +2016,10 @@ fn profile_requires_get_wrapping_key_information_pairing() {
     // structure in a Key Wrapping Specification carried by a Get request.
     const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const MAC_SIGNATURE_KEY_INFORMATION_TAG: u32 = 0x0042_004E;
-
-    let request_with_key_information = |include_encryption: bool, include_mac_signature: bool| {
-        let mut wrapping_specification = vec![tagged(WRAPPING_METHOD_TAG, Value::enumeration(1))];
-        if include_encryption {
-            wrapping_specification.push(tagged(
-                ENCRYPTION_KEY_INFORMATION_TAG,
-                Value::structure(structure([tagged(
-                    UNIQUE_IDENTIFIER_TAG,
-                    Value::text_string("encryption-key".to_owned()),
-                )])),
-            ));
-        }
-        if include_mac_signature {
-            wrapping_specification.push(tagged(
-                MAC_SIGNATURE_KEY_INFORMATION_TAG,
-                Value::structure(structure([tagged(
-                    UNIQUE_IDENTIFIER_TAG,
-                    Value::text_string("mac-key".to_owned()),
-                )])),
-            ));
-        }
-        request_message_with_operation_payload(
-            GET_OPERATION,
-            structure([
-                tagged(
-                    UNIQUE_IDENTIFIER_TAG,
-                    Value::text_string("wrapped-object".to_owned()),
-                ),
-                tagged(
-                    KEY_WRAPPING_SPECIFICATION_TAG,
-                    Value::structure(structure(wrapping_specification)),
-                ),
-            ]),
-        )
-    };
-
-    let no_key_information = request_with_key_information(false, false);
-    let encryption_only = request_with_key_information(true, false);
-    let mac_signature_only = request_with_key_information(false, true);
-    let both_key_information = request_with_key_information(true, true);
+    let no_key_information = get_request_with_wrapping_key_information(false, false);
+    let encryption_only = get_request_with_wrapping_key_information(true, false);
+    let mac_signature_only = get_request_with_wrapping_key_information(false, true);
+    let both_key_information = get_request_with_wrapping_key_information(true, true);
     let get_without_wrapping = request_message_with_operation_payload(
         GET_OPERATION,
         structure([tagged(
@@ -2025,6 +2027,21 @@ fn profile_requires_get_wrapping_key_information_pairing() {
             Value::text_string("plain-object".to_owned()),
         )]),
     );
+    let malformed_wrapping_specification = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapped-object".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::text_string("not-a-structure".to_owned()),
+            ),
+        ]),
+    );
+    let unrelated_request =
+        request_message_with_operation_payload(DISCOVER_VERSIONS_OPERATION, Structure::new());
 
     for (requirement_id, source_clause_id) in [
         (REQUIREMENT_IDS[0], "KMIPKIT-CLAUSE-SPEC-7.18-004"),
@@ -2048,6 +2065,7 @@ fn profile_requires_get_wrapping_key_information_pairing() {
         let evaluate = mapping
             .evaluator
             .expect("the conditional requirement has a typed evaluator");
+        assert!(!evaluate(None, None));
         let result = ProfileValidationResult {
             profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
             requirement_ids: vec![requirement_id.to_owned()],
@@ -2058,6 +2076,7 @@ fn profile_requires_get_wrapping_key_information_pairing() {
             &mac_signature_only,
             &both_key_information,
             &get_without_wrapping,
+            &unrelated_request,
         ] {
             assert!(evaluate(Some(valid), None));
             result
@@ -2069,6 +2088,14 @@ fn profile_requires_get_wrapping_key_information_pairing() {
             result
                 .validate_request(&no_key_information)
                 .expect_err("a Key Wrapping Specification needs one key-info structure")
+                .requirement_id(),
+            Some(requirement_id)
+        );
+        assert!(!evaluate(Some(&malformed_wrapping_specification), None));
+        assert_eq!(
+            result
+                .validate_request(&malformed_wrapping_specification)
+                .expect_err("a Key Wrapping Specification must be a Structure")
                 .requirement_id(),
             Some(requirement_id)
         );
