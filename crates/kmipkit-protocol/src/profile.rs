@@ -1636,7 +1636,7 @@ fn client_get_wrapping_specification_has_key_information(
 
                     field.with_value(|value| match value {
                         ValueView::Structure(specification) => {
-                            key_wrapping_data_has_key_information(&specification)
+                            wrapping_structure_has_key_information(&specification)
                         }
                         _ => false,
                     })
@@ -3522,7 +3522,7 @@ fn register_key_block_preserves_optional_wrapping(key_block: &StructureView<'_>)
                 return false;
             }
             wrapping_data.with_value(|value| match value {
-                ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                ValueView::Structure(data) => wrapping_structure_has_key_information(&data),
                 _ => false,
             })
         }
@@ -3699,7 +3699,7 @@ fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
         FieldPresence::Unique(wrapping_data) => {
             key_value_is_byte_string
                 && wrapping_data.with_value(|value| match value {
-                    ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                    ValueView::Structure(data) => wrapping_structure_has_key_information(&data),
                     _ => false,
                 })
         }
@@ -3707,7 +3707,7 @@ fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
     }
 }
 
-fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
+fn wrapping_structure_has_key_information(data: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(wrapping_method) = field_presence(data, WRAPPING_METHOD) else {
         return false;
     };
@@ -3744,7 +3744,7 @@ fn key_wrapping_data_has_required_key_information(structure: &StructureView<'_>)
     structure.children().iter().all(|field| {
         let wrapping_data_is_valid = if field.tag().raw() == KEY_WRAPPING_DATA {
             field.with_value(|value| match value {
-                ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                ValueView::Structure(data) => wrapping_structure_has_key_information(&data),
                 _ => false,
             })
         } else {
