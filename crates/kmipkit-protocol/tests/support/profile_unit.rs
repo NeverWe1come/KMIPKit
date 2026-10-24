@@ -7070,6 +7070,59 @@ fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
 }
 
 #[test]
+fn selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure() {
+    // KMIP Specification v2.1 §14.1 paragraphs 1–2; KMIP Profiles v2.1 §6.1.
+    const PROFILE_ID: &str = "KMIPKIT-PROFILE-TEST-CLIENT";
+    const CLIENT_CONFORMANCE: &str = "KMIPKIT-REQ-SPEC-14.1-001";
+    const CLAIMED_PROFILE_CLOSURE: &str = "KMIPKIT-REQ-SPEC-14.1-002";
+    const UNMAPPED_CHILD: &str = "KMIPKIT-REQ-PROF-3.2-001";
+    const CONFORMANCE_REQUIREMENTS: &[&str] = &[CLIENT_CONFORMANCE, CLAIMED_PROFILE_CLOSURE];
+    const INCOMPLETE_CLOSURE: &[&str] = &[
+        CLIENT_CONFORMANCE,
+        CLAIMED_PROFILE_CLOSURE,
+        UNMAPPED_CHILD,
+    ];
+
+    let complete_profile = profile(PROFILE_ID, CONFORMANCE_REQUIREMENTS, &[]);
+    let complete_requirements = CLIENT_REQUIREMENTS
+        .iter()
+        .filter(|requirement| CONFORMANCE_REQUIREMENTS.contains(&requirement.requirement_id))
+        .copied()
+        .collect::<Vec<_>>();
+    let complete_result = validate_selection_with_registry(
+        &ProfileValidationSelection::new([PROFILE_ID]),
+        &[complete_profile],
+        &complete_requirements,
+        TYPED_RULE_MAPPINGS,
+    )
+    .expect("both §14.1 obligations must resolve through typed client-profile rules");
+
+    assert_eq!(complete_result.profile_ids(), &[PROFILE_ID.to_owned()]);
+    assert_eq!(
+        complete_result.requirement_ids(),
+        &[CLIENT_CONFORMANCE.to_owned(), CLAIMED_PROFILE_CLOSURE.to_owned()]
+    );
+
+    let incomplete_profile = profile(PROFILE_ID, INCOMPLETE_CLOSURE, &[]);
+    let incomplete_requirements = CLIENT_REQUIREMENTS
+        .iter()
+        .filter(|requirement| INCOMPLETE_CLOSURE.contains(&requirement.requirement_id))
+        .copied()
+        .collect::<Vec<_>>();
+    let error = validate_selection_with_registry(
+        &ProfileValidationSelection::new([PROFILE_ID]),
+        &[incomplete_profile],
+        &incomplete_requirements,
+        TYPED_RULE_MAPPINGS,
+    )
+    .expect_err("a client profile must remain unselectable while any closure rule is missing");
+
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(error.profile_id(), Some(PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(UNMAPPED_CHILD));
+}
+
+#[test]
 fn discover_versions_protocol_version_requires_one_integer_major_minor_pair() {
     let valid = structure([
         tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
