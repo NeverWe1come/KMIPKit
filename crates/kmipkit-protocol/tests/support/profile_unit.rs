@@ -9417,6 +9417,7 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
     // KMIP Specification v2.1 §§6.1.11 Table 196 and 6.1.17 Table 214 place
     // supplied multipart AAD and Decrypt tags on the initial client request.
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
     const INITIAL_INDICATOR_TAG: u32 = 0x0042_00D7;
     const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG: u32 = 0x0042_00FE;
     const AUTHENTICATED_ENCRYPTION_TAG_TAG: u32 = 0x0042_00FF;
@@ -9446,8 +9447,17 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
         ),
     ];
 
-    let make_request = |operation, initial_indicator: Option<bool>, field_tags: &[u32]| {
+    let make_request = |operation,
+                        initial_indicator: Option<bool>,
+                        has_correlation_value: bool,
+                        field_tags: &[u32]| {
         let mut fields = Vec::new();
+        if has_correlation_value {
+            fields.push(tagged(
+                CORRELATION_VALUE_TAG,
+                Value::byte_string(b"existing-operation".to_vec()),
+            ));
+        }
         if let Some(initial_indicator) = initial_indicator {
             fields.push(tagged(
                 INITIAL_INDICATOR_TAG,
@@ -9477,8 +9487,7 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
             GeneratedVerificationCategory::RequiredBehavior
         );
         assert!(mapping.test_evidence.iter().any(|evidence| {
-            evidence.test_id == client_test_id
-                && evidence.kind == RuleTestKind::PositiveBehavior
+            evidence.test_id == client_test_id && evidence.kind == RuleTestKind::PositiveBehavior
         }));
         validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
             .expect("the required placement rule has positive executable evidence");
@@ -9490,32 +9499,43 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
             requirement_ids: vec![requirement_id.to_owned()],
         };
 
-        let initial = make_request(operation, Some(true), &[field_tag]);
+        let initial = make_request(operation, Some(true), false, &[field_tag]);
         assert!(evaluate(Some(&initial), None));
         result
             .validate_request(&initial)
             .expect("the supplied multipart field is allowed on its initial request");
 
-        let continuation = make_request(operation, Some(false), &[field_tag]);
+        let continuation = make_request(operation, Some(false), true, &[field_tag]);
         assert!(!evaluate(Some(&continuation), None));
         let error = result
             .validate_request(&continuation)
             .expect_err("a supplied multipart field cannot move to a continuation request");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(requirement_id));
         assert_eq!(error.source_clause_id(), Some(source_clause_id));
 
-        let continuation_without_field = make_request(operation, Some(false), &[]);
+        let continuation_without_field = make_request(operation, Some(false), true, &[]);
         assert!(evaluate(Some(&continuation_without_field), None));
         result
             .validate_request(&continuation_without_field)
             .expect("a continuation request without the initial-only field remains valid");
 
-        let single_part = make_request(operation, None, &[field_tag]);
+        let single_part = make_request(operation, None, false, &[field_tag]);
         assert!(evaluate(Some(&single_part), None));
         result
             .validate_request(&single_part)
             .expect("single-part requests are outside the multipart placement condition");
+
+        let correlated_without_indicator = make_request(operation, None, true, &[field_tag]);
+        assert!(!evaluate(Some(&correlated_without_indicator), None));
+        let error = result
+            .validate_request(&correlated_without_indicator)
+            .expect_err("Correlation Value identifies a later request when Init Indicator is absent");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(requirement_id));
     }
 }
 
