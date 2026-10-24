@@ -2929,6 +2929,7 @@ fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -2963,7 +2964,7 @@ fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
         .expect("a Validate request can combine a certificate and a managed identifier");
     assert_eq!(
         validate_request_payload_tags(&mixed_payload),
-        [0x0042_0013, UNIQUE_IDENTIFIER_TAG]
+        [CERTIFICATE_TAG, UNIQUE_IDENTIFIER_TAG]
     );
     let mixed = request_message_with_operation_payload(VALIDATE_OPERATION, mixed_payload);
     assert!(evaluate(Some(&mixed), None));
