@@ -6425,6 +6425,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_recertify_offset_is_optional_interval),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-008",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
         source_gap_id: None,
@@ -6446,28 +6468,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
                 kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_recertify_offset_is_optional_interval),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
-                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
