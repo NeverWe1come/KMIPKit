@@ -4855,25 +4855,25 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let omitted = structure([
-        tagged(
+
+    fn sign_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
+        let mut fields = vec![tagged(
             UNIQUE_IDENTIFIER_TAG,
             Value::text_string("signing-key".to_owned()),
-        ),
-        tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
-    ]);
-    let supplied = structure([
-        tagged(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string("signing-key".to_owned()),
-        ),
-        tagged(
-            CRYPTOGRAPHIC_PARAMETERS_TAG,
-            Value::structure(Structure::new()),
-        ),
-        tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
-    ]);
-    for payload in [omitted, supplied] {
+        )];
+        fields.extend(
+            parameters
+                .into_iter()
+                .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
+        );
+        fields.push(tagged(DATA_TAG, Value::byte_string(b"message".to_vec())));
+        structure(fields)
+    }
+
+    for payload in [
+        sign_payload([]),
+        sign_payload([Value::structure(Structure::new())]),
+    ] {
         let request = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
         assert!(evaluate(Some(&request), None));
         result
@@ -4882,31 +4882,10 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
     }
 
     for payload in [
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("signing-key".to_owned()),
-            ),
-            tagged(
-                CRYPTOGRAPHIC_PARAMETERS_TAG,
-                Value::text_string("not-a-Structure".to_owned()),
-            ),
-            tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
-        ]),
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("signing-key".to_owned()),
-            ),
-            tagged(
-                CRYPTOGRAPHIC_PARAMETERS_TAG,
-                Value::structure(Structure::new()),
-            ),
-            tagged(
-                CRYPTOGRAPHIC_PARAMETERS_TAG,
-                Value::structure(Structure::new()),
-            ),
-            tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
+        sign_payload([Value::text_string("not-a-Structure".to_owned())]),
+        sign_payload([
+            Value::structure(Structure::new()),
+            Value::structure(Structure::new()),
         ]),
     ] {
         let malformed = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
