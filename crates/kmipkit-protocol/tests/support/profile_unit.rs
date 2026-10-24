@@ -9413,6 +9413,53 @@ fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
 }
 
 #[test]
+fn profile_maps_multipart_aead_fields_to_initial_requests() {
+    // KMIP Specification v2.1 §§6.1.11 Table 196 and 6.1.17 Table 214 place
+    // supplied multipart AAD and Decrypt tags on the initial client request.
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CASES: [(&str, &str, &str); 3] = [
+        (
+            "KMIPKIT-REQ-SPEC-6.1.17-006",
+            "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.11-005",
+            "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.11-006",
+            "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+        ),
+    ];
+
+    for (requirement_id, source_clause_id, client_test_id) in CASES {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("multipart AEAD placement has an explicit typed profile mapping");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("multipart AEAD placement resolves to generated requirement metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == client_test_id
+                && evidence.kind == RuleTestKind::PositiveBehavior
+        }));
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the required placement rule has positive executable evidence");
+        assert!(mapping.evaluator.is_some());
+    }
+}
+
+#[test]
 fn profile_rejects_unpaired_direct_key_block_fields_in_register_and_import() {
     // KMIP Specification v2.1 §3.1 Table 12; request scope is §§6.1.25 and 6.1.43.
     const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
