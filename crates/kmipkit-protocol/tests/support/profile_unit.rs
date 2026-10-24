@@ -6978,9 +6978,7 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
     assert!(!import_preserves_wrapped_secret_data_shape(None, None));
     assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
-    assert!(!client_key_wrapping_data_is_absent_or_has_required_key_information(
-        None, None
-    ));
+    assert!(!client_key_wrapping_data_is_absent_or_has_required_key_information(None, None));
 }
 
 #[test]
