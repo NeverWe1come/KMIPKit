@@ -2104,9 +2104,8 @@ fn profile_requires_get_wrapping_key_information_pairing() {
 
 #[test]
 fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
-    // KMIP Specification v2.1 §7.18 requires the client to provide this
-    // structure when it requests a wrapped key; Get uses its presence as that
-    // request, while omission leaves the client asking for an unwrapped key.
+    // KMIP Specification v2.1 §7.18 requires this structure when the client
+    // requests a wrapped key; Get Table 220 makes the structure optional.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -2136,7 +2135,7 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let get_requesting_wrapped_key = get_request_with_wrapping_key_information(true, false);
-    let get_requesting_plain_key = request_message_with_operation_payload(
+    let get_request_without_wrapping = request_message_with_operation_payload(
         GET_OPERATION,
         structure([tagged(
             UNIQUE_IDENTIFIER_TAG,
@@ -2144,7 +2143,7 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
         )]),
     );
 
-    for request in [&get_requesting_wrapped_key, &get_requesting_plain_key] {
+    for request in [&get_requesting_wrapped_key, &get_request_without_wrapping] {
         assert!(evaluate(Some(request), None));
         result
             .validate_request(request)

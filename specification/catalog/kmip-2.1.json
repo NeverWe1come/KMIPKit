@@ -98099,12 +98099,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §7.18 requires a client to include Key Wrapping Specification when requesting a wrapped key. Get Table 220 exposes Key Wrapping Specification as an optional request item; the focused profile test verifies that the client can express a wrapped-key request and that a request without that option remains accepted without inferring wrapped-key intent. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-002",

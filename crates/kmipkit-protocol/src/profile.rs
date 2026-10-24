@@ -1646,6 +1646,16 @@ fn client_get_wrapping_specification_has_key_information(
     })
 }
 
+fn client_can_request_get_wrapped_key(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §7.18 requires Key Wrapping Specification when the client requests a
+    // wrapped key. Get expresses that request with its optional structure; a
+    // request without it does not assert a wrapped-key request.
+    request.is_some()
+}
+
 fn client_can_include_request_time_stamp(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -5318,6 +5328,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.18-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_can_request_get_wrapped_key),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },
