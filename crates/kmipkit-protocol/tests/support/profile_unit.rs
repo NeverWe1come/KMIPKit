@@ -4340,166 +4340,291 @@ fn profile_maps_client_locate_partial_structured_attribute_fields() {
     assert!(result.validate_request(&unrelated_operation).is_ok());
 }
 
-#[test]
-fn profile_requires_complete_link_members_in_client_object_state() {
-    // KMIP Specification v2.1 §4.31 Table 91 requires both Link members for
-    // object state; §6.1.28 permits partial Link search criteria in Locate.
-    const REQUIREMENT_ID_LINK_TYPE: &str = "KMIPKIT-REQ-SPEC-4.31-004";
-    const REQUIREMENT_ID_LINKED_OBJECT: &str = "KMIPKIT-REQ-SPEC-4.31-005";
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const LINK_TAG: u32 = 0x0042_004A;
-    const LINK_TYPE_TAG: u32 = 0x0042_004B;
-    const LINKED_OBJECT_IDENTIFIER_TAG: u32 = 0x0042_004C;
-    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
-
-    let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+fn client_object_state_link_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
         requirement_ids: vec![
-            REQUIREMENT_ID_LINK_TYPE.to_owned(),
-            REQUIREMENT_ID_LINKED_OBJECT.to_owned(),
+            "KMIPKIT-REQ-SPEC-4.31-004".to_owned(),
+            "KMIPKIT-REQ-SPEC-4.31-005".to_owned(),
         ],
-    };
-    let request_with_links = |operation, links: Vec<Item>| {
-        request_message_with_operation_payload(
-            operation,
-            structure([tagged(ATTRIBUTES_TAG, Value::structure(structure(links)))]),
-        )
-    };
-    let link = |members: Vec<Item>| tagged(LINK_TAG, Value::structure(structure(members)));
-    let valid_link = || {
-        link(vec![
-            tagged(LINK_TYPE_TAG, Value::enumeration(1)),
-            tagged(
-                LINKED_OBJECT_IDENTIFIER_TAG,
-                Value::text_string("linked-object-7".to_owned()),
-            ),
-        ])
-    };
+    }
+}
 
-    let valid_register = request_with_links(REGISTER_OPERATION_TAG, vec![valid_link()]);
+fn client_object_state_link(members: impl IntoIterator<Item = Item>) -> Item {
+    tagged(0x0042_004A, Value::structure(structure(members)))
+}
+
+fn client_object_state_link_request(
+    operation: u32,
+    links: impl IntoIterator<Item = Item>,
+) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        operation,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(structure(links)))]),
+    )
+}
+
+fn complete_client_object_state_link(identifier: Value) -> Item {
+    client_object_state_link([
+        tagged(0x0042_004B, Value::enumeration(1)),
+        tagged(0x0042_004C, identifier),
+    ])
+}
+
+#[test]
+fn profile_accepts_complete_client_object_state_link_values() {
+    // KMIP Specification v2.1 §4.31, Tables 90 and 91 define object-state Link members and encodings.
+    let result = client_object_state_link_profile_result();
+    let valid = client_object_state_link_request(
+        REGISTER_OPERATION_TAG,
+        vec![
+            tagged(0x0042_002A, Value::integer(256)),
+            complete_client_object_state_link(Value::text_string("linked-object-7".to_owned())),
+        ],
+    );
     result
-        .validate_request(&valid_register)
-        .expect("complete client object-state Links satisfy §4.31");
-    let repeated_links =
-        request_with_links(REGISTER_OPERATION_TAG, vec![valid_link(), valid_link()]);
+        .validate_request(&valid)
+        .expect("KMIP Specification v2.1 §4.31 Table 91 requires complete object-state Links");
+    let no_link = client_object_state_link_request(REGISTER_OPERATION_TAG, Vec::<Item>::new());
     result
-        .validate_request(&repeated_links)
+        .validate_request(&no_link)
+        .expect("Link remains optional when an object has no association");
+
+    let repeated = client_object_state_link_request(
+        REGISTER_OPERATION_TAG,
+        vec![
+            complete_client_object_state_link(Value::text_string("linked-object-7".to_owned())),
+            complete_client_object_state_link(Value::text_string("linked-object-8".to_owned())),
+        ],
+    );
+    result
+        .validate_request(&repeated)
         .expect("multiple complete Link attributes are permitted");
 
     for identifier in [Value::enumeration(91), Value::integer(-1)] {
-        let valid_identifier_form = request_with_links(
+        let request = client_object_state_link_request(
             REGISTER_OPERATION_TAG,
-            vec![link(vec![
-                tagged(LINK_TYPE_TAG, Value::enumeration(0xFFFF_FFFF)),
-                tagged(LINKED_OBJECT_IDENTIFIER_TAG, identifier),
-            ])],
+            vec![client_object_state_link_with_future_type(identifier)],
         );
         result
-            .validate_request(&valid_identifier_form)
-            .expect("all assigned Linked Object Identifier wire types are retained");
+            .validate_request(&request)
+            .expect("all Linked Object Identifier encodings and future Link Types are retained");
     }
+}
 
-    let incomplete_links = [
+fn client_object_state_link_with_future_type(identifier: Value) -> Item {
+    client_object_state_link([
+        tagged(0x0042_004B, Value::enumeration(0xFFFF_FFFF)),
+        tagged(0x0042_004C, identifier),
+    ])
+}
+
+#[test]
+fn profile_rejects_incomplete_client_object_state_links() {
+    // KMIP Specification v2.1 §4.31, Tables 90 and 91 define object-state Link members and encodings.
+    let result = client_object_state_link_profile_result();
+    let malformed = [
         (
-            link(vec![tagged(
-                LINKED_OBJECT_IDENTIFIER_TAG,
+            tagged(
+                0x0042_004A,
+                Value::text_string("not-a-Link-Structure".to_owned()),
+            ),
+            "KMIPKIT-REQ-SPEC-4.31-004",
+        ),
+        (
+            client_object_state_link([tagged(
+                0x0042_004C,
                 Value::text_string("linked-object-7".to_owned()),
             )]),
-            REQUIREMENT_ID_LINK_TYPE,
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
-            link(vec![tagged(LINK_TYPE_TAG, Value::enumeration(1))]),
-            REQUIREMENT_ID_LINKED_OBJECT,
+            client_object_state_link([tagged(0x0042_004B, Value::enumeration(1))]),
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
         (
-            link(vec![
-                tagged(LINK_TYPE_TAG, Value::integer(1)),
+            client_object_state_link([
+                tagged(0x0042_004B, Value::integer(1)),
                 tagged(
-                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    0x0042_004C,
                     Value::text_string("linked-object-7".to_owned()),
                 ),
             ]),
-            REQUIREMENT_ID_LINK_TYPE,
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
-            link(vec![
-                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+            client_object_state_link([
+                tagged(0x0042_004B, Value::enumeration(1)),
                 tagged(
-                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    0x0042_004C,
                     Value::byte_string(b"not-an-identifier".to_vec()),
                 ),
             ]),
-            REQUIREMENT_ID_LINKED_OBJECT,
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
         (
-            link(vec![
-                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
-                tagged(LINK_TYPE_TAG, Value::enumeration(2)),
+            client_object_state_link([
+                tagged(0x0042_004B, Value::enumeration(1)),
+                tagged(0x0042_004B, Value::enumeration(2)),
                 tagged(
-                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    0x0042_004C,
                     Value::text_string("linked-object-7".to_owned()),
                 ),
             ]),
-            REQUIREMENT_ID_LINK_TYPE,
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
-            link(vec![
-                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+            client_object_state_link([
+                tagged(0x0042_004B, Value::enumeration(1)),
                 tagged(
-                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    0x0042_004C,
                     Value::text_string("linked-object-7".to_owned()),
                 ),
                 tagged(
-                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    0x0042_004C,
                     Value::text_string("linked-object-8".to_owned()),
                 ),
             ]),
-            REQUIREMENT_ID_LINKED_OBJECT,
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
     ];
-    for (malformed_link, expected_requirement_id) in incomplete_links {
-        let request = request_with_links(REGISTER_OPERATION_TAG, vec![malformed_link]);
+
+    for (link, requirement_id) in malformed {
+        let request = client_object_state_link_request(REGISTER_OPERATION_TAG, [link]);
         let error = result
             .validate_request(&request)
-            .expect_err("object-state Link values require both unique members");
+            .expect_err("object-state Link values require their typed members");
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
         );
-        assert_eq!(error.requirement_id(), Some(expected_requirement_id));
+        assert_eq!(error.requirement_id(), Some(requirement_id));
     }
 
-    let add_attribute = request_with_links(
-        ADD_ATTRIBUTE_OPERATION,
-        vec![link(vec![tagged(LINK_TYPE_TAG, Value::enumeration(1))])],
+    let add_attribute = client_object_state_link_request(
+        0x0000_000D,
+        [client_object_state_link([tagged(
+            0x0042_004B,
+            Value::enumeration(1),
+        )])],
     );
     assert_eq!(
         result
             .validate_request(&add_attribute)
             .expect_err("Add Attribute object-state Links require Linked Object Identifier")
-            .code(),
-        ProfileValidationErrorCode::RequestRuleRejected
+            .requirement_id(),
+        Some("KMIPKIT-REQ-SPEC-4.31-005")
     );
+}
 
-    let locate_partial_link = crate::LocateRequest::new(
+#[test]
+fn profile_allows_partial_link_locate_search_criteria() {
+    // KMIP Specification v2.1 §6.1.28 permits partial structured Link search criteria in Locate.
+    let result = client_object_state_link_profile_result();
+    let partial = crate::LocateRequest::new(
         crate::AttributeSet::try_new([tagged(
-            LINK_TAG,
-            Value::structure(structure(vec![tagged(
-                LINKED_OBJECT_IDENTIFIER_TAG,
+            0x0042_004A,
+            Value::structure(structure([tagged(
+                0x0042_004C,
                 Value::text_string("linked-object-7".to_owned()),
             )])),
         )])
         .expect("partial Link search criteria are structurally valid"),
     );
-    let locate_request = request_message_with_operation_payload(
+    let request = request_message_with_operation_payload(
         LOCATE_OPERATION_TAG,
-        locate_partial_link
+        partial
             .to_ttlv_payload()
             .expect("Locate retains partial Link search criteria"),
     );
-    assert!(result.validate_request(&locate_request).is_ok());
+    result
+        .validate_request(&request)
+        .expect("KMIP Specification v2.1 §6.1.28 permits partial structured Locate Link criteria");
+
 }
 
+#[test]
+fn profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses() {
+    // KMIP Specification v2.1 §4.31 Table 91 applies to Link values in
+    // object state, including attributes returned by Get Attributes (§6.1.20).
+    let result = client_object_state_link_profile_result();
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        Structure::new(),
+    );
+
+    let malformed = [
+        (
+            client_object_state_link([tagged(
+                0x0042_004C,
+                Value::text_string("linked-object-7".to_owned()),
+            )]),
+            "KMIPKIT-REQ-SPEC-4.31-004",
+        ),
+        (
+            client_object_state_link([tagged(0x0042_004B, Value::enumeration(1))]),
+            "KMIPKIT-REQ-SPEC-4.31-005",
+        ),
+    ];
+
+    for (link, requirement_id) in malformed {
+        let response = get_attributes_link_response([link]);
+        let error = result
+            .validate_response(&request, &response)
+            .expect_err("successful Get Attributes responses must return complete Link values");
+        assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
+        assert_eq!(error.requirement_id(), Some(requirement_id));
+    }
+
+    let complete = get_attributes_link_response([complete_client_object_state_link(
+        Value::text_string("linked-object-7".to_owned()),
+    )]);
+    result
+        .validate_response(&request, &complete)
+        .expect("a complete Link value is valid in a successful Get Attributes response");
+
+    let no_link = get_attributes_link_response([]);
+    result
+        .validate_response(&request, &no_link)
+        .expect("Link remains optional when an object has no association");
+}
+
+fn get_attributes_link_response(links: impl IntoIterator<Item = Item>) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(GET_ATTRIBUTES_OPERATION),
+                ),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("linked-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure(links)),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response with Links is valid")
+}
 #[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
