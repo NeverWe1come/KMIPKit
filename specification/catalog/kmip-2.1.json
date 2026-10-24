@@ -101210,15 +101210,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_derivation_method"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Method (HTML lines 25940-25958), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14, request payload row Derivation Method (HTML lines 25940-25958), records required_table_body_value. This is table-field semantics, not an RFC keyword. The typed profile mapping requires exactly one Enumeration in each Derive Key batch item, preserves unknown future method values, and does not validate method-specific parameters. The linked local Rust request-construction and profile tests verify representation; the pinned official Test Cases inventory has no requirement-specific test ID, and no official OASIS test execution or server behavior is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-012",
