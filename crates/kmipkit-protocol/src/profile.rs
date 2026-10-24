@@ -1837,30 +1837,32 @@ fn client_join_split_key_has_validated_identifier_entries(
 
         batch_item
             .with_request_payload(|payload| {
-                let mut identifier_count = 0_usize;
-                let valid_entries = payload.children().iter().all(|field| {
-                    if field.tag().raw() != UNIQUE_IDENTIFIER {
-                        return true;
-                    }
-
-                    let valid_identifier = field.with_value(|value| {
-                        matches!(
-                            value,
-                            ValueView::TextString(_)
-                                | ValueView::ByteString(_)
-                                | ValueView::Enumeration(_)
-                        )
-                    });
-                    if valid_identifier {
-                        identifier_count += 1;
-                    }
-                    valid_identifier
-                });
-
-                valid_entries && identifier_count > 0
+                join_split_key_identifier_entries_are_well_formed(&payload)
             })
             .unwrap_or(false)
     })
+}
+
+fn join_split_key_identifier_entries_are_well_formed(payload: &StructureView<'_>) -> bool {
+    let mut identifier_count = 0_usize;
+    let valid_entries = payload.children().iter().all(|field| {
+        if field.tag().raw() != UNIQUE_IDENTIFIER {
+            return true;
+        }
+
+        let valid_identifier = field.with_value(|value| {
+            matches!(
+                value,
+                ValueView::TextString(_) | ValueView::ByteString(_) | ValueView::Enumeration(_)
+            )
+        });
+        if valid_identifier {
+            identifier_count += 1;
+        }
+        valid_identifier
+    });
+
+    valid_entries && identifier_count > 0
 }
 
 fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
