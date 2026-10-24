@@ -3617,28 +3617,33 @@ fn register_object_key_value_attributes_are_structured(object: &Item) -> bool {
         ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
             FieldPresence::Missing => true,
             FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
-                ValueView::Structure(key_block) => match field_presence(&key_block, KEY_VALUE) {
-                    FieldPresence::Missing => true,
-                    FieldPresence::Unique(key_value) => key_value.with_value(|value| match value {
-                        ValueView::ByteString(_) => true,
-                        ValueView::Structure(key_value) => {
-                            match field_presence(&key_value, ATTRIBUTES) {
-                                FieldPresence::Missing => true,
-                                FieldPresence::Unique(attributes) => attributes
-                                    .with_value(|value| matches!(value, ValueView::Structure(_))),
-                                FieldPresence::Duplicate => false,
-                            }
-                        }
-                        _ => false,
-                    }),
-                    FieldPresence::Duplicate => false,
-                },
+                ValueView::Structure(key_block) => {
+                    register_key_block_attributes_are_structured(&key_block)
+                }
                 _ => false,
             }),
             FieldPresence::Duplicate => false,
         },
         _ => false,
     })
+}
+
+fn register_key_block_attributes_are_structured(key_block: &StructureView<'_>) -> bool {
+    match field_presence(key_block, KEY_VALUE) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(key_value) => key_value.with_value(|value| match value {
+            ValueView::ByteString(_) => true,
+            ValueView::Structure(key_value) => match field_presence(&key_value, ATTRIBUTES) {
+                FieldPresence::Missing => true,
+                FieldPresence::Unique(attributes) => {
+                    attributes.with_value(|value| matches!(value, ValueView::Structure(_)))
+                }
+                FieldPresence::Duplicate => false,
+            },
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
 }
 
 fn register_payload_preserves_optional_key_wrapping(payload: &StructureView<'_>) -> bool {
