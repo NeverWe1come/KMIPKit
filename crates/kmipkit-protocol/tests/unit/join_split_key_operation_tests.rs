@@ -140,7 +140,7 @@ fn request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire
         reference("split-b", 3),
         reference("split-a", 1),
     ])
-    .with_secret_data_type(0xF123_4568)
+    .with_secret_data_type(0x8123_4568)
     .with_attributes(
         AttributeSet::try_new([item(0x0042_0028, Value::enumeration(3))])
             .expect("fixture attribute is valid"),
@@ -185,7 +185,7 @@ fn request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire
     );
     assert!(
         fields[4].with_value(
-            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0x8123_4568)
         )
     );
 }
@@ -207,13 +207,13 @@ fn public_request_views_preserve_local_thresholds_and_optional_fields() {
         ObjectType::from_raw(7),
         vec![first, reference("split-b", 2)],
     )
-    .with_secret_data_type(0xF123_4568)
+    .with_secret_data_type(0x8123_4568)
     .with_attributes(attributes)
     .with_protection_storage_masks(structure([item(0x0042_015E, Value::integer(2))]));
     assert_eq!(request.object_type(), ObjectType::from_raw(7));
     assert_eq!(request.references().len(), 2);
     assert_eq!(request.references()[1].split_key_threshold(), Some(2));
-    assert_eq!(request.secret_data_type(), Some(0xF123_4568));
+    assert_eq!(request.secret_data_type(), Some(0x8123_4568));
     assert_eq!(request.attributes().map(AttributeSet::len), Some(1));
     assert!(request.protection_storage_masks().is_some());
     let payload = request

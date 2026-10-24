@@ -94247,7 +94247,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.27 paragraph 2 permits the client to include Secret Data Type when Object Type is Secret Data; Table 244 lists the field as optional. Section 11.52 Table 483 defines Secret Data Type as an Enumeration. The profile test verifies that the caller can include an Enumeration for a Secret Data result and can omit it. This is client request representation evidence only; it does not infer server result type, server acceptance, or Secret Data semantics. No requirement-specific official Test Cases ID is explicitly linked by the pinned official OASIS Test Cases inventory. No official case-level pass is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.27 paragraph 2 permits the client to include Secret Data Type when Object Type is Secret Data; Table 244 lists the field as optional. Section 11.52 Table 483 defines Password as 1, Seed as 2, and Extensions in the 8XXXXXXX range; the profile test uses extension value 0x81234568. The test verifies that the caller can include a valid extension Enumeration for a Secret Data result and can omit it. This is client request representation evidence only; it does not infer server result type, server acceptance, or Secret Data semantics. No requirement-specific official Test Cases ID is explicitly linked by the pinned official OASIS Test Cases inventory. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-005",
