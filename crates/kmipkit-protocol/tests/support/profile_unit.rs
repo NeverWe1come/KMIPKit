@@ -94,6 +94,7 @@ const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
 const USAGE_LIMITS_COUNT_TAG: u32 = 0x0042_0096;
+const LEASE_TIME_TAG: u32 = 0x0042_0049;
 const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
 
@@ -3961,6 +3962,43 @@ fn profile_maps_client_check_usage_limits_count() {
         structure([
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate).is_err());
+}
+
+#[test]
+fn profile_maps_client_check_lease_time() {
+    // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define Lease Time
+    // as an optional Check request Interval.
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-005");
+    let with_lease_time = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        crate::CheckRequest::new()
+            .with_lease_time(60)
+            .into_ttlv_payload()
+            .expect("typed Lease Time is representable"),
+    );
+    result
+        .validate_request(&with_lease_time)
+        .expect("the client can request a lease duration");
+
+    let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the optional field remains omittable");
+
+    let malformed = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(LEASE_TIME_TAG, Value::integer(60))]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
+
+    let duplicate = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([
+            tagged(LEASE_TIME_TAG, Value::interval(60)),
+            tagged(LEASE_TIME_TAG, Value::interval(120)),
         ]),
     );
     assert!(result.validate_request(&duplicate).is_err());
