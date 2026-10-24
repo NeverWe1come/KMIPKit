@@ -5479,10 +5479,19 @@ Mapped `KMIPKIT-REQ-SPEC-7.18-006` as a Baseline Client `OptionalCapability`. KM
 
 Baseline Client now has 99 valid executable typed mappings out of 265 assigned requirements, leaving 166 unmapped. The three blocked mandatory fixtures and 77 unavailable profile cases remain. T040 stays open and no profile-conformance claim is made. The stateful KMIP Specification v2.1 §7.8 multipart correlation requirement remains unmapped until executable evidence can prove correlation is carried from the first response into subsequent requests; no request-local check is presented as sufficient evidence.
 
-### KMIPKIT-0010 T040 — Repeated Get wrapping Attribute Names
+### KMIPKIT-0010 T040 — Get wrapping key-information alternatives (2026-10-24)
 
-KMIP Specification v2.1 §7.18 Table 370 permits repeated `Attribute Name` Text Strings in a Key Wrapping Specification, which Get carries under §6.1.19 Table 220. The existing Get model test verifies that two distinct names survive in order. The profile-level regression will link this optional capability to the Baseline rule registry and verify that profile validation accepts a Get carrying those repeated names while leaving wrapping optional.
+Mapped `KMIPKIT-REQ-SPEC-7.18-004` and `KMIPKIT-REQ-SPEC-7.18-005` from KMIP Specification v2.1 §7.18 Table 370. When a client includes a Key Wrapping Specification in Get, at least one of Encryption Key Information or MAC/Signature Key Information must be present. The profile regression accepts either or both structures, rejects neither and a non-Structure field, leaves wrapping optional for Get, and does not apply the rule to another operation. No requirement-specific official Test Case is linked; no server-side behavior or profile claim is asserted.
 
-| Stage | Evidence | Result |
+| Stage or check | Evidence | Result |
 |---|---|---|
-| Red | `cargo test -p kmipkit-protocol --lib profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability` | Expected failure: no typed rule exists yet for `KMIPKIT-REQ-SPEC-7.18-006`; the test stops at the missing mapping assertion. |
+| Red | DCO commit `58ae891b`; `cargo test -p kmipkit-protocol --lib profile_requires_get_wrapping_key_information_pairing` | Expected failure: both requirements were missing typed profile mappings. |
+| Green | DCO commit `0d8ff1b0`; Get evaluator, RequiredBehavior mappings, malformed-type regression, catalog references, generated coverage report, and report snapshot | PASS: encryption-only, MAC/signature-only, and paired requests validate; an empty or malformed supplied specification fails with the exact requirement ID. |
+| Refactor | DCO commit `617046a4`; rename the shared Key Wrapping Data predicate to `wrapping_structure_has_key_information` for both Key Wrapping Data and Key Wrapping Specification callers | PASS: Get and existing Key Wrapping Data profile tests remain green; no behavior change. |
+| Rust and quality | `cargo test -p kmipkit-protocol --all-features`; focused Get and Key Wrapping Data profile tests; protocol Clippy; `cargo fmt --all --check`; `git diff --check` | PASS: 945 protocol library tests on Green; both focused profile tests and the full workspace coverage run pass on the final refactor revision; Clippy and formatting pass. |
+| Traceability and report | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`; full `test_report` suite | PASS: traceability test; 55 report tests passed, 1 skipped. |
+| Catalog and generated outputs | Catalog validator; profile generator `--check`; coverage report `--check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and report are current. |
+| Workspace coverage | `cargo llvm-cov --workspace --all-features --summary-only` | PASS: 93.18% workspace line coverage and 95.75% for `kmipkit-protocol/src/profile.rs`. The malformed Key Wrapping Specification branch is covered. |
+| Hosted CI | Exact-head run after this batch is pushed | Pending. No current-head CI result is claimed for these commits. |
+
+Baseline Client now has 101 valid executable typed mappings of 265 assigned requirements; 164 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
