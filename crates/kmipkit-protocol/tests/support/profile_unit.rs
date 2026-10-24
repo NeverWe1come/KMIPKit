@@ -416,6 +416,40 @@ fn request_message_with_operation_payload(
     .expect("test Request Message with operation payload is valid")
 }
 
+fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage {
+    let wrapping_specification = structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+        tagged(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Algorithm".to_owned()),
+        ),
+        tagged(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Length".to_owned()),
+        ),
+    ]);
+    request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapped-object".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::structure(wrapping_specification),
+            ),
+        ]),
+    )
+}
+
 fn request_message_with_optional_maximum_response_size(
     operation: u32,
     maximum_response_size: Option<i32>,
@@ -1924,37 +1958,7 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let wrapping_specification = structure([
-        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
-        tagged(
-            ENCRYPTION_KEY_INFORMATION_TAG,
-            Value::structure(structure([tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-        tagged(
-            ATTRIBUTE_NAME_TAG,
-            Value::text_string("Cryptographic Algorithm".to_owned()),
-        ),
-        tagged(
-            ATTRIBUTE_NAME_TAG,
-            Value::text_string("Cryptographic Length".to_owned()),
-        ),
-    ]);
-    let repeated_names_request = request_message_with_operation_payload(
-        GET_OPERATION,
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("wrapped-object".to_owned()),
-            ),
-            tagged(
-                KEY_WRAPPING_SPECIFICATION_TAG,
-                Value::structure(wrapping_specification),
-            ),
-        ]),
-    );
+    let repeated_names_request = get_request_with_repeated_wrapping_attribute_names();
     assert!(evaluate(Some(&repeated_names_request), None));
     result
         .validate_request(&repeated_names_request)
