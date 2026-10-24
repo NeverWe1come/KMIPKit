@@ -2045,7 +2045,6 @@ fn profile_requires_get_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
     const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     let no_key_information = get_request_with_wrapping_key_information(false, false);
     let encryption_only = get_request_with_wrapping_key_information(true, false);
@@ -2095,64 +2094,81 @@ fn profile_requires_get_wrapping_key_information_pairing() {
     let unrelated_request =
         request_message_with_operation_payload(DISCOVER_VERSIONS_OPERATION, Structure::new());
 
+    let valid_requests = [
+        &encryption_only,
+        &mac_signature_only,
+        &both_key_information,
+        &export_encryption_only,
+        &export_mac_signature_only,
+        &export_both_key_information,
+        &get_without_wrapping,
+        &unrelated_request,
+    ];
+    let invalid_requests = [
+        &no_key_information,
+        &export_no_key_information,
+        &malformed_wrapping_specification,
+        &malformed_export_wrapping_specification,
+    ];
     for (requirement_id, source_clause_id) in [
         (REQUIREMENT_IDS[0], "KMIPKIT-CLAUSE-SPEC-7.18-004"),
         (REQUIREMENT_IDS[1], "KMIPKIT-CLAUSE-SPEC-7.18-005"),
     ] {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("the conditional key-information requirement has a typed profile rule");
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == requirement_id)
-            .expect("the conditional key-information requirement resolves to metadata");
-        assert_eq!(mapping.source_clause_id, source_clause_id);
-        assert_eq!(
-            mapping.verification_category,
-            GeneratedVerificationCategory::RequiredBehavior
+        assert_wrapping_key_information_mapping(
+            requirement_id,
+            source_clause_id,
+            &valid_requests,
+            &invalid_requests,
         );
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .expect("the required key-information pairing has executable evidence");
-        let evaluate = mapping
-            .evaluator
-            .expect("the conditional requirement has a typed evaluator");
-        assert!(!evaluate(None, None));
-        let result = ProfileValidationResult {
-            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-            requirement_ids: vec![requirement_id.to_owned()],
-        };
+    }
+}
 
-        for valid in [
-            &encryption_only,
-            &mac_signature_only,
-            &both_key_information,
-            &export_encryption_only,
-            &export_mac_signature_only,
-            &export_both_key_information,
-            &get_without_wrapping,
-            &unrelated_request,
-        ] {
-            assert!(evaluate(Some(valid), None));
+fn assert_wrapping_key_information_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    valid_requests: &[&crate::RequestMessage],
+    invalid_requests: &[&crate::RequestMessage],
+) {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the conditional key-information requirement has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the conditional key-information requirement resolves to metadata");
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required key-information pairing has executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the conditional requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![requirement_id.to_owned()],
+    };
+
+    for valid in valid_requests {
+        assert!(evaluate(Some(valid), None));
+        result
+            .validate_request(valid)
+            .expect("Get and Export accept valid optional wrapping controls");
+    }
+    for invalid in invalid_requests {
+        assert!(!evaluate(Some(invalid), None));
+        assert_eq!(
             result
-                .validate_request(valid)
-                .expect("Get and Export accept valid optional wrapping controls");
-        }
-        for invalid in [
-            &no_key_information,
-            &export_no_key_information,
-            &malformed_wrapping_specification,
-            &malformed_export_wrapping_specification,
-        ] {
-            assert!(!evaluate(Some(invalid), None));
-            assert_eq!(
-                result
-                    .validate_request(invalid)
-                    .expect_err("wrapped Get and Export need valid key information")
-                    .requirement_id(),
-                Some(requirement_id)
-            );
-        }
+                .validate_request(invalid)
+                .expect_err("wrapped Get and Export need valid key information")
+                .requirement_id(),
+            Some(requirement_id)
+        );
     }
 }
 
