@@ -5462,6 +5462,111 @@ fn profile_validates_nested_register_gcm_tag_length() {
 }
 
 #[test]
+fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
+    // KMIP Specification v2.1 §5.1, Table 157 permits repeated §4 attributes
+    // in request Attributes structures and returned response Attributes.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-5.1-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let repeated_attributes = || {
+        structure([
+            opaque_context_vendor_attribute(b"first"),
+            opaque_context_vendor_attribute(b"second"),
+        ])
+    };
+    let register_request = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(repeated_attributes()),
+        )]),
+    );
+    result
+        .validate_request(&register_request)
+        .expect("§5.1 repeated Attributes are representable in a client request");
+
+    let get_attributes_request =
+        request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, Structure::new());
+    let get_attributes_response = crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(GET_ATTRIBUTES_OPERATION),
+                ),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("repeated-attributes-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(repeated_attributes()),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response with repeated direct attributes is valid");
+    result
+        .validate_response(&get_attributes_request, &get_attributes_response)
+        .expect("§5.1 repeated Attributes are representable in a client response");
+}
+
+#[test]
+fn profile_maps_repeated_create_key_pair_attribute_groups() {
+    // KMIP Specification v2.1 §§5.2–5.4, Tables 158–160 permit repeated §4
+    // attributes in each corresponding Create Key Pair request group.
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+
+    for (requirement_id, group_tag) in [
+        ("KMIPKIT-REQ-SPEC-5.2-002", COMMON_ATTRIBUTES),
+        ("KMIPKIT-REQ-SPEC-5.3-002", PRIVATE_KEY_ATTRIBUTES),
+        ("KMIPKIT-REQ-SPEC-5.4-002", PUBLIC_KEY_ATTRIBUTES),
+    ] {
+        let result = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+        let request = request_message_with_operation_payload(
+            CREATE_KEY_PAIR_OPERATION,
+            structure([tagged(
+                group_tag,
+                Value::structure(structure([
+                    opaque_context_vendor_attribute(b"first"),
+                    opaque_context_vendor_attribute(b"second"),
+                ])),
+            )]),
+        );
+        result
+            .validate_request(&request)
+            .expect("the client can represent repeated Attributes in each Table 189 group");
+    }
+}
+
+#[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
