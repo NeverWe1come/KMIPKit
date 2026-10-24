@@ -5400,3 +5400,17 @@ Extended Register Table 291 evidence to `KMIPKIT-REQ-SPEC-6.1.43-007`, requiring
 | Hosted CI | Fresh PR run after publishing this batch | Pending. |
 
 Baseline remains at 93 valid executable typed mappings of 265 assigned requirements; 172 remain unmapped. The raw registry has 106 IDs, including five encoding-only entries that still lack evaluators and are therefore excluded from executable coverage. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Derive Key repeated Unique Identifier capability (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.14-006-001` from KMIP Specification v2.1 §6.1.14 Table 205 as an optional client capability: Derive Key requests may contain repeated `Unique Identifier` Text String fields. Its evaluator is limited to outbound Derive Key requests and preserves repeated values; it does not require repetition or a source identifier. The paired `KMIPKIT-REQ-SPEC-6.1.14-006-002` rule continues to require an explicit source identifier and reject ID Placeholder substitution. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `40780d25`; extended the profile test to require a typed optional-capability mapping | Expected failure: the Table 205 repeated-identifier capability had no typed mapping. |
+| Green | DCO commit `e3fd6d0c`; added the Derive Key-only evaluator, catalog implementation/test links and review note, generated coverage report, and report-registry snapshot | PASS: repeated Text String identifiers remain accepted and the mapping resolves as `OptionalCapability`. |
+| Refactor | DCO commit `53cb1cf3`; separated the repeated-identifier capability test from the ID Placeholder prohibition test | PASS: both behaviors now have focused evidence IDs; all three Derive Key identifier profile tests pass. |
+| Verification | Typed-profile traceability; catalog validation; full-profile report snapshot; protocol Clippy; `cargo fmt --all --check`; report `--check` | PASS. Catalog: 4 sources, 1,411 clauses, 4,123 records. |
+| Hosted CI | Next exact-head run after publishing this batch | Pending. The current run `40048821976` is on the prior head and cannot validate these commits. |
+
+Baseline now has 94 valid executable typed mappings of 265 assigned requirements; 171 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
