@@ -5379,3 +5379,24 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.43-001` from KMIP Specification v2.1 §6.1.43 Table
 | Hosted CI | PR run `40044944295` on published head `9de15819` | The run does not include this local increment; latest observed status was 25 checks passed and 7 in progress. Push after a coherent batch is required for exact-head evidence. |
 
 T040 remains open: 89/265 requirements have valid executable typed mappings and 176 remain unresolved in the generated coverage report. Three mandatory fixtures remain blocked and 77 profile cases remain unavailable. Readiness remains `evidence_incomplete`; no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Register required Attributes and conditional metadata omissions (2026-10-24)
+
+Extended Register Table 291 evidence to `KMIPKIT-REQ-SPEC-6.1.43-007`, requiring the request Attributes Structure to contain the required Attributes field. Also mapped the three Table 293 omission capabilities `KMIPKIT-REQ-SPEC-6.1.43-009-001`, `-010-001`, and `-011`. The first two permit omission of Cryptographic Algorithm or Cryptographic Length only when that value is encoded in Key Block (with Secret Data excluded); the third permits omission of Digital Signature Algorithm when it is encoded in the Certificate. The evaluator accepts direct and nested Key Value Attributes shapes, preserves unknown/vendor and Opaque contexts as neutral, and does not parse certificate bytes. The certificate evidence uses a known X.509 certificate fixture. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red — required Register Attributes | DCO commit `d83a2f35`; focused `profile_maps_register_attributes_table291_requirement` test | Expected failure: the Table 291 Attributes requirement had no typed profile mapping. |
+| Green — required Register Attributes | DCO commit `2aeefd0a`; typed mapping, catalog traceability, generated report, registry snapshot | PASS: required Attributes are checked without rejecting an empty Attributes Structure or future enum values. |
+| Refactor — shared Register evidence assertion | DCO commit `d5416f24`; shared requirement evidence assertions | PASS: focused mapping tests pass with the common assertion helper. |
+| Red — conditional Table 293 metadata | DCO commits `efe5b7aa` and `a4c4e637`; focused direct and nested-Key-Value omission tests | Expected failure: the three conditional omissions had no typed profile mappings. |
+| Green — conditional Table 293 metadata | DCO commit `c6504fe1`; shared key-block and certificate-context evaluators plus catalog links | PASS: valid omission contexts pass; incomplete or wrong contexts fail with their stable requirement and clause IDs. |
+| Refactor — shared omission evaluator | DCO commit `51737da8`; reuse the Table 293 Key Block context check | PASS: focused Register omission tests pass, including nested Key Value Attributes and certificate-backed omission. |
+| Lint-driven refactor | DCO commit `e508790c`; remove redundant borrows and split the long Register omission test into focused helpers while retaining its evidence ID | PASS: the focused protocol test and protocol Clippy pass. |
+| Traceability and generation | Catalog validation; profile generator `--check`; report `--check`; typed-rule traceability test | PASS: all five Register mappings resolve to the Baseline closure and executable test references. |
+| Exact-head CI contract repair | Updated `test_report.py` inventory snapshot for the 12 newly registered IDs and replaced the obsolete “unassigned 10.1.2” assertion with its current KMIPKIT-0005 assignment check | PASS locally: both affected report regressions pass. |
+| Regression and quality checks | Full `test_report` suite (55 tests); full protocol suite (938 tests, before the lint-only test refactor) plus focused omission test after it; client certificate omission test; protocol Clippy; format and diff checks; catalog validation; profile generator `--check`; report `--check` | PASS. One report-suite rerun overlapped a source edit and failed transiently; the final stable rerun passed all 55 tests with one skip. |
+| Formatting and diff hygiene | `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Hosted CI | Fresh PR run after publishing this batch | Pending. |
+
+Baseline remains at 93 valid executable typed mappings of 265 assigned requirements; 172 remain unmapped. The raw registry has 106 IDs, including five encoding-only entries that still lack evaluators and are therefore excluded from executable coverage. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.

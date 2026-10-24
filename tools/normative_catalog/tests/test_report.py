@@ -17,9 +17,6 @@ from tools.normative_catalog.report import _clause_section_rows, render_report, 
 from tools.normative_catalog.tests.test_validate import minimal_catalog
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT_OF_SCOPE_TTLV_WIRE_REQUIREMENTS = (
-    "KMIPKIT-REQ-SPEC-10.1.2-001",
-)
 
 
 def report_catalog() -> dict[str, object]:
@@ -1471,6 +1468,16 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-4.14-001-002",
                 "KMIPKIT-REQ-SPEC-3.1-004-002",
                 "KMIPKIT-REQ-SPEC-3.1-005-002",
+                "KMIPKIT-REQ-SPEC-6.1.43-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-007",
+                "KMIPKIT-REQ-SPEC-6.1.43-007",
+                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-011",
+                "KMIPKIT-REQ-SPEC-6.1.43-011",
                 "KMIPKIT-REQ-SPEC-6.1.43-009-002",
                 "KMIPKIT-REQ-SPEC-6.1.43-009-002",
                 "KMIPKIT-REQ-SPEC-6.1.43-009-002",
@@ -1531,6 +1538,8 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.9-001",
                 "KMIPKIT-REQ-SPEC-9.9-001",
                 "KMIPKIT-REQ-SPEC-9.12-001-001",
+                "KMIPKIT-REQ-SPEC-9.12-001-003",
+                "KMIPKIT-REQ-SPEC-9.12-001-003",
                 "KMIPKIT-REQ-SPEC-9.20-001-001",
                 "KMIPKIT-REQ-SPEC-9.20-001-001",
                 "KMIPKIT-REQ-SPEC-9.21-001-001",
@@ -1841,13 +1850,10 @@ mod unrelated {
         self.assertEqual(reserved_tag_requirement["feature_spec"], "KMIPKIT-0004")
         self.assertTrue(reserved_tag_requirement["implementation_refs"])
         self.assertTrue(reserved_tag_requirement["verification_refs"])
-        unassigned_requirements = report.split("## Unassigned requirements\n", 1)[1].split("\n## ", 1)[0]
-        for requirement_id in OUT_OF_SCOPE_TTLV_WIRE_REQUIREMENTS:
-            requirement = requirements[requirement_id]
-            self.assertIsNone(requirement["feature_spec"])
-            self.assertEqual(requirement["implementation_refs"], [])
-            self.assertEqual(requirement["verification_refs"], [])
-            self.assertIn(requirement_id, unassigned_requirements)
+        structure_order_requirement = requirements["KMIPKIT-REQ-SPEC-10.1.2-001"]
+        self.assertEqual(structure_order_requirement["feature_spec"], "KMIPKIT-0005")
+        self.assertTrue(structure_order_requirement["implementation_refs"])
+        self.assertTrue(structure_order_requirement["verification_refs"])
         self.assertIn("BL-M-1-21; mandatory", report)
 
     def test_escapes_markdown_html_newlines_and_control_characters(self) -> None:
