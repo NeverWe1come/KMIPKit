@@ -2983,6 +2983,94 @@ fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs() {
+    // KMIP Specification v2.1 §6.1.57 paragraphs 1–2 and Table 340 define one
+    // chain per Validate request, represented by the two repeatable flat lists.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("one Validate chain per request has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the single-chain SHALL resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the required behavior has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let model = crate::ValidateRequest::new()
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate-one".to_owned(),
+        ))
+        .with_unique_identifier(crate::UniqueIdentifier::Enumeration(0xf123_4567))
+        .with_unique_identifier(crate::UniqueIdentifier::Integer(-7));
+    assert_eq!(model.chain_len(), 5);
+    let payload = model
+        .into_ttlv_payload()
+        .expect("one chain may use repeated Certificate and Unique Identifier list members");
+    assert_eq!(
+        validate_request_payload_tags(&payload),
+        [
+            CERTIFICATE_TAG,
+            CERTIFICATE_TAG,
+            UNIQUE_IDENTIFIER_TAG,
+            UNIQUE_IDENTIFIER_TAG,
+            UNIQUE_IDENTIFIER_TAG
+        ]
+    );
+    let mixed = request_message_with_operation_payload(VALIDATE_OPERATION, payload);
+    assert!(evaluate(Some(&mixed), None));
+    result
+        .validate_request(&mixed)
+        .expect("multiple flat list members compose one Validate request chain");
+
+    let omitted_payload = crate::ValidateRequest::new()
+        .into_ttlv_payload()
+        .expect("Table 340 permits both chain input lists to be omitted");
+    let omitted = request_message_with_operation_payload(VALIDATE_OPERATION, omitted_payload);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the single-chain rule does not require either optional input list");
+
+    let malformed = request_message_with_operation_payload(
+        VALIDATE_OPERATION,
+        structure([tagged(
+            CERTIFICATE_TAG,
+            Value::text_string("not-a-Certificate-Structure".to_owned()),
+        )]),
+    );
+    assert!(!evaluate(Some(&malformed), None));
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("a malformed Certificate field is not a representable chain member");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
 fn profile_maps_validate_repeated_certificates_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Certificate optional
     // and permits it to be repeated in a Validate request.
