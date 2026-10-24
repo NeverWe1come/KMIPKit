@@ -2612,20 +2612,15 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
     const OTHER_OPERATION: u32 = 0x0000_001E;
 
     let correlation = b"server-issued\x00correlation\xff";
-    let poll = request_message_with_operation_payload(
-        POLL_OPERATION,
-        structure([tagged(
+    let correlation_field = || {
+        tagged(
             ASYNC_CORRELATION_VALUE_TAG,
             Value::byte_string(correlation.to_vec()),
-        )]),
-    );
-    let cancel = request_message_with_operation_payload(
-        CANCEL_OPERATION,
-        structure([tagged(
-            ASYNC_CORRELATION_VALUE_TAG,
-            Value::byte_string(correlation.to_vec()),
-        )]),
-    );
+        )
+    };
+    let correlation_payload = || structure([correlation_field()]);
+    let poll = request_message_with_operation_payload(POLL_OPERATION, correlation_payload());
+    let cancel = request_message_with_operation_payload(CANCEL_OPERATION, correlation_payload());
     let other_operation = request_message_with_operation_payload(OTHER_OPERATION, Structure::new());
     let missing_poll_correlation =
         request_message_with_operation_payload(POLL_OPERATION, Structure::new());
@@ -2641,29 +2636,11 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
     );
     let duplicate_poll_correlation = request_message_with_operation_payload(
         POLL_OPERATION,
-        structure([
-            tagged(
-                ASYNC_CORRELATION_VALUE_TAG,
-                Value::byte_string(correlation.to_vec()),
-            ),
-            tagged(
-                ASYNC_CORRELATION_VALUE_TAG,
-                Value::byte_string(correlation.to_vec()),
-            ),
-        ]),
+        structure([correlation_field(), correlation_field()]),
     );
     let duplicate_cancel_correlation = request_message_with_operation_payload(
         CANCEL_OPERATION,
-        structure([
-            tagged(
-                ASYNC_CORRELATION_VALUE_TAG,
-                Value::byte_string(correlation.to_vec()),
-            ),
-            tagged(
-                ASYNC_CORRELATION_VALUE_TAG,
-                Value::byte_string(correlation.to_vec()),
-            ),
-        ]),
+        structure([correlation_field(), correlation_field()]),
     );
     let invalid_requests = [
         &missing_poll_correlation,
@@ -2700,9 +2677,11 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
         assert!(evaluate(Some(&poll), None));
         assert!(evaluate(Some(&cancel), None));
         assert!(evaluate(Some(&other_operation), None));
-        assert!(invalid_requests
-            .iter()
-            .all(|request| !evaluate(Some(request), None)));
+        assert!(
+            invalid_requests
+                .iter()
+                .all(|request| !evaluate(Some(request), None))
+        );
     }
 }
 
