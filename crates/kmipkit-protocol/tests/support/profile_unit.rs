@@ -16422,6 +16422,96 @@ fn profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability() 
 }
 
 #[test]
+fn profile_maps_optional_join_split_key_secret_data_type() {
+    // KMIP Specification v2.1 §6.1.27 paragraph 2 and Table 244 permit the
+    // client to include Secret Data Type for a Secret Data result. Section
+    // 11.52 Table 483 defines the field as an Enumeration.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const SECRET_DATA_OBJECT_TYPE: u32 = 7;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+    const SECRET_DATA_TYPE_TAG: u32 = 0x0042_0086;
+    const VENDOR_SECRET_DATA_TYPE: u32 = 0xF123_4568;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key Secret Data Type has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key Secret Data Type resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional Secret Data Type capability has executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Join Split Key Secret Data Type has a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let with_type = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(SECRET_DATA_OBJECT_TYPE)),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+            tagged(
+                SECRET_DATA_TYPE_TAG,
+                Value::enumeration(VENDOR_SECRET_DATA_TYPE),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&with_type), None));
+    result
+        .validate_request(&with_type)
+        .expect("Secret Data result may include the caller-supplied Enumeration");
+
+    let without_type = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(SECRET_DATA_OBJECT_TYPE)),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&without_type), None));
+    result
+        .validate_request(&without_type)
+        .expect("Secret Data Type remains optional");
+
+    let malformed_type = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(SECRET_DATA_OBJECT_TYPE)),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+            tagged(
+                SECRET_DATA_TYPE_TAG,
+                Value::text_string("Password".to_owned()),
+            ),
+        ]),
+    );
+    assert!(!evaluate(Some(&malformed_type), None));
+}
+
+#[test]
 fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
     // KMIP Specification v2.1 §4.59 paragraph 3 prohibits setting or modifying
     // Usage Limits Count through Add Attribute or Modify Attribute.
