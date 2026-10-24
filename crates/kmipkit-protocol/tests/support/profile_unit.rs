@@ -9533,8 +9533,13 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
         assert!(!evaluate(Some(&correlated_without_indicator), None));
         let error = result
             .validate_request(&correlated_without_indicator)
-            .expect_err("Correlation Value identifies a later request when Init Indicator is absent");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+            .expect_err(
+                "Correlation Value identifies a later request when Init Indicator is absent",
+            );
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(requirement_id));
     }
 }

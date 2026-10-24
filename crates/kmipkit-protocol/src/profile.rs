@@ -3336,6 +3336,94 @@ fn client_key_block_algorithm_requires_length(
     )
 }
 
+const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+const DECRYPT_OPERATION: u32 = 0x0000_0020;
+const CORRELATION_VALUE: u32 = 0x0042_00D6;
+const INITIAL_INDICATOR: u32 = 0x0042_00D7;
+const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA: u32 = 0x0042_00FE;
+const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+
+fn client_encrypt_aad_is_on_initial_request(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_multipart_field_is_initial_only(
+        request,
+        ENCRYPT_OPERATION,
+        AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA,
+    )
+}
+
+fn client_decrypt_aad_is_on_initial_request(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_multipart_field_is_initial_only(
+        request,
+        DECRYPT_OPERATION,
+        AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA,
+    )
+}
+
+fn client_decrypt_tag_is_on_initial_request(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_multipart_field_is_initial_only(request, DECRYPT_OPERATION, AUTHENTICATED_ENCRYPTION_TAG)
+}
+
+fn client_multipart_field_is_initial_only(
+    request: Option<&RequestMessage>,
+    operation: u32,
+    field_tag: u32,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(batch_operation) = batch_item.operation() else {
+            return false;
+        };
+        if batch_operation != operation {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                match field_presence(&payload, CORRELATION_VALUE) {
+                    FieldPresence::Unique(_) => {
+                        return matches!(
+                            field_presence(&payload, field_tag),
+                            FieldPresence::Missing
+                        );
+                    }
+                    FieldPresence::Duplicate => return false,
+                    FieldPresence::Missing => {}
+                }
+
+                let initial_indicator = match field_presence(&payload, INITIAL_INDICATOR) {
+                    FieldPresence::Missing => return true,
+                    FieldPresence::Duplicate => return false,
+                    FieldPresence::Unique(indicator) => indicator.with_value(|value| match value {
+                        ValueView::Boolean(value) => Some(*value),
+                        _ => None,
+                    }),
+                };
+                let Some(is_initial) = initial_indicator else {
+                    return false;
+                };
+
+                match field_presence(&payload, field_tag) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(_) => is_initial,
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_key_block_length_requires_algorithm(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -6521,6 +6609,60 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_encrypt_aad_is_on_initial_request),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_decrypt_aad_is_on_initial_request),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_decrypt_tag_is_on_initial_request),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
