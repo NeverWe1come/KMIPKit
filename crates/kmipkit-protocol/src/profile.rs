@@ -5036,7 +5036,10 @@ fn client_validate_repeated_unique_identifiers_are_usable(
     })
 }
 
-fn client_validate_chain_inputs_are_usable(
+// Validate has one payload with two flat, repeatable lists; list membership is
+// observable here, but the representation cannot identify cryptographic chain
+// boundaries or validate the chain itself.
+fn client_validate_chain_list_members_are_usable(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -7089,7 +7092,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_validate_chain_inputs_are_usable),
+        evaluator: Some(client_validate_chain_list_members_are_usable),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs",
             kind: RuleTestKind::PositiveBehavior,
@@ -7113,7 +7116,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_validate_chain_inputs_are_usable),
+        evaluator: Some(client_validate_chain_list_members_are_usable),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_mixed_chain_inputs_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
