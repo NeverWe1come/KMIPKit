@@ -242,4 +242,4 @@
 
 ## Phase 10: Restore temporary CI coverage threshold waiver
 
-- [ ] T043 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0010 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record the selected-scope and aggregate minimum coverage checks before requesting review or merge.
+- [ ] T043 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0010 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record every minimum coverage check, including normative-generator line coverage and selected-scope/aggregate gates, before requesting review or merge.
