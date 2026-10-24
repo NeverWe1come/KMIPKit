@@ -11,11 +11,13 @@ use super::{
     client_get_or_export_key_compression_type_is_enumeration,
     client_key_value_present_is_not_modified,
     client_key_wrapping_data_is_absent_or_has_required_key_information,
+    client_key_wrapping_data_is_only_present_for_wrapped_key_value,
     client_opaque_object_context_custom_attributes,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
     client_register_opaque_object_has_required_data_fields,
     client_register_random_number_generator_is_well_formed,
+    client_wrapped_key_value_requires_key_wrapping_data,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
     protocol_version_is_kmip_2_1, reconcile_effective_state,
@@ -7079,6 +7081,10 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
     assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
     assert!(!client_key_wrapping_data_is_absent_or_has_required_key_information(None, None));
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        None, None
+    ));
+    assert!(!client_key_wrapping_data_is_only_present_for_wrapped_key_value(None, None));
 }
 
 #[test]
@@ -7185,12 +7191,22 @@ fn profile_requires_key_wrapping_data_for_wrapped_register_and_import_values() {
     };
 
     for request in [
-        register_key_value_wrapping_request(
-            Value::structure(Structure::new()),
-            None,
-        ),
+        register_key_value_wrapping_request(Value::structure(Structure::new()), None),
         register_key_value_wrapping_request(
             Value::byte_string(b"wrapped-register-key".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        import_key_block_wrapping_request(2, 0x0042_008F, Value::structure(Structure::new()), None),
+        import_key_block_wrapping_request(
+            2,
+            0x0042_008F,
+            Value::byte_string(b"wrapped-import-key".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        import_key_block_wrapping_request(
+            9,
+            0x0042_00BD,
+            Value::byte_string(b"wrapped-import-pgp-key".to_vec()),
             Some(valid_secret_data_wrapping()),
         ),
         secret_data_import_request(Value::structure(Structure::new()), None),
@@ -7209,10 +7225,19 @@ fn profile_requires_key_wrapping_data_for_wrapped_register_and_import_values() {
             Value::byte_string(b"wrapped-register-key".to_vec()),
             None,
         ),
-        secret_data_import_request(
-            Value::byte_string(b"wrapped-import-data".to_vec()),
+        import_key_block_wrapping_request(
+            2,
+            0x0042_008F,
+            Value::byte_string(b"wrapped-import-key".to_vec()),
             None,
         ),
+        import_key_block_wrapping_request(
+            9,
+            0x0042_00BD,
+            Value::byte_string(b"wrapped-import-pgp-key".to_vec()),
+            None,
+        ),
+        secret_data_import_request(Value::byte_string(b"wrapped-import-data".to_vec()), None),
     ] {
         let error = result
             .validate_request(&request)
@@ -7238,10 +7263,7 @@ fn profile_omits_key_wrapping_data_for_plaintext_register_and_import_values() {
     };
 
     for request in [
-        register_key_value_wrapping_request(
-            Value::structure(Structure::new()),
-            None,
-        ),
+        register_key_value_wrapping_request(Value::structure(Structure::new()), None),
         register_key_value_wrapping_request(
             Value::byte_string(b"wrapped-register-key".to_vec()),
             Some(valid_secret_data_wrapping()),
@@ -7259,6 +7281,18 @@ fn profile_omits_key_wrapping_data_for_plaintext_register_and_import_values() {
 
     for request in [
         register_key_value_wrapping_request(
+            Value::structure(Structure::new()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        import_key_block_wrapping_request(
+            2,
+            0x0042_008F,
+            Value::structure(Structure::new()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        import_key_block_wrapping_request(
+            9,
+            0x0042_00BD,
             Value::structure(Structure::new()),
             Some(valid_secret_data_wrapping()),
         ),
@@ -7311,6 +7345,56 @@ fn register_key_value_wrapping_request(
                     Value::structure(structure(key_block)),
                 )])),
             ),
+        ]),
+    )
+}
+
+fn import_key_block_wrapping_request(
+    object_type: u32,
+    object_tag: u32,
+    key_value: Value,
+    wrapping_data: Option<Value>,
+) -> crate::RequestMessage {
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SECRET_DATA_OBJECT_TYPE: u32 = 7;
+    const PGP_KEY_OBJECT_TYPE: u32 = 9;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let mut key_block_fields = vec![
+        tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        tagged(KEY_VALUE, key_value),
+    ];
+    if let Some(wrapping_data) = wrapping_data {
+        key_block_fields.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
+    }
+
+    let mut object_fields = Vec::new();
+    if object_type == SECRET_DATA_OBJECT_TYPE {
+        object_fields.push(tagged(SECRET_DATA_TYPE, Value::enumeration(1)));
+    }
+    if object_type == PGP_KEY_OBJECT_TYPE {
+        object_fields.push(tagged(PGP_KEY_VERSION, Value::integer(1)));
+    }
+    object_fields.push(tagged(
+        KEY_BLOCK,
+        Value::structure(structure(key_block_fields)),
+    ));
+
+    request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("test-key".to_owned())),
+            tagged(OBJECT_TYPE, Value::enumeration(object_type)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(object_tag, Value::structure(structure(object_fields))),
         ]),
     )
 }

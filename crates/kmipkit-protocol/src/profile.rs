@@ -2623,6 +2623,126 @@ fn client_key_wrapping_data_is_absent_or_has_required_key_information(
     })
 }
 
+fn client_wrapped_key_value_requires_key_wrapping_data(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_wrapping_rule_holds(request, KeyWrappingRule::WrappedValueRequiresData)
+}
+
+fn client_key_wrapping_data_is_only_present_for_wrapped_key_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_wrapping_rule_holds(request, KeyWrappingRule::DataOnlyForWrappedValue)
+}
+
+fn client_key_wrapping_rule_holds(request: Option<&RequestMessage>, rule: KeyWrappingRule) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| key_wrapping_rule_holds_for_payload(&payload, rule))
+            .unwrap_or(false)
+    })
+}
+
+fn key_wrapping_rule_holds_for_payload(payload: &StructureView<'_>, rule: KeyWrappingRule) -> bool {
+    let object_type_tag = match field_presence(payload, REGISTER_OBJECT_TYPE) {
+        FieldPresence::Missing | FieldPresence::Duplicate => return true,
+        FieldPresence::Unique(object_type) => object_type.with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        }),
+    };
+    let Some(object_type_tag) = object_type_tag else {
+        return true;
+    };
+    let Some(object_tag) = key_block_object_tag(object_type_tag) else {
+        return true;
+    };
+
+    match field_presence(payload, object_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(object) => object.with_value(|value| match value {
+            ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                    ValueView::Structure(key_block) => {
+                        key_wrapping_rule_holds_for_key_block(&key_block, rule)
+                    }
+                    _ => false,
+                }),
+            },
+            _ => false,
+        }),
+    }
+}
+
+fn key_block_object_tag(object_type: u32) -> Option<u32> {
+    match object_type {
+        SYMMETRIC_KEY_OBJECT_TYPE => Some(SYMMETRIC_KEY),
+        PUBLIC_KEY_OBJECT_TYPE => Some(PUBLIC_KEY),
+        PRIVATE_KEY_OBJECT_TYPE => Some(PRIVATE_KEY),
+        SPLIT_KEY_OBJECT_TYPE => Some(SPLIT_KEY),
+        SECRET_DATA_OBJECT_TYPE => Some(SECRET_DATA),
+        PGP_KEY_OBJECT_TYPE => Some(PGP_KEY),
+        _ => None,
+    }
+}
+
+#[derive(Clone, Copy)]
+enum KeyWrappingRule {
+    WrappedValueRequiresData,
+    DataOnlyForWrappedValue,
+}
+
+fn key_wrapping_rule_holds_for_key_block(
+    key_block: &StructureView<'_>,
+    rule: KeyWrappingRule,
+) -> bool {
+    let wrapping_data = field_presence(key_block, KEY_WRAPPING_DATA);
+    if matches!(wrapping_data, FieldPresence::Duplicate) {
+        return false;
+    }
+
+    match field_presence(key_block, KEY_VALUE) {
+        FieldPresence::Missing => match rule {
+            KeyWrappingRule::WrappedValueRequiresData => true,
+            KeyWrappingRule::DataOnlyForWrappedValue => {
+                matches!(wrapping_data, FieldPresence::Missing)
+            }
+        },
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(key_value) => key_value.with_value(|value| match value {
+            ValueView::ByteString(_) => match rule {
+                KeyWrappingRule::WrappedValueRequiresData => {
+                    matches!(wrapping_data, FieldPresence::Unique(_))
+                }
+                KeyWrappingRule::DataOnlyForWrappedValue => true,
+            },
+            ValueView::Structure(_) => match rule {
+                KeyWrappingRule::WrappedValueRequiresData => true,
+                KeyWrappingRule::DataOnlyForWrappedValue => {
+                    matches!(wrapping_data, FieldPresence::Missing)
+                }
+            },
+            _ => false,
+        }),
+    }
+}
+
 fn import_preserves_pgp_key_form_and_opaque_bytes(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -4424,6 +4544,42 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_wrapped_key_value_requires_key_wrapping_data),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_key_wrapping_data_is_only_present_for_wrapped_key_value),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
