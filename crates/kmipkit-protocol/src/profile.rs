@@ -2775,22 +2775,68 @@ fn client_accepts_rng_seed_zero_data_length(
     _request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    let Some((_, response)) = response else {
+    let Some((request, response)) = response else {
         return true;
     };
 
-    response.batch_items().all(|response_item| {
+    let request_items = request.batch_items().collect::<Vec<_>>();
+    if !request_items
+        .iter()
+        .any(|request_item| request_item.operation() == Some(RNG_SEED_OPERATION))
+    {
+        return true;
+    }
+    let response_items = response.batch_items().collect::<Vec<_>>();
+    let mut consumed_responses = vec![false; response_items.len()];
+
+    for (request_index, request_item) in request_items.iter().copied().enumerate() {
+        if request_item.operation() != Some(RNG_SEED_OPERATION) {
+            continue;
+        }
+
+        let response_index =
+            if let Some(request_id) = request_item.with_unique_batch_item_id(<[u8]>::to_vec) {
+                let matching_indices = response_items
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, item)| {
+                        item.with_unique_batch_item_id(|response_id| {
+                            response_id == request_id.as_slice()
+                        })
+                        .filter(|matches| *matches)
+                        .map(|_| index)
+                    })
+                    .collect::<Vec<_>>();
+                match matching_indices.as_slice() {
+                    [] => continue,
+                    [index] => *index,
+                    _ => return false,
+                }
+            } else if request.header().effective_batch_order_option() {
+                if request_index >= response_items.len() {
+                    continue;
+                }
+                request_index
+            } else {
+                return false;
+            };
+
+        if consumed_responses[response_index] {
+            return false;
+        }
+        consumed_responses[response_index] = true;
+        let response_item = response_items[response_index];
         if response_item.operation() != Some(RNG_SEED_OPERATION) {
-            return true;
+            return false;
         }
         let Some(status) = response_item.result_status() else {
             return false;
         };
         if status.raw() != RESULT_STATUS_SUCCESS {
-            return true;
+            continue;
         }
 
-        response_item
+        let data_length_is_well_formed = response_item
             .with_response_payload(|payload| {
                 // §6.1.50 Table 320 requires Data Length; the paragraph above
                 // the table permits a successful value of zero.
@@ -2801,8 +2847,12 @@ fn client_accepts_rng_seed_zero_data_length(
                 };
                 data_length.with_value(|value| matches!(value, ValueView::Integer(_)))
             })
-            .unwrap_or(false)
-    })
+            .unwrap_or(false);
+        if !data_length_is_well_formed {
+            return false;
+        }
+    }
+    true
 }
 
 fn client_create_key_pair_domain_parameters_have_valid_wire_types(
