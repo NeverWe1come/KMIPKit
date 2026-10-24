@@ -98108,7 +98108,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §7.18 requires a client to include Key Wrapping Specification when requesting a wrapped key. Get Table 220 exposes Key Wrapping Specification as an optional request item; the focused profile test verifies that the client can express a wrapped-key request and that a request without that option remains accepted without inferring wrapped-key intent. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 requires a client to include Key Wrapping Specification when requesting a wrapped key. Get Table 220 exposes Key Wrapping Specification as an optional request item; the focused profile test verifies that the client can express a wrapped-key request and that a request without that option remains accepted without inferring wrapped-key intent. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-002",
@@ -98202,7 +98202,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §7.18 Table 370 requires Encryption Key Information when MAC/Signature Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires Encryption Key Information when MAC/Signature Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-005",
@@ -98236,7 +98236,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §7.18 Table 370 requires MAC/Signature Key Information when Encryption Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires MAC/Signature Key Information when Encryption Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-006",

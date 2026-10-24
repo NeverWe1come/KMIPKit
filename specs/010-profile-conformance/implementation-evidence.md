@@ -5507,6 +5507,21 @@ Mapped `KMIPKIT-REQ-SPEC-7.18-001-001` from KMIP Specification v2.1 §7.18. Get 
 | Refactor | DCO commit `0deb17a1`; renamed the evaluator to `client_supports_get_wrapped_key_request` to distinguish API capability evidence from inferring caller intent | PASS: all 946 protocol library tests, protocol Clippy, formatting, and diff checks. |
 | Catalog and traceability | Catalog validator; profile generator `--check`; report generator `--check`; typed profile traceability test | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and report are current; typed references resolve. |
 | Report regression | Full `test_report` run found one stale mapping-order snapshot; the expected order was corrected and `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` passes in isolation | PASS for corrected failing test; full suite rerun remains part of exact-head CI. |
-| Hosted CI | Exact-head run after publishing this batch | Pending. Current PR run `40062079953` targets prior head `23cfd0db` and remains in progress. |
+| Hosted CI | Prior PR head `23cfd0db`, run `40062079953` | Completed with failures only in Script Contracts on Ubuntu, Windows, and macOS. Those failures were the catalog evidence contract requiring the `pinned` marker in three reviewed notes (`7.18-001-001`, `7.18-004`, and `7.18-005`); the catalog correction now adds that marker, and the focused contract regression passes locally. Exact-head hosted CI remains pending publication of this batch. |
 
 Baseline Client now has 102 valid executable typed mappings of 265 assigned requirements; 163 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Get return controls (2026-10-24)
+
+Mapped the four optional request controls from KMIP Specification v2.1 §6.1.19 Table 220: Key Format Type (`KMIPKIT-REQ-SPEC-6.1.19-003`), Key Wrap Type (`-004`), Key Compression Type (`-005`), and Key Wrapping Specification (`-006`). The typed rule preserves unknown/future Enumeration values, rejects malformed or duplicate Enumeration controls, and validates that supplied Key Wrapping Specification is a Structure. These mappings provide client request representation evidence only; they do not claim server behavior, official Test Case execution, or profile conformance.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `32a52d1d`; focused test `profile_maps_optional_get_return_format_controls` | Expected failure: these four requirements had no typed profile mappings. |
+| Green | DCO commit `6b00e791`; typed profile evaluators, catalog links, generated report and traceability snapshots | PASS: valid optional values are accepted, future Enumeration values are preserved, malformed/duplicate fields and wrong Key Wrapping Specification types are rejected. |
+| Refactor | DCO commit `7d6dfb0e`; split the long profile test into focused helpers | PASS: protocol tests, Clippy, formatting, and diff checks passed on the final refactor revision. |
+| Catalog and generated outputs | Catalog validator; profile generator `--check`; coverage report regeneration and `--check`; typed traceability test | PASS: catalog and generated evidence contain all four mappings. |
+| Hosted CI | Prior PR head `23cfd0db`, run `40062079953` | Completed. Core, platform, adapter, coverage, and inventory jobs passed. Script Contracts failed on Ubuntu, Windows, and macOS because reviewed notes for `7.18-001-001`, `7.18-004`, and `7.18-005` lacked the `pinned` marker. The catalog notes are corrected in this batch; exact-head hosted CI remains pending. |
+
+Baseline Client now has 106 valid executable typed mappings of 265 assigned requirements; 159 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
