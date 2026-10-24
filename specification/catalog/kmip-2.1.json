@@ -94271,15 +94271,17 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/join_split_key.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.27 Table 244 marks Unique Identifier as required and repeatable. The typed Join Split Key model and Baseline Client profile test preserve and accept multiple ordered Unique Identifier entries. This is client request representation evidence only; it does not claim server handling of repeated identifiers or split-key combination. No requirement-specific official Test Cases ID is explicitly linked by the pinned official OASIS Test Cases inventory. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-001",

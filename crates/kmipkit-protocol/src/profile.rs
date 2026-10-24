@@ -7677,6 +7677,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_join_split_key_has_validated_identifier_entries),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
         source_gap_id: None,
