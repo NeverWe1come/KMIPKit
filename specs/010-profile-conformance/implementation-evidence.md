@@ -5364,3 +5364,18 @@ Mapped Baseline Client requirement `KMIPKIT-REQ-SPEC-9.12-001-003` from KMIP Spe
 | Hosted CI | Exact-head PR run after publishing this batch | Pending. |
 
 Baseline now has 93 typed mappings of 265 assigned requirements; 172 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`.
+
+### KMIPKIT-0010 T040 — Register request Table 291 required fields (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.43-001` from KMIP Specification v2.1 §6.1.43 Table 291. Every outbound Register Batch Item must carry one Object Type Enumeration and one Attributes Structure. The typed rule is limited to requests, preserves future Object Type values and empty Attributes, and leaves unrelated operations and responses unchanged. Existing request construction evidence verifies the Table 291 field order and object preservation. The pinned OASIS source does not link a requirement-specific official Test Case.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `45ba3505`; focused `profile_maps_register_object_type_and_attributes_as_required` test | Expected failure: no typed rule mapping existed for the required Register fields. |
+| Green | DCO commit `5f7947de`; typed evaluator and registry entry, traceability allowlist, regenerated coverage report | PASS: valid, missing, duplicate, and wrong-type Register fields are checked; future enum values and empty Attributes remain accepted. |
+| Refactor | DCO commit `9817d51d`; extracted Table 291 payload-shape check from batch traversal | PASS: focused Register profile test and format check pass. |
+| Protocol tests and lint | `cargo test -p kmipkit-protocol --all-features --locked`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings` | PASS: 937 protocol tests; Clippy clean. |
+| Traceability and generation | Catalog validation; profile generator `--check`; report `--check`; typed-rule traceability test; `cargo fmt --all --check`; `git diff --check` | PASS. Generated coverage currently recognizes 89 of 265 Baseline requirements as valid executable typed mappings. The registry contains 94 requirement IDs, but five encoding-only entries still lack an evaluator and are correctly excluded from the executable coverage count. |
+| Hosted CI | PR run `40044944295` on published head `9de15819` | The run does not include this local increment; latest observed status was 25 checks passed and 7 in progress. Push after a coherent batch is required for exact-head evidence. |
+
+T040 remains open: 89/265 requirements have valid executable typed mappings and 176 remain unresolved in the generated coverage report. Three mandatory fixtures remain blocked and 77 profile cases remain unavailable. Readiness remains `evidence_incomplete`; no profile-conformance claim is made.
