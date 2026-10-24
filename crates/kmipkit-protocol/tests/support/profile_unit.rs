@@ -1387,9 +1387,11 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-10.1.5-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
-    assert_required_ttlv_mapping(
+    assert_required_configuration_mapping(
         REQUIREMENT_ID,
         SOURCE_CLAUSE_ID,
+        "encoding",
+        "ttlv",
         &[
             "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
             "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
@@ -1406,9 +1408,11 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
         .expect("the TTLV encoding constraint does not add request-payload restrictions");
 }
 
-fn assert_required_ttlv_mapping(
+fn assert_required_configuration_mapping(
     requirement_id: &str,
     source_clause_id: &str,
+    constraint_key: &'static str,
+    constraint_value: &'static str,
     expected_test_ids: &[&str],
 ) {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -1423,7 +1427,13 @@ fn assert_required_ttlv_mapping(
         GeneratedVerificationCategory::RequiredBehavior
     );
     assert!(mapping.evaluator.is_none());
-    assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: constraint_key,
+            value: constraint_value,
+        }]
+    );
     assert_eq!(
         mapping
             .test_evidence
@@ -1477,7 +1487,13 @@ fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
     ];
 
     for (requirement_id, source_clause_id, expected_test_ids) in expected_mappings {
-        assert_required_ttlv_mapping(requirement_id, source_clause_id, expected_test_ids);
+        assert_required_configuration_mapping(
+            requirement_id,
+            source_clause_id,
+            "encoding",
+            "ttlv",
+            expected_test_ids,
+        );
     }
 
     let result = ProfileValidationResult {
@@ -1522,38 +1538,13 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
     ];
 
     for (requirement_id, expected_test_ids) in expected_mappings {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == *requirement_id)
-            .unwrap_or_else(|| panic!("{requirement_id} has a typed profile mapping"));
-        assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-10.4-001");
-        assert_eq!(
-            mapping.verification_category,
-            GeneratedVerificationCategory::RequiredBehavior
+        assert_required_configuration_mapping(
+            requirement_id,
+            "KMIPKIT-CLAUSE-SPEC-10.4-001",
+            "transport_security",
+            "tls13",
+            expected_test_ids,
         );
-        assert!(mapping.evaluator.is_none());
-        assert_eq!(
-            mapping.constraints,
-            &[RuleConstraint {
-                key: "transport_security",
-                value: "tls13",
-            }]
-        );
-        assert_eq!(
-            mapping
-                .test_evidence
-                .iter()
-                .map(|evidence| evidence.test_id)
-                .collect::<Vec<_>>(),
-            *expected_test_ids
-        );
-
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == *requirement_id)
-            .unwrap_or_else(|| panic!("{requirement_id} is generated for the client profile"));
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .unwrap_or_else(|error| panic!("{requirement_id} maps to TLS evidence: {error}"));
     }
 
     let result = ProfileValidationResult {
