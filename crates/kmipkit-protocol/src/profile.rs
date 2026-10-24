@@ -1384,36 +1384,19 @@ fn client_get_optional_enumeration_is_well_formed(
     request: Option<&RequestMessage>,
     option_tag: u32,
 ) -> bool {
-    let Some(request) = request else {
-        return false;
-    };
-
-    request.batch_items().all(|batch_item| {
-        let Some(operation) = batch_item.operation() else {
-            return false;
-        };
-        if operation != GET_OPERATION {
-            return true;
-        }
-
-        batch_item
-            .with_request_payload(|payload| {
-                let mut option_seen = false;
-                payload
-                    .children()
-                    .iter()
-                    .filter(|field| field.tag().raw() == option_tag)
-                    .all(|field| {
-                        !std::mem::replace(&mut option_seen, true)
-                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
-                    })
-            })
-            .unwrap_or(false)
-    })
+    client_optional_enumeration_is_well_formed(request, GET_OPERATION, option_tag)
 }
 
 fn client_export_optional_enumeration_is_well_formed(
     request: Option<&RequestMessage>,
+    option_tag: u32,
+) -> bool {
+    client_optional_enumeration_is_well_formed(request, EXPORT_OPERATION, option_tag)
+}
+
+fn client_optional_enumeration_is_well_formed(
+    request: Option<&RequestMessage>,
+    selected_operation: u32,
     option_tag: u32,
 ) -> bool {
     let Some(request) = request else {
@@ -1424,7 +1407,7 @@ fn client_export_optional_enumeration_is_well_formed(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != EXPORT_OPERATION {
+        if operation != selected_operation {
             return true;
         }
 

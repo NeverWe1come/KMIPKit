@@ -101164,15 +101164,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Format Type (HTML lines 26902-26917) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Format Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Format Type row (HTML lines 26902-26917) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not prove the server returns the selected format. No requirement-specific official Test Case is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
@@ -101210,15 +101212,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 request payload row Key Wrap Type (HTML lines 26918-26933) records optional_table_body_value. This table-field classification is distinct from RFC keywords. The linked local Rust request test verifies positive encoding of the caller-selected Key Wrap Type selector; the local request tests do not assert server-side behavior. No requirement-specific official Test Cases ID is explicitly linked by pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed. The combined test's incidental empty-request Unique Identifier assertion creates no Unique Identifier omission requirement here; this label covers only this selector."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Wrap Type row (HTML lines 26918-26933) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not prove the server returns the selected wrap type. No requirement-specific official Test Case is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",

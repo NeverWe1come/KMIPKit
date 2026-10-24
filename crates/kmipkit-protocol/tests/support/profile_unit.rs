@@ -5089,6 +5089,14 @@ fn profile_maps_client_export_optional_format_and_wrap_selectors() {
         .validate_request(&omitted)
         .expect("the optional Export Key Wrap Type remains omittable");
 
+    let unrelated = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    format_result
+        .validate_request(&unrelated)
+        .expect("Export selectors do not constrain unrelated operations");
+    wrap_result
+        .validate_request(&unrelated)
+        .expect("Export selectors do not constrain unrelated operations");
+
     for (result, selector_tag) in [
         (format_result, KEY_FORMAT_TYPE_SELECTOR_TAG),
         (wrap_result, KEY_WRAP_TYPE_SELECTOR_TAG),
