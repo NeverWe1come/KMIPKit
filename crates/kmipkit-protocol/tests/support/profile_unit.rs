@@ -96,6 +96,9 @@ const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const DERIVE_KEY_DERIVATION_METHOD_TAG: u32 = 0x0042_0031;
+const DERIVE_KEY_DERIVATION_PARAMETERS_TAG: u32 = 0x0042_0032;
+const DERIVE_KEY_SALT_TAG: u32 = 0x0042_0084;
+const DERIVE_KEY_ITERATION_COUNT_TAG: u32 = 0x0042_003C;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
@@ -1942,6 +1945,142 @@ fn profile_maps_required_derive_key_derivation_method() {
     result
         .validate_request(&unrelated_operation)
         .expect("the Derive Key method requirement does not inspect other operations");
+}
+
+#[test]
+fn profile_maps_required_derive_key_parameters() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 marks Derivation Parameters required.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-012";
+    const SOURCE_GAP_ID: &str =
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PBKDF2_METHOD: u32 = 1;
+    const FUTURE_METHOD: u32 = 0xF123_4567;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("required Derive Key parameters have an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derivation Parameters resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the table-row mapping preserves its source gap and evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let parameters = || {
+        structure([
+            tagged(
+                DERIVE_KEY_SALT_TAG,
+                Value::byte_string(vec![0xA5; 16]),
+            ),
+            tagged(
+                DERIVE_KEY_ITERATION_COUNT_TAG,
+                Value::integer(1_000),
+            ),
+        ])
+    };
+
+    for method in [PBKDF2_METHOD, FUTURE_METHOD] {
+        let request = request_message_with_operation_payload(
+            DERIVE_KEY_OPERATION,
+            structure([
+                tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::enumeration(method)),
+                tagged(
+                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                    Value::structure(parameters()),
+                ),
+            ]),
+        );
+        result
+            .validate_request(&request)
+            .expect("Derive Key carries its method parameters in a Structure");
+    }
+
+    for malformed in [
+        Structure::new(),
+        structure([
+            tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(PBKDF2_METHOD),
+            ),
+            tagged(
+                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                Value::integer(1),
+            ),
+        ]),
+        structure([
+            tagged(
+                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                Value::structure(parameters()),
+            ),
+            tagged(
+                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                Value::structure(parameters()),
+            ),
+        ]),
+    ] {
+        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Derive Key requires exactly one Derivation Parameters Structure");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), None);
+        assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+    }
+
+    let batch_with_missing_parameters = request_message_with_batch_operations([
+        (
+            DERIVE_KEY_OPERATION,
+            structure([
+                tagged(
+                    DERIVE_KEY_DERIVATION_METHOD_TAG,
+                    Value::enumeration(PBKDF2_METHOD),
+                ),
+                tagged(
+                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                    Value::structure(parameters()),
+                ),
+            ]),
+        ),
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(PBKDF2_METHOD),
+            )]),
+        ),
+    ]);
+    let error = result
+        .validate_request(&batch_with_missing_parameters)
+        .expect_err("a valid Derive Key item does not hide missing parameters in another item");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+
+    let unrelated_operation = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+            Value::integer(1),
+        )]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derivation Parameters rule does not inspect other operations");
 }
 
 #[test]
