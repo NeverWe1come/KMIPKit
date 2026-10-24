@@ -4726,6 +4726,20 @@ fn profile_maps_reprovision_certificate_request_forms() {
             ])),
         )]),
         structure([tagged(
+            CERTIFICATE_TAG,
+            Value::structure(structure([tagged(
+                CERTIFICATE_TYPE_TAG,
+                Value::enumeration(1),
+            )])),
+        )]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(structure([tagged(
+                CERTIFICATE_REQUEST_VALUE_TAG,
+                Value::byte_string(b"request".to_vec()),
+            )])),
+        )]),
+        structure([tagged(
             CERTIFICATE_REQUEST_TAG,
             Value::structure(structure([
                 tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(2)),
