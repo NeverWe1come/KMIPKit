@@ -735,6 +735,7 @@ const SIGNATURE_VERIFY_DATA: u32 = 0x0042_00C2;
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+const JOIN_SPLIT_KEY_OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const CHECK_OPERATION: u32 = 0x0000_0009;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
@@ -1873,6 +1874,52 @@ fn join_split_key_identifier_entries_are_well_formed(payload: &StructureView<'_>
     });
 
     valid_entries && identifier_count > 0
+}
+
+fn client_join_split_key_secret_data_type_is_valid_when_applicable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != JOIN_SPLIT_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, JOIN_SPLIT_KEY_OBJECT_TYPE_TAG)
+                else {
+                    // Object Type is a separate operation requirement. This optional rule
+                    // only checks Secret Data Type when its condition is observable.
+                    return true;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return true;
+                };
+                if object_type != SECRET_DATA_OBJECT_TYPE {
+                    return true;
+                }
+
+                match field_presence(&payload, SECRET_DATA_TYPE) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Unique(secret_data_type) => secret_data_type
+                        .with_value(|value| matches!(value, ValueView::Enumeration(_))),
+                    FieldPresence::Duplicate => false,
+                }
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
@@ -7674,6 +7721,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_join_split_key_secret_data_type_is_valid_when_applicable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_join_split_key_secret_data_type",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

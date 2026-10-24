@@ -204,13 +204,13 @@ fn public_request_views_preserve_local_thresholds_and_optional_fields() {
     let attributes = AttributeSet::try_new([item(0x0042_0028, Value::enumeration(3))])
         .expect("fixture attribute is valid");
     let request = JoinSplitKeyRequest::new(
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         vec![first, reference("split-b", 2)],
     )
     .with_secret_data_type(0xF123_4568)
     .with_attributes(attributes)
     .with_protection_storage_masks(structure([item(0x0042_015E, Value::integer(2))]));
-    assert_eq!(request.object_type(), ObjectType::from_raw(8));
+    assert_eq!(request.object_type(), ObjectType::from_raw(7));
     assert_eq!(request.references().len(), 2);
     assert_eq!(request.references()[1].split_key_threshold(), Some(2));
     assert_eq!(request.secret_data_type(), Some(0xF123_4568));
