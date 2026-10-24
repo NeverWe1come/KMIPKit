@@ -801,6 +801,9 @@ const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_OPAQUE_OBJECT: u32 = 0x0042_005B;
+const CERTIFICATE: u32 = 0x0042_0013;
+const CERTIFICATE_VALUE: u32 = 0x0042_001E;
+const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
 const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
@@ -2458,6 +2461,211 @@ fn client_register_length_requires_algorithm(
     )
 }
 
+fn client_register_algorithm_may_be_in_key_block(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_register_table293_pair_may_be_in_key_block(request)
+}
+
+fn client_register_length_may_be_in_key_block(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_register_table293_pair_may_be_in_key_block(request)
+}
+
+fn client_register_table293_pair_may_be_in_key_block(request: Option<&RequestMessage>) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_table293_pair_omission_is_backed_by_key_block(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_table293_pair_omission_is_backed_by_key_block(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type == SECRET_DATA_OBJECT_TYPE || !register_table293_object_type_applies(object_type)
+    {
+        return true;
+    }
+
+    let FieldPresence::Unique(attributes) = field_presence(payload, REGISTER_ATTRIBUTES) else {
+        return false;
+    };
+    attributes.with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            match (
+                field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM),
+                field_presence(&attributes, CRYPTOGRAPHIC_LENGTH),
+            ) {
+                (FieldPresence::Unique(algorithm), FieldPresence::Unique(length)) => {
+                    register_table293_attribute_has_type(&algorithm, CRYPTOGRAPHIC_ALGORITHM)
+                        && register_table293_attribute_has_type(&length, CRYPTOGRAPHIC_LENGTH)
+                }
+                (FieldPresence::Missing, FieldPresence::Missing) => {
+                    register_payload_key_block_has_attribute(payload, CRYPTOGRAPHIC_ALGORITHM)
+                        && register_payload_key_block_has_attribute(payload, CRYPTOGRAPHIC_LENGTH)
+                }
+                _ => false,
+            }
+        }
+        _ => false,
+    })
+}
+
+fn register_payload_key_block_has_attribute(payload: &StructureView<'_>, tag: u32) -> bool {
+    let mut object_fields = payload.children().iter().filter(|field| {
+        !matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        )
+    });
+    let Some(object) = object_fields.next() else {
+        return false;
+    };
+    if object_fields.next().is_some() {
+        return false;
+    }
+
+    object.with_value(|value| match value {
+        ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+            FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => {
+                    register_key_block_has_table293_attribute(&key_block, tag)
+                }
+                _ => false,
+            }),
+            FieldPresence::Missing | FieldPresence::Duplicate => false,
+        },
+        _ => false,
+    })
+}
+
+fn register_key_block_has_table293_attribute(key_block: &StructureView<'_>, tag: u32) -> bool {
+    match field_presence(key_block, tag) {
+        FieldPresence::Unique(attribute) => {
+            return register_table293_attribute_has_type(&attribute, tag);
+        }
+        FieldPresence::Duplicate => return false,
+        FieldPresence::Missing => {}
+    }
+
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    key_value.with_value(|value| match value {
+        ValueView::Structure(key_value) => {
+            let FieldPresence::Unique(attributes) = field_presence(&key_value, ATTRIBUTES) else {
+                return false;
+            };
+            attributes.with_value(|value| match value {
+                ValueView::Structure(attributes) => match field_presence(&attributes, tag) {
+                    FieldPresence::Unique(attribute) => {
+                        register_table293_attribute_has_type(&attribute, tag)
+                    }
+                    FieldPresence::Missing | FieldPresence::Duplicate => false,
+                },
+                _ => false,
+            })
+        }
+        _ => false,
+    })
+}
+
+fn client_register_signature_algorithm_may_be_in_certificate(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_certificate_signature_algorithm_is_covered(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_certificate_signature_algorithm_is_covered(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != CERTIFICATE_OBJECT_TYPE {
+        return true;
+    }
+
+    let FieldPresence::Unique(attributes) = field_presence(payload, REGISTER_ATTRIBUTES) else {
+        return false;
+    };
+    attributes.with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            match field_presence(&attributes, DIGITAL_SIGNATURE_ALGORITHM) {
+                FieldPresence::Unique(algorithm) => {
+                    algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                }
+                FieldPresence::Duplicate => false,
+                FieldPresence::Missing => register_certificate_value_is_present(payload),
+            }
+        }
+        _ => false,
+    })
+}
+
+fn register_certificate_value_is_present(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(certificate) = field_presence(payload, CERTIFICATE) else {
+        return false;
+    };
+    certificate.with_value(|value| match value {
+        ValueView::Structure(certificate) => {
+            match field_presence(&certificate, CERTIFICATE_VALUE) {
+                FieldPresence::Unique(value) => {
+                    value.with_value(|value| matches!(value, ValueView::ByteString(_)))
+                }
+                FieldPresence::Missing | FieldPresence::Duplicate => false,
+            }
+        }
+        _ => false,
+    })
+}
+
 fn client_register_table293_outer_attribute_pair(
     request: Option<&RequestMessage>,
     trigger_tag: u32,
@@ -3940,6 +4148,60 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_algorithm_may_be_in_key_block),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_length_may_be_in_key_block),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-011",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_signature_algorithm_may_be_in_certificate),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
