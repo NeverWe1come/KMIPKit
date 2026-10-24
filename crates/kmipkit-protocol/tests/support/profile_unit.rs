@@ -1021,6 +1021,21 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
         RNG_SEED_OPERATION,
         structure([tagged(DATA_LENGTH, Value::integer(0))]),
     );
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the RNG Seed response requirement has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the RNG Seed response requirement has generated metadata");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-6.1.50-001");
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the RNG Seed response rule has category-appropriate test evidence");
     let validation = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],

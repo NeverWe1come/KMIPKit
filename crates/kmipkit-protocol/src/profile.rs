@@ -823,6 +823,8 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const ENCODING_OPTION: u32 = 0x0042_00A3;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const RNG_SEED_OPERATION: u32 = 0x0000_0026;
+const RNG_SEED_DATA_LENGTH: u32 = 0x0042_00D5;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CREATE_KEY_PAIR_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
@@ -2767,6 +2769,43 @@ fn client_response_preserves_x509_optional_values(
                 })
                 .unwrap_or(true)
         })
+}
+
+fn client_accepts_rng_seed_zero_data_length(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((_, response)) = response else {
+        return true;
+    };
+
+    response.batch_items().all(|response_item| {
+        if response_item.operation() != Some(RNG_SEED_OPERATION) {
+            return true;
+        }
+        let Some(status) = response_item.result_status() else {
+            return false;
+        };
+        if status.raw() != RESULT_STATUS_SUCCESS {
+            return true;
+        }
+
+        response_item
+            .with_response_payload(|payload| {
+                // §6.1.50 Table 320 requires Data Length; the paragraph above
+                // the table permits a successful value of zero.
+                let mut data_lengths = payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == RNG_SEED_DATA_LENGTH);
+                let Some(data_length) = data_lengths.next() else {
+                    return false;
+                };
+                data_lengths.next().is_none()
+                    && data_length.with_value(|value| matches!(value, ValueView::Integer(_)))
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_create_key_pair_domain_parameters_have_valid_wire_types(
@@ -6614,6 +6653,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.50-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_accepts_rng_seed_zero_data_length),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],

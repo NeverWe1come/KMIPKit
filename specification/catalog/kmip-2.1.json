@@ -79555,7 +79555,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The verification_refs identify project tests only; they do not imply an official fixture or interoperability pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3-003",
@@ -96799,6 +96799,7 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes",
         "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
         "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used"
       ],
