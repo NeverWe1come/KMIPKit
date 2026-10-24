@@ -7293,6 +7293,118 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
 }
 
 #[test]
+fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 permits these omissions only
+    // when the corresponding information is carried by the Key Block/Certificate.
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const ALGORITHM_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
+    const LENGTH_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-010";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
+    const SIGNATURE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-011";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions";
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+    const CERTIFICATE_LENGTH_TAG: u32 = 0x0042_00AD;
+
+    for (requirement_id, source_clause_id) in [
+        (ALGORITHM_REQUIREMENT_ID, ALGORITHM_CLAUSE_ID),
+        (LENGTH_REQUIREMENT_ID, LENGTH_CLAUSE_ID),
+        (SIGNATURE_REQUIREMENT_ID, SIGNATURE_CLAUSE_ID),
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the conditional Register metadata omission has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the conditional Register requirement resolves to generated metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::OptionalCapability
+        );
+        validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+            .expect("the conditional omission has usable positive evidence");
+        assert!(mapping.evaluator.is_some());
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == PROFILE_TEST_ID
+                && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+        }));
+    }
+
+    let key_block_request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, true, None),
+            [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
+        ),
+    );
+    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+        table12_profile_result(&[requirement_id])
+            .validate_request(&key_block_request)
+            .expect("Algorithm and Length may be omitted from Attributes when in the Key Block");
+    }
+
+    let incomplete_key_block_request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, false, None),
+            [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
+        ),
+    );
+    let error = table12_profile_result(&[LENGTH_REQUIREMENT_ID])
+        .validate_request(&incomplete_key_block_request)
+        .expect_err("omitted Key Block Length must be represented");
+    assert_eq!(error.requirement_id(), Some(LENGTH_REQUIREMENT_ID));
+
+    let certificate_request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(TABLE12_OBJECT_TYPE, Value::enumeration(1)),
+            tagged(
+                TABLE12_ATTRIBUTES,
+                Value::structure(structure([
+                    tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+                    tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+                    tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+                    tagged(CERTIFICATE_LENGTH_TAG, Value::integer(4)),
+                ])),
+            ),
+            tagged(
+                CERTIFICATE_TAG,
+                Value::structure(structure([
+                    tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+                    tagged(
+                        CERTIFICATE_VALUE_TAG,
+                        Value::byte_string(b"caller-supplied-certificate".to_vec()),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+    table12_profile_result(&[SIGNATURE_REQUIREMENT_ID])
+        .validate_request(&certificate_request)
+        .expect("Digital Signature Algorithm may be omitted when carried by Certificate");
+
+    let certificate_without_value = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(TABLE12_OBJECT_TYPE, Value::enumeration(1)),
+            tagged(TABLE12_ATTRIBUTES, Value::structure(Structure::new())),
+        ]),
+    );
+    let error = table12_profile_result(&[SIGNATURE_REQUIREMENT_ID])
+        .validate_request(&certificate_without_value)
+        .expect_err("Digital Signature Algorithm cannot be omitted without a Certificate");
+    assert_eq!(error.requirement_id(), Some(SIGNATURE_REQUIREMENT_ID));
+}
+
+#[test]
 fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     // KMIP Specification v2.1 §6.1.43 Table 293 pairs the outer Register
     // Attributes. §§3.1–3.2 separately describe Key Block and Key Value data.
