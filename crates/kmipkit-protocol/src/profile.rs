@@ -2494,7 +2494,7 @@ fn import_preserves_wrapped_secret_data_shape(
     })
 }
 
-fn client_key_wrapping_data_has_required_key_information(
+fn client_key_wrapping_data_is_absent_or_has_required_key_information(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -4290,7 +4290,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
             kind: RuleTestKind::OptionalCapabilityUsable,
@@ -4302,7 +4302,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
             kind: RuleTestKind::OptionalCapabilityUsable,
@@ -4314,7 +4314,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
             kind: RuleTestKind::PositiveBehavior,

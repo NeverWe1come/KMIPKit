@@ -10,7 +10,7 @@ use super::{
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
     client_key_value_present_is_not_modified,
-    client_key_wrapping_data_has_required_key_information,
+    client_key_wrapping_data_is_absent_or_has_required_key_information,
     client_opaque_object_context_custom_attributes,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
@@ -6978,7 +6978,7 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
     assert!(!import_preserves_wrapped_secret_data_shape(None, None));
     assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
-    assert!(!client_key_wrapping_data_has_required_key_information(
+    assert!(!client_key_wrapping_data_is_absent_or_has_required_key_information(
         None, None
     ));
 }
