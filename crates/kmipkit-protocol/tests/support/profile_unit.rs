@@ -3960,10 +3960,9 @@ fn delegated_login_profile_result(requirement_id: &str) -> ProfileValidationResu
 }
 
 fn delegated_login_rights() -> Structure {
-    structure([tagged(
-        DELEGATED_LOGIN_RIGHT_TAG,
-        Value::structure(Structure::new()),
-    )])
+    // Table 387 does not require a Right member; this isolates Table 199's
+    // required Rights field from the Right member's separate semantics.
+    Structure::new()
 }
 
 fn delegated_login_usage_limits() -> Structure {
@@ -4153,10 +4152,27 @@ fn profile_maps_client_delegated_login_rights_as_required_structure() {
         .validate_request(&valid)
         .expect("a Delegated Login request with Rights is valid");
 
-    let missing = request_message_with_operation_payload(
+    let repeated_rights = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
-        Structure::new(),
+        crate::DelegatedLoginRequest::new(structure([
+            tagged(
+                DELEGATED_LOGIN_RIGHT_TAG,
+                Value::structure(Structure::new()),
+            ),
+            tagged(
+                DELEGATED_LOGIN_RIGHT_TAG,
+                Value::structure(Structure::new()),
+            ),
+        ]))
+        .into_ttlv_payload()
+        .expect("Table 387 permits repeated Right members"),
     );
+    result
+        .validate_request(&repeated_rights)
+        .expect("repeated Right Structures are valid");
+
+    let missing =
+        request_message_with_operation_payload(DELEGATED_LOGIN_OPERATION_TAG, Structure::new());
     assert!(result.validate_request(&missing).is_err());
 
     let malformed = request_message_with_operation_payload(
@@ -4164,6 +4180,17 @@ fn profile_maps_client_delegated_login_rights_as_required_structure() {
         structure([tagged(DELEGATED_LOGIN_RIGHTS_TAG, Value::integer(1))]),
     );
     assert!(result.validate_request(&malformed).is_err());
+
+    let malformed_right = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(structure([tagged(
+            DELEGATED_LOGIN_RIGHT_TAG,
+            Value::integer(1),
+        )]))
+        .into_ttlv_payload()
+        .expect("a generic TTLV Right with the wrong type remains representable"),
+    );
+    assert!(result.validate_request(&malformed_right).is_err());
 
     let unrelated_operation = request_message_with_operation_payload(
         LOCATE_OPERATION_TAG,
