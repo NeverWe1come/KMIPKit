@@ -9530,6 +9530,67 @@ fn assert_multipart_aead_request_placement(
     assert_eq!(error.requirement_id(), Some(requirement_id));
 }
 
+fn assert_multipart_aead_malformed_requests_fail_closed(
+    requirement_id: &str,
+    operation: u32,
+    field_tag: u32,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("multipart AEAD requirement has a typed evaluator");
+    let evaluate = mapping
+        .evaluator
+        .expect("multipart AEAD placement has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_000A, Structure::new());
+    assert!(evaluate(Some(&unrelated_operation), None));
+
+    let duplicate_correlation = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(
+                MULTIPART_AEAD_CORRELATION_VALUE_TAG,
+                Value::byte_string(b"correlation-a".to_vec()),
+            ),
+            tagged(
+                MULTIPART_AEAD_CORRELATION_VALUE_TAG,
+                Value::byte_string(b"correlation-b".to_vec()),
+            ),
+        ]),
+    );
+    assert!(!evaluate(Some(&duplicate_correlation), None));
+
+    let duplicate_initial_indicator = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(MULTIPART_AEAD_INITIAL_INDICATOR_TAG, Value::boolean(true)),
+            tagged(MULTIPART_AEAD_INITIAL_INDICATOR_TAG, Value::boolean(true)),
+        ]),
+    );
+    assert!(!evaluate(Some(&duplicate_initial_indicator), None));
+
+    let mistyped_initial_indicator = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(MULTIPART_AEAD_INITIAL_INDICATOR_TAG, Value::integer(1)),
+            tagged(field_tag, Value::byte_string(b"test-field".to_vec())),
+        ]),
+    );
+    assert!(!evaluate(Some(&mistyped_initial_indicator), None));
+
+    let duplicate_aead_field = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(MULTIPART_AEAD_INITIAL_INDICATOR_TAG, Value::boolean(true)),
+            tagged(field_tag, Value::byte_string(b"test-field-a".to_vec())),
+            tagged(field_tag, Value::byte_string(b"test-field-b".to_vec())),
+        ]),
+    );
+    assert!(!evaluate(Some(&duplicate_aead_field), None));
+}
+
 #[test]
 fn profile_maps_multipart_aead_fields_to_initial_requests() {
     // KMIP Specification v2.1 §§6.1.11 Table 196 and 6.1.17 Table 214 place
@@ -9566,6 +9627,7 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
             operation,
             field_tag,
         );
+        assert_multipart_aead_malformed_requests_fail_closed(requirement_id, operation, field_tag);
     }
 }
 
