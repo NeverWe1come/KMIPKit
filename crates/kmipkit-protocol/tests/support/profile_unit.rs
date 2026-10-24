@@ -4906,6 +4906,40 @@ fn profile_maps_gcm_tag_length_as_required_behavior() {
 }
 
 #[test]
+fn profile_rejects_non_structure_cryptographic_parameters_for_algorithm_constraints() {
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    for requirement_id in ["KMIPKIT-REQ-SPEC-4.16-002", "KMIPKIT-REQ-SPEC-4.16-003"] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the algorithm parameter constraint has a typed mapping");
+        let evaluate = mapping
+            .evaluator
+            .expect("the algorithm parameter constraint has an evaluator");
+        let request = request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            structure([tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, Value::integer(1))]),
+        );
+        let result = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+
+        assert!(!evaluate(Some(&request), None));
+        assert_eq!(
+            result
+                .validate_request(&request)
+                .expect_err("Cryptographic Parameters must use the Structure TTLV type")
+                .requirement_id(),
+            Some(requirement_id)
+        );
+    }
+}
+
+#[test]
 fn profile_validates_nested_register_gcm_tag_length() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
