@@ -9412,135 +9412,160 @@ fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
     }
 }
 
+const MULTIPART_AEAD_BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const MULTIPART_AEAD_CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
+const MULTIPART_AEAD_INITIAL_INDICATOR_TAG: u32 = 0x0042_00D7;
+
+fn multipart_aead_request(
+    operation: u32,
+    initial_indicator: Option<bool>,
+    has_correlation_value: bool,
+    field_tag: Option<u32>,
+) -> crate::RequestMessage {
+    let mut fields = Vec::new();
+    if has_correlation_value {
+        fields.push(tagged(
+            MULTIPART_AEAD_CORRELATION_VALUE_TAG,
+            Value::byte_string(b"existing-operation".to_vec()),
+        ));
+    }
+    if let Some(initial_indicator) = initial_indicator {
+        fields.push(tagged(
+            MULTIPART_AEAD_INITIAL_INDICATOR_TAG,
+            Value::boolean(initial_indicator),
+        ));
+    }
+    if let Some(field_tag) = field_tag {
+        fields.push(tagged(
+            field_tag,
+            Value::byte_string(b"test-field".to_vec()),
+        ));
+    }
+    request_message_with_operation_payload(operation, structure(fields))
+}
+
+fn assert_multipart_aead_profile_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    client_test_id: &str,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("multipart AEAD placement has an explicit typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("multipart AEAD placement resolves to generated requirement metadata");
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == client_test_id && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    validate_mapping(MULTIPART_AEAD_BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required placement rule has positive executable evidence");
+}
+
+fn assert_multipart_aead_request_placement(
+    requirement_id: &str,
+    source_clause_id: &str,
+    operation: u32,
+    field_tag: u32,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the multipart AEAD requirement has a typed evaluator");
+    let evaluate = mapping
+        .evaluator
+        .expect("multipart AEAD placement has a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![MULTIPART_AEAD_BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![requirement_id.to_owned()],
+    };
+
+    let initial = multipart_aead_request(operation, Some(true), false, Some(field_tag));
+    assert!(evaluate(Some(&initial), None));
+    result
+        .validate_request(&initial)
+        .expect("the supplied multipart field is allowed on its initial request");
+
+    let continuation = multipart_aead_request(operation, Some(false), true, Some(field_tag));
+    assert!(!evaluate(Some(&continuation), None));
+    let error = result
+        .validate_request(&continuation)
+        .expect_err("a supplied multipart field cannot move to a continuation request");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(requirement_id));
+    assert_eq!(error.source_clause_id(), Some(source_clause_id));
+
+    let continuation_without_field = multipart_aead_request(operation, Some(false), true, None);
+    assert!(evaluate(Some(&continuation_without_field), None));
+    result
+        .validate_request(&continuation_without_field)
+        .expect("a continuation request without the initial-only field remains valid");
+
+    let single_part = multipart_aead_request(operation, None, false, Some(field_tag));
+    assert!(evaluate(Some(&single_part), None));
+    result
+        .validate_request(&single_part)
+        .expect("single-part requests are outside the multipart placement condition");
+
+    let correlated_without_indicator =
+        multipart_aead_request(operation, None, true, Some(field_tag));
+    assert!(!evaluate(Some(&correlated_without_indicator), None));
+    let error = result
+        .validate_request(&correlated_without_indicator)
+        .expect_err("Correlation Value identifies a later request without Init Indicator");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(requirement_id));
+}
+
 #[test]
 fn profile_maps_multipart_aead_fields_to_initial_requests() {
     // KMIP Specification v2.1 §§6.1.11 Table 196 and 6.1.17 Table 214 place
     // supplied multipart AAD and Decrypt tags on the initial client request.
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const CORRELATION_VALUE_TAG: u32 = 0x0042_00D6;
-    const INITIAL_INDICATOR_TAG: u32 = 0x0042_00D7;
-    const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG: u32 = 0x0042_00FE;
-    const AUTHENTICATED_ENCRYPTION_TAG_TAG: u32 = 0x0042_00FF;
-    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
-    const DECRYPT_OPERATION: u32 = 0x0000_0020;
     const CASES: [(&str, &str, &str, u32, u32); 3] = [
         (
             "KMIPKIT-REQ-SPEC-6.1.17-006",
             "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
-            ENCRYPT_OPERATION,
-            AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
+            0x0000_001F,
+            0x0042_00FE,
         ),
         (
             "KMIPKIT-REQ-SPEC-6.1.11-005",
             "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
-            DECRYPT_OPERATION,
-            AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA_TAG,
+            0x0000_0020,
+            0x0042_00FE,
         ),
         (
             "KMIPKIT-REQ-SPEC-6.1.11-006",
             "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
-            DECRYPT_OPERATION,
-            AUTHENTICATED_ENCRYPTION_TAG_TAG,
+            0x0000_0020,
+            0x0042_00FF,
         ),
     ];
 
-    let make_request = |operation,
-                        initial_indicator: Option<bool>,
-                        has_correlation_value: bool,
-                        field_tags: &[u32]| {
-        let mut fields = Vec::new();
-        if has_correlation_value {
-            fields.push(tagged(
-                CORRELATION_VALUE_TAG,
-                Value::byte_string(b"existing-operation".to_vec()),
-            ));
-        }
-        if let Some(initial_indicator) = initial_indicator {
-            fields.push(tagged(
-                INITIAL_INDICATOR_TAG,
-                Value::boolean(initial_indicator),
-            ));
-        }
-        fields.extend(
-            field_tags
-                .iter()
-                .map(|field_tag| tagged(*field_tag, Value::byte_string(b"test-field".to_vec()))),
-        );
-        request_message_with_operation_payload(operation, structure(fields))
-    };
-
     for (requirement_id, source_clause_id, client_test_id, operation, field_tag) in CASES {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("multipart AEAD placement has an explicit typed profile mapping");
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == requirement_id)
-            .expect("multipart AEAD placement resolves to generated requirement metadata");
-        assert_eq!(mapping.source_clause_id, source_clause_id);
-        assert_eq!(
-            mapping.verification_category,
-            GeneratedVerificationCategory::RequiredBehavior
+        assert_multipart_aead_profile_mapping(requirement_id, source_clause_id, client_test_id);
+        assert_multipart_aead_request_placement(
+            requirement_id,
+            source_clause_id,
+            operation,
+            field_tag,
         );
-        assert!(mapping.test_evidence.iter().any(|evidence| {
-            evidence.test_id == client_test_id && evidence.kind == RuleTestKind::PositiveBehavior
-        }));
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .expect("the required placement rule has positive executable evidence");
-        let evaluate = mapping
-            .evaluator
-            .expect("multipart AEAD placement has a typed request evaluator");
-        let result = ProfileValidationResult {
-            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-            requirement_ids: vec![requirement_id.to_owned()],
-        };
-
-        let initial = make_request(operation, Some(true), false, &[field_tag]);
-        assert!(evaluate(Some(&initial), None));
-        result
-            .validate_request(&initial)
-            .expect("the supplied multipart field is allowed on its initial request");
-
-        let continuation = make_request(operation, Some(false), true, &[field_tag]);
-        assert!(!evaluate(Some(&continuation), None));
-        let error = result
-            .validate_request(&continuation)
-            .expect_err("a supplied multipart field cannot move to a continuation request");
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected
-        );
-        assert_eq!(error.requirement_id(), Some(requirement_id));
-        assert_eq!(error.source_clause_id(), Some(source_clause_id));
-
-        let continuation_without_field = make_request(operation, Some(false), true, &[]);
-        assert!(evaluate(Some(&continuation_without_field), None));
-        result
-            .validate_request(&continuation_without_field)
-            .expect("a continuation request without the initial-only field remains valid");
-
-        let single_part = make_request(operation, None, false, &[field_tag]);
-        assert!(evaluate(Some(&single_part), None));
-        result
-            .validate_request(&single_part)
-            .expect("single-part requests are outside the multipart placement condition");
-
-        let correlated_without_indicator = make_request(operation, None, true, &[field_tag]);
-        assert!(!evaluate(Some(&correlated_without_indicator), None));
-        let error = result
-            .validate_request(&correlated_without_indicator)
-            .expect_err(
-                "Correlation Value identifies a later request when Init Indicator is absent",
-            );
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected
-        );
-        assert_eq!(error.requirement_id(), Some(requirement_id));
     }
 }
 

@@ -92750,12 +92750,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_decrypt_aad_is_on_initial_request",
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.11 Table 196 requires supplied Authenticated Encryption Additional Data for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-006",
@@ -92780,12 +92786,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_decrypt_tag_is_on_initial_request",
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.11 Table 196 requires a supplied Authenticated Encryption Tag for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-001-001",
@@ -93524,12 +93536,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_encrypt_aad_is_on_initial_request",
+        "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::to_ttlv_payload"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.17 Table 214 requires supplied Authenticated Encryption Additional Data for multipart Encrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-001",
