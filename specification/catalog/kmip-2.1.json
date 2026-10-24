@@ -100938,17 +100938,18 @@
       "feature_spec": "KMIPKIT-0016",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/delete_attribute.rs",
-        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_delete_attribute_reference"
+        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_delete_attribute_current_attribute"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_current_attribute_as_one_direct_item_in_table_202_order",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_current_attribute_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Current Attribute (HTML lines 25681-25699), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13 Table 202, request payload row Current Attribute (HTML lines 25681-25699), records optional_table_body_value. §5.6 Table 162 defines its nested direct attribute Item. Local model and profile tests verify client representation with Current Attribute present and omitted; they do not assert deletion semantics or server behavior. The pinned official Test Cases inventory has no requirement-specific test ID; no official test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-006",
