@@ -97832,12 +97832,13 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_intended_cryptographic_uses",
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to specify intended cryptographic uses with the optional Check Cryptographic Usage Mask. The typed Baseline Client evaluator accepts omission or one Integer field; a protocol profile test and fake-transport Check test verify request representation. No official Test Case ID is linked by the pinned OASIS source, and no server outcome or formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-004-002",
