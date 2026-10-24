@@ -100751,12 +100751,13 @@
         "crates/kmipkit-protocol/src/delegated_login.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_rights_as_required_structure"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Rights (HTML lines 25489-25507), records required_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12 Table 199, request payload row Rights (HTML lines 25489-25507), records required_table_body_value. §7.35 Table 387 defines Rights as a Structure and marks its Right Structure member as not required and repeatable. The mapping requires the outer field, permits an empty list and repeated Right members, and rejects a present Right with a non-Structure TTLV type. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction and profile tests verify field representation and required presence; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-005",
@@ -100796,12 +100797,13 @@
         "crates/kmipkit-protocol/src/delegated_login.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Lease Time (HTML lines 25434-25451), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12 Table 199, request payload row Lease Time (HTML lines 25434-25451), records optional_table_body_value and permits Interval or Date Time. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction and profile tests verify both TTLV forms and optional omission; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-006",
@@ -100841,12 +100843,13 @@
         "crates/kmipkit-protocol/src/delegated_login.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_request_count_as_optional_integer"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Request Count (HTML lines 25452-25470), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12 Table 199, request payload row Request Count (HTML lines 25452-25470), records optional_table_body_value and defines its value as an Integer count. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction and profile tests verify the Integer representation and optional omission; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-007",
@@ -100886,12 +100889,14 @@
         "crates/kmipkit-protocol/src/delegated_login.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms"
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_usage_limits_as_optional_structure",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_delegated_login_usage_limits_missing_or_malformed_members"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.12, request payload row Usage Limits (HTML lines 25471-25488), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.12 Table 199, request payload row Usage Limits (HTML lines 25471-25488), records optional_table_body_value. §7.40 Table 392 requires Usage Limits Total (Long Integer), Usage Limits Count (Long Integer), and Usage Limits Unit (Enumeration); §11.60 Table 491 defines Byte as unit value 1. The local Rust request and profile tests use a well-formed Structure, verify optional representation, and reject absent, duplicate, or mistyped required members. Unknown members remain preserved. No official OASIS test execution is claimed; the pinned official Test Cases inventory has no requirement-specific test ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-005",

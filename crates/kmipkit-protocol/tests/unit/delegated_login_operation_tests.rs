@@ -47,7 +47,8 @@ fn item_tags(payload: &Structure) -> Vec<u32> {
 }
 
 fn valid_rights() -> Structure {
-    structure([item(RIGHT, Value::structure(Structure::new()))])
+    // KMIP Specification v2.1 §7.35 Table 387 does not require a Right member.
+    Structure::new()
 }
 
 fn valid_usage_limits() -> Structure {
