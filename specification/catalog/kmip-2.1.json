@@ -97906,15 +97906,17 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_check_optional_lease_time_is_interval"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_lease_time",
         "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to supply Lease Time in a Check request when evaluating a later Obtain Lease request. The typed optional-capability rule accepts omission and one Interval value, and rejects malformed or repeated fields. The protocol test exercises those branches; the fake-transport Check test confirms the caller-supplied value is encoded. No official Test Case ID is linked by the pinned source, and no server outcome or formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-001",

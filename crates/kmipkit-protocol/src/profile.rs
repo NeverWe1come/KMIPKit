@@ -735,6 +735,7 @@ const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+const LEASE_TIME: u32 = 0x0042_0049;
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const CTR_MODE: u32 = 6;
 const CCM_MODE: u32 = 8;
@@ -1466,6 +1467,17 @@ fn client_check_optional_usage_limits_count_is_long_integer(
     )
 }
 
+fn client_check_optional_lease_time_is_interval(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_check_optional_field_is_well_formed(
+        request,
+        LEASE_TIME,
+        CheckOptionalFieldType::Interval,
+    )
+}
+
 fn client_check_optional_cryptographic_usage_mask_is_integer(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1481,6 +1493,7 @@ fn client_check_optional_cryptographic_usage_mask_is_integer(
 enum CheckOptionalFieldType {
     Integer,
     LongInteger,
+    Interval,
 }
 
 fn client_check_optional_field_is_well_formed(
@@ -1515,6 +1528,9 @@ fn client_check_optional_field_is_well_formed(
                                 }
                                 CheckOptionalFieldType::LongInteger => {
                                     matches!(value, ValueView::LongInteger(_))
+                                }
+                                CheckOptionalFieldType::Interval => {
+                                    matches!(value, ValueView::Interval(_))
                                 }
                             })
                     })
@@ -5474,6 +5490,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_check_optional_lease_time_is_interval),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_lease_time",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
