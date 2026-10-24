@@ -1916,6 +1916,22 @@ fn profile_maps_required_derive_key_derivation_method() {
         assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
     }
 
+    let batch_with_missing_method = request_message_with_batch_operations([
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(1),
+            )]),
+        ),
+        (DERIVE_KEY_OPERATION, Structure::new()),
+    ]);
+    let error = result
+        .validate_request(&batch_with_missing_method)
+        .expect_err("a valid Derive Key item does not hide a missing method in another item");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+
     let unrelated_operation = request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
         structure([tagged(
