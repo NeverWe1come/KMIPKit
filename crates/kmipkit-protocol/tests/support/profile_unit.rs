@@ -5023,7 +5023,9 @@ fn profile_maps_signature_verify_original_data_as_optional_capability() {
     const DATA_TAG: u32 = 0x0042_00C2;
     const SIGNATURE_DATA_TAG: u32 = 0x0042_00C3;
 
-    fn signature_verify_payload(data_fields: impl IntoIterator<Item = Value>) -> Structure {
+    fn signature_verify_payload_with_original_data(
+        data_fields: impl IntoIterator<Item = Value>,
+    ) -> Structure {
         let mut fields: Vec<_> = data_fields
             .into_iter()
             .map(|data| tagged(DATA_TAG, data))
@@ -5061,8 +5063,10 @@ fn profile_maps_signature_verify_original_data_as_optional_capability() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     for payload in [
-        signature_verify_payload([]),
-        signature_verify_payload([Value::byte_string(b"original data".to_vec())]),
+        signature_verify_payload_with_original_data([]),
+        signature_verify_payload_with_original_data([Value::byte_string(
+            b"original data".to_vec(),
+        )]),
     ] {
         let request =
             request_message_with_operation_payload(SIGNATURE_VERIFY_OPERATION_TAG, payload);
@@ -5073,8 +5077,10 @@ fn profile_maps_signature_verify_original_data_as_optional_capability() {
     }
 
     for payload in [
-        signature_verify_payload([Value::text_string("not-a-Byte-String".to_owned())]),
-        signature_verify_payload([
+        signature_verify_payload_with_original_data([Value::text_string(
+            "not-a-Byte-String".to_owned(),
+        )]),
+        signature_verify_payload_with_original_data([
             Value::byte_string(b"first".to_vec()),
             Value::byte_string(b"second".to_vec()),
         ]),
