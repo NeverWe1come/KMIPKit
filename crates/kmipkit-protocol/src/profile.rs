@@ -1579,6 +1579,8 @@ fn client_rekey_key_pair_offset_is_optional_interval(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
+    // §6.1.47 assigns date calculation to the server; this client rule checks
+    // only that the optional Table 310 request field is representable.
     client_operation_field_is_well_formed(
         request,
         REKEY_KEY_PAIR_OPERATION,
