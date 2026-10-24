@@ -1359,6 +1359,17 @@ fn client_get_key_format_type_is_enumeration(
     client_get_optional_enumeration_is_well_formed(request, GET_KEY_FORMAT_TYPE)
 }
 
+fn client_get_or_export_key_format_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_optional_enumeration_is_well_formed(
+        request,
+        &[GET_OPERATION, EXPORT_OPERATION],
+        GET_KEY_FORMAT_TYPE,
+    )
+}
+
 fn client_get_key_wrap_type_is_enumeration(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1380,23 +1391,34 @@ fn client_export_key_wrap_type_is_enumeration(
     client_export_optional_enumeration_is_well_formed(request, EXPORT_KEY_WRAP_TYPE)
 }
 
+fn client_export_controls_have_get_semantics(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_export_key_format_type_is_enumeration(request, response)
+        && client_export_key_wrap_type_is_enumeration(request, response)
+        && client_get_or_export_key_compression_type_is_enumeration(request, response)
+        && client_get_or_export_optional_wrapping_specification_is_structure(request, response)
+        && client_get_or_export_wrapping_specification_has_key_information(request, response)
+}
+
 fn client_get_optional_enumeration_is_well_formed(
     request: Option<&RequestMessage>,
     option_tag: u32,
 ) -> bool {
-    client_optional_enumeration_is_well_formed(request, GET_OPERATION, option_tag)
+    client_optional_enumeration_is_well_formed(request, &[GET_OPERATION], option_tag)
 }
 
 fn client_export_optional_enumeration_is_well_formed(
     request: Option<&RequestMessage>,
     option_tag: u32,
 ) -> bool {
-    client_optional_enumeration_is_well_formed(request, EXPORT_OPERATION, option_tag)
+    client_optional_enumeration_is_well_formed(request, &[EXPORT_OPERATION], option_tag)
 }
 
 fn client_optional_enumeration_is_well_formed(
     request: Option<&RequestMessage>,
-    selected_operation: u32,
+    selected_operations: &[u32],
     option_tag: u32,
 ) -> bool {
     let Some(request) = request else {
@@ -1407,7 +1429,7 @@ fn client_optional_enumeration_is_well_formed(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != selected_operation {
+        if !selected_operations.contains(&operation) {
             return true;
         }
 
@@ -1497,6 +1519,25 @@ fn client_check_optional_field_is_well_formed(
 
 fn client_get_optional_wrapping_specification_is_structure(
     request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_optional_wrapping_specification_is_structure(request, &[GET_OPERATION], response)
+}
+
+fn client_get_or_export_optional_wrapping_specification_is_structure(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_optional_wrapping_specification_is_structure(
+        request,
+        &[GET_OPERATION, EXPORT_OPERATION],
+        response,
+    )
+}
+
+fn client_optional_wrapping_specification_is_structure(
+    request: Option<&RequestMessage>,
+    selected_operations: &[u32],
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
     let Some(request) = request else {
@@ -1507,7 +1548,7 @@ fn client_get_optional_wrapping_specification_is_structure(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != GET_OPERATION {
+        if !selected_operations.contains(&operation) {
             return true;
         }
 
@@ -1844,7 +1885,7 @@ fn client_can_repeat_query_functions(
     request.is_some()
 }
 
-fn client_can_repeat_get_wrapping_attribute_names(
+fn client_can_repeat_get_or_export_wrapping_attribute_names(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -1853,7 +1894,7 @@ fn client_can_repeat_get_wrapping_attribute_names(
     request.is_some()
 }
 
-fn client_get_wrapping_specification_has_key_information(
+fn client_get_or_export_wrapping_specification_has_key_information(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -1862,7 +1903,10 @@ fn client_get_wrapping_specification_has_key_information(
     };
 
     request.batch_items().all(|batch_item| {
-        if batch_item.operation() != Some(GET_OPERATION) {
+        if !matches!(
+            batch_item.operation(),
+            Some(GET_OPERATION | EXPORT_OPERATION)
+        ) {
             return true;
         }
 
@@ -1885,14 +1929,13 @@ fn client_get_wrapping_specification_has_key_information(
     })
 }
 
-fn client_supports_get_wrapped_key_request(
+fn client_supports_get_or_export_wrapped_key_request(
     request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    // §7.18 requires Key Wrapping Specification when the client requests a
-    // wrapped key. Get expresses that request with its optional structure; a
-    // request without it does not assert a wrapped-key request.
-    client_get_optional_wrapping_specification_is_structure(request, response)
+    // §6.1.18 gives Export's wrapping controls Get semantics. A request without
+    // the optional structure does not assert that the client requests wrapping.
+    client_get_or_export_optional_wrapping_specification_is_structure(request, response)
 }
 
 fn client_can_include_request_time_stamp(
@@ -6135,6 +6178,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_export_controls_have_get_semantics),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_controls_with_get_semantics",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-005",
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL"),
@@ -6171,11 +6226,35 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-007",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-008",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_or_export_optional_wrapping_specification_is_structure),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_key_format_type_is_enumeration),
+        evaluator: Some(client_get_or_export_key_format_type_is_enumeration),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_key_format_client_assumption",
             kind: RuleTestKind::PositiveBehavior,
@@ -6235,7 +6314,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-006",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_get_wrapping_attribute_names),
+        evaluator: Some(client_can_repeat_get_or_export_wrapping_attribute_names),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
@@ -6247,7 +6326,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_supports_get_wrapped_key_request),
+        evaluator: Some(client_supports_get_or_export_wrapped_key_request),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification",
             kind: RuleTestKind::PositiveBehavior,
@@ -6259,7 +6338,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-004",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_wrapping_specification_has_key_information),
+        evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
             kind: RuleTestKind::PositiveBehavior,
@@ -6271,7 +6350,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-005",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_wrapping_specification_has_key_information),
+        evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
             kind: RuleTestKind::PositiveBehavior,
