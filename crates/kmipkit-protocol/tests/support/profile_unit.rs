@@ -2151,104 +2151,95 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
     }
 }
 
-#[test]
-fn profile_maps_optional_get_return_format_controls() {
-    const REQUIREMENTS: [(&str, &str); 4] = [
-        (
-            "KMIPKIT-REQ-SPEC-6.1.19-003",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
-        ),
-        (
-            "KMIPKIT-REQ-SPEC-6.1.19-004",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
-        ),
-        (
-            "KMIPKIT-REQ-SPEC-6.1.19-005",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
-        ),
-        (
-            "KMIPKIT-REQ-SPEC-6.1.19-006",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
-        ),
-    ];
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const GET_RETURN_OPTION_REQUIREMENTS: [(&str, &str); 4] = [
+    (
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+    ),
+    (
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+    ),
+    (
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+    ),
+    (
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+    ),
+];
 
-    let mut request = crate::GetRequest::new()
-        .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key".to_owned()))
-        .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
-        .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
-        .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569));
-    request = request.with_key_wrapping_specification(structure([
-        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
-        tagged(
-            ENCRYPTION_KEY_INFORMATION_TAG,
-            Value::structure(structure([tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-    ]));
-    let request_with_all_options = request_message_with_operation_payload(
+fn get_request_with_optional_return_controls(include_options: bool) -> crate::RequestMessage {
+    let request = crate::GetRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key".to_owned()));
+    let request = if include_options {
+        request
+            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
+            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569))
+            .with_key_wrapping_specification(structure([
+                tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+                tagged(
+                    ENCRYPTION_KEY_INFORMATION_TAG,
+                    Value::structure(structure([tagged(
+                        UNIQUE_IDENTIFIER_TAG,
+                        Value::text_string("wrapping-key".to_owned()),
+                    )])),
+                ),
+            ]))
+    } else {
+        request
+    };
+    request_message_with_operation_payload(
         GET_OPERATION,
         request
             .to_ttlv_payload()
-            .expect("the caller-selected Get options encode in Table 220 order"),
+            .expect("optional Get controls encode in Table 220 order"),
+    )
+}
+
+fn assert_get_return_option_mapping(
+    requirement_id: &str,
+    source_gap_id: &str,
+    request_with_options: &crate::RequestMessage,
+    request_without_options: &crate::RequestMessage,
+) {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("each Table 220 option has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("each Table 220 option resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(source_gap_id));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
     );
-    let request_without_options = request_message_with_operation_payload(
-        GET_OPERATION,
-        crate::GetRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key".to_owned()))
-            .to_ttlv_payload()
-            .expect("Get permits omission of each optional return-format control"),
-    );
-    let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: REQUIREMENTS
-            .iter()
-            .map(|(requirement_id, _)| (*requirement_id).to_owned())
-            .collect(),
-    };
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the option mapping uses its exact source-gap row and evidence");
 
-    for (requirement_id, source_gap_id) in REQUIREMENTS {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("each Table 220 option has a typed profile rule");
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == requirement_id)
-            .expect("each Table 220 option resolves to generated normative metadata");
-        assert_eq!(mapping.source_clause_id, "");
-        assert_eq!(mapping.source_gap_id, Some(source_gap_id));
-        assert_eq!(
-            mapping.verification_category,
-            GeneratedVerificationCategory::OptionalCapability
-        );
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .expect("the option mapping uses its exact source-gap row and evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("each option has an executable evaluator");
+    assert!(!evaluate(None, None));
+    assert!(evaluate(Some(request_with_options), None));
+    assert!(evaluate(Some(request_without_options), None));
+}
 
-        let evaluate = mapping
-            .evaluator
-            .expect("each option has an executable evaluator");
-        assert!(!evaluate(None, None));
-        assert!(evaluate(Some(&request_with_all_options), None));
-        assert!(evaluate(Some(&request_without_options), None));
-    }
+fn get_return_option_evaluator(requirement_id: &str) -> RuleEvaluator {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .and_then(|mapping| mapping.evaluator)
+        .expect("the selected Get option has a typed evaluator")
+}
 
-    result
-        .validate_request(&request_with_all_options)
-        .expect("all caller-selected Get return-format controls remain usable");
-    result
-        .validate_request(&request_without_options)
-        .expect("profile validation leaves all optional controls absent by default");
-
-    let evaluator = |requirement_id: &str| {
-        TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .and_then(|mapping| mapping.evaluator)
-            .expect("the selected Get option has a typed evaluator")
-    };
+fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
     let malformed_key_format = request_message_with_operation_payload(
         GET_OPERATION,
         structure([
@@ -2259,7 +2250,7 @@ fn profile_maps_optional_get_return_format_controls() {
             tagged(0x0042_0042, Value::text_string("raw-text".to_owned())),
         ]),
     );
-    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-003")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-003")(
         Some(&malformed_key_format),
         None
     ));
@@ -2276,7 +2267,7 @@ fn profile_maps_optional_get_return_format_controls() {
             tagged(0x0042_00F8, Value::enumeration(2)),
         ]),
     );
-    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-004")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-004")(
         Some(&duplicate_key_wrap_type),
         None
     ));
@@ -2295,13 +2286,45 @@ fn profile_maps_optional_get_return_format_controls() {
             ),
         ]),
     );
-    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-006")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-006")(
         Some(&malformed_wrapping_specification),
         None
     ));
-    assert!(result
-        .validate_request(&malformed_wrapping_specification)
-        .is_err());
+    assert!(
+        result
+            .validate_request(&malformed_wrapping_specification)
+            .is_err()
+    );
+}
+
+#[test]
+fn profile_maps_optional_get_return_format_controls() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let request_with_options = get_request_with_optional_return_controls(true);
+    let request_without_options = get_request_with_optional_return_controls(false);
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: GET_RETURN_OPTION_REQUIREMENTS
+            .iter()
+            .map(|(requirement_id, _)| (*requirement_id).to_owned())
+            .collect(),
+    };
+
+    for (requirement_id, source_gap_id) in GET_RETURN_OPTION_REQUIREMENTS {
+        assert_get_return_option_mapping(
+            requirement_id,
+            source_gap_id,
+            &request_with_options,
+            &request_without_options,
+        );
+    }
+    result
+        .validate_request(&request_with_options)
+        .expect("all caller-selected Get return-format controls remain usable");
+    result
+        .validate_request(&request_without_options)
+        .expect("profile validation leaves all optional controls absent by default");
+    assert_get_return_option_rejections(&result);
 
     let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
     result
