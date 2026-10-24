@@ -94130,7 +94130,15 @@
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.58"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.27"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.58"
         }
       ],
       "source_keyword": "SHALL",
@@ -94150,17 +94158,19 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/join_split_key.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
         "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The typed request pairs every transmitted identifier occurrence with its caller-known Split Key Threshold and rejects an insufficient entry count before serialization. KMIP Specification v2.1 §4.58 Table 145 permits Text String, Enumeration, or Integer encodings for Unique Identifier; §11.58 Table 489 supplies the tested Join Split Key Enumeration value. The profile evaluator accepts only those well-formed wire values and requires one or more entries. It relies on the typed request invariant for the off-wire threshold comparison; repeated identifier values remain separate entries. No hidden lookup, threshold inference, server acceptance, or requirement-specific official Test Case pass is claimed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-002-001",

@@ -4,6 +4,8 @@
 
 Profile validation is opt-in per exchange through `Client::execute_with_profiles(request, selection)` and an explicit `ProfileValidationSelection`. The existing `Client::execute` path remains unchanged and unprofiled; no production constructor or implicit client-wide selection is added. The product-level selected target is separately recorded and is not implicitly copied into a caller's runtime validation settings. A selected profile must have client role and be applicable to the requested product/transport configuration.
 
+The public `ProfileValidationResult::validate_request` and `validate_response` helpers evaluate rules observable in the supplied TTLV messages. Their `Ok` result alone does not establish requirements that depend on caller-owned context absent from TTLV. The supported runtime exchange entry point is `Client::execute_with_profiles`, whose typed operation serializers validate such context before constructing the message; for example, `JoinSplitKeyRequest` checks caller-supplied Split Key Threshold metadata before encoding.
+
 ## Required behavior
 
 1. Resolve selected profile IDs and all dependency profiles using generated metadata from the reviewed catalog.
