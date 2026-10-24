@@ -5710,3 +5710,16 @@ Normative source: KMIP Specification v2.1 §3.3, Table 14 and the text following
 | Stage | Command | Result |
 |---|---|---|
 | Red | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_requires_unique_identifier_for_key_wrapping_key_information` | Expected failure. The selected Baseline rule had no typed mapping and returned `MissingRuleMapping`, rather than the expected `RequestRuleRejected` for Encryption Key Information and MAC/Signature Key Information without Unique Identifier. The test also covers acceptance when a Unique Identifier is present. |
+
+### KMIPKIT-0010 T040 — Key Wrapping Data constraints (Green)
+
+KMIP Specification v2.1 §3.3/Table 14 supplies both requirements. The source does not establish client/server direction, so these profile mappings are deliberately scoped to client-originated Register and Import Key Blocks; they make no claim about server behavior. The pinned source links no requirement-specific official OASIS Test Case ID.
+
+The Baseline Client rule for `KMIPKIT-REQ-SPEC-3.3-003` rejects a Key Value structure containing Attributes when Encoding Option is No Encoding (Enumeration 1), accepts an attribute-free Key Value, and leaves all other Enumeration values uninterpreted. `KMIPKIT-REQ-SPEC-3.3-009` reuses the existing Key Wrapping Data validator to require Unique Identifier in supplied Encryption Key Information and MAC/Signature Key Information. Catalog records are `scoped_verified` because the source direction remains unclear.
+
+| Stage | Commands | Result |
+|---|---|---|
+| Green | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding`; `cargo test -p kmipkit-protocol --lib --all-features --locked profile_requires_unique_identifier_for_key_wrapping_key_information` | PASS: each focused profile test passes; No Encoding rejects attributes for Register and Import, accepts their attribute-free form, and preserves an unknown future encoding value; missing identifiers are rejected for both key-information forms. |
+| Green | `cargo test -q -p kmipkit-protocol --all-features --locked` | PASS: all 965 protocol unit tests, integration tests, and doctests. |
+| Green | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS after merging identical match arms flagged by Clippy. |
+| Green | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --write --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --write --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: catalog valid (4 sources, 1,411 clauses, 4,123 records); profile metadata and coverage report regenerate deterministically and verify current. |

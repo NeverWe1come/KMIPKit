@@ -762,6 +762,7 @@ const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const NO_ENCODING_OPTION: u32 = 1;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
@@ -2824,6 +2825,13 @@ fn client_key_wrapping_data_is_absent_or_has_required_key_information(
     })
 }
 
+fn client_no_encoding_excludes_key_value_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_wrapping_rule_holds(request, KeyWrappingRule::NoEncodingExcludesAttributes)
+}
+
 fn client_wrapped_key_value_requires_key_wrapping_data(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2907,6 +2915,7 @@ fn key_block_object_tag(object_type: u32) -> Option<u32> {
 enum KeyWrappingRule {
     WrappedValueRequiresData,
     DataOnlyForWrappedValue,
+    NoEncodingExcludesAttributes,
 }
 
 fn key_wrapping_rule_holds_for_key_block(
@@ -2920,10 +2929,11 @@ fn key_wrapping_rule_holds_for_key_block(
 
     match field_presence(key_block, KEY_VALUE) {
         FieldPresence::Missing => match rule {
-            KeyWrappingRule::WrappedValueRequiresData => true,
             KeyWrappingRule::DataOnlyForWrappedValue => {
                 matches!(wrapping_data, FieldPresence::Missing)
             }
+            KeyWrappingRule::WrappedValueRequiresData
+            | KeyWrappingRule::NoEncodingExcludesAttributes => true,
         },
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(key_value) => key_value.with_value(|value| match value {
@@ -2931,15 +2941,50 @@ fn key_wrapping_rule_holds_for_key_block(
                 KeyWrappingRule::WrappedValueRequiresData => {
                     matches!(wrapping_data, FieldPresence::Unique(_))
                 }
-                KeyWrappingRule::DataOnlyForWrappedValue => true,
+                KeyWrappingRule::DataOnlyForWrappedValue
+                | KeyWrappingRule::NoEncodingExcludesAttributes => true,
             },
-            ValueView::Structure(_) => match rule {
+            ValueView::Structure(key_value) => match rule {
                 KeyWrappingRule::WrappedValueRequiresData => true,
                 KeyWrappingRule::DataOnlyForWrappedValue => {
                     matches!(wrapping_data, FieldPresence::Missing)
                 }
+                KeyWrappingRule::NoEncodingExcludesAttributes => {
+                    no_encoding_key_value_has_no_attributes(key_block, &key_value)
+                }
             },
             _ => false,
+        }),
+    }
+}
+
+fn no_encoding_key_value_has_no_attributes(
+    key_block: &StructureView<'_>,
+    key_value: &StructureView<'_>,
+) -> bool {
+    match field_presence(key_block, KEY_WRAPPING_DATA) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(wrapping_data) => wrapping_data.with_value(|value| {
+            let ValueView::Structure(wrapping_data) = value else {
+                return false;
+            };
+            match field_presence(&wrapping_data, ENCODING_OPTION) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(encoding_option) => {
+                    encoding_option.with_value(|value| match value {
+                        ValueView::Enumeration(value) if *value == NO_ENCODING_OPTION => {
+                            matches!(
+                                field_presence(key_value, ATTRIBUTES),
+                                FieldPresence::Missing
+                            )
+                        }
+                        ValueView::Enumeration(_) => true,
+                        _ => false,
+                    })
+                }
+            }
         }),
     }
 }
@@ -4766,6 +4811,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_no_encoding_excludes_key_value_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
         source_gap_id: None,
@@ -4775,6 +4838,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-009",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-009",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

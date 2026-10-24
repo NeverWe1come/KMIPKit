@@ -13606,16 +13606,17 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
     }
 
     for (encoding_option, key_value) in [
-        (NO_ENCODING, Value::structure(structure([tagged(
-            KEY_MATERIAL,
-            Value::byte_string(vec![0xA5, 0x5A]),
-        )]))),
+        (
+            NO_ENCODING,
+            Value::structure(structure([tagged(
+                KEY_MATERIAL,
+                Value::byte_string(vec![0xA5, 0x5A]),
+            )])),
+        ),
         (UNKNOWN_FUTURE_ENCODING, key_value_with_attributes()),
     ] {
-        let request = register_key_value_wrapping_request(
-            key_value,
-            Some(wrapping_data(encoding_option)),
-        );
+        let request =
+            register_key_value_wrapping_request(key_value, Some(wrapping_data(encoding_option)));
         result
             .validate_request(&request)
             .expect("the rule constrains only No Encoding and preserves other values");
@@ -13639,10 +13640,7 @@ fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
     for key_information_tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
         let wrapping_data = Value::structure(structure([
             tagged(WRAPPING_METHOD, Value::enumeration(1)),
-            tagged(
-                key_information_tag,
-                Value::structure(Structure::new()),
-            ),
+            tagged(key_information_tag, Value::structure(Structure::new())),
         ]));
         let request = register_key_value_wrapping_request(
             Value::byte_string(b"synthetic-wrapped-key".to_vec()),
