@@ -2627,6 +2627,52 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
         )]),
     );
     let other_operation = request_message_with_operation_payload(OTHER_OPERATION, Structure::new());
+    let missing_poll_correlation =
+        request_message_with_operation_payload(POLL_OPERATION, Structure::new());
+    let missing_cancel_correlation =
+        request_message_with_operation_payload(CANCEL_OPERATION, Structure::new());
+    let wrong_type_poll_correlation = request_message_with_operation_payload(
+        POLL_OPERATION,
+        structure([tagged(ASYNC_CORRELATION_VALUE_TAG, Value::integer(7))]),
+    );
+    let wrong_type_cancel_correlation = request_message_with_operation_payload(
+        CANCEL_OPERATION,
+        structure([tagged(ASYNC_CORRELATION_VALUE_TAG, Value::integer(7))]),
+    );
+    let duplicate_poll_correlation = request_message_with_operation_payload(
+        POLL_OPERATION,
+        structure([
+            tagged(
+                ASYNC_CORRELATION_VALUE_TAG,
+                Value::byte_string(correlation.to_vec()),
+            ),
+            tagged(
+                ASYNC_CORRELATION_VALUE_TAG,
+                Value::byte_string(correlation.to_vec()),
+            ),
+        ]),
+    );
+    let duplicate_cancel_correlation = request_message_with_operation_payload(
+        CANCEL_OPERATION,
+        structure([
+            tagged(
+                ASYNC_CORRELATION_VALUE_TAG,
+                Value::byte_string(correlation.to_vec()),
+            ),
+            tagged(
+                ASYNC_CORRELATION_VALUE_TAG,
+                Value::byte_string(correlation.to_vec()),
+            ),
+        ]),
+    );
+    let invalid_requests = [
+        &missing_poll_correlation,
+        &missing_cancel_correlation,
+        &wrong_type_poll_correlation,
+        &wrong_type_cancel_correlation,
+        &duplicate_poll_correlation,
+        &duplicate_cancel_correlation,
+    ];
 
     for (requirement_id, source_clause_id) in REQUIREMENTS {
         let mapping = TYPED_RULE_MAPPINGS
@@ -2654,6 +2700,9 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
         assert!(evaluate(Some(&poll), None));
         assert!(evaluate(Some(&cancel), None));
         assert!(evaluate(Some(&other_operation), None));
+        assert!(invalid_requests
+            .iter()
+            .all(|request| !evaluate(Some(request), None)));
     }
 }
 

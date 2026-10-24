@@ -796,6 +796,9 @@ const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 const REGISTER_OPERATION: u32 = 0x0000_0003;
+const POLL_OPERATION: u32 = 0x0000_001A;
+const CANCEL_OPERATION: u32 = 0x0000_0019;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const GET_OPERATION: u32 = 0x0000_000A;
 const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
@@ -1645,6 +1648,35 @@ fn client_can_include_client_correlation_value(
     // §9.9 permits a caller-provided request string and does not require it to
     // be unique. Request-header validation enforces the Table 408 Text String.
     request.is_some()
+}
+
+fn client_uses_async_correlation_value_for_poll_or_cancel(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != POLL_OPERATION && operation != CANCEL_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(correlation) =
+                    field_presence(&payload, ASYNCHRONOUS_CORRELATION_VALUE)
+                else {
+                    return false;
+                };
+                correlation.with_value(|value| matches!(value, ValueView::ByteString(_)))
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_includes_unique_batch_item_id_for_multi_item_request(
@@ -4748,6 +4780,94 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.5-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/cancel_tests.rs::cancel_request_preserves_exact_correlation_bytes_in_table_order",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_exposes_matching_echo_and_assigned_cancellation_result",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.1-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.19-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.19-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::pending_correlation_is_exact_borrowed_and_redacted_from_formatted_output",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
