@@ -5732,3 +5732,14 @@ Normative source: KMIP Specification v2.1 §2.8 and Table 9; requirement `KMIPKI
 | Stage | Command | Result |
 |---|---|---|
 | Red | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_constrains_split_key_part_identifier_to_declared_parts` | Expected failure. The selected Baseline rule had no typed mapping and returned `MissingRuleMapping` instead of `RequestRuleRejected` for `Key Part Identifier` 0 and 4 when `Split Key Parts` is 3. The test also specifies both inclusive endpoints and both client Register and Import representations. |
+
+### KMIPKIT-0010 T040 — Split Key part range (Green)
+
+KMIP Specification v2.1 §2.8 states that Key Part Identifier is at least 1 and no greater than Split Key Parts; Table 9 lists both as required Integer members of the Split Key structure. The source does not assign request/response direction, so this profile mapping is explicitly limited to client-originated Register and Import requests with Object Type Split Key. It does not assert server-created object behavior. No requirement-specific official OASIS Test Case ID is linked by the pinned source.
+
+| Stage | Commands | Result |
+|---|---|---|
+| Green | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_constrains_split_key_part_identifier_to_declared_parts` | PASS for Register and Import: IDs 1 and Split Key Parts are accepted; 0 and Split Key Parts + 1 are rejected with the stable requirement and source clause. |
+| Green | `cargo test -q -p kmipkit-protocol --all-features --locked` | PASS: all 966 protocol unit tests, integration tests, and doctests. |
+| Green | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Green | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and coverage report are current. |

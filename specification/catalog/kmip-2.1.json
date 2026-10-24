@@ -87058,12 +87058,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_split_key_part_identifier_is_within_declared_parts",
+        "crates/kmipkit-protocol/src/profile.rs::split_key_part_identifier_is_within_parts",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §2.8 requires Key Part Identifier to be at least 1 and no greater than Split Key Parts; Table 9 defines both as required Integer members of the Split Key structure. The typed client rule applies to client-originated Register and Import requests with Object Type Split Key, validates the inclusive range and Integer types, and leaves unrelated object types untouched. The pinned clause does not establish request/response direction; this mapping is scoped to Split Key representations supplied by the client. No requirement-specific official OASIS Test Case ID is linked by the pinned source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.8-002",

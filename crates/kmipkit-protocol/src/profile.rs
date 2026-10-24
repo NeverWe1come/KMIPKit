@@ -758,6 +758,8 @@ const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const PUBLIC_KEY: u32 = 0x0042_006D;
 const PRIVATE_KEY: u32 = 0x0042_0064;
 const SPLIT_KEY: u32 = 0x0042_0089;
+const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
@@ -1618,6 +1620,77 @@ fn client_can_include_optional_create_split_key_source_identifier(
 ) -> bool {
     // §6.1.10 permits a caller to identify the existing split source.
     request.is_some()
+}
+
+fn client_split_key_part_identifier_is_within_declared_parts(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+                if object_type != SPLIT_KEY_OBJECT_TYPE {
+                    return true;
+                }
+
+                let FieldPresence::Unique(split_key) = field_presence(&payload, SPLIT_KEY) else {
+                    return false;
+                };
+                split_key.with_value(|value| match value {
+                    ValueView::Structure(split_key) => {
+                        split_key_part_identifier_is_within_parts(&split_key)
+                    }
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn split_key_part_identifier_is_within_parts(split_key: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(split_key_parts) = field_presence(split_key, SPLIT_KEY_PARTS) else {
+        return false;
+    };
+    let Some(split_key_parts) = split_key_parts.with_value(|value| match value {
+        ValueView::Integer(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    let FieldPresence::Unique(key_part_identifier) = field_presence(split_key, KEY_PART_IDENTIFIER)
+    else {
+        return false;
+    };
+    let Some(key_part_identifier) = key_part_identifier.with_value(|value| match value {
+        ValueView::Integer(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+
+    key_part_identifier >= 1 && key_part_identifier <= split_key_parts
 }
 
 fn client_create_split_key_requires_prime_field_size_for_polynomial_method(
@@ -4752,6 +4825,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.8-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.8-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_split_key_part_identifier_is_within_declared_parts),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
