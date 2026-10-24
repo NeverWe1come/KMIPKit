@@ -5703,3 +5703,10 @@ Normative source: KMIP Specification v2.1 §3.3, Table 14, Encoding Option row (
 | Stage | Command | Result |
 |---|---|---|
 | Red | `cargo test -p kmipkit-protocol --all-features --locked profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding` | Expected failure. The selected Baseline rule had no typed mapping, so validation returned `MissingRuleMapping` instead of the test's required `RequestRuleRejected` for Register and Import requests that combine No Encoding with Key Value attributes. The test also covers the allowed no-attributes form and preservation of an unknown future encoding value. |
+### KMIPKIT-0010 T040 — Key wrapping key identity (Red)
+
+Normative source: KMIP Specification v2.1 §3.3, Table 14 and the text following it; requirement `KMIPKIT-REQ-SPEC-3.3-009`. No requirement-specific official Test Case ID is linked by the pinned source.
+
+| Stage | Command | Result |
+|---|---|---|
+| Red | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_requires_unique_identifier_for_key_wrapping_key_information` | Expected failure. The selected Baseline rule had no typed mapping and returned `MissingRuleMapping`, rather than the expected `RequestRuleRejected` for Encryption Key Information and MAC/Signature Key Information without Unique Identifier. The test also covers acceptance when a Unique Identifier is present. |

@@ -13621,3 +13621,52 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
             .expect("the rule constrains only No Encoding and preserves other values");
     }
 }
+#[test]
+fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
+    // KMIP Specification v2.1 §3.3/Table 14 requires Unique Identifier in
+    // Encryption Key Information and MAC/Signature Key Information.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.3-009";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for key_information_tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
+        let wrapping_data = Value::structure(structure([
+            tagged(WRAPPING_METHOD, Value::enumeration(1)),
+            tagged(
+                key_information_tag,
+                Value::structure(Structure::new()),
+            ),
+        ]));
+        let request = register_key_value_wrapping_request(
+            Value::byte_string(b"synthetic-wrapped-key".to_vec()),
+            Some(wrapping_data),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("wrapping key information must identify its key with Unique Identifier");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-3.3-009")
+        );
+    }
+
+    let valid_request = register_key_value_wrapping_request(
+        Value::byte_string(b"synthetic-wrapped-key".to_vec()),
+        Some(valid_secret_data_wrapping()),
+    );
+    result
+        .validate_request(&valid_request)
+        .expect("a unique key identifier satisfies the client requirement");
+}
