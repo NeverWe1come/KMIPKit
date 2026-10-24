@@ -1587,6 +1587,24 @@ enum OperationFieldType {
     UsageLimitsStructure,
 }
 
+impl OperationFieldType {
+    fn accepts(self, value: ValueView<'_>) -> bool {
+        match self {
+            Self::Integer => matches!(value, ValueView::Integer(_)),
+            Self::LeaseTime => matches!(value, ValueView::Interval(_) | ValueView::DateTime(_)),
+            Self::Structure => matches!(value, ValueView::Structure(_)),
+            Self::RightsStructure => match value {
+                ValueView::Structure(value) => delegated_login_rights_are_well_formed(&value),
+                _ => false,
+            },
+            Self::UsageLimitsStructure => match value {
+                ValueView::Structure(value) => delegated_login_usage_limits_are_well_formed(&value),
+                _ => false,
+            },
+        }
+    }
+}
+
 fn client_operation_field_is_well_formed(
     request: Option<&RequestMessage>,
     selected_operation: u32,
@@ -1615,29 +1633,7 @@ fn client_operation_field_is_well_formed(
                     .filter(|field| field.tag().raw() == field_tag)
                     .all(|field| {
                         !std::mem::replace(&mut field_seen, true)
-                            && field.with_value(|value| match expected_type {
-                                OperationFieldType::Integer => {
-                                    matches!(value, ValueView::Integer(_))
-                                }
-                                OperationFieldType::LeaseTime => {
-                                    matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
-                                }
-                                OperationFieldType::Structure => {
-                                    matches!(value, ValueView::Structure(_))
-                                }
-                                OperationFieldType::RightsStructure => match value {
-                                    ValueView::Structure(value) => {
-                                        delegated_login_rights_are_well_formed(&value)
-                                    }
-                                    _ => false,
-                                },
-                                OperationFieldType::UsageLimitsStructure => match value {
-                                    ValueView::Structure(value) => {
-                                        delegated_login_usage_limits_are_well_formed(&value)
-                                    }
-                                    _ => false,
-                                },
-                            })
+                            && field.with_value(|value| expected_type.accepts(value))
                     });
                 well_formed && (!required || field_seen)
             })
