@@ -2263,13 +2263,14 @@ fn client_can_represent_optional_modify_attribute_selector(
         }
 
         batch_item
-            .with_request_payload(|payload| match field_presence(&payload, CURRENT_ATTRIBUTE) {
-                FieldPresence::Missing => true,
-                FieldPresence::Duplicate => false,
-                FieldPresence::Unique(current_attribute) => {
-                    current_attribute.with_value(|value| matches!(value, ValueView::Structure(_)))
-                }
-            })
+            .with_request_payload(
+                |payload| match field_presence(&payload, CURRENT_ATTRIBUTE) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(current_attribute) => current_attribute
+                        .with_value(|value| matches!(value, ValueView::Structure(_))),
+                },
+            )
             .unwrap_or(false)
     })
 }

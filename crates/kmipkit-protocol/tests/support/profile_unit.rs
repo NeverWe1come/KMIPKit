@@ -3920,10 +3920,7 @@ fn profile_maps_modify_attribute_current_attribute_as_optional_capability() {
             include_current_attribute
         );
 
-        let request = request_message_with_operation_payload(
-            MODIFY_ATTRIBUTE_OPERATION,
-            payload,
-        );
+        let request = request_message_with_operation_payload(MODIFY_ATTRIBUTE_OPERATION, payload);
         assert!(evaluate(Some(&request), None));
         result
             .validate_request(&request)

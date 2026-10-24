@@ -95123,19 +95123,21 @@
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
-        "crates/kmipkit-protocol/src/modify_attribute.rs"
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_modify_attribute_selector"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_current_attribute_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_omits_current_attribute_without_selecting_an_instance_locally"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.34 makes Current Attribute optional for Modify Attribute when the object has one instance; selecting an instance is a server responsibility. The local positive request test verifies that the client can omit Current Attribute without selecting an instance locally. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
+      "review_note": "KMIP Specification v2.1 §6.1.34 makes Current Attribute optional for Modify Attribute when the object has one instance; selecting an instance is a server responsibility. The profile mapping verifies that the typed client can represent Current Attribute both present and omitted. Under §6.1.34 paragraph 1, omission selects the sole instance when exactly one exists and requires an error when multiple instances exist; KMIPKit does not infer the remote instance count or claim server-side selection/error behavior. No requirement-specific official Test Case ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-002",
