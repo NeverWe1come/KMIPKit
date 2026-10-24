@@ -6155,3 +6155,19 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.34-001-001` from KMIP Specification v2.1 §6.1.34 p
 | Independent reviews and hosted CI | QA/security re-review; exact-head hosted CI | PASS: independent QA and security reviews found no actionable P0–P3 findings. The change does not touch parser, transport/TLS, FFI, secrets, or dependencies. Exact-head hosted CI is required after publication. Coverage collection remains enabled; only the minimum-threshold gate is waived for unfinished PRs #90 and #104. |
 
 Baseline Client now has 168 valid executable typed mappings out of 265 assigned requirements; 97 remain unmapped. Runtime readiness remains `evidence_incomplete`; three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open. This increment makes no server-behavior or profile-conformance claim.
+
+### KMIPKIT-0010 T040 — Discover Versions singleton preference order (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.16-001-002` from KMIP Specification v2.1 §6.1.16 paragraph 1 as Baseline Client `RequiredBehavior`. The client-supported preference list in KMIPKit 1.0 contains only KMIP 2.1, so its singleton list satisfies decreasing preference order. The evaluator reuses the existing check that only supported versions are advertised. This evidence covers the 1.0 singleton case; it does not claim a general multi-version sorting implementation. The pinned OASIS Test Cases inventory does not link a requirement-specific official test case.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `04ae8a0a` | `cargo test -p kmipkit-protocol --lib profile_maps_required_discover_versions_preference_order_for_single_supported_version --all-features --locked -- --nocapture` — expected failure: no typed mapping existed for `KMIPKIT-REQ-SPEC-6.1.16-001-002`. |
+| Green | DCO commit `7123c75a` | Added the `RequiredBehavior` mapping, reusing the operation-scoped supported-version evaluator; the focused test passed and asserts the 1.0 model advertises only `(2, 1)`. |
+| Refactor and traceability | DCO commit `24d2658d` | Added implementation/test references and scoped review note to the normative catalog, regenerated profile/report outputs, and synchronized the hand-reviewed report snapshot. |
+| Protocol regression | Focused mapping test; `cargo test -q -p kmipkit-protocol --all-features --locked` | PASS: focused test and all 1,008 protocol unit tests, integration targets, and doctests. |
+| Catalog and traceability | Catalog validation; profile generator `--check`; report generator `--check`; full-profile report snapshot; bidirectional requirement-test evidence; feature traceability; requirement traceability | PASS: catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata/report current; report snapshot and bidirectional evidence pass; all 21 feature-traceability tests pass (one Windows symlink-permission skip); both requirement-traceability tests pass. |
+| Quality | Workspace Clippy with `-D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. AWS-LC emitted existing Windows compiler/NASM diagnostics while the successful local build completed. |
+| Remaining gates | Independent review and exact-head hosted CI | The earlier Modify Attribute increment has independent QA/security approval. This combined update requires its own QA/security re-review and exact-head hosted CI after publication. Coverage collection remains enabled; minimum-threshold enforcement is waived only for unfinished PRs #90 and #104. |
+
+Baseline Client now has 169 valid executable typed mappings out of 265 assigned requirements; 96 remain unmapped. Runtime readiness remains `evidence_incomplete`; three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open. No general multi-version ordering or profile-conformance claim is made.
