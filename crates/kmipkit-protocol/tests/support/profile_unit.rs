@@ -7960,7 +7960,23 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
     result
         .validate_request(&unrelated_operation)
         .expect("the Register-only rule does not constrain unrelated operations");
+}
 
+#[test]
+fn profile_rejects_malformed_register_key_value_attributes_container() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.2-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Attributes have a typed optional-capability rule");
+    let evaluate = mapping
+        .evaluator
+        .expect("the capability has a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
     let malformed = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
