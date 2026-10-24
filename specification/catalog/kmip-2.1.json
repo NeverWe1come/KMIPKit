@@ -89918,6 +89918,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "11.32"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.34"
         }
       ],
       "source_keyword": "MAY",
@@ -89926,7 +89934,7 @@
       "summary": "The client may set NIST SP800-57 Key Type, preferably during Register or object creation.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": null,
+      "condition": "For known KMIP Object Types, NIST Key Type is applicable to Key objects and Secret Data; unknown or extension Object Type values remain uninterpreted.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
@@ -89947,7 +89955,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned OASIS KMIP v2.1 §4.34 paragraph 1 and Table 97 permit NIST Key Type for Key or Secret Data objects and define Enumeration encoding; §11.32 defines value 6 for a Symmetric data encryption key and the 8XXXXXXX extension range. The typed optional-capability mapping checks Register request representation only: omission and extension enumerations are accepted, while duplicate or non-Enumeration values are rejected. The existing Register model test includes the Table 293 Cryptographic Algorithm and Cryptographic Length prerequisites. No server acceptance, Create behavior, use-policy enforcement, or modification/deletion behavior is claimed. The pinned OASIS Test Cases inventory links no requirement-specific official Test Case ID; test_case_ids remains empty."
+      "review_note": "Pinned OASIS KMIP v2.1 §4.34 paragraph 1 and Table 97 permit NIST Key Type for Key or Secret Data objects and define Enumeration encoding; §11.32 defines value 6 for a Symmetric data encryption key and the 8XXXXXXX extension range. Section 11.34 Table 468 identifies Object Type values, and §2.4 Table 5 describes the PGP Key Object Structure. For Register requests, the typed optional-capability mapping accepts Key Object Types Symmetric=2, Public=3, Private=4, Split=5, PGP Key=9, and Secret Data=7; it rejects the known unrelated Certificate=1, reserved=6, Opaque=8, and Certificate Request=10 types when NIST Key Type is present. Unknown or extension Object Type values remain uninterpreted. Omission remains valid, and duplicate or non-Enumeration fields are rejected. The existing Register model test includes the §6.1.43 Table 293 Cryptographic Algorithm and Cryptographic Length prerequisites. No server acceptance, Create behavior, use-policy enforcement, or modification/deletion behavior is claimed. The pinned OASIS Test Cases inventory links no requirement-specific official Test Case ID; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.34-001-002",

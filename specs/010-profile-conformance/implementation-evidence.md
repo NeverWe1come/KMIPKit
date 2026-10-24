@@ -6068,3 +6068,27 @@ Normative source: KMIP Specification v2.1 §4.34 paragraph 1 and Table 97 permit
 | Catalog and generated report | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --write --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .`; `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v`; `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_test_evidence_is_bidirectional_or_has_gap_reason -v` | PASS: catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and coverage report current; report regression and bidirectional evidence tests pass. Baseline Client maps 165/265 requirements (100 unmapped); readiness remains `evidence_incomplete`. |
 | Regression suites | `cargo test -q -p kmipkit-protocol --all-features --locked`; `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v`; `git diff --check` | PASS: 1,002 protocol unit tests and all integration/doctest targets; all 21 feature-traceability tests pass with one Windows symlink-permission skip; no whitespace errors. |
 | Remaining verification | Independent QA/security review and exact-head hosted CI | Pending publication of this evidence update. Coverage thresholds remain waived for unfinished PRs #90 and #104 while coverage collectors stay enabled. T040 remains open. |
+
+#### NIST Key Type applicability correction (2026-10-24)
+
+QA review found that the first Register mapping checked the optional Enumeration shape but did not enforce the §4.34 applicability to Key or Secret Data objects. The evaluator now checks the supplied Object Type whenever NIST Key Type is present. KMIP v2.1 §11.34 Table 468 identifies the known Object Type values, and §2.4 Table 5 describes the PGP Key Object Structure. Known Key types (Symmetric=2, Public=3, Private=4, Split=5, PGP Key=9) and Secret Data=7 are accepted; known unrelated values (Certificate=1, reserved=6, Opaque=8, Certificate Request=10) are rejected. Unknown/extension Object Type values remain uninterpreted for forward compatibility. Absence of the optional NIST Key Type remains valid. This remains request-representation evidence for Register only.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Corrective Red | `acf455cd` | Added the known Opaque Object Type negative case; focused profile test failed because the evaluator accepted it. |
+| Corrective Green | `1452d54f` | The focused profile test passed after known non-Key Object Types were rejected when NIST Key Type is present. |
+| Additional Red | `2d943f1a` | Added PGP Key Object Type positive coverage; focused profile test failed because the implementation treated PGP Key as inapplicable. |
+| Additional Green | `2239e5f9` | The focused profile test passed with PGP Key accepted and the other classification cases retained. |
+
+The catalog condition and source references now record the applicability boundary and cite pinned KMIP v2.1 §§2.4, 4.34, 11.32, and 11.34. Baseline mapping count remains 165/265; profile readiness remains `evidence_incomplete`.
+
+| Post-correction verification | Command | Result |
+|---|---|---|
+| Focused profile test | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_optional_register_nist_key_type_capability -- --nocapture` | PASS after the additional Object Type cases. |
+| Protocol suite | `cargo test -q -p kmipkit-protocol --all-features --locked` | PASS: 1,002 unit tests and all integration/doctest targets. |
+| Workspace Clippy and format | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check` | PASS. AWS-LC build output included environment/NASM diagnostics on Windows; Clippy completed with exit code 0. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --repo-root . --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and coverage report are current. |
+| Catalog regressions | Report fail-closed snapshot and bidirectional requirement evidence tests | PASS: 2 tests. |
+| Feature traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v` | PASS: 21 tests; one Windows symlink-permission skip. |
+| Immutable source and diff | `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`; `git diff --check` | PASS: pinned upstream OASIS sources match exact PR base; no whitespace errors. |
+| Independent reviews | QA correction re-review | PASS: QA found no actionable spec-compliance or quality findings; the independent security review found no actionable security findings. Hosted exact-head CI remains pending publication. |
