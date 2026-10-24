@@ -4127,16 +4127,20 @@ fn register_nist_key_type_is_enumeration(payload: &StructureView<'_>) -> bool {
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
             ValueView::Structure(attributes) => {
-                match field_presence(&attributes, NIST_KEY_TYPE_ATTRIBUTE) {
-                    FieldPresence::Missing => true,
-                    FieldPresence::Duplicate => false,
-                    FieldPresence::Unique(nist_key_type) => {
-                        nist_key_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
-                    }
-                }
+                optional_attribute_is_enumeration(&attributes, NIST_KEY_TYPE_ATTRIBUTE)
             }
             _ => false,
         }),
+    }
+}
+
+fn optional_attribute_is_enumeration(attributes: &StructureView<'_>, tag: u32) -> bool {
+    match field_presence(attributes, tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(attribute) => {
+            attribute.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }
     }
 }
 
