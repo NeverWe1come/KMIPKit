@@ -408,10 +408,7 @@ fn request_message_with_optional_maximum_response_size(
 ) -> crate::RequestMessage {
     let mut header_items = vec![test_protocol_version()];
     if let Some(size) = maximum_response_size {
-        header_items.push(tagged(
-            MAXIMUM_RESPONSE_SIZE_TAG,
-            Value::integer(size),
-        ));
+        header_items.push(tagged(MAXIMUM_RESPONSE_SIZE_TAG, Value::integer(size)));
     }
     header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
 
@@ -2478,14 +2475,19 @@ fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let discover_without_limit = request_message_with_optional_maximum_response_size(
-        DISCOVER_VERSIONS_OPERATION,
-        None,
-    );
+    let discover_without_limit =
+        request_message_with_optional_maximum_response_size(DISCOVER_VERSIONS_OPERATION, None);
     assert!(evaluate(Some(&discover_without_limit), None));
     result
         .validate_request(&discover_without_limit)
         .expect("Discover Versions may omit the peer-visible field");
+
+    let split_key_without_limit =
+        request_message_with_optional_maximum_response_size(CREATE_SPLIT_KEY_OPERATION, None);
+    assert!(evaluate(Some(&split_key_without_limit), None));
+    result
+        .validate_request(&split_key_without_limit)
+        .expect("the recommendation does not make Maximum Response Size mandatory");
 
     let discover_with_limit = request_message_with_optional_maximum_response_size(
         DISCOVER_VERSIONS_OPERATION,
@@ -2501,10 +2503,8 @@ fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
 
-    let split_key_with_limit = request_message_with_optional_maximum_response_size(
-        CREATE_SPLIT_KEY_OPERATION,
-        Some(4096),
-    );
+    let split_key_with_limit =
+        request_message_with_optional_maximum_response_size(CREATE_SPLIT_KEY_OPERATION, Some(4096));
     assert!(evaluate(Some(&split_key_with_limit), None));
     result
         .validate_request(&split_key_with_limit)

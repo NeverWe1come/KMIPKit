@@ -99380,7 +99380,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Discover Versions is not classified as likely-large; the peer-visible field is omitted after assessing the recommendation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.12 recommends sending this field only when a request may yield a large reply. The typed profile rule rejects it for Discover Versions, which KMIPKIT-0007 classifies as not likely-large; it accepts omission and leaves other operation classifications to their approved feature specifications. KMIPKIT-0014 tests that Create Split Key advertises the configured local cap and enforces exact and over-limit response boundaries. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-001",

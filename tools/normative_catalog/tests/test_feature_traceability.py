@@ -1152,10 +1152,13 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     self.assertEqual(mapping["test_kind"], expected_test_kind)
                 self.assertIsNotNone(mapping["test_id"])
                 if mapping["test_id"] not in requirement.get("verification_refs", []):
-                    self.assertEqual(
+                    self.assertIn(
                         requirement_id,
-                        "KMIPKIT-REQ-SPEC-9.6-001-002",
-                        "profile evaluator evidence is maintained in the typed rule registry, not the KMIPKIT-0007 owner inventory",
+                        {
+                            "KMIPKIT-REQ-SPEC-9.6-001-002",
+                            "KMIPKIT-REQ-SPEC-9.12-001-003",
+                        },
+                        "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
                     )
                 self.assertTrue(
                     self._is_executable_test_ref(mapping["test_id"]),
