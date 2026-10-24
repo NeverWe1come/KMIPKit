@@ -5695,3 +5695,11 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.18-005` and `-006` from KMIP Specification v2.1 §6
 | Hosted CI | Exact-head run after the coherent batch is pushed | Pending. |
 
 Baseline Client now has 124 valid executable typed mappings of 265 assigned requirements; 141 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — No Encoding excludes Key Value attributes (Red)
+
+Normative source: KMIP Specification v2.1 §3.3, Table 14, Encoding Option row (pinned source HTML lines 8050–8062); requirement `KMIPKIT-REQ-SPEC-3.3-003`. No requirement-specific official Test Case ID is linked by the pinned source.
+
+| Stage | Command | Result |
+|---|---|---|
+| Red | `cargo test -p kmipkit-protocol --all-features --locked profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding` | Expected failure. The selected Baseline rule had no typed mapping, so validation returned `MissingRuleMapping` instead of the test's required `RequestRuleRejected` for Register and Import requests that combine No Encoding with Key Value attributes. The test also covers the allowed no-attributes form and preservation of an unknown future encoding value. |
