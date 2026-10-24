@@ -5036,6 +5036,14 @@ fn client_validate_repeated_unique_identifiers_are_usable(
     })
 }
 
+fn client_validate_chain_inputs_are_usable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_validate_repeated_certificates_are_usable(request, None)
+        && client_validate_repeated_unique_identifiers_are_usable(request, None)
+}
+
 fn attribute_fields_do_not_mutate_key_value_present(
     payload: &StructureView<'_>,
     wrapper_tag: u32,
@@ -7084,6 +7092,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_validate_validity_date_is_usable),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_validity_date_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_validate_chain_inputs_are_usable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_mixed_chain_inputs_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
