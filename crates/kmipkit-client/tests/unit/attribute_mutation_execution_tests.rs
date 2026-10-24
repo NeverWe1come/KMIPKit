@@ -403,8 +403,8 @@ fn usage_limits_value() -> Item {
     item(
         USAGE_LIMITS,
         Value::structure(structure([
-            item(USAGE_LIMITS_COUNT, Value::integer(3)),
-            item(USAGE_LIMITS_TOTAL, Value::integer(9)),
+            item(USAGE_LIMITS_COUNT, Value::long_integer(3)),
+            item(USAGE_LIMITS_TOTAL, Value::long_integer(9)),
             item(USAGE_LIMITS_UNIT, Value::enumeration(1)),
         ])),
     )

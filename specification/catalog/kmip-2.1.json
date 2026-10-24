@@ -91379,7 +91379,8 @@
         "crates/kmipkit-protocol/src/add_attribute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
-        "crates/kmipkit-protocol/src/modify_attribute.rs"
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
@@ -91387,12 +91388,14 @@
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_usage_limits_count_in_add_and_modify_attribute",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.59, paragraph 3, states that the Usage Limits Count value SHALL NOT be set or modified by the client through Add Attribute or Modify Attribute. Section 7.40 Table 392 defines Count as a member of the Usage Limits structure. The typed Baseline Client rule rejects Count in the New Attribute value for either operation, while this source clause does not prohibit Total or Unit by themselves and does not constrain unrelated operations. The linked profile test exercises both prohibited operations, allowed Total/Unit-only values, and an unrelated operation; the client execution test supplies negative pre-send evidence. The pinned OASIS Test Cases inventory has no requirement-specific test ID for this clause, so no official OASIS test execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.60-001",
