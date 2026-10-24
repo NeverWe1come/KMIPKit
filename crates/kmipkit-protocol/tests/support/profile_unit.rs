@@ -1904,7 +1904,10 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
     );
-    assert_eq!(mapping.verification_category, requirement.verification_category);
+    assert_eq!(
+        mapping.verification_category,
+        requirement.verification_category
+    );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the optional capability has positive executable evidence");
     assert!(mapping.test_evidence.iter().any(|evidence| {

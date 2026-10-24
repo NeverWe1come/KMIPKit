@@ -1604,6 +1604,15 @@ fn client_can_repeat_query_functions(
     request.is_some()
 }
 
+fn client_can_repeat_get_wrapping_attribute_names(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §7.18 Table 370 permits repeated Attribute Name Text Strings in a Key
+    // Wrapping Specification; §6.1.19 Table 220 carries that structure in Get.
+    request.is_some()
+}
+
 fn client_can_include_request_time_stamp(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -5265,6 +5274,20 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.18-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_repeat_get_wrapping_attribute_names),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

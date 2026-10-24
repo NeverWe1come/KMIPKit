@@ -1166,6 +1166,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                             "KMIPKIT-REQ-SPEC-6.1.38-001-001",
                             "KMIPKIT-REQ-SPEC-9.1-001",
                             "KMIPKIT-REQ-SPEC-9.19-002",
+                            "KMIPKIT-REQ-SPEC-7.18-006",
                         },
                         "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
                     )
