@@ -16434,7 +16434,7 @@ fn profile_maps_optional_join_split_key_secret_data_type() {
     const SECRET_DATA_OBJECT_TYPE: u32 = 7;
     const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
     const SECRET_DATA_TYPE_TAG: u32 = 0x0042_0086;
-    const VENDOR_SECRET_DATA_TYPE: u32 = 0xF123_4568;
+    const EXTENSION_SECRET_DATA_TYPE: u32 = 0xF123_4568;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -16459,6 +16459,11 @@ fn profile_maps_optional_join_split_key_secret_data_type() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    assert_eq!(
+        EXTENSION_SECRET_DATA_TYPE & 0xF000_0000,
+        0x8000_0000,
+        "KMIP v2.1 §11.52 Table 483 assigns extension values in 8XXXXXXX"
+    );
 
     let with_type = request_message_with_operation_payload(
         JOIN_SPLIT_KEY_OPERATION,
@@ -16470,7 +16475,7 @@ fn profile_maps_optional_join_split_key_secret_data_type() {
             ),
             tagged(
                 SECRET_DATA_TYPE_TAG,
-                Value::enumeration(VENDOR_SECRET_DATA_TYPE),
+                Value::enumeration(EXTENSION_SECRET_DATA_TYPE),
             ),
         ]),
     );
