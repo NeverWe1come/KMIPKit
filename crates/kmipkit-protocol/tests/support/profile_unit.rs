@@ -5662,6 +5662,53 @@ fn profile_maps_repeated_create_key_pair_attribute_groups() {
 }
 
 #[test]
+fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
+    // KMIP Specification v2.1 §6.1.9 permits callers to supply shared
+    // attributes through Common Attributes and differing values through the
+    // separate Private Key Attributes and Public Key Attributes groups.
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+
+    for (requirement_id, fields) in [
+        (
+            "KMIPKIT-REQ-SPEC-6.1.9-001-001",
+            vec![tagged(
+                COMMON_ATTRIBUTES,
+                Value::structure(repeated_context_attributes()),
+            )],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.9-001-002",
+            vec![
+                tagged(
+                    PRIVATE_KEY_ATTRIBUTES,
+                    Value::structure(repeated_context_attributes()),
+                ),
+                tagged(
+                    PUBLIC_KEY_ATTRIBUTES,
+                    Value::structure(repeated_context_attributes()),
+                ),
+            ],
+        ),
+    ] {
+        let result = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+        let request = request_message_with_operation_payload(
+            CREATE_KEY_PAIR_OPERATION,
+            structure(fields),
+        );
+        result
+            .validate_request(&request)
+            .expect("the client can represent each §6.1.9 attribute assignment group");
+    }
+}
+
+#[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
