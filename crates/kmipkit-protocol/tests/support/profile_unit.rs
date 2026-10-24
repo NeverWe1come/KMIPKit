@@ -28,7 +28,7 @@ use super::{
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
 };
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
@@ -420,6 +420,28 @@ fn request_message_with_operation_payload(
         ),
     ]))
     .expect("test Request Message with operation payload is valid")
+}
+
+fn request_payload_signature(request: &crate::RequestMessage) -> Vec<(u32, ItemType, Option<u32>)> {
+    request
+        .batch_items()
+        .next()
+        .and_then(|item| {
+            item.with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .map(|field| {
+                        let enumeration = field.with_value(|value| match value {
+                            ValueView::Enumeration(value) => Some(*value),
+                            _ => None,
+                        });
+                        (field.tag().raw(), field.item_type(), enumeration)
+                    })
+                    .collect()
+            })
+        })
+        .expect("the test request has one Request Payload")
 }
 
 fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage {
@@ -5055,6 +5077,55 @@ fn profile_maps_client_get_key_compression_type_selector() {
     ));
 }
 
+fn profile_return_controls_wrapping_specification() -> Structure {
+    structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ])
+}
+
+fn export_request_with_return_controls(include_controls: bool) -> crate::RequestMessage {
+    let mut request = crate::ExportRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()));
+    if include_controls {
+        request = request
+            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
+            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569))
+            .with_key_wrapping_specification(profile_return_controls_wrapping_specification());
+    }
+    request_message_with_operation_payload(
+        0x0000_002B,
+        request
+            .into_ttlv_payload()
+            .expect("Export request retains the caller-selected optional controls"),
+    )
+}
+
+fn get_request_with_return_controls(include_controls: bool) -> crate::RequestMessage {
+    let mut request = crate::GetRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()));
+    if include_controls {
+        request = request
+            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
+            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569))
+            .with_key_wrapping_specification(profile_return_controls_wrapping_specification());
+    }
+    request_message_with_operation_payload(
+        GET_OPERATION,
+        request
+            .to_ttlv_payload()
+            .expect("Get request retains the matching optional controls"),
+    )
+}
+
 #[test]
 fn profile_maps_client_export_controls_with_get_semantics() {
     // KMIP Specification v2.1 §6.1.18 requires Export's four controls to use
@@ -5062,7 +5133,6 @@ fn profile_maps_client_export_controls_with_get_semantics() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.18-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const EXPORT_OPERATION: u32 = 0x0000_002B;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -5084,44 +5154,30 @@ fn profile_maps_client_export_controls_with_get_semantics() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let wrapping_specification = structure([
-        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
-        tagged(
-            ENCRYPTION_KEY_INFORMATION_TAG,
-            Value::structure(structure([tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("wrapping-key".to_owned()),
-            )])),
-        ),
-    ]);
-    let selected = request_message_with_operation_payload(
-        EXPORT_OPERATION,
-        crate::ExportRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
-            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
-            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
-            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569))
-            .with_key_wrapping_specification(wrapping_specification)
-            .into_ttlv_payload()
-            .expect("all caller-selected Export controls encode in Get-compatible form"),
+    let selected = export_request_with_return_controls(true);
+    let get_equivalent = get_request_with_return_controls(true);
+    assert_eq!(
+        request_payload_signature(&selected),
+        request_payload_signature(&get_equivalent),
+        "the four Export controls match Get in tag order, type, and raw enumeration value"
     );
     result
         .validate_request(&selected)
         .expect("all four caller-selected Export controls retain Get semantics");
 
-    let omitted = request_message_with_operation_payload(
-        EXPORT_OPERATION,
-        crate::ExportRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
-            .into_ttlv_payload()
-            .expect("all four Export controls remain optional when no wrapped key is requested"),
+    let omitted = export_request_with_return_controls(false);
+    let get_with_omitted_controls = get_request_with_return_controls(false);
+    assert_eq!(
+        request_payload_signature(&omitted),
+        request_payload_signature(&get_with_omitted_controls),
+        "omitted Export controls match omission in Get"
     );
     result
         .validate_request(&omitted)
         .expect("omitting the optional Export controls remains valid");
 
     let malformed = request_message_with_operation_payload(
-        EXPORT_OPERATION,
+        0x0000_002B,
         structure([tagged(
             0x0042_0042,
             Value::text_string("not-an-enumeration".to_owned()),
