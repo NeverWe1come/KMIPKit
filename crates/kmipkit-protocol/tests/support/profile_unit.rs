@@ -2922,6 +2922,66 @@ fn profile_maps_validate_validity_date_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 permit the
+    // request to combine certificate objects and Managed Certificate IDs.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("mixed Validate chain inputs have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the mixed chain MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let mixed_payload = crate::ValidateRequest::new()
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
+        .into_ttlv_payload()
+        .expect("a Validate request can combine a certificate and a managed identifier");
+    assert_eq!(
+        validate_request_payload_tags(&mixed_payload),
+        [0x0042_0013, UNIQUE_IDENTIFIER_TAG]
+    );
+    let mixed = request_message_with_operation_payload(VALIDATE_OPERATION, mixed_payload);
+    assert!(evaluate(Some(&mixed), None));
+    result
+        .validate_request(&mixed)
+        .expect("the selected profile accepts mixed chain inputs");
+
+    let omitted_payload = crate::ValidateRequest::new()
+        .into_ttlv_payload()
+        .expect("the Validate request may omit both optional chain inputs");
+    let omitted = request_message_with_operation_payload(VALIDATE_OPERATION, omitted_payload);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the optional chain inputs are not required on every Validate call");
+}
+
+#[test]
 fn profile_maps_validate_repeated_certificates_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Certificate optional
     // and permits it to be repeated in a Validate request.

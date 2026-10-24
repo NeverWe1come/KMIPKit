@@ -6092,3 +6092,11 @@ The catalog condition and source references now record the applicability boundar
 | Feature traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability -v` | PASS: 21 tests; one Windows symlink-permission skip. |
 | Immutable source and diff | `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`; `git diff --check` | PASS: pinned upstream OASIS sources match exact PR base; no whitespace errors. |
 | Independent reviews | QA correction re-review | PASS: QA found no actionable spec-compliance or quality findings; the independent security review found no actionable security findings. Hosted exact-head CI remains pending publication. |
+
+### KMIPKIT-0010 T040 slice — mixed Validate chain inputs (2026-10-24)
+
+Normative source: pinned KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340. The source permits certificate objects, Managed Certificate Unique Identifiers, or both to compose the requested chain. This slice maps that optional client request capability only. It does not claim certificate parsing, chain validation, trust, server acceptance, an official Test Case pass, or profile conformance.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit, recorded after commit | `cargo test -p kmipkit-protocol --lib profile_maps_validate_mixed_chain_inputs_as_optional_capability --all-features` — expected failure: no typed profile rule was registered for `KMIPKIT-REQ-SPEC-6.1.57-002-001`; the test failed at its missing-mapping assertion (1 failed, 1,002 filtered out). |
