@@ -22037,8 +22037,14 @@ class CatalogValidationTests(unittest.TestCase):
                 "optional_table_body_value",
                 [29673, 29688],
                 "Lease Time No The lease time Interval or Date Time for the ticket",
-                "crates/kmipkit-protocol/src/login.rs",
-                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                [
+                    "crates/kmipkit-protocol/src/login.rs",
+                    "crates/kmipkit-protocol/src/profile.rs::client_login_lease_time_is_optional_interval_or_date_time",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
+                ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.30-002": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
@@ -22068,7 +22074,10 @@ class CatalogValidationTests(unittest.TestCase):
                 [29866, 29881],
                 "Ticket Yes The ticket to be invalidated",
                 "crates/kmipkit-protocol/src/logout.rs",
-                "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+                [
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_logout_required_ticket_as_required_behavior",
+                    "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+                ],
             ),
         }
 
@@ -22186,14 +22195,24 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["feature_spec"], "KMIPKIT-0038")
                 self.assertEqual(requirement["status"], "verified")
-                self.assertEqual(requirement["implementation_refs"], [implementation_ref])
-                self.assertEqual(requirement["verification_refs"], [verification_ref])
+                implementation_refs = (
+                    implementation_ref
+                    if isinstance(implementation_ref, list)
+                    else [implementation_ref]
+                )
+                verification_refs = (
+                    verification_ref if isinstance(verification_ref, list) else [verification_ref]
+                )
+                self.assertEqual(requirement["implementation_refs"], implementation_refs)
+                self.assertEqual(requirement["verification_refs"], verification_refs)
                 self.assertEqual(requirement["test_case_ids"], [])
                 review_note = requirement["review_note"]
                 self.assertIn("No requirement-specific official Test Cases ID is explicitly linked", review_note)
                 self.assertIn("No official case-level pass is claimed.", review_note)
-                self.assertTrue((ROOT / implementation_ref).is_file())
-                self.assertTrue((ROOT / verification_ref.split("::", 1)[0]).is_file())
+                for reference in implementation_refs:
+                    self.assertTrue((ROOT / reference.split("::", 1)[0]).is_file())
+                for reference in verification_refs:
+                    self.assertTrue((ROOT / reference.split("::", 1)[0]).is_file())
                 self.assertEqual(crosswalk_by_gap[gap_id]["requirement_id"], requirement_id)
                 self.assertEqual(crosswalk_by_gap[gap_id]["source_force"], source_force)
                 self.assertNotIn("source_clause_id", crosswalk_by_gap[gap_id])

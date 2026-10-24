@@ -91395,7 +91395,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.59, paragraph 3, states that the Usage Limits Count value SHALL NOT be set or modified by the client through Add Attribute or Modify Attribute. Section 7.40 Table 392 defines Count as a member of the Usage Limits structure. The typed Baseline Client rule rejects Count in the New Attribute value for either operation, while this source clause does not prohibit Total or Unit by themselves and does not constrain unrelated operations. The linked profile test exercises both prohibited operations, allowed Total/Unit-only values, and an unrelated operation; the client execution test supplies negative pre-send evidence. The pinned OASIS Test Cases inventory has no requirement-specific test ID for this clause, so no official OASIS test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §4.59, paragraph 3, states that the Usage Limits Count value SHALL NOT be set or modified by the client through Add Attribute or Modify Attribute. Section 7.40 Table 392 defines Count as a member of the Usage Limits structure. The typed Baseline Client rule rejects Count in the New Attribute value for either operation, while this source clause does not prohibit Total or Unit by themselves and does not constrain unrelated operations. The linked profile test exercises both prohibited operations, allowed Total/Unit-only values, and an unrelated operation; the client execution test supplies negative pre-send evidence. The pinned official OASIS Test Cases inventory has no requirement-specific test ID for this clause, so no official OASIS Test Cases execution is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.60-001",
@@ -92764,7 +92764,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.11 Table 196 requires supplied Authenticated Encryption Additional Data for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.11 Table 196 requires supplied Authenticated Encryption Additional Data for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or pinned official OASIS Test Cases result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-006",
@@ -92800,7 +92800,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.11 Table 196 requires a supplied Authenticated Encryption Tag for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.11 Table 196 requires a supplied Authenticated Encryption Tag for multipart Decrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or pinned official OASIS Test Cases result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.13-001-001",
@@ -93550,7 +93550,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.17 Table 214 requires supplied Authenticated Encryption Additional Data for multipart Encrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or official Test Case result is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.17 Table 214 requires supplied Authenticated Encryption Additional Data for multipart Encrypt to be present on the initial request. The typed profile evaluator rejects it on requests identified as continuations by Correlation Value or a false Init Indicator, while permitting single-part requests. The local profile test covers these branches, and a fake-transport client test verifies actual initial and continuation payloads. No server acceptance or pinned official OASIS Test Cases result is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.19-001",
@@ -94170,7 +94170,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed request pairs every transmitted identifier occurrence with its caller-known Split Key Threshold and rejects an insufficient entry count before serialization. KMIP Specification v2.1 §4.58 Table 145 permits Text String, Enumeration, or Integer encodings for Unique Identifier; §11.58 Table 489 supplies the tested Join Split Key Enumeration value. The profile evaluator accepts only those well-formed wire values and requires one or more entries. It relies on the typed request invariant for the off-wire threshold comparison; repeated identifier values remain separate entries. No hidden lookup, threshold inference, server acceptance, or requirement-specific official Test Case pass is claimed; local tests use source-derived table vectors."
+      "review_note": "The typed request pairs every transmitted identifier occurrence with its caller-known Split Key Threshold and rejects an insufficient entry count before serialization. Pinned KMIP Specification v2.1 §4.58 Table 145 permits Text String, Enumeration, or Integer encodings for Unique Identifier; §11.58 Table 489 supplies the tested Join Split Key Enumeration value. The profile evaluator accepts only those well-formed wire values and requires one or more entries. It relies on the typed request invariant for the off-wire threshold comparison; repeated identifier values remain separate entries. No hidden lookup, threshold inference, server acceptance, or requirement-specific official Test Case pass is claimed; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.27-002-001",
@@ -101700,7 +101700,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30 Table 253, request payload row Lease Time (HTML lines 29673-29688), records optional_table_body_value. The row permits Interval or Date Time. Local typed-model and profile tests verify omission and both encodings; profile validation rejects a malformed TTLV type and leaves unrelated operations unaffected. The pinned OASIS Test Cases inventory has no requirement-specific test ID; no official case-level pass or server behavior is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30 Table 253, request payload row Lease Time (HTML lines 29673-29688), records optional_table_body_value. The row permits Interval or Date Time. Local typed-model and profile tests verify omission and both encodings; profile validation rejects a malformed TTLV type and leaves unrelated operations unaffected. The pinned official OASIS Test Cases inventory has no requirement-specific test ID. No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed. No server behavior is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-002",
@@ -101801,10 +101801,6 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.31"
-        },
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "7.39"
         }
       ],
       "source_keyword": null,
@@ -101843,7 +101839,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.31 Table 256, request payload row Ticket (HTML lines 29866-29881), requires the client Logout request to include one Ticket. Section 7.39 Table 391 defines the Ticket Structure encoding. The typed profile test accepts a caller-supplied Ticket Structure and rejects omission or a wrong TTLV type; the model test verifies construction. This checks client request representation only. No requirement-specific official Test Cases ID is explicitly linked; no official case-level pass, ticket validity, or server behavior is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.31 Table 256, request payload row Ticket (HTML lines 29866-29881), requires the client Logout request to include one Ticket. Section 7.39 Table 391 defines the Ticket Structure encoding. The typed profile test accepts a caller-supplied Ticket Structure and rejects omission or a wrong TTLV type; the model test verifies construction. This checks client request representation only. No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed. No ticket validity or server behavior is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",
