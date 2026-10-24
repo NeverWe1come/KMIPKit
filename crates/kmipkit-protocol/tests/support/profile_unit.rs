@@ -1668,6 +1668,118 @@ fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
 }
 
 #[test]
+fn profile_maps_required_derive_key_symmetric_output_attributes() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 requires both Cryptographic
+    // Length and Cryptographic Algorithm when Derive Key creates a Symmetric Key.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-007-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-007";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("symmetric Derive Key attributes have an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the symmetric Derive Key attributes resolve to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule has category-matched conformance evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_symmetric_key = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            ],
+        ),
+    );
+    result
+        .validate_request(&valid_symmetric_key)
+        .expect("a derived Symmetric Key supplies both required attributes");
+
+    for malformed in [
+        derive_key_payload_with_attributes(
+            2,
+            [tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3))],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256))],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(
+                    CRYPTOGRAPHIC_LENGTH_TAG,
+                    Value::text_string("256".to_owned()),
+                ),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            ],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(
+                    CRYPTOGRAPHIC_ALGORITHM_TAG,
+                    Value::text_string("AES".to_owned()),
+                ),
+            ],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(512)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            ],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(4)),
+            ],
+        ),
+    ] {
+        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
+        assert_request_rejected_for_requirement(
+            &result,
+            &request,
+            REQUIREMENT_ID,
+            SOURCE_CLAUSE_ID,
+            "a derived Symmetric Key rejects a missing, mistyped, or duplicated required attribute",
+        );
+    }
+
+    let secret_data = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_payload(7, [Value::integer(512)]),
+    );
+    result
+        .validate_request(&secret_data)
+        .expect("this symmetric-key-specific requirement does not apply to Secret Data");
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the symmetric-key requirement does not constrain other operations");
+}
+
+#[test]
 fn profile_maps_client_optional_derive_key_secret_data_total_length() {
     // KMIP Specification v2.1 §6.1.14 permits deriving multiple keys and IVs
     // through a Secret Data result whose Cryptographic Length is the total.
