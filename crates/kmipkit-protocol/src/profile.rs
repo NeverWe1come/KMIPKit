@@ -1920,43 +1920,88 @@ fn client_link_members_are_required_in_object_state(
     required_member: RequiredLinkMember,
 ) -> bool {
     if let Some((request, response)) = response {
-        return request.batch_items().zip(response.batch_items()).all(
-            |(request_item, response_item)| {
-                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
-                    return true;
-                }
-                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
-                    return false;
-                }
+        let request_items = request.batch_items().collect::<Vec<_>>();
+        let response_items = response.batch_items().collect::<Vec<_>>();
+        if request_items.len() != response_items.len() {
+            return false;
+        }
 
-                let Some(status) = response_item.result_status() else {
-                    return false;
-                };
-                if status.raw() != RESULT_STATUS_SUCCESS {
-                    return true;
-                }
+        let mut consumed_responses = vec![false; response_items.len()];
+        for request_item in request_items.iter().copied() {
+            if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                continue;
+            }
 
-                response_item
-                    .with_response_payload(|payload| {
-                        payload
-                            .children()
-                            .iter()
-                            .filter(|field| field.tag().raw() == ATTRIBUTES)
-                            .all(|field| {
-                                field.with_value(|value| match value {
-                                    ValueView::Structure(attributes) => {
-                                        object_state_links_have_required_members(
-                                            &attributes,
-                                            required_member,
-                                        )
-                                    }
-                                    _ => false,
-                                })
-                            })
+            let request_id = request_item.with_unique_batch_item_id(<[u8]>::to_vec);
+            let response_index = if let Some(request_id) = request_id {
+                let matching_indices = response_items
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, item)| {
+                        item.with_unique_batch_item_id(|response_id| {
+                            response_id == request_id.as_slice()
+                        })
+                        .filter(|matches| *matches)
+                        .map(|_| index)
                     })
-                    .unwrap_or(true)
-            },
-        );
+                    .collect::<Vec<_>>();
+                if matching_indices.len() != 1 {
+                    return false;
+                }
+                matching_indices[0]
+            } else {
+                if request_items.len() != 1
+                    || response_items.len() != 1
+                    || response_items[0]
+                        .with_unique_batch_item_id(|_| ())
+                        .is_some()
+                {
+                    return false;
+                }
+                0
+            };
+
+            if consumed_responses[response_index] {
+                return false;
+            }
+            consumed_responses[response_index] = true;
+
+            let response_item = response_items[response_index];
+            if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                return false;
+            }
+
+            let Some(status) = response_item.result_status() else {
+                return false;
+            };
+            if status.raw() != RESULT_STATUS_SUCCESS {
+                continue;
+            }
+
+            let links_are_valid = response_item
+                .with_response_payload(|payload| {
+                    payload
+                        .children()
+                        .iter()
+                        .filter(|field| field.tag().raw() == ATTRIBUTES)
+                        .all(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Structure(attributes) => {
+                                    object_state_links_have_required_members(
+                                        &attributes,
+                                        required_member,
+                                    )
+                                }
+                                _ => false,
+                            })
+                        })
+                })
+                .unwrap_or(true);
+            if !links_are_valid {
+                return false;
+            }
+        }
+        return true;
     }
 
     let Some(request) = request else {
