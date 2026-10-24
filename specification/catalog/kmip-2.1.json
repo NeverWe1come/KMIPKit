@@ -93339,12 +93339,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/discover_versions.rs",
+        "crates/kmipkit-protocol/src/profile.rs::discover_versions_advertises_only_client_supported_versions"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_discover_versions_preference_order_for_single_supported_version"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.16 paragraph 1 requires supported protocol versions in decreasing order of preference. KMIPKit 1.0 supports only KMIP 2.1, so its single-entry Discover Versions list satisfies ordering. The profile test verifies this 1.0 singleton case only and does not claim general sorting of a multi-version list. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-004",
