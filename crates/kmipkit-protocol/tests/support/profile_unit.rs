@@ -4341,6 +4341,166 @@ fn profile_maps_client_locate_partial_structured_attribute_fields() {
 }
 
 #[test]
+fn profile_requires_complete_link_members_in_client_object_state() {
+    // KMIP Specification v2.1 §4.31 Table 91 requires both Link members for
+    // object state; §6.1.28 permits partial Link search criteria in Locate.
+    const REQUIREMENT_ID_LINK_TYPE: &str = "KMIPKIT-REQ-SPEC-4.31-004";
+    const REQUIREMENT_ID_LINKED_OBJECT: &str = "KMIPKIT-REQ-SPEC-4.31-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LINK_TAG: u32 = 0x0042_004A;
+    const LINK_TYPE_TAG: u32 = 0x0042_004B;
+    const LINKED_OBJECT_IDENTIFIER_TAG: u32 = 0x0042_004C;
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![
+            REQUIREMENT_ID_LINK_TYPE.to_owned(),
+            REQUIREMENT_ID_LINKED_OBJECT.to_owned(),
+        ],
+    };
+    let request_with_links = |operation, links: Vec<Item>| {
+        request_message_with_operation_payload(
+            operation,
+            structure([tagged(ATTRIBUTES_TAG, Value::structure(structure(links)))]),
+        )
+    };
+    let link = |members: Vec<Item>| tagged(LINK_TAG, Value::structure(structure(members)));
+    let valid_link = || {
+        link(vec![
+            tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                LINKED_OBJECT_IDENTIFIER_TAG,
+                Value::text_string("linked-object-7".to_owned()),
+            ),
+        ])
+    };
+
+    let valid_register = request_with_links(REGISTER_OPERATION_TAG, vec![valid_link()]);
+    result
+        .validate_request(&valid_register)
+        .expect("complete client object-state Links satisfy §4.31");
+    let repeated_links =
+        request_with_links(REGISTER_OPERATION_TAG, vec![valid_link(), valid_link()]);
+    result
+        .validate_request(&repeated_links)
+        .expect("multiple complete Link attributes are permitted");
+
+    for identifier in [Value::enumeration(91), Value::integer(-1)] {
+        let valid_identifier_form = request_with_links(
+            REGISTER_OPERATION_TAG,
+            vec![link(vec![
+                tagged(LINK_TYPE_TAG, Value::enumeration(0xFFFF_FFFF)),
+                tagged(LINKED_OBJECT_IDENTIFIER_TAG, identifier),
+            ])],
+        );
+        result
+            .validate_request(&valid_identifier_form)
+            .expect("all assigned Linked Object Identifier wire types are retained");
+    }
+
+    let incomplete_links = [
+        (
+            link(vec![tagged(
+                LINKED_OBJECT_IDENTIFIER_TAG,
+                Value::text_string("linked-object-7".to_owned()),
+            )]),
+            REQUIREMENT_ID_LINK_TYPE,
+        ),
+        (
+            link(vec![tagged(LINK_TYPE_TAG, Value::enumeration(1))]),
+            REQUIREMENT_ID_LINKED_OBJECT,
+        ),
+        (
+            link(vec![
+                tagged(LINK_TYPE_TAG, Value::integer(1)),
+                tagged(
+                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    Value::text_string("linked-object-7".to_owned()),
+                ),
+            ]),
+            REQUIREMENT_ID_LINK_TYPE,
+        ),
+        (
+            link(vec![
+                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+                tagged(
+                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    Value::byte_string(b"not-an-identifier".to_vec()),
+                ),
+            ]),
+            REQUIREMENT_ID_LINKED_OBJECT,
+        ),
+        (
+            link(vec![
+                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+                tagged(LINK_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    Value::text_string("linked-object-7".to_owned()),
+                ),
+            ]),
+            REQUIREMENT_ID_LINK_TYPE,
+        ),
+        (
+            link(vec![
+                tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+                tagged(
+                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    Value::text_string("linked-object-7".to_owned()),
+                ),
+                tagged(
+                    LINKED_OBJECT_IDENTIFIER_TAG,
+                    Value::text_string("linked-object-8".to_owned()),
+                ),
+            ]),
+            REQUIREMENT_ID_LINKED_OBJECT,
+        ),
+    ];
+    for (malformed_link, expected_requirement_id) in incomplete_links {
+        let request = request_with_links(REGISTER_OPERATION_TAG, vec![malformed_link]);
+        let error = result
+            .validate_request(&request)
+            .expect_err("object-state Link values require both unique members");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(expected_requirement_id));
+    }
+
+    let add_attribute = request_with_links(
+        ADD_ATTRIBUTE_OPERATION,
+        vec![link(vec![tagged(LINK_TYPE_TAG, Value::enumeration(1))])],
+    );
+    assert_eq!(
+        result
+            .validate_request(&add_attribute)
+            .expect_err("Add Attribute object-state Links require Linked Object Identifier")
+            .code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let locate_partial_link = crate::LocateRequest::new(
+        crate::AttributeSet::try_new([tagged(
+            LINK_TAG,
+            Value::structure(structure(vec![tagged(
+                LINKED_OBJECT_IDENTIFIER_TAG,
+                Value::text_string("linked-object-7".to_owned()),
+            )])),
+        )])
+        .expect("partial Link search criteria are structurally valid"),
+    );
+    let locate_request = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        locate_partial_link
+            .to_ttlv_payload()
+            .expect("Locate retains partial Link search criteria"),
+    );
+    assert!(result.validate_request(&locate_request).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
