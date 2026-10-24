@@ -852,5 +852,24 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
+    def test_coverage_threshold_waiver_is_limited_to_the_two_active_feature_branches(self) -> None:
+        job = self.require_job(self.require_workflow(), "coverage-gate")
+        enforcement = re.search(
+            r"(?ms)^      - name: Enforce coverage thresholds\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(enforcement)
+        self.assertRegex(
+            enforcement.group(1),
+            r"(?ms)^        if: >-\s+"
+            r"github\.head_ref != 'feature/KMIPKIT-0010-profile-conformance-implementation-refresh'\s+"
+            r"&&\s+"
+            r"github\.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'$",
+        )
+        self.assertIn("Record temporary coverage-threshold waiver", job)
+        self.assertIn("steps.enforce.outcome == 'skipped'", job)
+        self.assertIn("Restore the minimum coverage thresholds", job)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
