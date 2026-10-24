@@ -423,6 +423,10 @@ fn request_message_with_operation_payload(
 }
 
 fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage {
+    request_with_repeated_wrapping_attribute_names(GET_OPERATION)
+}
+
+fn request_with_repeated_wrapping_attribute_names(operation: u32) -> crate::RequestMessage {
     let wrapping_specification = structure([
         tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
         tagged(
@@ -442,7 +446,7 @@ fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage
         ),
     ]);
     request_message_with_operation_payload(
-        GET_OPERATION,
+        operation,
         structure([
             tagged(
                 UNIQUE_IDENTIFIER_TAG,
@@ -457,6 +461,14 @@ fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage
 }
 
 fn get_request_with_wrapping_key_information(
+    include_encryption: bool,
+    include_mac_signature: bool,
+) -> crate::RequestMessage {
+    request_with_wrapping_key_information(GET_OPERATION, include_encryption, include_mac_signature)
+}
+
+fn request_with_wrapping_key_information(
+    operation: u32,
     include_encryption: bool,
     include_mac_signature: bool,
 ) -> crate::RequestMessage {
@@ -480,7 +492,7 @@ fn get_request_with_wrapping_key_information(
         ));
     }
     request_message_with_operation_payload(
-        GET_OPERATION,
+        operation,
         structure([
             tagged(
                 UNIQUE_IDENTIFIER_TAG,
@@ -2015,6 +2027,12 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
         .validate_request(&repeated_names_request)
         .expect("a client can send repeated wrapping Attribute Names");
 
+    let repeated_export_names_request = request_with_repeated_wrapping_attribute_names(0x0000_002B);
+    assert!(evaluate(Some(&repeated_export_names_request), None));
+    result
+        .validate_request(&repeated_export_names_request)
+        .expect("a client can send repeated wrapping Attribute Names for Export");
+
     let request_without_wrapping_specification =
         request_message_with_operation_payload(GET_OPERATION, structure([]));
     result
@@ -2024,14 +2042,23 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
 
 #[test]
 fn profile_requires_get_wrapping_key_information_pairing() {
-    // KMIP Specification v2.1 §7.18 Table 370 requires at least one key-info
-    // structure in a Key Wrapping Specification carried by a Get request.
+    // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
+    // semantics as Get; §7.18 Table 370 requires at least one key-info field.
     const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
     let no_key_information = get_request_with_wrapping_key_information(false, false);
     let encryption_only = get_request_with_wrapping_key_information(true, false);
     let mac_signature_only = get_request_with_wrapping_key_information(false, true);
     let both_key_information = get_request_with_wrapping_key_information(true, true);
+    let export_no_key_information =
+        request_with_wrapping_key_information(EXPORT_OPERATION, false, false);
+    let export_encryption_only =
+        request_with_wrapping_key_information(EXPORT_OPERATION, true, false);
+    let export_mac_signature_only =
+        request_with_wrapping_key_information(EXPORT_OPERATION, false, true);
+    let export_both_key_information =
+        request_with_wrapping_key_information(EXPORT_OPERATION, true, true);
     let get_without_wrapping = request_message_with_operation_payload(
         GET_OPERATION,
         structure([tagged(
@@ -2041,6 +2068,19 @@ fn profile_requires_get_wrapping_key_information_pairing() {
     );
     let malformed_wrapping_specification = request_message_with_operation_payload(
         GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapped-object".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::text_string("not-a-structure".to_owned()),
+            ),
+        ]),
+    );
+    let malformed_export_wrapping_specification = request_message_with_operation_payload(
+        EXPORT_OPERATION,
         structure([
             tagged(
                 UNIQUE_IDENTIFIER_TAG,
@@ -2087,37 +2127,39 @@ fn profile_requires_get_wrapping_key_information_pairing() {
             &encryption_only,
             &mac_signature_only,
             &both_key_information,
+            &export_encryption_only,
+            &export_mac_signature_only,
+            &export_both_key_information,
             &get_without_wrapping,
             &unrelated_request,
         ] {
             assert!(evaluate(Some(valid), None));
             result
                 .validate_request(valid)
-                .expect("a Get without wrapping or with either key-info structure is valid");
+                .expect("Get and Export accept valid optional wrapping controls");
         }
-        assert!(!evaluate(Some(&no_key_information), None));
-        assert_eq!(
-            result
-                .validate_request(&no_key_information)
-                .expect_err("a Key Wrapping Specification needs one key-info structure")
-                .requirement_id(),
-            Some(requirement_id)
-        );
-        assert!(!evaluate(Some(&malformed_wrapping_specification), None));
-        assert_eq!(
-            result
-                .validate_request(&malformed_wrapping_specification)
-                .expect_err("a Key Wrapping Specification must be a Structure")
-                .requirement_id(),
-            Some(requirement_id)
-        );
+        for invalid in [
+            &no_key_information,
+            &export_no_key_information,
+            &malformed_wrapping_specification,
+            &malformed_export_wrapping_specification,
+        ] {
+            assert!(!evaluate(Some(invalid), None));
+            assert_eq!(
+                result
+                    .validate_request(invalid)
+                    .expect_err("wrapped Get and Export need valid key information")
+                    .requirement_id(),
+                Some(requirement_id)
+            );
+        }
     }
 }
 
 #[test]
 fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
     // KMIP Specification v2.1 §7.18 requires this structure when the client
-    // requests a wrapped key; Get Table 220 makes the structure optional.
+    // requests a wrapped key; Get and Export make it optional otherwise.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -2125,22 +2167,22 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("requesting a wrapped Get has a typed profile rule");
+        .expect("requesting a wrapped Get or Export has a typed profile rule");
     let requirement = CLIENT_REQUIREMENTS
         .iter()
         .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("the wrapped Get requirement resolves to generated metadata");
+        .expect("the wrapped-key requirement resolves to generated metadata");
     assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::RequiredBehavior
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("wrapped Get requests have executable evidence");
+        .expect("wrapped Get and Export requests have executable evidence");
 
     let evaluate = mapping
         .evaluator
-        .expect("the wrapped Get requirement has a typed evaluator");
+        .expect("the wrapped-key requirement has a typed evaluator");
     assert!(!evaluate(None, None));
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -2154,13 +2196,42 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
             Value::text_string("plain-object".to_owned()),
         )]),
     );
+    let export_requesting_wrapped_key =
+        request_with_wrapping_key_information(0x0000_002B, true, false);
+    let export_request_without_wrapping = request_message_with_operation_payload(
+        0x0000_002B,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("plain-object".to_owned()),
+        )]),
+    );
+    let malformed_export_request = request_message_with_operation_payload(
+        0x0000_002B,
+        structure([tagged(
+            KEY_WRAPPING_SPECIFICATION_TAG,
+            Value::text_string("not-a-structure".to_owned()),
+        )]),
+    );
 
-    for request in [&get_requesting_wrapped_key, &get_request_without_wrapping] {
+    for request in [
+        &get_requesting_wrapped_key,
+        &get_request_without_wrapping,
+        &export_requesting_wrapped_key,
+        &export_request_without_wrapping,
+    ] {
         assert!(evaluate(Some(request), None));
         result
             .validate_request(request)
-            .expect("wrapped and unwrapped Get requests are represented explicitly");
+            .expect("wrapped and unwrapped Get and Export requests are represented explicitly");
     }
+    assert!(!evaluate(Some(&malformed_export_request), None));
+    assert_eq!(
+        result
+            .validate_request(&malformed_export_request)
+            .expect_err("Export wrapping controls use Get's required Structure semantics")
+            .requirement_id(),
+        Some(REQUIREMENT_ID)
+    );
 }
 
 const GET_RETURN_OPTION_REQUIREMENTS: [(&str, &str); 4] = [
@@ -2358,6 +2429,35 @@ fn profile_maps_get_key_format_client_assumption() {
     result
         .validate_request(&no_format_requested)
         .expect("the conditional assumption does not require a format selector");
+
+    let export_selected_format = request_message_with_operation_payload(
+        0x0000_002B,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "registered-key".to_owned(),
+            ))
+            .with_key_format_type(crate::KeyFormatType::from_raw(1))
+            .into_ttlv_payload()
+            .expect("Export carries the same caller-selected format assumption as Get"),
+    );
+    result
+        .validate_request(&export_selected_format)
+        .expect("the conditional assumption also applies to Export");
+
+    let malformed_export_format = request_message_with_operation_payload(
+        0x0000_002B,
+        structure([tagged(
+            0x0042_0042,
+            Value::text_string("not-an-enumeration".to_owned()),
+        )]),
+    );
+    assert_eq!(
+        result
+            .validate_request(&malformed_export_format)
+            .expect_err("Export uses the same Enumeration wire semantics as Get")
+            .requirement_id(),
+        Some(REQUIREMENT_ID)
+    );
 }
 
 #[test]
@@ -4940,10 +5040,92 @@ fn profile_maps_client_get_key_compression_type_selector() {
 }
 
 #[test]
+fn profile_maps_client_export_controls_with_get_semantics() {
+    // KMIP Specification v2.1 §6.1.18 requires Export's four controls to use
+    // the same request semantics as Get (§6.1.19 and §7.18).
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.18-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Export controls with Get semantics have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Export semantics requirement resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the Export semantics rule has requirement-specific evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapping_specification = structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]);
+    let selected = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
+            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569))
+            .with_key_wrapping_specification(wrapping_specification)
+            .into_ttlv_payload()
+            .expect("all caller-selected Export controls encode in Get-compatible form"),
+    );
+    result
+        .validate_request(&selected)
+        .expect("all four caller-selected Export controls retain Get semantics");
+
+    let omitted = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .into_ttlv_payload()
+            .expect("all four Export controls remain optional when no wrapped key is requested"),
+    );
+    result
+        .validate_request(&omitted)
+        .expect("omitting the optional Export controls remains valid");
+
+    let malformed = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([tagged(
+            0x0042_0042,
+            Value::text_string("not-an-enumeration".to_owned()),
+        )]),
+    );
+    assert_eq!(
+        result
+            .validate_request(&malformed)
+            .expect_err("Export control types match the corresponding Get control types")
+            .requirement_id(),
+        Some(REQUIREMENT_ID)
+    );
+}
+
+#[test]
 fn profile_maps_client_export_key_compression_type_selector() {
     // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
     // §6.1.18 Table 217 exposes the caller-selected Export request field.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const EXPORT_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
@@ -4952,6 +5134,7 @@ fn profile_maps_client_export_key_compression_type_selector() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    let export_result = optional_export_profile_result(EXPORT_REQUIREMENT_ID);
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -4975,6 +5158,9 @@ fn profile_maps_client_export_key_compression_type_selector() {
     result
         .validate_request(&selected_compression)
         .expect("the profile permits an explicit Export compression selector");
+    export_result
+        .validate_request(&selected_compression)
+        .expect("the Export profile rule permits an explicit compression selector");
     assert!(client_get_or_export_key_compression_type_is_enumeration(
         Some(&selected_compression),
         None
@@ -4990,6 +5176,9 @@ fn profile_maps_client_export_key_compression_type_selector() {
     result
         .validate_request(&omitted_optional_selector)
         .expect("profile validation does not synthesize or require the optional selector");
+    export_result
+        .validate_request(&omitted_optional_selector)
+        .expect("the optional Export compression selector remains omittable");
     assert!(client_get_or_export_key_compression_type_is_enumeration(
         Some(&omitted_optional_selector),
         None
@@ -5118,6 +5307,77 @@ fn profile_maps_client_export_optional_format_and_wrap_selectors() {
         );
         assert!(result.validate_request(&duplicate).is_err());
     }
+}
+
+#[test]
+fn profile_maps_client_export_optional_wrapping_specification() {
+    // KMIP Specification v2.1 §6.1.18 Table 217 makes the field optional;
+    // §7.18 Table 370 defines its valid request shape.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-008";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+
+    let result = optional_export_profile_result(REQUIREMENT_ID);
+    let valid_wrapping_specification = structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]);
+    let selected = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .with_key_wrapping_specification(valid_wrapping_specification)
+            .into_ttlv_payload()
+            .expect("the caller-selected wrapping structure remains representable"),
+    );
+    result
+        .validate_request(&selected)
+        .expect("the profile permits a caller-supplied wrapping specification");
+
+    let omitted = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .into_ttlv_payload()
+            .expect("the optional Export wrapping specification remains absent by default"),
+    );
+    result
+        .validate_request(&omitted)
+        .expect("the optional Export wrapping specification remains omittable");
+
+    let malformed = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([tagged(
+            KEY_WRAPPING_SPECIFICATION_TAG,
+            Value::text_string("not-a-structure".to_owned()),
+        )]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
+
+    let duplicate = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::structure(Structure::new()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::structure(Structure::new()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate).is_err());
+
+    let unrelated = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("Export wrapping rules do not constrain unrelated operations");
 }
 
 #[test]
