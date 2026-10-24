@@ -152,12 +152,15 @@ def _requirements_by_id() -> dict[str, dict[str, str]]:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 
 
-def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
-    posix_path = PurePosixPath(test_path)
-    windows_path = PureWindowsPath(test_path)
+def _read_confined_source(
+    source_path: str,
+    allowed_suffixes: frozenset[str],
+) -> tuple[Path, str] | None:
+    posix_path = PurePosixPath(source_path)
+    windows_path = PureWindowsPath(source_path)
     if (
-        not test_path
-        or "\\" in test_path
+        not source_path
+        or "\\" in source_path
         or posix_path.is_absolute()
         or windows_path.is_absolute()
         or windows_path.drive
@@ -167,9 +170,9 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
 
     try:
         root = ROOT.resolve(strict=True)
-        path = (root / test_path).resolve(strict=True)
+        path = (root / source_path).resolve(strict=True)
         path.relative_to(root)
-        if not path.is_file() or path.suffix not in {".py", ".rs"}:
+        if not path.is_file() or path.suffix not in allowed_suffixes:
             return None
         with path.open("rb") as source_file:
             source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
@@ -179,6 +182,14 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
     except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
         return None
     return path, source
+
+
+def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
+    return _read_confined_source(test_path, frozenset({".py", ".rs"}))
+
+
+def _read_confined_implementation_source(source_path: str) -> tuple[Path, str] | None:
+    return _read_confined_source(source_path, frozenset({".md", ".py", ".rs"}))
 
 
 def _blank_rust_source_region(source: str, start: int, end: int) -> str:
@@ -540,6 +551,14 @@ def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_confined_implementation_reader_accepts_docs_but_test_reader_does_not(self) -> None:
+        documentation_path = "docs/user-guide/en/object-retrieval.md"
+        implementation = _read_confined_implementation_source(documentation_path)
+        self.assertIsNotNone(implementation)
+        self.assertIn("Key Format Type", implementation[1] if implementation else "")
+        self.assertIsNone(_read_confined_test_source(documentation_path))
+        self.assertIsNone(_read_confined_implementation_source("../AGENTS.md"))
+
     def test_lifecycle_traceability_covers_catalog_sources_and_planned_modules(self) -> None:
         traceability = LIFECYCLE_TRACEABILITY_PATH.read_text(encoding="utf-8")
         specification = LIFECYCLE_SPEC_PATH.read_text(encoding="utf-8")
@@ -1166,6 +1185,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                             "KMIPKIT-REQ-SPEC-6.1.38-001-001",
                             "KMIPKIT-REQ-SPEC-9.1-001",
                             "KMIPKIT-REQ-SPEC-9.19-002",
+                            "KMIPKIT-REQ-SPEC-6.1.19-002",
                             "KMIPKIT-REQ-SPEC-6.1.19-003",
                             "KMIPKIT-REQ-SPEC-6.1.19-004",
                             "KMIPKIT-REQ-SPEC-6.1.19-005",
@@ -1181,7 +1201,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
 
                 for reference in requirement.get("implementation_refs", []):
                     path, separator, symbol = reference.partition("::")
-                    source_file = _read_confined_test_source(path)
+                    source_file = _read_confined_implementation_source(path)
                     self.assertIsNotNone(source_file, reference)
                     if separator:
                         _, source = source_file or (None, "")
