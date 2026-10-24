@@ -5400,6 +5400,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_get_key_format_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_key_format_client_assumption",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-003",
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"),

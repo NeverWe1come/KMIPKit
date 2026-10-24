@@ -2323,7 +2323,9 @@ fn profile_maps_get_key_format_client_assumption() {
     let caller_selected_format = request_message_with_operation_payload(
         GET_OPERATION,
         crate::GetRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString("registered-key".to_owned()))
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "registered-key".to_owned(),
+            ))
             .with_key_format_type(crate::KeyFormatType::from_raw(1))
             .to_ttlv_payload()
             .expect("the typed Get request encodes the caller-selected format"),
@@ -2335,7 +2337,9 @@ fn profile_maps_get_key_format_client_assumption() {
     let no_format_requested = request_message_with_operation_payload(
         GET_OPERATION,
         crate::GetRequest::new()
-            .with_unique_identifier(crate::UniqueIdentifier::TextString("registered-key".to_owned()))
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "registered-key".to_owned(),
+            ))
             .to_ttlv_payload()
             .expect("Get without an explicit format remains representable"),
     );
