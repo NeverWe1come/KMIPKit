@@ -2298,6 +2298,53 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
 }
 
 #[test]
+fn profile_maps_get_key_format_client_assumption() {
+    // KMIP Specification v2.1 §6.1.19 makes the same-as-registered format a
+    // client assumption; the client cannot inspect server-held format state.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.19-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_OPERATION: u32 = 0x0000_000A;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the conditional Get format assumption has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Get format assumption resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the Get format assumption links a positive client request test");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let caller_selected_format = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("registered-key".to_owned()))
+            .with_key_format_type(crate::KeyFormatType::from_raw(1))
+            .to_ttlv_payload()
+            .expect("the typed Get request encodes the caller-selected format"),
+    );
+    result
+        .validate_request(&caller_selected_format)
+        .expect("the profile preserves a caller-selected Get format");
+
+    let no_format_requested = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("registered-key".to_owned()))
+            .to_ttlv_payload()
+            .expect("Get without an explicit format remains representable"),
+    );
+    result
+        .validate_request(&no_format_requested)
+        .expect("the conditional assumption does not require a format selector");
+}
+
+#[test]
 fn profile_maps_optional_get_return_format_controls() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let request_with_options = get_request_with_optional_return_controls(true);
