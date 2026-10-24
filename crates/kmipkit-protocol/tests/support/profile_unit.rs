@@ -1003,6 +1003,34 @@ fn get_attributes_response_with_payload(
     .expect("test Get Attributes response payload has a valid message envelope")
 }
 
+#[test]
+fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
+    // KMIP Specification v2.1 §6.1.50 permits the server to ignore seed data;
+    // the client SHALL NOT treat a successful zero Data Length as an error.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.50-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const RNG_SEED_OPERATION: u32 = 0x0000_0026;
+    const DATA: u32 = 0x0042_00C2;
+    const DATA_LENGTH: u32 = 0x0042_00D5;
+
+    let request = request_message_with_operation_payload(
+        RNG_SEED_OPERATION,
+        structure([tagged(DATA, Value::byte_string(b"seed-material".to_vec()))]),
+    );
+    let response = get_attributes_response_with_payload(
+        RNG_SEED_OPERATION,
+        structure([tagged(DATA_LENGTH, Value::integer(0))]),
+    );
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    validation
+        .validate_response(&request, &response)
+        .expect("a successful zero Data Length response is not an RNG Seed error");
+}
+
 fn opaque_object_attributes_ttlv(attributes: impl IntoIterator<Item = Item>) -> Item {
     tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes)))
 }
