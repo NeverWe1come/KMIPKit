@@ -4286,6 +4286,30 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
         source_gap_id: None,
