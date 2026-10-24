@@ -721,6 +721,7 @@ const REPROVISION_OPERATION: u32 = 0x0000_0035;
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const SIGN_OPERATION: u32 = 0x0000_0021;
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
+const SIGNATURE_VERIFY_DATA: u32 = 0x0042_00C2;
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
@@ -1624,6 +1625,21 @@ fn client_signature_verify_cryptographic_parameters_are_optional_structure(
     )
 }
 
+fn client_signature_verify_original_data_is_optional_byte_string(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.56 permits original Data when the selected algorithm requires it.
+    // The client validates representation and does not infer algorithm needs.
+    client_operation_field_is_well_formed(
+        request,
+        SIGNATURE_VERIFY_OPERATION,
+        SIGNATURE_VERIFY_DATA,
+        OperationFieldType::ByteString,
+        false,
+    )
+}
+
 // Table 313 marks both request objects optional; §6.1.48 does not say they
 // are mutually exclusive. Each present object still has the required §2 shape.
 fn client_reprovision_request_fields_are_well_formed(
@@ -1735,6 +1751,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
 
 #[derive(Clone, Copy)]
 enum OperationFieldType {
+    ByteString,
     Integer,
     Interval,
     LeaseTime,
@@ -1746,6 +1763,7 @@ enum OperationFieldType {
 impl OperationFieldType {
     fn accepts(self, value: ValueView<'_>) -> bool {
         match self {
+            Self::ByteString => matches!(value, ValueView::ByteString(_)),
             Self::Integer => matches!(value, ValueView::Integer(_)),
             Self::Interval => matches!(value, ValueView::Interval(_)),
             Self::LeaseTime => matches!(value, ValueView::Interval(_) | ValueView::DateTime(_)),
@@ -6815,6 +6833,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.56-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_signature_verify_original_data_is_optional_byte_string),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_original_data_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
