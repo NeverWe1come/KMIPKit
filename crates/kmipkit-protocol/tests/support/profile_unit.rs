@@ -7500,7 +7500,7 @@ fn assert_register_table293_outer_pair_metadata_branches() {
 
 fn assert_register_signature_algorithm_presence_branches() {
     const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
-    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_003A;
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
 
     let signature_algorithm_present = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
