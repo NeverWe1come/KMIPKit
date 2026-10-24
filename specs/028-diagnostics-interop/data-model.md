@@ -30,7 +30,7 @@ Use Table 252 per approved KMIPKIT-DISC-017.
 | Request | Validity Date | 0..1 | Date-Time; preserve absence and supplied value. Section 6.1.57 passively states that the current date and time SHALL be assumed if omitted; the source actor is unspecified and date evaluation is unverified. |
 | Success response | Validity Indicator | exactly 1 | Enumeration with unknown/future values preserved. |
 
-One Validate request represents at most one certificate chain; its two repeated field lists are the chain material. Section 10.1.2, unnumbered Type table Structure row requires Table 340 wire order: Certificate list, Unique Identifier list, optional Validity Date. Each list preserves its own relative order. Certificate inputs follow section 2.1, Table 2 with Certificate Type before Certificate Value. Do not construct/validate the chain locally, choose trust anchors, impose server policy, or add an unstated local minimum rule.
+One Validate request represents exactly one certificate chain; its two repeated field lists are the chain material. Read the §6.1.57 paragraph 1 SHALL with paragraph 2 and Table 340: the two lists jointly contain at least one member, while either individual list may be omitted and either may repeat. A Validity Date alone does not provide a chain member. Section 10.1.2, unnumbered Type table Structure row requires Table 340 wire order: Certificate list, Unique Identifier list, optional Validity Date. Each list preserves its own relative order. Certificate inputs follow section 2.1, Table 2 with Certificate Type before Certificate Value. This is request-representation structure only; do not construct or cryptographically validate the chain, choose trust anchors, impose server policy, or infer server acceptance.
 
 ## Shared behavior
 

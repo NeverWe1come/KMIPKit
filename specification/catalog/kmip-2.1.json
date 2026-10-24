@@ -97236,10 +97236,10 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "certificate chain",
-      "summary": "A Validate Certificate request must contain only one certificate chain.",
+      "summary": "Each Validate request must contain one certificate chain represented by at least one Certificate or Managed Certificate Unique Identifier list member.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": null,
+      "condition": "For each Validate request, the Certificate and Unique Identifier lists jointly contain at least one member.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-VALIDATE"
@@ -97254,12 +97254,15 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs",
-        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_001_models_one_chain_and_rejects_malformed_certificate_wrapper"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_validate_request_without_a_chain_member",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_001_rejects_empty_chain_even_when_validity_date_is_present",
+        "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::validate_without_chain_member_is_not_sent"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.57 paragraph 1 requires one chain per Validate request; paragraph 2 and Table 340 represent that request with one flat pair of Certificate and Unique Identifier lists, each optional and repeatable. ValidateRequest has no collection of chain objects, so the model represents one chain while preserving multiple members from either or both lists. The typed profile evaluator checks only request and list-member wire shape; this representation cannot identify separate chain groups or validate certificate contents, chain topology, trust, or server acceptance. No requirement-specific official Test Case is linked. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.57 paragraph 1 requires one certificate chain in each Validate request; paragraph 2 defines its material as Certificate and/or Managed Certificate Unique Identifier lists, and Table 340 permits each list to be omitted individually and repeated. Read together, each request must contain at least one total member across those two lists; either list may be absent, both may be present, and multiple members are permitted. Validity Date does not supply a chain member. ValidateRequest has one flat pair of lists rather than a collection of chain objects, so evidence is limited to typed request representation and structural member checks; it does not identify separate chain groups or establish certificate contents, chain topology, cryptographic validity, trust, or server acceptance. No requirement-specific official Test Case is linked. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.57-002-001",
@@ -97298,7 +97301,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 permit Validate requests to combine Certificate objects and Managed Certificate Unique Identifiers; the typed profile evaluator accepts the mixed request and allows both inputs to be omitted. The source-derived profile/model tests verify Rust request representation only; they do not claim certificate parsing, chain evaluation, trust, server acceptance, or an official Test Case pass. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 permit the chain to use Certificate objects, Managed Certificate Unique Identifiers, or both; each list is individually optional and repeatable, subject to KMIPKIT-REQ-SPEC-6.1.57-001's requirement for at least one total member. The typed profile evaluator accepts Certificate-only, identifier-only, and mixed request representations. The source-derived profile/model tests do not claim certificate parsing, chain evaluation, trust, server acceptance, or an official Test Case pass. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.57-002-002",

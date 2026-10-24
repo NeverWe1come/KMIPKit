@@ -16,7 +16,7 @@ The tables link each source row, stable element, requirement, implementation loc
 | KMIPKIT-ELEM-TAG-420094 | §6.1.57 Table 340 | Repeated Managed Certificate identifier | Repeated field/type/order cases |
 | KMIPKIT-ELEM-TAG-42009A | §6.1.57 Table 340 | Optional Validity Date | Present/absent request serialization tests; no evaluation test |
 | KMIPKIT-ELEM-TAG-42009B | §6.1.57 Table 341 | Required open Validity Indicator | Missing/type/unknown value tests |
-| KMIPKIT-REQ-SPEC-6.1.57-001 | §6.1.57 opening paragraph; SHALL | A request contains only one certificate chain | Two ordered lists compose one chain; malformed Certificate wrapper rejected by Table 2 checks |
+| KMIPKIT-REQ-SPEC-6.1.57-001 | §6.1.57 opening paragraph plus paragraph 2/Table 340; SHALL | Each request has one chain with at least one total Certificate or Unique Identifier member | Mixed, Certificate-only and identifier-only lists pass; both lists empty or a date-only request fails; malformed Certificate wrapper is rejected by Table 2 checks |
 | KMIPKIT-REQ-SPEC-6.1.57-002-001 | §6.1.57 second paragraph; MAY | Chain may use Certificate objects, identifiers, or both | Certificate-only, identifier-only, mixed input cases |
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | §6.1.57 second paragraph; MAY | Caller may specify evaluation date | Supplied Validity Date round trip |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | §6.1.57 Table 340 / repeated field; MAY | Repeated Certificates | Multiple Certificate values preserved |
@@ -78,7 +78,7 @@ Raw message parsing and resource limits remain the common message/TTLV contract.
 
 | Requirement | Implementation | Executable verification |
 |---|---|---|
-| KMIPKIT-REQ-SPEC-6.1.57-001 | ValidateRequest one chain with two ordered lists; Table 2 structure checking | validate_operation_tests::req_001_models_one_chain_and_rejects_malformed_certificate_wrapper |
+| KMIPKIT-REQ-SPEC-6.1.57-001 | ValidateRequest one chain with a combined minimum of one member across two ordered lists; Table 2 structure checking | validate_operation_tests::req_001_rejects_empty_chain_even_when_validity_date_is_present; validate_operation_tests::req_001_models_one_chain_and_rejects_malformed_certificate_wrapper; profile_rejects_validate_request_without_a_chain_member; validate_without_chain_member_is_not_sent |
 | KMIPKIT-REQ-SPEC-6.1.57-002-001 | ValidateRequest::with_certificate / with_unique_identifier | validate_operation_tests::req_002_001_certificate_identifier_and_mixed_inputs_are_available |
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | ValidateRequest::with_validity_date | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | Ordered Certificate entries in one chain | validate_operation_tests::req_004_repeated_certificate_values_preserve_order |
