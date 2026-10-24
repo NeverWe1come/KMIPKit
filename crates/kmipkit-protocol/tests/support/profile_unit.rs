@@ -1358,6 +1358,54 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 }
 
 #[test]
+fn profile_maps_required_discover_versions_preference_order_for_single_supported_version() {
+    // KMIP Specification v2.1 §6.1.16 paragraph 1 requires decreasing
+    // preference order; KMIPKit 1.0 supports only KMIP 2.1, so its singleton
+    // list satisfies the ordering rule without claiming general sorting.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.16-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the Discover Versions ordering requirement has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the ordering requirement resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the supported version list has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let supported_versions = crate::DiscoverVersionsRequest::new().protocol_versions();
+    assert_eq!(supported_versions.len(), 1);
+    assert_eq!(supported_versions[0].major(), 2);
+    assert_eq!(supported_versions[0].minor(), 1);
+
+    let payload = crate::DiscoverVersionsRequest::new()
+        .to_ttlv_payload()
+        .expect("the typed request encodes its sole supported preference");
+    let request = request_message_with_operation_payload(0x0000_001E, payload);
+    assert!(evaluate(Some(&request), None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&request)
+        .expect("the 1.0 singleton supported-version list satisfies §6.1.16");
+}
+
+#[test]
 fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     // KMIP Specification v2.1 §6.1.14 Table 205 prohibits using the current
     // ID Placeholder in place of a Derive Key Unique Identifier.
