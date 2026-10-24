@@ -3239,6 +3239,61 @@ fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_delete_attribute_reference_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.13 Table 202 marks Attribute Reference optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.13-006";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Delete Attribute references have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional reference resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional field has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for reference in [
+        None,
+        Some(crate::AttributeReference::name(
+            "KMIPKit.TestVendor_1",
+            "Opaque.Attribute",
+        )),
+    ] {
+        let payload = crate::DeleteAttributeRequest::new(
+            Some("test-object".to_owned()),
+            None,
+            reference,
+        )
+        .to_ttlv_payload()
+        .expect("the optional Attribute Reference is structurally valid");
+        let request = request_message_with_operation_payload(0x0000_000F, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("the client may include or omit Attribute Reference");
+    }
+}
+
+#[test]
 fn profile_maps_client_get_attributes_optional_attribute_references() {
     // KMIP Specification v2.1 §6.1.20 Table 223 permits repeated references.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
