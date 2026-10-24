@@ -7075,6 +7075,39 @@ fn typed_rule_evaluators_tolerate_missing_context() {
 }
 
 #[test]
+fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
+    // KMIP Specification v2.1 §3.3 says a Key Block MAY provide optional Key
+    // Wrapping Data. Section 3.1 requires the structure when the Key Value is
+    // wrapped; this profile rule proves both supplied and omitted request forms.
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.3-001-001",
+        "KMIPKIT-REQ-SPEC-3.3-001-002",
+    ];
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENT_IDS.iter().map(|id| (*id).to_owned()).collect(),
+    };
+
+    let requests = [
+        register_request_with_key_value_location(None, true),
+        register_wrapped_key_value_request(Value::enumeration(2)),
+        secret_data_import_request(Value::structure(Structure::new()), None),
+        secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+    ];
+
+    for request in requests {
+        result
+            .validate_request(&request)
+            .expect("Register and Import can omit or supply Key Wrapping Data");
+    }
+}
+
+#[test]
 fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
     // KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information,
     // MAC/Signature Key Information, or both whenever Key Wrapping Data is used.
