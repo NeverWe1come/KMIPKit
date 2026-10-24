@@ -65,7 +65,7 @@ Record separate Red, Green, and Refactor commit IDs per operation in the draft P
 ### Re-Provision (US7)
 
 - RED commit: `07e69112` (`test(022): add Re-Provision RED coverage`). `cargo test -p kmipkit-protocol reprovision_operation_tests --no-fail-fast` and the matching client command both failed because the Re-Provision protocol module did not yet exist.
-- GREEN commit: `cd6456a1` (`feat(022): implement Re-Provision operation`). Focused protocol tests passed (7 tests) and fake-transport client tests passed (6 tests), including all three request forms, mutually exclusive object forms, optional/malformed result identifier, server failure, Pending correlation preservation, partial-write delivery state, and no retry.
+- GREEN commit: `cd6456a1` (`feat(022): implement Re-Provision operation`). Focused protocol tests passed (7 tests) and fake-transport client tests passed (6 tests), including the three basic request forms, optional/malformed result identifier, server failure, Pending correlation preservation, partial-write delivery state, and no retry. A later T040 clarification aligned the typed request with §6.1.48/Table 313: the two optional request fields are not declared mutually exclusive and can both be sent.
 - REFACTOR verifies the response-view projection through one constructor, retains the typed model and client dispatch, and updates the English lifecycle guide and public API architecture documentation.
 - No direct OASIS Test Case is listed for Re-Provision; tests are derived from §6.1.48 Tables 313–315. `KMIPKIT-DISC-040` is applied; upstream source files remain unchanged.
 

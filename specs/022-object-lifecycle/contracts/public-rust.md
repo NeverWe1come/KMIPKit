@@ -45,7 +45,7 @@ Each returns the existing per-item response/result type; options-bearing variant
 - **Check**: preserve policy request/response values and document caller-selected Batch Order and Stop/Undo options; do not alter caller batch options.
 - **Obtain Lease**: expose Lease Time and Last Change Date without timekeeping or lifecycle state.
 - **Re-key / Re-key Key Pair**: retain Offset and separate attribute/mask groups; do not query objects or synthesize links.
-- **Re-Provision**: accept the approved certificate-request, certificate, or parameterless form. Table 315's caption follows the approved discrepancy disposition.
+- **Re-Provision**: accept Certificate Request, Certificate, both optional fields, or no parameters for server-created credentials. The standard does not prohibit the two Table 313 fields from co-occurring. Table 315's caption follows the approved discrepancy disposition.
 - **Register**: retain Object Type, Attributes, object representation, and masks without implicit import.
 - **Revoke**: preserve open reason values; enforce the source-backed Compromise Occurrence Date prohibition and retain its SHOULD recommendation without turning it into an unapproved hard error.
 

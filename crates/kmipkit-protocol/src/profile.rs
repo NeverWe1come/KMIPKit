@@ -728,6 +728,10 @@ const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
 const REPROVISION_CERTIFICATE_REQUEST: u32 = 0x0042_0018;
+const REPROVISION_CERTIFICATE_TYPE: u32 = 0x0042_001D;
+const REPROVISION_CERTIFICATE_VALUE: u32 = 0x0042_001E;
+const REPROVISION_CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
+const REPROVISION_CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
 const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
 const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
@@ -1587,30 +1591,54 @@ fn client_reprovision_request_form_is_well_formed(
 
         batch_item
             .with_request_payload(|payload| {
-                let mut certificate_request_seen = false;
-                let mut certificate_seen = false;
-                let fields_well_formed = payload
-                    .children()
-                    .iter()
-                    .filter(|field| {
-                        matches!(
-                            field.tag().raw(),
-                            REPROVISION_CERTIFICATE_REQUEST | REPROVISION_CERTIFICATE
-                        )
-                    })
-                    .all(|field| {
-                        let seen = match field.tag().raw() {
-                            REPROVISION_CERTIFICATE_REQUEST => &mut certificate_request_seen,
-                            REPROVISION_CERTIFICATE => &mut certificate_seen,
-                            _ => return false,
-                        };
-                        !std::mem::replace(seen, true)
-                            && field.with_value(|value| matches!(value, ValueView::Structure(_)))
-                    });
-                fields_well_formed && !(certificate_request_seen && certificate_seen)
+                optional_reprovision_object_is_well_formed(
+                    &payload,
+                    REPROVISION_CERTIFICATE_REQUEST,
+                    REPROVISION_CERTIFICATE_REQUEST_TYPE,
+                    REPROVISION_CERTIFICATE_REQUEST_VALUE,
+                ) && optional_reprovision_object_is_well_formed(
+                    &payload,
+                    REPROVISION_CERTIFICATE,
+                    REPROVISION_CERTIFICATE_TYPE,
+                    REPROVISION_CERTIFICATE_VALUE,
+                )
             })
             .unwrap_or(false)
     })
+}
+
+fn optional_reprovision_object_is_well_formed(
+    payload: &StructureView<'_>,
+    object_tag: u32,
+    type_tag: u32,
+    value_tag: u32,
+) -> bool {
+    match field_presence(payload, object_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(field) => field.with_value(|value| match value {
+            ValueView::Structure(object) => {
+                reprovision_object_fields_are_well_formed(&object, type_tag, value_tag)
+            }
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn reprovision_object_fields_are_well_formed(
+    object: &StructureView<'_>,
+    type_tag: u32,
+    value_tag: u32,
+) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(object, type_tag) else {
+        return false;
+    };
+    let FieldPresence::Unique(object_value) = field_presence(object, value_tag) else {
+        return false;
+    };
+
+    object_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        && object_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
 }
 
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
@@ -6570,8 +6598,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_rejects_mutually_supplied_certificate_request_and_certificate",
-                kind: RuleTestKind::NegativeBehavior,
+                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_preserves_both_optional_certificate_fields",
+                kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",

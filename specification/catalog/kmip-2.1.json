@@ -96621,6 +96621,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.48"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "2.2"
         }
       ],
       "source_keyword": "SHALL",
@@ -96644,15 +96652,16 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_certificate_request_forms",
         "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_supports_certificate_request_certificate_or_no_parameters",
-        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_rejects_mutually_supplied_certificate_request_and_certificate",
+        "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_preserves_both_optional_certificate_fields",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_parameterless_server_credential_form",
-        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form"
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_both_optional_certificate_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The profile accepts the three client request forms in §6.1.48 and rejects simultaneous Certificate Request and Certificate fields. Server credential creation, association, and certificate processing remain outside this client request-shape check. No official Test Cases are linked to this requirement in the pinned OASIS source; no profile-conformance claim is made."
+      "review_note": "The profile accepts parameterless, Certificate Request, Certificate, and both optional Table 313 fields because §6.1.48 does not state a mutual-exclusion prohibition. When either object is present, the profile checks the required Enumeration and Byte String members from §§2.1 Table 2 and 2.2 Table 3; the byte contents remain opaque. Server processing and credential association are outside this request-shape check. No official Test Cases are linked to this requirement in the pinned OASIS source; no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.48-004",

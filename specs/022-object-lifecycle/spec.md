@@ -244,7 +244,7 @@ As a KMIPKit caller, I can send the §6.1.48 Re-Provision request and inspect th
 3. Given a Table 315 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Support certificate-request, certificate, and parameterless server-credential paths. Table 315 has an errant RNG Retrieve caption in the Re-Provision error section.
+**Specific rules**: Support certificate-request, certificate, and parameterless server-credential paths. Table 313 marks each object field optional; §6.1.48 does not expressly prohibit including both, so the client model preserves both when supplied. Table 315 has an errant RNG Retrieve caption in the Re-Provision error section.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.48, Tables 313–314):
 

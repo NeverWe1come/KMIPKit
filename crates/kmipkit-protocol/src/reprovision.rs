@@ -19,10 +19,10 @@ const SUCCESS: u32 = 0;
 
 /// A KMIP 2.1 Re-Provision request from §6.1.48, Table 313.
 ///
-/// Supply a certificate request, a replacement certificate, or neither when
-/// the server creates the new credential. This client forwards the supplied
-/// KMIP object structures without parsing them or changing local credential
-/// state.
+/// Supply either or both optional certificate objects, or omit both when the
+/// server creates the new credential. KMIP v2.1 does not prohibit including
+/// both Table 313 fields in one request. This client forwards supplied KMIP
+/// object structures without parsing them or changing local credential state.
 pub struct ReProvisionRequest {
     certificate_request: Option<Structure>,
     certificate: Option<Structure>,
@@ -56,13 +56,9 @@ impl ReProvisionRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized error when both mutually exclusive object forms are
-    /// supplied or a generic TTLV structure cannot be represented.
+    /// Returns a sanitized error if a generic TTLV structure cannot be
+    /// represented.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.certificate_request.is_some() && self.certificate.is_some() {
-            return Err(invalid_request());
-        }
-
         let mut payload = Structure::new();
         if let Some(certificate_request) = self.certificate_request {
             push_structure(&mut payload, CERTIFICATE_REQUEST, certificate_request)?;
@@ -246,12 +242,5 @@ fn model_error(error: ModelError) -> ProtocolError {
         ProtocolErrorKind::InvalidValue,
         ProtocolCauseCategory::InvalidValue,
         error,
-    )
-}
-
-fn invalid_request() -> ProtocolError {
-    ProtocolError::categorized(
-        ProtocolErrorKind::InvalidInput,
-        ProtocolCauseCategory::InvalidValue,
     )
 }
