@@ -170,9 +170,9 @@ fn req_005_repeated_identifiers_preserve_order_and_open_values() {
 
 #[test]
 fn req_006_omitted_date_remains_absent_in_request_serialization() {
-    let request = ValidateRequest::new().with_unique_identifier(
-        UniqueIdentifier::TextString("managed-certificate".to_owned()),
-    );
+    let request = ValidateRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "managed-certificate".to_owned(),
+    ));
     assert_eq!(request.validity_date(), None);
     assert_eq!(request.chain_len(), 1);
     assert_eq!(

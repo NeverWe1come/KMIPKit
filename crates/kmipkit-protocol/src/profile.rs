@@ -5036,19 +5036,14 @@ fn client_validate_repeated_unique_identifiers_are_usable(
     })
 }
 
-// Validate has one payload with two flat, repeatable lists; list membership is
-// observable here, but the representation cannot identify cryptographic chain
-// boundaries or validate the chain itself.
+// Validate has one payload with two flat, repeatable lists. Either list may be
+// empty, but the combined lists need one member; other fields do not supply it.
+// The representation cannot identify cryptographic chain boundaries or
+// validate the chain itself.
 fn client_validate_chain_list_members_are_usable(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    if !client_validate_repeated_certificates_are_usable(request, None)
-        || !client_validate_repeated_unique_identifiers_are_usable(request, None)
-    {
-        return false;
-    }
-
     let Some(request) = request else {
         return false;
     };
@@ -5063,9 +5058,34 @@ fn client_validate_chain_list_members_are_usable(
 
         batch_item
             .with_request_payload(|payload| {
-                payload.children().iter().any(|field| {
-                    matches!(field.tag().raw(), VALIDATE_CERTIFICATE | UNIQUE_IDENTIFIER)
-                })
+                let mut has_chain_member = false;
+                let fields_are_usable =
+                    payload
+                        .children()
+                        .iter()
+                        .all(|field| match field.tag().raw() {
+                            VALIDATE_CERTIFICATE => field.with_value(|value| {
+                                if !matches!(value, ValueView::Structure(_)) {
+                                    return false;
+                                }
+                                has_chain_member = true;
+                                true
+                            }),
+                            UNIQUE_IDENTIFIER => field.with_value(|value| {
+                                if !matches!(
+                                    value,
+                                    ValueView::TextString(_)
+                                        | ValueView::Enumeration(_)
+                                        | ValueView::Integer(_)
+                                ) {
+                                    return false;
+                                }
+                                has_chain_member = true;
+                                true
+                            }),
+                            _ => true,
+                        });
+                fields_are_usable && has_chain_member
             })
             .unwrap_or(false)
     })
