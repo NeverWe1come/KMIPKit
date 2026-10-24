@@ -828,6 +828,8 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
+const GET_KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const GET_KEY_WRAP_TYPE: u32 = 0x0042_00F8;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
 const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
@@ -1337,6 +1339,84 @@ fn client_get_or_export_key_compression_type_is_enumeration(
     })
 }
 
+fn client_get_key_format_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_get_optional_enumeration_is_well_formed(request, GET_KEY_FORMAT_TYPE)
+}
+
+fn client_get_key_wrap_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_get_optional_enumeration_is_well_formed(request, GET_KEY_WRAP_TYPE)
+}
+
+fn client_get_optional_enumeration_is_well_formed(
+    request: Option<&RequestMessage>,
+    option_tag: u32,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != GET_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut option_seen = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == option_tag)
+                    .all(|field| {
+                        !std::mem::replace(&mut option_seen, true)
+                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_get_optional_wrapping_specification_is_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != GET_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut specification_seen = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == KEY_WRAPPING_SPECIFICATION)
+                    .all(|field| {
+                        !std::mem::replace(&mut specification_seen, true)
+                            && field.with_value(|value| matches!(value, ValueView::Structure(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_can_include_optional_unique_batch_item_id(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1648,12 +1728,12 @@ fn client_get_wrapping_specification_has_key_information(
 
 fn client_supports_get_wrapped_key_request(
     request: Option<&RequestMessage>,
-    _response: Option<(&RequestMessage, &ResponseMessage)>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
     // §7.18 requires Key Wrapping Specification when the client requests a
     // wrapped key. Get expresses that request with its optional structure; a
     // request without it does not assert a wrapped-key request.
-    request.is_some()
+    client_get_optional_wrapping_specification_is_structure(request, response)
 }
 
 fn client_can_include_request_time_stamp(
@@ -5315,6 +5395,54 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_get_attributes_attribute_references),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-003",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_key_format_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-004",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_key_wrap_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-005",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-006",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_optional_wrapping_specification_is_structure),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],

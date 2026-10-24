@@ -101292,11 +101292,13 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -101339,11 +101341,13 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -101386,11 +101390,13 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -101433,11 +101439,13 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order"
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls"
       ],
       "negative_verification_required": false,
       "decision_id": null,

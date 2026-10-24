@@ -2241,6 +2241,72 @@ fn profile_maps_optional_get_return_format_controls() {
     result
         .validate_request(&request_without_options)
         .expect("profile validation leaves all optional controls absent by default");
+
+    let evaluator = |requirement_id: &str| {
+        TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .and_then(|mapping| mapping.evaluator)
+            .expect("the selected Get option has a typed evaluator")
+    };
+    let malformed_key_format = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("ec-key".to_owned()),
+            ),
+            tagged(0x0042_0042, Value::text_string("raw-text".to_owned())),
+        ]),
+    );
+    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-003")(
+        Some(&malformed_key_format),
+        None
+    ));
+    assert!(result.validate_request(&malformed_key_format).is_err());
+
+    let duplicate_key_wrap_type = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("ec-key".to_owned()),
+            ),
+            tagged(0x0042_00F8, Value::enumeration(1)),
+            tagged(0x0042_00F8, Value::enumeration(2)),
+        ]),
+    );
+    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-004")(
+        Some(&duplicate_key_wrap_type),
+        None
+    ));
+    assert!(result.validate_request(&duplicate_key_wrap_type).is_err());
+
+    let malformed_wrapping_specification = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("ec-key".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::text_string("not-a-structure".to_owned()),
+            ),
+        ]),
+    );
+    assert!(!evaluator("KMIPKIT-REQ-SPEC-6.1.19-006")(
+        Some(&malformed_wrapping_specification),
+        None
+    ));
+    assert!(result
+        .validate_request(&malformed_wrapping_specification)
+        .is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("Get return-format options do not constrain other operations");
 }
 
 #[test]
