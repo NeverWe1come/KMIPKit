@@ -2972,14 +2972,37 @@ fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
         .validate_request(&mixed)
         .expect("the selected profile accepts mixed chain inputs");
 
-    let omitted_payload = crate::ValidateRequest::new()
+    let certificate_only_payload = crate::ValidateRequest::new()
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
         .into_ttlv_payload()
-        .expect("the Validate request may omit both optional chain inputs");
-    let omitted = request_message_with_operation_payload(VALIDATE_OPERATION, omitted_payload);
-    assert!(evaluate(Some(&omitted), None));
+        .expect("the request may omit its Unique Identifier list");
+    assert_eq!(
+        validate_request_payload_tags(&certificate_only_payload),
+        [CERTIFICATE_TAG]
+    );
+    let certificate_only =
+        request_message_with_operation_payload(VALIDATE_OPERATION, certificate_only_payload);
+    assert!(evaluate(Some(&certificate_only), None));
     result
-        .validate_request(&omitted)
-        .expect("the optional chain inputs are not required on every Validate call");
+        .validate_request(&certificate_only)
+        .expect("the Unique Identifier list is optional when a Certificate is present");
+
+    let identifier_only_payload = crate::ValidateRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate-only".to_owned(),
+        ))
+        .into_ttlv_payload()
+        .expect("the request may omit its Certificate list");
+    assert_eq!(
+        validate_request_payload_tags(&identifier_only_payload),
+        [UNIQUE_IDENTIFIER_TAG]
+    );
+    let identifier_only =
+        request_message_with_operation_payload(VALIDATE_OPERATION, identifier_only_payload);
+    assert!(evaluate(Some(&identifier_only), None));
+    result
+        .validate_request(&identifier_only)
+        .expect("the Certificate list is optional when an identifier is present");
 }
 
 #[test]
@@ -3044,14 +3067,29 @@ fn profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs() 
         .validate_request(&mixed)
         .expect("multiple flat list members compose one Validate request chain");
 
-    let omitted_payload = crate::ValidateRequest::new()
+    let certificate_only_payload = crate::ValidateRequest::new()
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
         .into_ttlv_payload()
-        .expect("Table 340 permits both chain input lists to be omitted");
-    let omitted = request_message_with_operation_payload(VALIDATE_OPERATION, omitted_payload);
-    assert!(evaluate(Some(&omitted), None));
+        .expect("Table 340 permits the Unique Identifier list to be omitted");
+    let certificate_only =
+        request_message_with_operation_payload(VALIDATE_OPERATION, certificate_only_payload);
+    assert!(evaluate(Some(&certificate_only), None));
     result
-        .validate_request(&omitted)
-        .expect("the single-chain rule does not require either optional input list");
+        .validate_request(&certificate_only)
+        .expect("one Certificate member forms a chain without the identifier list");
+
+    let identifier_only_payload = crate::ValidateRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate-only".to_owned(),
+        ))
+        .into_ttlv_payload()
+        .expect("Table 340 permits the Certificate list to be omitted");
+    let identifier_only =
+        request_message_with_operation_payload(VALIDATE_OPERATION, identifier_only_payload);
+    assert!(evaluate(Some(&identifier_only), None));
+    result
+        .validate_request(&identifier_only)
+        .expect("one identifier member forms a chain without the Certificate list");
 
     let malformed = request_message_with_operation_payload(
         VALIDATE_OPERATION,

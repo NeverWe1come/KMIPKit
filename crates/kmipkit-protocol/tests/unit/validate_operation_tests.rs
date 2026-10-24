@@ -115,11 +115,15 @@ fn req_002_001_certificate_identifier_and_mixed_inputs_are_available() {
 #[test]
 fn req_002_002_optional_validity_date_preserves_exact_value() {
     for date in [i64::MIN, 0, i64::MAX] {
-        let request = ValidateRequest::new().with_validity_date(date);
+        let request = ValidateRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString(
+                "managed-certificate".to_owned(),
+            ))
+            .with_validity_date(date);
         assert_eq!(request.validity_date(), Some(date));
         let payload = request.into_ttlv_payload().unwrap();
-        assert_eq!(field_tags(&payload), [DATE]);
-        payload.view().children()[0]
+        assert_eq!(field_tags(&payload), [IDENTIFIER, DATE]);
+        payload.view().children()[1]
             .with_value(|v| assert!(matches!(v, ValueView::DateTime(raw) if *raw == date)));
     }
 }
@@ -166,16 +170,14 @@ fn req_005_repeated_identifiers_preserve_order_and_open_values() {
 
 #[test]
 fn req_006_omitted_date_remains_absent_in_request_serialization() {
-    let request = ValidateRequest::new();
+    let request = ValidateRequest::new().with_unique_identifier(
+        UniqueIdentifier::TextString("managed-certificate".to_owned()),
+    );
     assert_eq!(request.validity_date(), None);
-    assert_eq!(request.chain_len(), 0);
-    assert!(
-        request
-            .into_ttlv_payload()
-            .unwrap()
-            .view()
-            .children()
-            .is_empty()
+    assert_eq!(request.chain_len(), 1);
+    assert_eq!(
+        field_tags(&request.into_ttlv_payload().unwrap()),
+        [IDENTIFIER]
     );
     let payload = ValidateRequest::default()
         .with_certificate(certificate(SENTINEL))

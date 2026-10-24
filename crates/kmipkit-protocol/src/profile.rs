@@ -5043,8 +5043,32 @@ fn client_validate_chain_list_members_are_usable(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_validate_repeated_certificates_are_usable(request, None)
-        && client_validate_repeated_unique_identifiers_are_usable(request, None)
+    if !client_validate_repeated_certificates_are_usable(request, None)
+        || !client_validate_repeated_unique_identifiers_are_usable(request, None)
+    {
+        return false;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != VALIDATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload.children().iter().any(|field| {
+                    matches!(field.tag().raw(), VALIDATE_CERTIFICATE | UNIQUE_IDENTIFIER)
+                })
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn attribute_fields_do_not_mutate_key_value_present(
