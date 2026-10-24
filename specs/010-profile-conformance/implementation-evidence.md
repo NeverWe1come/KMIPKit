@@ -5559,3 +5559,20 @@ Mapped `KMIPKIT-REQ-SPEC-3.2-001` from KMIP Specification v2.1 §3.2 Table 13, w
 | Hosted CI | Run `40064413813` on prior head `5dc0494e`; correction commit `d5edde73` | Not exact-head evidence. Script Contracts failed on Ubuntu, macOS, and Windows because the catalog correctly added `profile.rs` and its profile test as evidence for four Get controls, while `test_export_and_get_optional_request_rows_have_verified_catalog_evidence` expected only `get.rs`. The Windows contract suite took 1,676.605 seconds for 663 tests before reporting the same four stale expectations. The focused catalog contract now passes locally; exact-head hosted CI remains pending. |
 
 Baseline Client now has 108 valid executable typed mappings of 265 assigned requirements; 157 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Delete Attribute reference (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.13-006` from KMIP Specification v2.1 §6.1.13 Table 202, request payload row Attribute Reference (pinned HTML lines 25700–25718). The source gap records `Required=No`, so the profile rule provides request-representation evidence that the typed client can include the selector while preserving its optionality. The tests do not infer deletion semantics, remote object state, or server acceptance. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `f45b92f6`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_delete_attribute_reference_as_optional_capability` | Expected failure: the optional source-gap requirement had no typed profile mapping. |
+| Green | DCO commit `45fd45c5`; typed OptionalCapability mapping, source-gap identity, evaluator, and request profile test | PASS: the test serializes Attribute Reference present and absent and validates both as request representations. |
+| Refactor | DCO commit `0ff28564`; evaluator name now states that it records representation capability | PASS: focused test and formatting checks pass. |
+| Rust verification | `cargo llvm-cov -p kmipkit-protocol --lib --all-features --summary-only -- --quiet`; protocol Clippy; format and diff checks | PASS: 951 tests passed; Clippy with `-D warnings`; formatting and diff checks pass. The local library-only aggregate is not the hosted selected-scope coverage gate. |
+| Generated evidence | Catalog validation; profile generator and report checks; full-profile report snapshot | PASS: the mapping resolves to the exact source gap and the report snapshot includes it. |
+| Traceability | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS: source-gap mapping, profile implementation ref, and executable test ref resolve. |
+| Hosted CI | Run `40066856718` on prior published head `9f5bdb4d` | In progress; this local increment is not part of that head. |
+
+Baseline Client now has 109 valid executable typed mappings of 265 assigned requirements; 156 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.

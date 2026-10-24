@@ -100802,11 +100802,13 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/delete_attribute.rs"
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_delete_attribute_reference"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent"
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_both_optional_selectors_as_absent",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -100858,7 +100860,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.13, request payload row Attribute Reference (HTML lines 25700-25718), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request-construction test verifies field representation; no official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.13 Table 202, request payload row Attribute Reference (HTML lines 25700-25718), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request tests and Baseline Client profile test verify that the typed client can represent the reference and leaves it optional; they do not model object deletion, server behavior, or an official OASIS test result. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-009",

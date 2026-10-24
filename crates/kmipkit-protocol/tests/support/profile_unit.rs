@@ -3278,13 +3278,10 @@ fn profile_maps_delete_attribute_reference_as_optional_capability() {
             "Opaque.Attribute",
         )),
     ] {
-        let payload = crate::DeleteAttributeRequest::new(
-            Some("test-object".to_owned()),
-            None,
-            reference,
-        )
-        .to_ttlv_payload()
-        .expect("the optional Attribute Reference is structurally valid");
+        let payload =
+            crate::DeleteAttributeRequest::new(Some("test-object".to_owned()), None, reference)
+                .to_ttlv_payload()
+                .expect("the optional Attribute Reference is structurally valid");
         let request = request_message_with_operation_payload(0x0000_000F, payload);
         assert!(evaluate(Some(&request), None));
         result
