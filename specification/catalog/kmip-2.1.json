@@ -96881,16 +96881,19 @@
       "feature_spec": "KMIPKIT-0021",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/sign.rs"
+    "crates/kmipkit-protocol/src/profile.rs",
+    "crates/kmipkit-protocol/src/sign.rs"
       ],
       "verification_refs": [
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_sign_cryptographic_parameters_omission_as_optional_capability",
         "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::explicit_sign_executes_once_and_exposes_server_output",
-        "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted"
+    "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::request_table_fields_reach_the_fake_transport_unchanged",
+    "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+  "review_note": "The profile rule checks Sign request representation only: omission is usable when managed-object attributes provide the parameters, but KMIPKit does not inspect remote attributes or claim server acceptance. No requirement-specific official Test Case is linked by the pinned OASIS sources; no conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-004",
