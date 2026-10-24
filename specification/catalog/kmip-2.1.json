@@ -100938,7 +100938,7 @@
       "feature_spec": "KMIPKIT-0016",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/delete_attribute.rs",
-        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_delete_attribute_current_attribute"
+        "crates/kmipkit-protocol/src/profile.rs::client_can_represent_optional_delete_attribute_selector"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_preserves_current_attribute_as_one_direct_item_in_table_202_order",

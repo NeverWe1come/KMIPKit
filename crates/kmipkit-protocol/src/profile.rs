@@ -1916,15 +1916,7 @@ fn client_create_split_key_requires_prime_field_size_for_polynomial_method(
     })
 }
 
-fn client_can_represent_optional_delete_attribute_reference(
-    request: Option<&RequestMessage>,
-    _response: Option<(&RequestMessage, &ResponseMessage)>,
-) -> bool {
-    // §6.1.13 Table 202 permits the typed request model's optional selector.
-    request.is_some()
-}
-
-fn client_can_represent_optional_delete_attribute_current_attribute(
+fn client_can_represent_optional_delete_attribute_selector(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -7059,7 +7051,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL"),
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_optional_delete_attribute_current_attribute),
+        evaluator: Some(client_can_represent_optional_delete_attribute_selector),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_current_attribute_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
@@ -7071,7 +7063,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL"),
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_optional_delete_attribute_reference),
+        evaluator: Some(client_can_represent_optional_delete_attribute_selector),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
