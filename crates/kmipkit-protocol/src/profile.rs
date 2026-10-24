@@ -717,6 +717,7 @@ const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CREATE_OPERATION: u32 = 0x0000_0001;
 const REKEY_OPERATION: u32 = 0x0000_0004;
 const RECERTIFY_OPERATION: u32 = 0x0000_0007;
+const REPROVISION_OPERATION: u32 = 0x0000_0035;
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
@@ -725,6 +726,8 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
+const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
+const REPROVISION_CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
 const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
 const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
@@ -1564,6 +1567,50 @@ fn client_rekey_offset_is_optional_interval(
         OperationFieldType::Interval,
         false,
     )
+}
+
+fn client_reprovision_request_form_is_well_formed(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REPROVISION_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut certificate_request_seen = false;
+                let mut certificate_seen = false;
+                let fields_well_formed = payload
+                    .children()
+                    .iter()
+                    .filter(|field| {
+                        matches!(
+                            field.tag().raw(),
+                            REPROVISION_CERTIFICATE_REQUEST | REPROVISION_CERTIFICATE
+                        )
+                    })
+                    .all(|field| {
+                        let seen = match field.tag().raw() {
+                            REPROVISION_CERTIFICATE_REQUEST => &mut certificate_request_seen,
+                            REPROVISION_CERTIFICATE => &mut certificate_seen,
+                            _ => return false,
+                        };
+                        !std::mem::replace(seen, true)
+                            && field.with_value(|value| matches!(value, ValueView::Structure(_)))
+                    });
+                fields_well_formed && !(certificate_request_seen && certificate_seen)
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
@@ -6503,6 +6550,40 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_reprovision_request_form_is_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_certificate_request_forms",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_supports_certificate_request_certificate_or_no_parameters",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_rejects_mutually_supplied_certificate_request_and_certificate",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_parameterless_server_credential_form",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form",
+                kind: RuleTestKind::PositiveBehavior,
             },
         ],
         constraints: &[],
