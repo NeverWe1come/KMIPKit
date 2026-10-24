@@ -724,6 +724,7 @@ const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const CHECK_OPERATION: u32 = 0x0000_0009;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
+const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
 const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
 const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
@@ -741,6 +742,7 @@ const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const USAGE_LIMITS_ATTRIBUTE: u32 = 0x0042_0095;
 const LEASE_TIME: u32 = 0x0042_0049;
+const TICKET: u32 = 0x0042_0149;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1524,6 +1526,19 @@ fn client_login_lease_time_is_optional_interval_or_date_time(
     )
 }
 
+fn client_logout_ticket_is_required_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        LOGOUT_OPERATION,
+        TICKET,
+        OperationFieldType::Structure,
+        true,
+    )
+}
+
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1567,6 +1582,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
 enum OperationFieldType {
     Integer,
     LeaseTime,
+    Structure,
     RightsStructure,
     UsageLimitsStructure,
 }
@@ -1605,6 +1621,9 @@ fn client_operation_field_is_well_formed(
                                 }
                                 OperationFieldType::LeaseTime => {
                                     matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
+                                }
+                                OperationFieldType::Structure => {
+                                    matches!(value, ValueView::Structure(_))
                                 }
                                 OperationFieldType::RightsStructure => match value {
                                     ValueView::Structure(value) => {
@@ -7055,6 +7074,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.31-001",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_logout_ticket_is_required_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_logout_required_ticket_as_required_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+                kind: RuleTestKind::PositiveBehavior,
             },
         ],
         constraints: &[],
