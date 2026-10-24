@@ -1646,7 +1646,7 @@ fn client_get_wrapping_specification_has_key_information(
     })
 }
 
-fn client_can_request_get_wrapped_key(
+fn client_supports_get_wrapped_key_request(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -5336,7 +5336,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_can_request_get_wrapped_key),
+        evaluator: Some(client_supports_get_wrapped_key_request),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification",
             kind: RuleTestKind::PositiveBehavior,
