@@ -7303,11 +7303,6 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
     const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
     const SIGNATURE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-011";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions";
-    const CERTIFICATE_TAG: u32 = 0x0042_0013;
-    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
-    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
-    const CERTIFICATE_LENGTH_TAG: u32 = 0x0042_00AD;
-
     for (requirement_id, source_clause_id) in [
         (ALGORITHM_REQUIREMENT_ID, ALGORITHM_CLAUSE_ID),
         (LENGTH_REQUIREMENT_ID, LENGTH_CLAUSE_ID),
@@ -7335,6 +7330,14 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
         }));
     }
 
+    assert_register_key_block_omission_paths(ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID);
+    assert_register_certificate_signature_omission(SIGNATURE_REQUIREMENT_ID);
+}
+
+fn assert_register_key_block_omission_paths(
+    algorithm_requirement_id: &str,
+    length_requirement_id: &str,
+) {
     let key_block_request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -7343,7 +7346,7 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
         ),
     );
-    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+    for requirement_id in [algorithm_requirement_id, length_requirement_id] {
         table12_profile_result(&[requirement_id])
             .validate_request(&key_block_request)
             .expect("Algorithm and Length may be omitted from Attributes when in the Key Block");
@@ -7384,7 +7387,7 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
         ),
     );
-    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+    for requirement_id in [algorithm_requirement_id, length_requirement_id] {
         table12_profile_result(&[requirement_id])
             .validate_request(&nested_key_block_request)
             .expect("Key Value Attributes also carry the omitted Algorithm and Length");
@@ -7398,10 +7401,17 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
         ),
     );
-    let error = table12_profile_result(&[LENGTH_REQUIREMENT_ID])
+    let error = table12_profile_result(&[length_requirement_id])
         .validate_request(&incomplete_key_block_request)
         .expect_err("omitted Key Block Length must be represented");
-    assert_eq!(error.requirement_id(), Some(LENGTH_REQUIREMENT_ID));
+    assert_eq!(error.requirement_id(), Some(length_requirement_id));
+}
+
+fn assert_register_certificate_signature_omission(signature_requirement_id: &str) {
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+    const CERTIFICATE_LENGTH_TAG: u32 = 0x0042_00AD;
 
     let certificate_request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -7428,7 +7438,7 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             ),
         ]),
     );
-    table12_profile_result(&[SIGNATURE_REQUIREMENT_ID])
+    table12_profile_result(&[signature_requirement_id])
         .validate_request(&certificate_request)
         .expect("Digital Signature Algorithm may be omitted when carried by Certificate");
 
@@ -7439,10 +7449,10 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             tagged(TABLE12_ATTRIBUTES, Value::structure(Structure::new())),
         ]),
     );
-    let error = table12_profile_result(&[SIGNATURE_REQUIREMENT_ID])
+    let error = table12_profile_result(&[signature_requirement_id])
         .validate_request(&certificate_without_value)
         .expect_err("Digital Signature Algorithm cannot be omitted without a Certificate");
-    assert_eq!(error.requirement_id(), Some(SIGNATURE_REQUIREMENT_ID));
+    assert_eq!(error.requirement_id(), Some(signature_requirement_id));
 }
 
 #[test]

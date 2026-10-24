@@ -2510,8 +2510,8 @@ fn register_table293_pair_omission_is_backed_by_key_block(payload: &StructureVie
                 field_presence(&attributes, CRYPTOGRAPHIC_LENGTH),
             ) {
                 (FieldPresence::Unique(algorithm), FieldPresence::Unique(length)) => {
-                    register_table293_attribute_has_type(&algorithm, CRYPTOGRAPHIC_ALGORITHM)
-                        && register_table293_attribute_has_type(&length, CRYPTOGRAPHIC_LENGTH)
+                    register_table293_attribute_has_type(algorithm, CRYPTOGRAPHIC_ALGORITHM)
+                        && register_table293_attribute_has_type(length, CRYPTOGRAPHIC_LENGTH)
                 }
                 (FieldPresence::Missing, FieldPresence::Missing) => {
                     register_payload_key_block_has_attribute(payload, CRYPTOGRAPHIC_ALGORITHM)
@@ -2555,7 +2555,7 @@ fn register_payload_key_block_has_attribute(payload: &StructureView<'_>, tag: u3
 fn register_key_block_has_table293_attribute(key_block: &StructureView<'_>, tag: u32) -> bool {
     match field_presence(key_block, tag) {
         FieldPresence::Unique(attribute) => {
-            return register_table293_attribute_has_type(&attribute, tag);
+            return register_table293_attribute_has_type(attribute, tag);
         }
         FieldPresence::Duplicate => return false,
         FieldPresence::Missing => {}
@@ -2572,7 +2572,7 @@ fn register_key_block_has_table293_attribute(key_block: &StructureView<'_>, tag:
             attributes.with_value(|value| match value {
                 ValueView::Structure(attributes) => match field_presence(&attributes, tag) {
                     FieldPresence::Unique(attribute) => {
-                        register_table293_attribute_has_type(&attribute, tag)
+                        register_table293_attribute_has_type(attribute, tag)
                     }
                     FieldPresence::Missing | FieldPresence::Duplicate => false,
                 },
