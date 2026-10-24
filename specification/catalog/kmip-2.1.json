@@ -95286,13 +95286,21 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0009",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/poll.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+        "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
+        "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0009 FR-003 implements this client request rule. KMIPKIT-0010 adds an explicit Baseline Client typed profile mapping and links executable Poll request and client transport evidence. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-002",
@@ -96611,13 +96619,21 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0009",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cancel.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+        "crates/kmipkit-protocol/tests/unit/cancel_tests.rs::cancel_request_preserves_exact_correlation_bytes_in_table_order",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_exposes_matching_echo_and_assigned_cancellation_result"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIPKIT-0009 FR-004 implements this client request rule. KMIPKIT-0010 adds an explicit Baseline Client typed profile mapping and links executable Cancel request and client transport evidence. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.50-001",
@@ -99042,12 +99058,22 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0009",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/asynchronous.rs",
+        "crates/kmipkit-protocol/src/poll.rs",
+        "crates/kmipkit-protocol/src/cancel.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+        "crates/kmipkit-protocol/tests/unit/cancel_tests.rs::cancel_request_preserves_exact_correlation_bytes_in_table_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0009; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "KMIPKIT-0009 FR-002 implements exact server-issued correlation retention and FR-003/FR-004 use it in explicit Poll/Cancel requests. KMIPKIT-0010 adds the Baseline Client typed profile mapping and cross-operation executable evidence. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-001",
@@ -99616,12 +99642,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0009",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/asynchronous.rs",
+        "crates/kmipkit-protocol/src/poll.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::pending_correlation_is_exact_borrowed_and_redacted_from_formatted_output",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0009; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "KMIPKIT-0009 FR-002/FR-003 implements exact Pending correlation exposure and explicit later Poll use. KMIPKIT-0010 adds the Baseline Client typed profile mapping and links executable Pending-to-Poll evidence. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.2-001",

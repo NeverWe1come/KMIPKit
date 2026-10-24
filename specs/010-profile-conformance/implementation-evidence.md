@@ -5444,3 +5444,20 @@ Added executable evidence for the Table 293 Algorithm/Length metadata pair and D
 | Hosted CI | New exact-head PR run required after publishing this batch | Pending. Run `40052094645` is on the previous head `15602cfb` and its selected-scope changed-Rust coverage result was 3,464/3,660, below the 95% gate. This test increment has not yet been measured by hosted CI. |
 
 T040 remains open. The 171 unmapped Baseline requirements, three blocked mandatory fixtures, and 77 unavailable profile cases remain open; this increment does not establish profile readiness or a conformance claim.
+
+### KMIPKIT-0010 T040 — Asynchronous Poll and Cancel correlation (2026-10-24)
+
+Added a Baseline Client typed `RequiredBehavior` rule for the `Asynchronous Correlation Value` used by Poll and Cancel. The mapping is grounded in KMIP Specification v2.1 §§6.1.5, 6.1.38, 9.1, and 9.19 and links the existing KMIPKIT-0009 request/lifecycle behavior to typed profile evidence. The evaluator requires one Byte String correlation field on Poll and Cancel, rejects a missing, duplicate, or wrong-type field, and leaves unrelated operations unchanged. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `b687fcdb`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_poll_cancel_asynchronous_correlation_requirements` | Expected failure: the four asynchronous correlation requirements had no typed profile mapping. |
+| Green | DCO commit `2049252b`; shared Poll/Cancel evaluator, four typed mappings, and positive, missing, duplicate, and wrong-type assertions | PASS: Poll, Cancel, and unrelated operations follow the expected result; malformed correlation shapes fail closed. |
+| Refactor | DCO commit `51679ef7`; share the correlation fixture field/payload across focused cases | PASS: focused protocol test and protocol Clippy pass. |
+| Report contract | Updated the fixed typed-mapping ID snapshot for the four mappings and their evidence references | PASS: focused report snapshot test and full `test_report` suite (55 passed, 1 skipped). |
+| Protocol and quality | Full protocol library tests; protocol Clippy; `cargo fmt --all --check`; `git diff --check` | PASS: 942 protocol tests; Clippy clean; formatting and diff checks clean. |
+| Normative traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS after declaring the four cross-feature requirement IDs whose additional profile-evaluator tests are maintained in the typed registry. |
+| Catalog and generation | Catalog validation; profile generator `--check`; coverage report `--check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated metadata/report current. |
+| Hosted CI on prior published head `fc5f9380` | Run `40053836627` | The previous head's selected-scope gate failed at 3,475/3,660 changed Rust lines (94.95%); its primary cross-platform build, coverage producers, and adapter jobs passed. This local increment is not part of that run and awaits exact-head CI after publication. |
+
+This increment raises Baseline Client to 98 valid executable typed mappings out of 265 assigned requirements, leaving 167 unmapped. T040 remains open; the three blocked mandatory fixtures and 77 unavailable profile cases also prevent readiness. No profile-conformance claim is made.

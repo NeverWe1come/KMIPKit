@@ -234,3 +234,11 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 ## T008 Refactor checkpoint (2026-10-19)
 - Closed T008 after re-running the full profile generator suite and deterministic profile/report output checks. Existing signed code Refactor `2b5a39b2` centralizes Rust literal validation; current test suite confirms bounded target reads, deterministic generation, and adversarial source compile/round-trip.
 - The current signed task-evidence commit records T008 separately from the T005-T007 Green checkpoint. T003 optional-evidence Red remains open for Green implementation; six selected Baseline MAY/OPTIONAL capabilities and the fixture/readiness gates are still unresolved.
+
+## KMIPKIT-0010 continuation checkpoint (2026-10-24)
+
+- Active worktree: `C:\Users\ramp1953\.codex\worktrees\0010-t040-profile-evidence\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`.
+- T040 asynchronous correlation increment is locally implemented in DCO commits `b687fcdb` (Red), `2049252b` (Green), and `51679ef7` (Refactor). It adds four typed Baseline mappings for Poll/Cancel correlation requirements and negative evidence for missing, duplicate, and wrong-type fields.
+- Local generated report: 98/265 assigned Baseline requirements have valid executable typed mappings; 167 remain unmapped. Three mandatory fixtures remain blocked and 77 profile cases unavailable. T040 remains open and no profile-conformance claim is made.
+- Local verification passed: 942 `kmipkit-protocol` library tests; protocol Clippy; 55 report tests (one skipped); catalog validation (4 sources, 1,411 clauses, 4,123 records); generated profile/report checks; rustfmt.
+- Exact previously published PR head `fc5f9380` failed the selected-scope changed-Rust coverage gate at 3,475/3,660 (94.95%). Its platform coverage producers and main cross-platform build jobs passed. These local commits are not in that run; publish only after completing the batch checks, then use exact-head CI to verify the updated threshold.
