@@ -794,6 +794,9 @@ const ENCODING_OPTION: u32 = 0x0042_00A3;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
+const CREATE_KEY_PAIR_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+const CREATE_KEY_PAIR_PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+const CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 const REGISTER_OPERATION: u32 = 0x0000_0003;
@@ -2017,6 +2020,108 @@ fn client_create_key_pair_domain_parameters_have_valid_wire_types(
             })
             .unwrap_or(false)
     })
+}
+
+fn client_repeated_attributes_are_representable(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if let Some((request, response)) = response {
+        return request.batch_items().zip(response.batch_items()).all(
+            |(request_item, response_item)| {
+                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return true;
+                }
+                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return false;
+                }
+
+                response_item
+                    .with_response_payload(|payload| {
+                        attribute_group_is_representable(&payload, ATTRIBUTES)
+                    })
+                    .unwrap_or(false)
+            },
+        );
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|request_item| {
+        if request_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        request_item
+            .with_request_payload(|payload| attribute_group_is_representable(&payload, ATTRIBUTES))
+            .unwrap_or(false)
+    })
+}
+
+fn client_create_key_pair_attribute_group_is_representable(
+    request: Option<&RequestMessage>,
+    attribute_group_tag: u32,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|request_item| {
+        let Some(operation) = request_item.operation() else {
+            return false;
+        };
+        if operation != CREATE_KEY_PAIR_OPERATION {
+            return true;
+        }
+
+        request_item
+            .with_request_payload(|payload| {
+                attribute_group_is_representable(&payload, attribute_group_tag)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_create_key_pair_common_attributes_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_create_key_pair_attribute_group_is_representable(
+        request,
+        CREATE_KEY_PAIR_COMMON_ATTRIBUTES,
+    )
+}
+
+fn client_create_key_pair_private_key_attributes_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_create_key_pair_attribute_group_is_representable(
+        request,
+        CREATE_KEY_PAIR_PRIVATE_KEY_ATTRIBUTES,
+    )
+}
+
+fn client_create_key_pair_public_key_attributes_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_create_key_pair_attribute_group_is_representable(
+        request,
+        CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES,
+    )
+}
+
+fn attribute_group_is_representable(payload: &StructureView<'_>, group_tag: u32) -> bool {
+    match field_presence(payload, group_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(group) => {
+            group.with_value(|value| matches!(value, ValueView::Structure(_)))
+        }
+        FieldPresence::Duplicate => false,
+    }
 }
 
 fn derive_key_specifies_cryptographic_length(
@@ -4392,6 +4497,78 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-5.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.1-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_repeated_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_attributes_for_client_requests_and_responses",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-5.2-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.2-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_common_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-5.3-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.3-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_private_key_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-5.4-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.4-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_public_key_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
