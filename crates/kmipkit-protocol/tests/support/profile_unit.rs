@@ -4611,6 +4611,81 @@ fn profile_maps_rekey_offset_as_optional_interval() {
         .expect("a Re-key-only rule does not constrain Locate requests");
 }
 
+fn reprovision_malformed_request_payloads() -> [Structure; 7] {
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+    const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
+    const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
+
+    fn certificate_object() -> Structure {
+        structure([
+            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                CERTIFICATE_VALUE_TAG,
+                Value::byte_string(b"certificate".to_vec()),
+            ),
+        ])
+    }
+
+    [
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::text_string("not-a-Structure".to_owned()),
+        )]),
+        structure([
+            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
+            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
+        ]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(Structure::new()),
+        )]),
+        structure([tagged(
+            CERTIFICATE_TAG,
+            Value::structure(structure([
+                tagged(
+                    CERTIFICATE_TYPE_TAG,
+                    Value::text_string("not-an-Enumeration".to_owned()),
+                ),
+                tagged(
+                    CERTIFICATE_VALUE_TAG,
+                    Value::byte_string(b"certificate".to_vec()),
+                ),
+            ])),
+        )]),
+        structure([tagged(
+            CERTIFICATE_TAG,
+            Value::structure(structure([tagged(
+                CERTIFICATE_TYPE_TAG,
+                Value::enumeration(1),
+            )])),
+        )]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(structure([tagged(
+                CERTIFICATE_REQUEST_VALUE_TAG,
+                Value::byte_string(b"request".to_vec()),
+            )])),
+        )]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(structure([
+                tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    CERTIFICATE_REQUEST_VALUE_TAG,
+                    Value::byte_string(b"request".to_vec()),
+                ),
+                tagged(
+                    CERTIFICATE_REQUEST_VALUE_TAG,
+                    Value::byte_string(b"duplicate".to_vec()),
+                ),
+            ])),
+        )]),
+    ]
+}
+
 #[test]
 fn profile_maps_reprovision_certificate_request_forms() {
     // KMIP Specification v2.1 §6.1.48 and Table 313 permit optional
@@ -4620,8 +4695,6 @@ fn profile_maps_reprovision_certificate_request_forms() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.48-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REPROVISION_OPERATION_TAG: u32 = 0x0000_0035;
-    const CERTIFICATE_TAG: u32 = 0x0042_0013;
-    const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
     const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
     const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
     const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
@@ -4699,61 +4772,7 @@ fn profile_maps_reprovision_certificate_request_forms() {
             .expect("each Table 313 request form satisfies the client requirement");
     }
 
-    for payload in [
-        structure([tagged(
-            CERTIFICATE_REQUEST_TAG,
-            Value::text_string("not-a-Structure".to_owned()),
-        )]),
-        structure([
-            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
-            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
-        ]),
-        structure([tagged(
-            CERTIFICATE_REQUEST_TAG,
-            Value::structure(Structure::new()),
-        )]),
-        structure([tagged(
-            CERTIFICATE_TAG,
-            Value::structure(structure([
-                tagged(
-                    CERTIFICATE_TYPE_TAG,
-                    Value::text_string("not-an-Enumeration".to_owned()),
-                ),
-                tagged(
-                    CERTIFICATE_VALUE_TAG,
-                    Value::byte_string(b"certificate".to_vec()),
-                ),
-            ])),
-        )]),
-        structure([tagged(
-            CERTIFICATE_TAG,
-            Value::structure(structure([tagged(
-                CERTIFICATE_TYPE_TAG,
-                Value::enumeration(1),
-            )])),
-        )]),
-        structure([tagged(
-            CERTIFICATE_REQUEST_TAG,
-            Value::structure(structure([tagged(
-                CERTIFICATE_REQUEST_VALUE_TAG,
-                Value::byte_string(b"request".to_vec()),
-            )])),
-        )]),
-        structure([tagged(
-            CERTIFICATE_REQUEST_TAG,
-            Value::structure(structure([
-                tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(2)),
-                tagged(
-                    CERTIFICATE_REQUEST_VALUE_TAG,
-                    Value::byte_string(b"request".to_vec()),
-                ),
-                tagged(
-                    CERTIFICATE_REQUEST_VALUE_TAG,
-                    Value::byte_string(b"duplicate".to_vec()),
-                ),
-            ])),
-        )]),
-    ] {
+    for payload in reprovision_malformed_request_payloads() {
         let malformed = request_message_with_operation_payload(REPROVISION_OPERATION_TAG, payload);
         assert!(!evaluate(Some(&malformed), None));
         let error = result
