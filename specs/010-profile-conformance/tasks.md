@@ -239,3 +239,7 @@
 
 
 - Progress note (2026-10-24): T040 now maps KMIP Specification v2.1 §14.1's client-conformance prerequisite and claimed-profile closure rule to the profile-selection gate. Red commits `09aeccbf` and `b7bf32e2` reproduce the missing runtime mapping and report-parser rejection; Green commit `860d6f5e` adds both typed mappings and report support. The generated Baseline coverage report now records 140 of 265 requirements with valid typed mappings and category tests; 125 remain unmapped and runtime profile validation remains false. The report also now recognizes five existing TTLV-only declarative mappings that its parser previously omitted. T040 remains open; this is no profile-conformance claim.
+
+## Phase 10: Restore temporary CI coverage threshold waiver
+
+- [ ] T043 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0010 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record the selected-scope and aggregate minimum coverage checks before requesting review or merge.
