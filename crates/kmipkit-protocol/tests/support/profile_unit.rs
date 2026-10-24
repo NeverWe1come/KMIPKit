@@ -4928,6 +4928,13 @@ fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_c
     const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
     const SIGNATURE_DATA_TAG: u32 = 0x0042_00C3;
 
+    fn valid_cryptographic_parameters() -> Value {
+        Value::structure(structure([tagged(
+            CRYPTOGRAPHIC_ALGORITHM_TAG,
+            Value::enumeration(0x38),
+        )]))
+    }
+
     fn signature_verify_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
         let mut fields = Vec::new();
         fields.extend(
@@ -4969,10 +4976,7 @@ fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_c
     };
     for payload in [
         signature_verify_payload([]),
-        signature_verify_payload([Value::structure(structure([tagged(
-            CRYPTOGRAPHIC_ALGORITHM_TAG,
-            Value::enumeration(0x38),
-        )]))]),
+        signature_verify_payload([valid_cryptographic_parameters()]),
     ] {
         let request =
             request_message_with_operation_payload(SIGNATURE_VERIFY_OPERATION_TAG, payload);
@@ -4985,14 +4989,8 @@ fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_c
     for payload in [
         signature_verify_payload([Value::text_string("not-a-Structure".to_owned())]),
         signature_verify_payload([
-            Value::structure(structure([tagged(
-                CRYPTOGRAPHIC_ALGORITHM_TAG,
-                Value::enumeration(0x38),
-            )])),
-            Value::structure(structure([tagged(
-                CRYPTOGRAPHIC_ALGORITHM_TAG,
-                Value::enumeration(0x38),
-            )])),
+            valid_cryptographic_parameters(),
+            valid_cryptographic_parameters(),
         ]),
     ] {
         let malformed =
