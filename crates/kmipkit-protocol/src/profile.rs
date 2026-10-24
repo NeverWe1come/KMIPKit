@@ -3387,6 +3387,64 @@ fn derive_key_specifies_cryptographic_algorithm_for_key_output(
     })
 }
 
+fn derive_key_symmetric_output_specifies_cryptographic_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                match derive_key_output_object_type(&payload) {
+                    Some(SYMMETRIC_KEY_OBJECT_TYPE) => {
+                        let FieldPresence::Unique(attributes) =
+                            field_presence(&payload, ATTRIBUTES)
+                        else {
+                            return false;
+                        };
+                        attributes.with_value(|value| match value {
+                            ValueView::Structure(attributes) => {
+                                let FieldPresence::Unique(length) =
+                                    field_presence(&attributes, CRYPTOGRAPHIC_LENGTH)
+                                else {
+                                    return false;
+                                };
+                                let FieldPresence::Unique(algorithm) =
+                                    field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM)
+                                else {
+                                    return false;
+                                };
+                                length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                                    && algorithm.with_value(|value| {
+                                        matches!(value, ValueView::Enumeration(_))
+                                    })
+                            }
+                            _ => false,
+                        })
+                    }
+                    // This conditional requirement applies only to a known
+                    // Symmetric Key output. Preserve unknown Object Type values
+                    // without interpreting them as symmetric keys.
+                    Some(_) => true,
+                    // A malformed or absent Object Type cannot establish the
+                    // requirement's applicability, so reject it fail-closed.
+                    None => false,
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn derive_key_secret_data_uses_total_cryptographic_length(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8276,6 +8334,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_symmetric_output_specifies_cryptographic_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_symmetric_output_attributes",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],

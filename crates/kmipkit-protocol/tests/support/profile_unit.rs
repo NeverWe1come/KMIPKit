@@ -1773,6 +1773,26 @@ fn profile_maps_required_derive_key_symmetric_output_attributes() {
         .validate_request(&secret_data)
         .expect("this symmetric-key-specific requirement does not apply to Secret Data");
 
+    let future_object_type = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_payload_with_attributes(0xFFFF, []),
+    );
+    result
+        .validate_request(&future_object_type)
+        .expect("an unknown future Object Type is not interpreted as a Symmetric Key");
+
+    let missing_object_type = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &missing_object_type,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "the rule cannot determine applicability when Object Type is missing",
+    );
+
     let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
     result
         .validate_request(&unrelated_operation)
