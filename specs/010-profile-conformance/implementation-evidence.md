@@ -5348,3 +5348,19 @@ Mapped `KMIPKIT-REQ-SPEC-10.4-001-001`, `-002`, and `-003` from KMIP Specificati
 | Hosted CI on prior pushed head `2345194f` | Run `40042031530` | Documentation contracts failed because `test_message_model_csv_maps_requirements_and_executable_evidence` still expected the newly mapped §10.1.2 order requirement to be `unassigned`. The assertion is corrected and its focused test passes; the other run jobs were still active when recorded. A fresh exact-head CI run is pending this batch's push. |
 
 Baseline now has 92 typed mappings of 265 assigned requirements; 173 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Maximum Response Size recommendation (2026-10-24)
+
+Mapped Baseline Client requirement `KMIPKIT-REQ-SPEC-9.12-001-003` from KMIP Specification v2.1 §9.12 as `RecommendedBehaviorOrDeviation`. The typed profile evaluator permits omission, rejects peer-visible Maximum Response Size for Discover Versions (classified as not likely-large by KMIPKIT-0007), and leaves other operation classifications to their approved feature specifications. Evidence links the profile rule to the Create Split Key client test that advertises the configured local cap and enforces exact/over-limit response boundaries. No requirement-specific official OASIS Test Case is linked, and no profile-conformance claim is made.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `95d9ecaa`; `cargo test -p kmipkit-protocol --lib profile_maps_maximum_response_size_only_for_possible_large_replies --all-features --locked -- --nocapture` | Expected failure: the recommendation had no typed profile mapping. |
+| Green | DCO commit `9a6edbac`; added the typed evaluator/mapping, catalog note, generated report, and explicit traceability-test exception for profile-registry evidence | PASS: Discover Versions with the field fails profile validation; omission remains valid; Create Split Key with the field passes. |
+| Refactor | DCO commit `9320ca5d`; shared the optional Maximum Response Size test fixture | PASS: both focused response-size profile tests pass. |
+| Protocol tests and lint | `cargo test -p kmipkit-protocol --all-features --locked`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings` | PASS: 936 tests; Clippy clean. |
+| Operation evidence | `cargo test -p kmipkit-client --lib create_split_key_accepts_response_exactly_at_local_limit --all-features --locked` | PASS: 1 test. |
+| Traceability and generated artifacts | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`; catalog validation; profile generator `--check`; report `--check`; `cargo fmt --all --check`; `git diff --check` | PASS. The focused traceability test completed in 64.5 seconds. |
+| Hosted CI | Exact-head PR run after publishing this batch | Pending. |
+
+Baseline now has 93 typed mappings of 265 assigned requirements; 172 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`.
