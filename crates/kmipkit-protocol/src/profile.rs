@@ -1670,27 +1670,25 @@ fn client_split_key_part_identifier_is_within_declared_parts(
 }
 
 fn split_key_part_identifier_is_within_parts(split_key: &StructureView<'_>) -> bool {
-    let FieldPresence::Unique(split_key_parts) = field_presence(split_key, SPLIT_KEY_PARTS) else {
+    let Some(split_key_parts) = unique_integer_field_value(split_key, SPLIT_KEY_PARTS) else {
         return false;
     };
-    let Some(split_key_parts) = split_key_parts.with_value(|value| match value {
-        ValueView::Integer(value) => Some(*value),
-        _ => None,
-    }) else {
-        return false;
-    };
-    let FieldPresence::Unique(key_part_identifier) = field_presence(split_key, KEY_PART_IDENTIFIER)
+    let Some(key_part_identifier) = unique_integer_field_value(split_key, KEY_PART_IDENTIFIER)
     else {
         return false;
     };
-    let Some(key_part_identifier) = key_part_identifier.with_value(|value| match value {
+
+    (1..=split_key_parts).contains(&key_part_identifier)
+}
+
+fn unique_integer_field_value(structure: &StructureView<'_>, tag: u32) -> Option<i32> {
+    let FieldPresence::Unique(item) = field_presence(structure, tag) else {
+        return None;
+    };
+    item.with_value(|value| match value {
         ValueView::Integer(value) => Some(*value),
         _ => None,
-    }) else {
-        return false;
-    };
-
-    key_part_identifier >= 1 && key_part_identifier <= split_key_parts
+    })
 }
 
 fn client_create_split_key_requires_prime_field_size_for_polynomial_method(
