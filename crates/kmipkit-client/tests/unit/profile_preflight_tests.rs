@@ -791,7 +791,9 @@ impl ProfileExchangeValidator for ReorderedBatchValidator {
             Some(b"get-attributes".to_vec())
         );
         assert_eq!(
-            items[1].result_status().map(|status| status.raw()),
+            items[1]
+                .result_status()
+                .map(kmipkit_protocol::ResultStatus::raw),
             Some(self.expected_get_attributes_status)
         );
         Ok(())

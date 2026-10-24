@@ -263,13 +263,20 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(
             requirement["implementation_refs"],
-            ["crates/kmipkit-protocol/src/register.rs", "crates/kmipkit-client/src/execute.rs"],
+            [
+                "crates/kmipkit-protocol/src/register.rs",
+                "crates/kmipkit-client/src/execute.rs",
+                "crates/kmipkit-protocol/src/profile.rs::client_can_omit_link_when_associated_key_material_is_unavailable",
+                "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+            ],
         )
         self.assertEqual(
             requirement["verification_refs"],
             [
                 "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
-                "register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
+                "register_client_omits_signature_algorithm_when_x509_certificate_encodes_it",
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                "profile_maps_optional_absent_link_for_unavailable_associated_key_material",
             ],
         )
         self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
