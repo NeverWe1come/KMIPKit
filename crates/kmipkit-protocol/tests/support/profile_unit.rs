@@ -4589,6 +4589,155 @@ fn profile_rejects_incomplete_client_object_state_links_in_get_attributes_respon
         .expect("Link remains optional when an object has no association");
 }
 
+#[test]
+fn profile_correlates_reordered_get_attributes_link_responses_by_batch_id() {
+    // KMIP Specification v2.1 §§9.8 and 9.21 permit unordered execution and define ID correlation.
+    let result = client_object_state_link_profile_result();
+    let request = get_attributes_link_batch_request();
+
+    let complete = get_attributes_link_batch_response(
+        0,
+        [complete_client_object_state_link(Value::text_string(
+            "linked-object-7".to_owned(),
+        ))],
+    );
+    result
+        .validate_response(&request, &complete)
+        .expect("a reordered successful Get Attributes response is matched by its batch ID");
+
+    let malformed = get_attributes_link_batch_response(
+        0,
+        [client_object_state_link([tagged(
+            0x0042_004C,
+            Value::text_string("linked-object-7".to_owned()),
+        )])],
+    );
+    let error = result
+        .validate_response(&request, &malformed)
+        .expect_err("a malformed Link remains rejected in its matching reordered response");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.31-004"));
+
+    let failed_get_attributes = get_attributes_link_batch_response(1, []);
+    result
+        .validate_response(&request, &failed_get_attributes)
+        .expect("a failed Get Attributes item has no Link response payload to validate");
+}
+
+fn get_attributes_link_batch_request() -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_ORDER_OPTION_TAG, Value::boolean(false)),
+                tagged(BATCH_COUNT_TAG, Value::integer(2)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(b"get-attributes".to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(b"discover-versions".to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test mixed-operation request batch has unique IDs")
+}
+
+fn get_attributes_link_batch_response(
+    get_attributes_status: u32,
+    links: impl IntoIterator<Item = Item>,
+) -> crate::ResponseMessage {
+    const RESULT_REASON_TAG: u32 = 0x0042_007E;
+    const RESULT_MESSAGE_TAG: u32 = 0x0042_007D;
+
+    let mut get_attributes_fields = vec![
+        tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+        tagged(
+            UNIQUE_BATCH_ITEM_ID_TAG,
+            Value::byte_string(b"get-attributes".to_vec()),
+        ),
+        tagged(RESULT_STATUS_TAG, Value::enumeration(get_attributes_status)),
+    ];
+    if get_attributes_status == 0 {
+        get_attributes_fields.push(tagged(
+            RESPONSE_PAYLOAD_TAG,
+            Value::structure(structure([
+                tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("linked-object".to_owned()),
+                ),
+                tagged(ATTRIBUTES_TAG, Value::structure(structure(links))),
+            ])),
+        ));
+    } else {
+        get_attributes_fields.extend([
+            tagged(RESULT_REASON_TAG, Value::enumeration(1)),
+            tagged(
+                RESULT_MESSAGE_TAG,
+                Value::text_string("object not found".to_owned()),
+            ),
+        ]);
+    }
+
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(2)),
+            ])),
+        ),
+        // The server returns the two items in the reverse of request order.
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(b"discover-versions".to_vec()),
+                ),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(discover_versions_payload(&[(2, 1)])),
+                ),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure(get_attributes_fields)),
+        ),
+    ]))
+    .expect("reordered response batch retains its request item IDs")
+}
+
 fn get_attributes_link_response(links: impl IntoIterator<Item = Item>) -> crate::ResponseMessage {
     crate::ResponseMessage::try_from_ttlv(structure([
         tagged(
@@ -4602,10 +4751,7 @@ fn get_attributes_link_response(links: impl IntoIterator<Item = Item>) -> crate:
         tagged(
             BATCH_ITEM_TAG,
             Value::structure(structure([
-                tagged(
-                    OPERATION_TAG,
-                    Value::enumeration(GET_ATTRIBUTES_OPERATION),
-                ),
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
                 tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
                 tagged(
                     RESPONSE_PAYLOAD_TAG,
