@@ -16297,6 +16297,7 @@ fn profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_paylo
 fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence() {
     // KMIP Specification v2.1 §6.1.27 and Table 244 require at least the
     // caller-known Split Key Threshold number of Unique Identifier entries.
+    // Section 11.58 Table 145 permits Text String, Enumeration, or Integer.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -16328,9 +16329,9 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
 
-    // Repeated values remain separate Unique Identifier entries and count as
-    // entries; the typed request constructor separately checks their count
-    // against the maximum caller-supplied threshold before serialization.
+    // This standalone RequestMessage check can observe only wire fields;
+    // repeated values remain separate entries. The typed client path checks
+    // their count against the caller-supplied threshold before serialization.
     let repeated_identifiers = request_message_with_operation_payload(
         JOIN_SPLIT_KEY_OPERATION,
         structure([
@@ -16338,10 +16339,7 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
                 UNIQUE_IDENTIFIER_TAG,
                 Value::text_string("split-a".to_owned()),
             ),
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("split-a".to_owned()),
-            ),
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(42)),
         ]),
     );
     assert!(evaluate(Some(&repeated_identifiers), None));
@@ -16364,7 +16362,10 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
 
     let malformed_identifier = request_message_with_operation_payload(
         JOIN_SPLIT_KEY_OPERATION,
-        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(1))]),
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::byte_string(vec![0x01]),
+        )]),
     );
     assert!(!evaluate(Some(&malformed_identifier), None));
 
