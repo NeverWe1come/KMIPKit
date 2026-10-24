@@ -1972,6 +1972,110 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
 }
 
 #[test]
+fn profile_requires_get_wrapping_key_information_pairing() {
+    // KMIP Specification v2.1 §7.18 Table 370 requires at least one key-info
+    // structure in a Key Wrapping Specification carried by a Get request.
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MAC_SIGNATURE_KEY_INFORMATION_TAG: u32 = 0x0042_004E;
+
+    let request_with_key_information = |include_encryption: bool, include_mac_signature: bool| {
+        let mut wrapping_specification = vec![tagged(WRAPPING_METHOD_TAG, Value::enumeration(1))];
+        if include_encryption {
+            wrapping_specification.push(tagged(
+                ENCRYPTION_KEY_INFORMATION_TAG,
+                Value::structure(structure([tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("encryption-key".to_owned()),
+                )])),
+            ));
+        }
+        if include_mac_signature {
+            wrapping_specification.push(tagged(
+                MAC_SIGNATURE_KEY_INFORMATION_TAG,
+                Value::structure(structure([tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("mac-key".to_owned()),
+                )])),
+            ));
+        }
+        request_message_with_operation_payload(
+            GET_OPERATION,
+            structure([
+                tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("wrapped-object".to_owned()),
+                ),
+                tagged(
+                    KEY_WRAPPING_SPECIFICATION_TAG,
+                    Value::structure(structure(wrapping_specification)),
+                ),
+            ]),
+        )
+    };
+
+    let no_key_information = request_with_key_information(false, false);
+    let encryption_only = request_with_key_information(true, false);
+    let mac_signature_only = request_with_key_information(false, true);
+    let both_key_information = request_with_key_information(true, true);
+    let get_without_wrapping = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("plain-object".to_owned()),
+        )]),
+    );
+
+    for (requirement_id, source_clause_id) in [
+        (REQUIREMENT_IDS[0], "KMIPKIT-CLAUSE-SPEC-7.18-004"),
+        (REQUIREMENT_IDS[1], "KMIPKIT-CLAUSE-SPEC-7.18-005"),
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the conditional key-information requirement has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the conditional key-information requirement resolves to metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the required key-information pairing has executable evidence");
+        let evaluate = mapping
+            .evaluator
+            .expect("the conditional requirement has a typed evaluator");
+        let result = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+
+        for valid in [
+            &encryption_only,
+            &mac_signature_only,
+            &both_key_information,
+            &get_without_wrapping,
+        ] {
+            assert!(evaluate(Some(valid), None));
+            result
+                .validate_request(valid)
+                .expect("a Get without wrapping or with either key-info structure is valid");
+        }
+        assert!(!evaluate(Some(&no_key_information), None));
+        assert_eq!(
+            result
+                .validate_request(&no_key_information)
+                .expect_err("a Key Wrapping Specification needs one key-info structure")
+                .requirement_id(),
+            Some(requirement_id)
+        );
+    }
+}
+
+#[test]
 fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
     // KMIP Specification v2.1 §8.2 Table 395 permits Attestation Type to repeat.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.2-002";
