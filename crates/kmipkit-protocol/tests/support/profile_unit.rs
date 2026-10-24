@@ -4612,6 +4612,96 @@ fn profile_maps_rekey_offset_as_optional_interval() {
 }
 
 #[test]
+fn profile_maps_reprovision_certificate_request_forms() {
+    // KMIP Specification v2.1 §6.1.48 and Table 313 permit a certificate
+    // request, a certificate, or no parameters when the server creates one.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.48-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.48-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REPROVISION_OPERATION_TAG: u32 = 0x0000_0035;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Re-Provision request forms have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Re-Provision request forms resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("Re-Provision request forms have positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Re-Provision forms have a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        crate::ReProvisionRequest::new()
+            .into_ttlv_payload()
+            .expect("parameterless Re-Provision is permitted for server-created credentials"),
+        crate::ReProvisionRequest::new()
+            .with_certificate_request(Structure::new())
+            .into_ttlv_payload()
+            .expect("a certificate signing request is permitted"),
+        crate::ReProvisionRequest::new()
+            .with_certificate(Structure::new())
+            .into_ttlv_payload()
+            .expect("a replacement certificate is permitted"),
+    ];
+    for payload in requests {
+        let request = request_message_with_operation_payload(REPROVISION_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("each Table 313 request form satisfies the client requirement");
+    }
+
+    for payload in [
+        structure([
+            tagged(CERTIFICATE_REQUEST_TAG, Value::structure(Structure::new())),
+            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
+        ]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::text_string("not-a-Structure".to_owned()),
+        )]),
+        structure([
+            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
+            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
+        ]),
+    ] {
+        let malformed = request_message_with_operation_payload(REPROVISION_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("Re-Provision forms are exclusive and structurally valid");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Re-Provision-only rule does not constrain Locate requests");
+}
+
+#[test]
 fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
     // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Request Count.
     let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-006");
