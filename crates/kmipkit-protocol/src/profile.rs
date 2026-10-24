@@ -744,6 +744,7 @@ const USAGE_LIMITS_ATTRIBUTE: u32 = 0x0042_0095;
 const LEASE_TIME: u32 = 0x0042_0049;
 const TICKET: u32 = 0x0042_0149;
 const RECERTIFY_OFFSET: u32 = 0x0042_0058;
+const REKEY_OFFSET: u32 = 0x0042_0058;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1548,6 +1549,19 @@ fn client_recertify_offset_is_optional_interval(
         request,
         RECERTIFY_OPERATION,
         RECERTIFY_OFFSET,
+        OperationFieldType::Interval,
+        false,
+    )
+}
+
+fn client_rekey_offset_is_optional_interval(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        REKEY_OPERATION,
+        REKEY_OFFSET,
         OperationFieldType::Interval,
         false,
     )
@@ -6468,6 +6482,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.46-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_rekey_offset_is_optional_interval),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_offset_as_optional_interval",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
