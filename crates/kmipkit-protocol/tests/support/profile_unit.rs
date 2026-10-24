@@ -7208,50 +7208,33 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
 
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Register Object Type and Attributes have a typed profile rule");
-    let requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("the required Register fields resolve to generated metadata");
-    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
-    assert_eq!(
-        mapping.verification_category,
-        GeneratedVerificationCategory::RequiredBehavior
-    );
-    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("the required fields have positive executable evidence");
-
-    let attributes_mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == ATTRIBUTE_REQUIREMENT_ID)
-        .expect("Register cryptographic objects have a typed Attributes rule");
-    let attributes_requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == ATTRIBUTE_REQUIREMENT_ID)
-        .expect("the required Register Attributes rule resolves to generated metadata");
-    assert_eq!(
-        attributes_mapping.source_clause_id,
-        ATTRIBUTE_SOURCE_CLAUSE_ID
-    );
-    assert_eq!(
-        attributes_mapping.verification_category,
-        GeneratedVerificationCategory::RequiredBehavior
-    );
-    validate_mapping(
-        BASELINE_PROFILE_ID,
-        attributes_requirement,
-        attributes_mapping,
-    )
-    .expect("the required Attributes object has positive executable evidence");
-
-    let evaluate = mapping
-        .evaluator
-        .expect("the required Register fields have a typed evaluator");
-    assert!(attributes_mapping.evaluator.is_some());
-    assert!(!evaluate(None, None));
+    let mut evaluate = None;
+    for (requirement_id, source_clause_id) in [
+        (REQUIREMENT_ID, SOURCE_CLAUSE_ID),
+        (ATTRIBUTE_REQUIREMENT_ID, ATTRIBUTE_SOURCE_CLAUSE_ID),
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Register request requirements have typed profile rules");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("Register request requirements resolve to generated metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("Register request requirements have positive executable evidence");
+        let rule = mapping
+            .evaluator
+            .expect("Register request requirements have typed evaluators");
+        assert!(!rule(None, None));
+        evaluate = Some(rule);
+    }
+    let evaluate = evaluate.expect("the required Register fields have a typed evaluator");
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
