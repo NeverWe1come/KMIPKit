@@ -7736,11 +7736,16 @@ fn valid_pgp_key_item() -> Item {
 }
 
 fn valid_secret_data_wrapping() -> Value {
+    secret_data_wrapping_with_encoding_option(None)
+}
+
+fn secret_data_wrapping_with_encoding_option(encoding_option: Option<u32>) -> Value {
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const WRAPPING_METHOD: u32 = 0x0042_009E;
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const ENCODING_OPTION: u32 = 0x0042_00A3;
 
-    Value::structure(structure([
+    let mut fields = vec![
         tagged(WRAPPING_METHOD, Value::enumeration(1)),
         tagged(
             ENCRYPTION_KEY_INFORMATION,
@@ -7749,7 +7754,11 @@ fn valid_secret_data_wrapping() -> Value {
                 Value::text_string("wrapping-key".to_owned()),
             )])),
         ),
-    ]))
+    ];
+    if let Some(encoding_option) = encoding_option {
+        fields.push(tagged(ENCODING_OPTION, Value::enumeration(encoding_option)));
+    }
+    Value::structure(structure(fields))
 }
 
 fn wrapping_data_without_key_information() -> Value {
@@ -13548,10 +13557,6 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const KEY_MATERIAL: u32 = 0x0042_0043;
     const KEY_VALUE_ATTRIBUTES: u32 = 0x0042_0125;
-    const WRAPPING_METHOD: u32 = 0x0042_009E;
-    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
-    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
-    const ENCODING_OPTION: u32 = 0x0042_00A3;
     const NO_ENCODING: u32 = 1;
     const UNKNOWN_FUTURE_ENCODING: u32 = 0x7FFF_FFFE;
 
@@ -13565,30 +13570,16 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
             tagged(KEY_VALUE_ATTRIBUTES, Value::structure(Structure::new())),
         ]))
     };
-    let wrapping_data = |encoding_option| {
-        Value::structure(structure([
-            tagged(WRAPPING_METHOD, Value::enumeration(1)),
-            tagged(
-                ENCRYPTION_KEY_INFORMATION,
-                Value::structure(structure([tagged(
-                    UNIQUE_IDENTIFIER,
-                    Value::text_string("wrapping-key".to_owned()),
-                )])),
-            ),
-            tagged(ENCODING_OPTION, Value::enumeration(encoding_option)),
-        ]))
-    };
-
     for request in [
         register_key_value_wrapping_request(
             key_value_with_attributes(),
-            Some(wrapping_data(NO_ENCODING)),
+            Some(secret_data_wrapping_with_encoding_option(Some(NO_ENCODING))),
         ),
         import_key_block_wrapping_request(
             2,
             0x0042_008F,
             key_value_with_attributes(),
-            Some(wrapping_data(NO_ENCODING)),
+            Some(secret_data_wrapping_with_encoding_option(Some(NO_ENCODING))),
         ),
     ] {
         let error = result
@@ -13615,8 +13606,12 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
         ),
         (UNKNOWN_FUTURE_ENCODING, key_value_with_attributes()),
     ] {
-        let request =
-            register_key_value_wrapping_request(key_value, Some(wrapping_data(encoding_option)));
+        let request = register_key_value_wrapping_request(
+            key_value,
+            Some(secret_data_wrapping_with_encoding_option(Some(
+                encoding_option,
+            ))),
+        );
         result
             .validate_request(&request)
             .expect("the rule constrains only No Encoding and preserves other values");
