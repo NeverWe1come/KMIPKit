@@ -1502,10 +1502,11 @@ fn client_delegated_login_rights_is_required_structure(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_delegated_login_field_is_well_formed(
+    client_operation_field_is_well_formed(
         request,
+        DELEGATED_LOGIN_OPERATION,
         DELEGATED_LOGIN_RIGHTS,
-        DelegatedLoginFieldType::RightsStructure,
+        OperationFieldType::RightsStructure,
         true,
     )
 }
@@ -1514,44 +1515,24 @@ fn client_login_lease_time_is_optional_interval_or_date_time(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    let Some(request) = request else {
-        return false;
-    };
-
-    request.batch_items().all(|batch_item| {
-        let Some(operation) = batch_item.operation() else {
-            return false;
-        };
-        if operation != LOGIN_OPERATION {
-            return true;
-        }
-
-        batch_item
-            .with_request_payload(|payload| {
-                let mut lease_time_seen = false;
-                payload
-                    .children()
-                    .iter()
-                    .filter(|field| field.tag().raw() == LEASE_TIME)
-                    .all(|field| {
-                        !std::mem::replace(&mut lease_time_seen, true)
-                            && field.with_value(|value| {
-                                matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
-                            })
-                    })
-            })
-            .unwrap_or(false)
-    })
+    client_operation_field_is_well_formed(
+        request,
+        LOGIN_OPERATION,
+        LEASE_TIME,
+        OperationFieldType::LeaseTime,
+        false,
+    )
 }
 
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_delegated_login_field_is_well_formed(
+    client_operation_field_is_well_formed(
         request,
+        DELEGATED_LOGIN_OPERATION,
         LEASE_TIME,
-        DelegatedLoginFieldType::LeaseTime,
+        OperationFieldType::LeaseTime,
         false,
     )
 }
@@ -1560,10 +1541,11 @@ fn client_delegated_login_request_count_is_optional_integer(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_delegated_login_field_is_well_formed(
+    client_operation_field_is_well_formed(
         request,
+        DELEGATED_LOGIN_OPERATION,
         DELEGATED_LOGIN_REQUEST_COUNT,
-        DelegatedLoginFieldType::Integer,
+        OperationFieldType::Integer,
         false,
     )
 }
@@ -1572,26 +1554,28 @@ fn client_delegated_login_usage_limits_is_optional_structure(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_delegated_login_field_is_well_formed(
+    client_operation_field_is_well_formed(
         request,
+        DELEGATED_LOGIN_OPERATION,
         DELEGATED_LOGIN_USAGE_LIMITS,
-        DelegatedLoginFieldType::UsageLimitsStructure,
+        OperationFieldType::UsageLimitsStructure,
         false,
     )
 }
 
 #[derive(Clone, Copy)]
-enum DelegatedLoginFieldType {
+enum OperationFieldType {
     Integer,
     LeaseTime,
     RightsStructure,
     UsageLimitsStructure,
 }
 
-fn client_delegated_login_field_is_well_formed(
+fn client_operation_field_is_well_formed(
     request: Option<&RequestMessage>,
+    selected_operation: u32,
     field_tag: u32,
-    expected_type: DelegatedLoginFieldType,
+    expected_type: OperationFieldType,
     required: bool,
 ) -> bool {
     let Some(request) = request else {
@@ -1602,7 +1586,7 @@ fn client_delegated_login_field_is_well_formed(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != DELEGATED_LOGIN_OPERATION {
+        if operation != selected_operation {
             return true;
         }
 
@@ -1616,19 +1600,19 @@ fn client_delegated_login_field_is_well_formed(
                     .all(|field| {
                         !std::mem::replace(&mut field_seen, true)
                             && field.with_value(|value| match expected_type {
-                                DelegatedLoginFieldType::Integer => {
+                                OperationFieldType::Integer => {
                                     matches!(value, ValueView::Integer(_))
                                 }
-                                DelegatedLoginFieldType::LeaseTime => {
+                                OperationFieldType::LeaseTime => {
                                     matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
                                 }
-                                DelegatedLoginFieldType::RightsStructure => match value {
+                                OperationFieldType::RightsStructure => match value {
                                     ValueView::Structure(value) => {
                                         delegated_login_rights_are_well_formed(&value)
                                     }
                                     _ => false,
                                 },
-                                DelegatedLoginFieldType::UsageLimitsStructure => match value {
+                                OperationFieldType::UsageLimitsStructure => match value {
                                     ValueView::Structure(value) => {
                                         delegated_login_usage_limits_are_well_formed(&value)
                                     }
