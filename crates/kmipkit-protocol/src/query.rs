@@ -296,6 +296,30 @@ impl QueryResponseField {
             | Self::ClientRegistrationMethod(_) => None,
         }
     }
+
+    fn to_item(&self) -> Result<Item, QueryError> {
+        let (tag, value) = match self {
+            Self::Operation(value)
+            | Self::ObjectType(value)
+            | Self::AttestationType(value)
+            | Self::ClientRegistrationMethod(value) => {
+                (checked_tag(self.tag())?, Value::enumeration(*value))
+            }
+            Self::VendorIdentification(value) | Self::ApplicationNamespace(value) => {
+                (checked_tag(self.tag())?, Value::text_string(value.clone()))
+            }
+            Self::ServerInformation(item)
+            | Self::ExtensionInformation(item)
+            | Self::RngParameters(item)
+            | Self::ProfileInformation(item)
+            | Self::ValidationInformation(item)
+            | Self::CapabilityInformation(item)
+            | Self::DefaultsInformation(item)
+            | Self::ProtectionStorageMasks(item)
+            | Self::Unknown(item) => return clone_response_item(item),
+        };
+        Item::new(tag, value).map_err(QueryError::TtlvModel)
+    }
 }
 
 /// The typed result of one KMIP Query response.
@@ -361,6 +385,25 @@ impl QueryResponse {
     #[must_use]
     pub fn response_fields(&self) -> &[QueryResponseField] {
         &self.fields
+    }
+
+    /// Rebuilds the complete operation response payload in its original field order.
+    ///
+    /// Unknown fields and nested structures remain structurally lossless. An
+    /// empty payload remains empty, including the tolerated empty form recorded
+    /// by `KMIPKIT-DISC-047`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized error if the cloned TTLV tree cannot be represented.
+    pub fn to_ttlv_payload(&self) -> Result<Structure, QueryError> {
+        let mut payload = Structure::new();
+        for field in &self.fields {
+            payload
+                .try_push(field.to_item()?)
+                .map_err(QueryError::TtlvModel)?;
+        }
+        Ok(payload)
     }
 
     /// Returns all Operation values in their original order.
@@ -652,6 +695,11 @@ const fn is_singleton_response_field(tag: u32) -> bool {
 fn clone_item(tag: u32, value: ValueView<'_>) -> Result<Item, QueryError> {
     let value = clone_value(value)?;
     Item::new(checked_tag(tag)?, value).map_err(QueryError::TtlvModel)
+}
+
+fn clone_response_item(item: &Item) -> Result<Item, QueryError> {
+    let value = item.with_value(clone_value)?;
+    Item::new(item.tag(), value).map_err(QueryError::TtlvModel)
 }
 
 fn clone_value(value: ValueView<'_>) -> Result<Value, QueryError> {

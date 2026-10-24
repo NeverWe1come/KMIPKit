@@ -41,11 +41,11 @@ const RESULT_REASON: u32 = 0x0042_007e;
 const RESULT_MESSAGE: u32 = 0x0042_007d;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
-const RESPONSE_TOO_LARGE: u32 = 0x0000_0002;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const SECRET_SENTINEL: &[u8] = b"KMIP_CREATE_SECRET_SENTINEL_2391";
+const RESULT_MESSAGE_TEXT: &str = "création refusée ✓";
 const RESPONSE_SENTINEL: &str = "KMIP_CREATE_RESPONSE_SENTINEL_8432";
 const PENDING_CORRELATION: &[u8] = b"CREATE_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateFixtureVendor";
@@ -300,8 +300,8 @@ fn create_failure_preserves_result_and_does_not_retry() {
     let response = response_bytes([response_batch_item(
         Some(b"create-failure"),
         OPERATION_FAILED,
-        Some(RESPONSE_TOO_LARGE),
-        Some(RESPONSE_SENTINEL),
+        Some(5),
+        Some(RESULT_MESSAGE_TEXT),
         None,
         None,
     )]);
@@ -323,20 +323,27 @@ fn create_failure_preserves_result_and_does_not_retry() {
             .result()
             .reason()
             .map(kmipkit_protocol::ResultReason::raw),
-        Some(RESPONSE_TOO_LARGE)
+        Some(5)
     );
-    assert!(!format!("{response:?}").contains(RESPONSE_SENTINEL));
-    assert!(!format!("{result:?}").contains(RESPONSE_SENTINEL));
+    assert_eq!(
+        response
+            .result()
+            .message()
+            .map(kmipkit_protocol::ResultMessage::as_str),
+        Some(RESULT_MESSAGE_TEXT)
+    );
+    assert!(!format!("{response:?}").contains(RESULT_MESSAGE_TEXT));
+    assert!(!format!("{result:?}").contains(RESULT_MESSAGE_TEXT));
     assert!(
         result
             .get(0)
-            .is_some_and(|item| !item.outcome().to_string().contains(RESPONSE_SENTINEL))
+            .is_some_and(|item| !item.outcome().to_string().contains(RESULT_MESSAGE_TEXT))
     );
     assert!(
         fake.borrow()
             .captured_logs()
             .iter()
-            .all(|line| !line.contains(RESPONSE_SENTINEL))
+            .all(|line| !line.contains(RESULT_MESSAGE_TEXT))
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

@@ -308,7 +308,7 @@ pub(crate) struct ResponseItemFixture {
     pub(crate) asynchronous_correlation_value: Option<Vec<u8>>,
     pub(crate) extension_criticality: Option<bool>,
     pub(crate) empty_supported_versions: bool,
-    pub(crate) supported_version: (i32, i32),
+    pub(crate) supported_versions: Vec<(i32, i32)>,
 }
 
 impl ResponseItemFixture {
@@ -320,7 +320,7 @@ impl ResponseItemFixture {
             asynchronous_correlation_value: None,
             extension_criticality: None,
             empty_supported_versions: false,
-            supported_version: (2, 1),
+            supported_versions: vec![(2, 1)],
         }
     }
 
@@ -345,7 +345,12 @@ impl ResponseItemFixture {
     }
 
     pub(crate) fn with_supported_version(mut self, version: (i32, i32)) -> Self {
-        self.supported_version = version;
+        self.supported_versions = vec![version];
+        self
+    }
+
+    pub(crate) fn with_supported_versions(mut self, versions: Vec<(i32, i32)>) -> Self {
+        self.supported_versions = versions;
         self
     }
 }
@@ -397,7 +402,7 @@ fn response_item(fixture: &ResponseItemFixture) -> Item {
             RESPONSE_PAYLOAD,
             Value::structure(response_payload(
                 fixture.empty_supported_versions,
-                fixture.supported_version,
+                &fixture.supported_versions,
             )),
         ));
     }
@@ -410,18 +415,20 @@ fn response_item(fixture: &ResponseItemFixture) -> Item {
     item(BATCH_ITEM, Value::structure(structure(fields)))
 }
 
-fn response_payload(empty_supported_versions: bool, version: (i32, i32)) -> Structure {
+fn response_payload(empty_supported_versions: bool, versions: &[(i32, i32)]) -> Structure {
     let mut payload = Structure::new();
     if !empty_supported_versions {
-        payload
-            .try_push(item(
-                PROTOCOL_VERSION_FIELD,
-                Value::structure(structure([
-                    item(PROTOCOL_VERSION_MAJOR, Value::integer(version.0)),
-                    item(PROTOCOL_VERSION_MINOR, Value::integer(version.1)),
-                ])),
-            ))
-            .expect("fixture response payload fits model depth limits");
+        for (major, minor) in versions {
+            payload
+                .try_push(item(
+                    PROTOCOL_VERSION_FIELD,
+                    Value::structure(structure([
+                        item(PROTOCOL_VERSION_MAJOR, Value::integer(*major)),
+                        item(PROTOCOL_VERSION_MINOR, Value::integer(*minor)),
+                    ])),
+                ))
+                .expect("fixture response payload fits model depth limits");
+        }
     }
     payload
 }

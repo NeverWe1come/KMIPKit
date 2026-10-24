@@ -5,32 +5,33 @@ from __future__ import annotations
 import copy
 import json
 import re
+import shutil
+import subprocess
+import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from jsonschema import Draft202012Validator
 
 from tools.api_manifest import generate
+from tools.api_manifest.audit_rust_exports import _canonical_export_name
 from tools.api_manifest.generate import (
     ManifestError,
     _validate_operation_inventory,
     _validate_references,
-    _validate_v2_readiness,
     _validate_schema,
+    _validate_v2_readiness,
 )
-from tools.api_manifest.audit_rust_exports import _canonical_export_name
-
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
 CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-RUST_EXPORT_REPORT_PATH = (
-    ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-13.json"
-)
+RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
+RUST_EXPORT_REPORT_PATH = max(RUST_EXPORT_REPORT_DIR.glob("rust-export-report-*.json"))
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -43,6 +44,23 @@ EXPECTED_PACKAGES = {
     "python-kmipkit",
 }
 EXPECTED_LANGUAGES = ["rust", "c", "java", "python"]
+EXPECTED_RELEASE_SHARED_CAPABILITIES = {
+    "generic_ttlv_model",
+    "public_binding_surface",
+    "rust_transport_exchange",
+    "ttlv_wire_codec",
+    "vendor_extension_registry",
+    "ffi_runtime_metadata",
+    "discover_versions_request_item",
+    "opaque_register_context",
+    "client_batch_model",
+    "client_execution",
+    "production_transport",
+    "api_level_discovery",
+    "server_generated_creation",
+    "crypto_response_ttlv",
+    "usage_allocation_guard",
+}
 EXPECTED_API_LEVELS = ["high-level", "typed-protocol", "generic-ttlv"]
 EXPECTED_ROOT_FIELDS = {
     "formatVersion",
@@ -194,6 +212,60 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_java_overload_signatures_are_only_valid_on_java_members(self) -> None:
+        declaration = copy.deepcopy(next(
+            row for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == "T052:request:constructor:java"
+        ))
+        declaration["javaSignatures"] = [
+            "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+            "java.util.List<org.kmipkit.extensions.SplitKeyReference>, java.lang.Long, "
+            "org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure)",
+            "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+            "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
+        ]
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        manifest["publicDeclarations"] = [declaration]
+        self.assertTrue(self.validator.is_valid(manifest))
+
+        malformed = copy.deepcopy(declaration)
+        malformed["kind"] = "type"
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
+
+        malformed = copy.deepcopy(declaration)
+        malformed["javaSignatures"].append(malformed["javaSignatures"][0])
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
+
+    def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["rustType"])
+
+        self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
+
+    def test_c_parameter_schema_accepts_counted_fixed_width_input_arrays(self) -> None:
+        validator = Draft202012Validator(
+            {"$defs": self.schema["$defs"], "$ref": "#/$defs/cParameter"}
+        )
+        parameter = {
+            "name": "functions",
+            "kind": "input-array",
+            "type": "const uint32_t *",
+            "elementType": "uint32_t",
+            "ownership": "borrowed",
+            "countParameter": "function_count",
+            "nullable": True,
+        }
+
+        self.assertTrue(validator.is_valid(parameter))
+
+    def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
+        for definition in ("requirementId", "v2RequirementId"):
+            validator = Draft202012Validator(self.schema["$defs"][definition])
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-003"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-005-001"))
+        self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
+
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
         manifest = _valid_v2_manifest()
         condition = {
@@ -267,6 +339,328 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(python["project"]["version"], expected)
         self.assertRegex(java_gradle, rf'(?m)^version = "{re.escape(expected)}"$')
         self.assertRegex(java_pom, rf"(?m)^\s*<version>{re.escape(expected)}</version>$")
+
+    def test_release_gate_requires_all_eight_package_families_to_use_release_line(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        generate._validate_release_package_versions(manifest, ROOT)
+
+        mutations = (
+            lambda value: value["publicPackages"].pop(),
+            lambda value: value["publicPackages"][-1].update({"id": "rust-kmipkit"}),
+            lambda value: value["publicPackages"][0].update({"versionSource": "1.0.0"}),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(malformed, ROOT)
+
+    def test_release_gate_rejects_rust_package_name_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        rust_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "rust-kmipkit-ttlv"
+        )
+        rust_package["packageName"] = "kmipkit-ttlv-unexpected"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
+    def test_release_gate_rejects_python_package_name_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        python_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "python-kmipkit"
+        )
+        python_package["packageName"] = "kmipkit-unexpected"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
+    def test_release_gate_rejects_java_coordinate_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        java_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "java-kmipkit"
+        )
+        java_package["packageName"] = "org.kmipkit:unexpected-artifact"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
+    def test_release_gate_rejects_rust_python_and_java_metadata_identity_drift(self) -> None:
+        metadata_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        mutations = (
+            (
+                "crates/kmipkit-ttlv/Cargo.toml",
+                'name = "kmipkit-ttlv"',
+                'name = "kmipkit-ttlv-unexpected"',
+            ),
+            (
+                "bindings/python/pyproject.toml",
+                'name = "kmipkit"\n',
+                'name = "kmipkit-unexpected"\n',
+            ),
+            (
+                "bindings/java/pom.xml",
+                "<artifactId>kmipkit-java</artifactId>",
+                "<artifactId>unexpected-artifact</artifactId>",
+            ),
+        )
+        for relative, expected, replacement in mutations:
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for metadata_path in metadata_paths:
+                    destination = root / metadata_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / metadata_path, destination)
+                source = root / relative
+                original = source.read_text(encoding="utf-8")
+                mutated = original.replace(expected, replacement, 1)
+                self.assertNotEqual(mutated, original, relative)
+                source.write_text(mutated, encoding="utf-8")
+
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(
+                        self.checked_in_manifest, root
+                    )
+
+    def test_release_gate_rejects_whitespace_only_java_coordinate_parts(self) -> None:
+        metadata_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        mutations = (
+            (
+                "   :kmipkit-java",
+                "group = \"org.kmipkit\"",
+                'group = "   "',
+                "<groupId>org.kmipkit</groupId>",
+                "<groupId>   </groupId>",
+            ),
+            (
+                "org.kmipkit:   ",
+                "<artifactId>kmipkit-java</artifactId>",
+                "<artifactId>   </artifactId>",
+            ),
+        )
+        for mutation in mutations:
+            package_name, *replacements = mutation
+            with self.subTest(package_name=package_name, replacements=replacements), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for metadata_path in metadata_paths:
+                    destination = root / metadata_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / metadata_path, destination)
+                for index in range(0, len(replacements), 2):
+                    relative = (
+                        "bindings/java/build.gradle.kts"
+                        if replacements[index].startswith("group =")
+                        else "bindings/java/pom.xml"
+                    )
+                    source = root / relative
+                    original = source.read_text(encoding="utf-8")
+                    mutated = original.replace(
+                        replacements[index], replacements[index + 1], 1
+                    )
+                    self.assertNotEqual(mutated, original, relative)
+                    source.write_text(mutated, encoding="utf-8")
+                manifest = copy.deepcopy(self.checked_in_manifest)
+                java_package = next(
+                    package
+                    for package in manifest["publicPackages"]
+                    if package["id"] == "java-kmipkit"
+                )
+                java_package["packageName"] = package_name
+
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(manifest, root)
+
+    def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
+        operations = [
+            {"apiState": "verified"}
+            for _ in range(generate._EXPECTED_CLIENT_1_0_OPERATION_COUNT)
+        ]
+        capabilities = [
+            {"capabilityId": capability_id, "capabilityState": "verified"}
+            for capability_id in EXPECTED_RELEASE_SHARED_CAPABILITIES
+        ]
+        declarations = []
+        generate._require_complete_readiness(operations, capabilities, declarations)
+
+        with self.assertRaisesRegex(ManifestError, "capability inventory"):
+            generate._require_complete_readiness(
+                operations,
+                [row for row in capabilities if row["capabilityId"] != "usage_allocation_guard"],
+                declarations,
+            )
+
+    def test_requirement_references_resolve_for_capabilities_and_api_levels(self) -> None:
+        mutations = (
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].append(
+                "KMIPKIT-9999-FR-999"
+            ),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].append(
+                "KMIPKIT-9999-FR-999"
+            ),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaisesRegex(ManifestError, "unknown requirement ID"):
+                    _validate_references(malformed)
+
+    def test_capability_and_api_level_requirements_are_unique_and_sorted(self) -> None:
+        mutations = (
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].append(
+                manifest["capabilities"][0]["requirementIds"][0]
+            ),
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].reverse(),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].append(
+                manifest["apiLevels"][0]["requirementIds"][0]
+            ),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].reverse(),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaisesRegex(
+                    ManifestError, "requirement IDs must be unique and lexicographically sorted"
+                ):
+                    _validate_references(malformed)
+
+    def test_release_gate_runs_all_export_audits_and_fails_closed(self) -> None:
+        with mock.patch(
+            "tools.api_manifest.generate.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 0),
+        ) as run:
+            generate._validate_release_export_inventories(ROOT)
+
+        commands = [call.args[0] for call in run.call_args_list]
+        self.assertEqual(len(commands), 2)
+        self.assertTrue(all("--check" in command for command in commands))
+        self.assertTrue(any("audit_rust_exports.py" in " ".join(command) for command in commands))
+        self.assertTrue(any("audit_binding_exports.py" in " ".join(command) for command in commands))
+
+        with mock.patch(
+            "tools.api_manifest.generate.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 1),
+        ):
+            with self.assertRaisesRegex(ManifestError, "export inventory"):
+                generate._validate_release_export_inventories(ROOT)
+
+    def test_release_gate_checks_rust_python_and_java_package_version_sources(self) -> None:
+        version_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        mutations = (
+            (
+                "Cargo.toml",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "crates/kmipkit-client/Cargo.toml",
+                "version.workspace = true",
+                'version = "1.0.0"',
+            ),
+            (
+                "crates/kmipkit-ffi/Cargo.toml",
+                "version.workspace = true",
+                'version = "1.0.0"',
+            ),
+            (
+                "bindings/python/pyproject.toml",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "bindings/java/build.gradle.kts",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "bindings/java/pom.xml",
+                "<version>1.0.0</version>",
+                "<version>9.9.9</version>",
+            ),
+        )
+        for relative, expected, replacement in mutations:
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for version_path in version_paths:
+                    destination = root / version_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / version_path, destination)
+                source = root / relative
+                original = source.read_text(encoding="utf-8")
+                mutated = original.replace(expected, replacement, 1)
+                self.assertNotEqual(mutated, original, relative)
+                source.write_text(mutated, encoding="utf-8")
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(self.checked_in_manifest, root)
+
+    def test_release_gate_rejects_oversized_package_version_source(self) -> None:
+        version_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in version_paths:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            oversized = root / "bindings/java/build.gradle.kts"
+            oversized.write_text(
+                'version = "1.0.0"\n' + (" " * (1024 * 1024 + 1)),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(ManifestError):
+                generate._validate_release_package_versions(self.checked_in_manifest, root)
 
     def test_runtime_metadata_exports_are_inventoried_in_every_language(self) -> None:
         declarations = {
@@ -346,8 +740,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     expected_batch_item_type["java"]["package"] = batch_item_type["java"]["package"]
                     expected_batch_item_type["python"]["module"] = batch_item_type["python"]["module"]
                 elif field == "errorCategories":
-                    actual = [row for row in manifest[field] if row["id"] != "internal"]
                     expected = registry[field]
+                    registry_ids = {row["id"] for row in expected}
+                    actual = [row for row in manifest[field] if row["id"] in registry_ids]
                 else:
                     actual = manifest[field]
                     expected = registry[field]
@@ -369,6 +764,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     expected_function["java"]["jniSymbol"] = (
                         "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersions"
                     )
+                    self.assertEqual(manifest_functions[function["id"]], expected_function)
+                elif function["id"] in {
+                    "ttlv_value_structure",
+                    "ttlv_item_create",
+                    "ttlv_structure_with_item",
+                }:
+                    expected_function = json.loads(json.dumps(function))
+                    expected_function["c"]["documentation"] = {
+                        "ttlv_value_structure": [
+                            "Transfers ownership of structure after the output slot and limits handle are valid. If validation fails before transfer, the caller retains structure; after transfer, the caller must not use or release it, even if this function returns an error."
+                        ],
+                        "ttlv_item_create": [
+                            "Transfers ownership of value only after the output slot, tag, and limits are valid. If validation fails before transfer, the caller retains value; after transfer, the caller must not use or release it, even if this function returns an error."
+                        ],
+                        "ttlv_structure_with_item": [
+                            "Transfers ownership of each input structure and item as it is accepted. Validation errors before transfer leave that handle caller-owned; after transfer, the caller must not use or release it, even if later processing returns an error."
+                        ],
+                    }[function["id"]]
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
                 else:
                     self.assertEqual(manifest_functions[function["id"]], function)
@@ -597,6 +1010,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (item["packageId"], item["exportName"])
             for item in self.checked_in_manifest["approvedExclusions"]
         }
+        java_query_bridge_exports = {
+            ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{name}")
+            for name in (
+                "clientBatchItemPing",
+                "clientBatchItemQuery",
+                "clientBatchItemQueryWithLimits",
+                "clientBatchItemResponsePing",
+                "clientBatchItemResponseQueryTtlv",
+            )
+        }
+        self.assertTrue(java_query_bridge_exports <= exclusions)
+        for key in java_query_bridge_exports:
+            exclusion = next(
+                item for item in self.checked_in_manifest["approvedExclusions"]
+                if (item["packageId"], item["exportName"]) == key
+            )
+            self.assertIn("no independent Java product capability", exclusion["reason"])
+            self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
         aws_lc_transitive_exports = {
             ("c-kmipkit", f"aws_lc_0_45_0_jent_{name}")
             for name in (
@@ -838,7 +1270,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         declaration["languageMappings"]["python"] = {
             "packageId": "python-kmipkit",
-            "name": "kmipkit.extensions.ClientBatchItem.close",
+            "name": "kmipkit.extensions.with_extension",
         }
 
         with self.assertRaisesRegex(ManifestError, "blocked|mapping target"):
@@ -855,6 +1287,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ManifestError, "capability.*mapping|exact.*export"):
             _validate_v2_readiness(manifest, ROOT)
 
+    def test_capability_inventory_uses_each_language_mapping_name(self) -> None:
+        manifest = self.checked_in_manifest
+        package_languages = {
+            package["id"]: package["language"]
+            for package in manifest["publicPackages"]
+        }
+
+        generate._validate_capability_mapping_inventories(
+            manifest["capabilities"],
+            manifest["publicDeclarations"],
+            package_languages,
+        )
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
@@ -867,8 +1312,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9503)
-        self.assertEqual(len(exclusions), 22)
+        self.assertEqual(len(declarations), 9517)
+        self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1031,15 +1476,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(capability_span["maxBytes"], 128)
 
-        declarations = {
-            declaration.get("languageMappings", {}).get("c", {}).get("name"):
-            declaration
+        declarations_by_c_symbol: dict[str, list[dict[str, object]]] = {}
+        for declaration in self.checked_in_manifest["publicDeclarations"]:
+            symbol = declaration.get("languageMappings", {}).get("c", {}).get("name")
+            if symbol:
+                declarations_by_c_symbol.setdefault(symbol, []).append(declaration)
+        c_declarations_by_symbol = {
+            declaration["exportName"]: declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == "c-kmipkit"
         }
-        self.assertTrue(expected_symbols <= set(declarations))
+        self.assertTrue(expected_symbols <= set(declarations_by_c_symbol))
         for symbol in expected_symbols:
-            self.assertEqual(declarations[symbol]["capabilityId"], "ffi_runtime_metadata")
-            self.assertEqual(declarations[symbol]["declarationState"], "declared")
+            declaration = c_declarations_by_symbol[symbol]
+            self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
+            self.assertEqual(declaration["declarationState"], "declared")
 
         rust_lookup = next(
             item for item in self.checked_in_manifest["publicDeclarations"]
@@ -1104,26 +1555,44 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "c-kmipkit"
         }
-        self.assertEqual(
-            set(c_exclusions),
-            {
-                "kmipkit_last_error_get",
-                "kmipkit_last_error_clear",
-                "kmipkit_extension_registry_limits_v1_t.struct_size",
-                "kmipkit_extension_registry_limits_v1_t.abi_version",
-            },
-        )
+        runtime_metadata_exclusions = {
+            "kmipkit_last_error_clear",
+            "kmipkit_extension_registry_limits_v1_t.struct_size",
+            "kmipkit_extension_registry_limits_v1_t.abi_version",
+        }
+        self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])
-            self.assertNotIn(symbol, declarations)
+            if symbol == "kmipkit_client_batch_item_response_release":
+                lifecycle_mappings = declarations_by_c_symbol[symbol]
+                self.assertEqual(
+                    {item["declarationId"] for item in lifecycle_mappings},
+                    {
+                        "T040:encrypt:response-close:java",
+                        "T040:encrypt:response-close:python",
+                        "T040:decrypt:response-close:java",
+                        "T040:decrypt:response-close:python",
+                    },
+                )
+                self.assertEqual(
+                    {item["capabilityId"] for item in lifecycle_mappings},
+                    {
+                        "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+                    },
+                )
+                self.assertIn("lifecycle counterpart", c_exclusions[symbol]["reason"])
+                self.assertIn("distinct four-language capability", c_exclusions[symbol]["reason"])
+            else:
+                self.assertNotIn(symbol, declarations_by_c_symbol)
 
         rust_exclusions = [
             item
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 22)
+        self.assertEqual(len(rust_exclusions), 23)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -1135,7 +1604,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 item["approvalSource"]["path"]
                 for item in rust_exclusions
             },
-            {"specs/029-opaque-object-context/spec.md"},
+            {
+                "docs/adr/0003-layered-cargo-workspace.md",
+                "specs/029-opaque-object-context/spec.md",
+            },
         )
 
         public_exports = {
@@ -1220,7 +1692,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         for requirement in declaration["requirementIds"]
                     )
                 )
-                self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
+                if declaration.get("mappingSemantics") == "native-handle-release":
+                    binding_requirement = {
+                        "c-kmipkit": "KMIPKIT-0043-FR-007",
+                        "java-kmipkit": "KMIPKIT-0043-FR-008",
+                        "python-kmipkit": "KMIPKIT-0043-FR-009",
+                    }[declaration["packageId"]]
+                    self.assertTrue(
+                        "KMIPKIT-0043-FR-004" in declaration["requirementIds"]
+                        or (
+                            binding_requirement in declaration["requirementIds"]
+                            and "KMIPKIT-0043-FR-010" in declaration["requirementIds"]
+                        )
+                    )
+                else:
+                    self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
                 self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
                 self.assertEqual(
                     declaration["approvalSource"]["path"],
@@ -1229,13 +1715,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 147)
+        self.assertEqual(len(ttlv_declarations), 267)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            123,
+            243,
         )
         self.assertEqual(
             sum(
@@ -1245,9 +1731,46 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             24,
         )
 
+    def test_codec_limits_release_maps_managed_java_value_lifecycle(self) -> None:
+        declarations = self.checked_in_manifest["publicDeclarations"]
+        by_package_and_export = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in declarations
+        }
+        release = by_package_and_export[("c-kmipkit", "kmipkit_codec_limits_release")]
+        python_close = by_package_and_export[
+            ("python-kmipkit", "kmipkit.ttlv.CodecLimits.close")
+        ]
+        expected_mappings = {
+            "rust": ("rust-kmipkit-ttlv", "kmipkit_ttlv::codec::CodecLimits"),
+            "c": ("c-kmipkit", "kmipkit_codec_limits_release"),
+            "java": ("java-kmipkit", "org.kmipkit.ttlv.CodecLimits"),
+            "python": ("python-kmipkit", "kmipkit.ttlv.CodecLimits.close"),
+        }
+
+        for declaration in (release, python_close):
+            with self.subTest(declaration=declaration["declarationId"]):
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(
+                    declaration["mappingSemantics"],
+                    "native-handle-release-managed-java-value",
+                )
+                self.assertEqual(
+                    {
+                        language: (mapping["packageId"], mapping["name"])
+                        for language, mapping in declaration["languageMappings"].items()
+                    },
+                    expected_mappings,
+                )
+
+        java_close = by_package_and_export.get(
+            ("java-kmipkit", "org.kmipkit.ttlv.CodecLimits.close")
+        )
+        self.assertIsNone(java_close)
+
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 367)
+        self.assertEqual(len(declarations), 732)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1260,27 +1783,64 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
-    def test_new_java_close_declarations_remain_blocked_until_parity_is_reviewed(self) -> None:
+    def test_crypto_response_java_types_and_accessors_are_inventoried(self) -> None:
+        by_name = {
+            declaration["exportName"]: declaration
+            for declaration in self.declarations_for_package("java-kmipkit")
+        }
+        expected = {
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse": "type",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.uniqueIdentifier": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.data": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.ivCounterNonce": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.correlationValue": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.authenticatedEncryptionTag": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse": "type",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.uniqueIdentifier": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.data": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.correlationValue": "java-member",
+        }
+
+        for export_name, expected_kind in expected.items():
+            with self.subTest(export_name=export_name):
+                declaration = by_name[export_name]
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertEqual(expected_kind, declaration["kind"])
+
+    def test_only_unmapped_internal_java_close_remains_blocked(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
         close_declarations = [
             declaration
             for declaration in declarations
             if declaration["exportName"].endswith(".close")
-            and declaration.get("blockedReason", "").startswith(
-                "This Java AutoCloseable declaration has no reviewed equivalent mapping"
-            )
+            and declaration["declarationState"] == "blocked"
         ]
 
-        self.assertEqual(len(close_declarations), 21)
-        self.assertTrue(
-            all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
+        self.assertEqual(
+            {declaration["exportName"] for declaration in close_declarations},
+            {"org.kmipkit.internal.NativeHandle.close"},
+        )
+        generic_ttlv_closes = [
+            declaration
+            for declaration in declarations
+            if declaration["exportName"].endswith(".close")
+            and declaration["capabilityId"] == "generic_ttlv_model"
+        ]
+        self.assertEqual(
+            {declaration["exportName"] for declaration in generic_ttlv_closes},
+            {
+                "org.kmipkit.ttlv.Tag.close",
+                "org.kmipkit.ttlv.RawTag.close",
+                "org.kmipkit.ttlv.TtlvItem.close",
+                "org.kmipkit.ttlv.TtlvItemView.close",
+                "org.kmipkit.ttlv.TtlvStructure.close",
+                "org.kmipkit.ttlv.TtlvStructureView.close",
+                "org.kmipkit.ttlv.TtlvValue.close",
+                "org.kmipkit.ttlv.TtlvValueView.close",
+            },
         )
         self.assertTrue(
-            all(
-                declaration["requirementIds"]
-                == ["KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"]
-                for declaration in close_declarations
-            )
+            all(declaration["declarationState"] == "declared" for declaration in generic_ttlv_closes)
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
@@ -1297,6 +1857,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             }
             for kind in {item["kind"] for item in declarations}
         }
+        approved_c_layouts = {
+            item["cType"]["name"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and item.get("cType", {}).get("kind") == "fixed-width-value"
+        }
+        ready_by_kind["type"].update(approved_c_layouts)
 
         header_functions = set(
             re.findall(
@@ -1309,8 +1876,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
+        self.assertIn("kmipkit_client_batch_item_response_release", header_functions)
+        self.assertIn(
+            "kmipkit_client_batch_item_response_release", excluded_c_functions
+        )
         published_header_symbols = {
             name for name in ready_by_kind["c-symbol"] if name.startswith("kmipkit_")
         }
@@ -1334,21 +1906,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(header_types, ready_by_kind["type"])
 
-        limits_matches = re.finditer(
-            r"typedef struct \{(?P<body>.*?)\} (kmipkit_extension_registry_limits_v1_t);",
-            header,
-            re.DOTALL,
-        )
         header_fields = {
-            f"{match[2]}.{name}"
-            for match in limits_matches
-            for name in re.findall(r"^\s*uint64_t (\w+);$", match["body"], re.MULTILINE)
+            f"{match['named_type'] or match['typedef_type']}.{field_name}"
+            for match in re.finditer(
+                r"(?:typedef\s+)?struct(?:\s+(?P<named_type>kmipkit_\w+))?\s*"
+                r"\{(?P<body>.*?)\}\s*(?P<typedef_type>kmipkit_\w+)?\s*;",
+                header,
+                re.DOTALL,
+            )
+            for field_name in re.findall(
+                r"^\s*(?:const\s+)?[A-Za-z_]\w*(?:\s*\*)*\s+"
+                r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*;",
+                match["body"],
+                re.MULTILINE,
+            )
         }
-        self.assertEqual(header_fields, ready_by_kind["field"])
+        approved_c_fields = {
+            item["exportName"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and re.fullmatch(r"kmipkit_\w+\.\w+", item["exportName"])
+        }
+        self.assertEqual(header_fields, ready_by_kind["field"] | approved_c_fields)
 
         header_ttlv_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT)_\w+)",
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND)_\w+)",
                 header,
                 re.MULTILINE,
             )
@@ -1375,6 +1958,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         ready_functions = {
@@ -1389,6 +1973,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if declaration["kind"] == "type"
             and declaration["declarationState"] in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
         header_functions = set(
             re.findall(
                 r"^(?:void|int32_t)\s+(kmipkit_[A-Za-z0-9_]+)\s*\(",
@@ -1447,7 +2037,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(export_name=export_name):
                 declaration = by_name[export_name]
                 self.assertEqual(declaration["kind"], kind)
-                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(declaration["declarationState"], "verified")
                 self.assertEqual(
                     declaration["mappingSemantics"], "native-handle-release"
                 )
@@ -1493,6 +2083,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for (kind, name), state in states.items()
             if kind == "type" and state in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
 
         for function in self.checked_in_manifest["functions"]:
             if states.get(("c-symbol", function["c"]["symbol"])) not in {
@@ -1516,11 +2112,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 285)
+        self.assertEqual(len(declarations), 704)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
-        self.assertEqual(close_method["declarationState"], "blocked")
+        self.assertEqual(close_method["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
@@ -1584,6 +2180,262 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertFalse(declaration["additionalProperties"])
         self.assertFalse(exclusion["additionalProperties"])
+
+    def test_approved_c_exclusion_can_describe_an_abi_only_carrier_layout(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["approvedExclusions"] = [
+            {
+                "packageId": "c-kmipkit",
+                "exportName": "kmipkit_example_v1_t",
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": copy.deepcopy(
+                    self.checked_in_manifest["approvedExclusions"][0]["approvalSource"]
+                ),
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": "kmipkit_example_v1_t",
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                },
+            }
+        ]
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "struct_size"
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = (
+            "uint32_t; injected"
+        )
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = "uint32_t"
+        manifest["approvedExclusions"][0]["packageId"] = "java-kmipkit"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+    def test_declared_c_value_fields_reject_reserved_c_and_cpp_names(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["types"].append(
+            {
+                "id": "ExampleCValue",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-001"],
+                "rust": {
+                    "module": "kmipkit_ffi::example",
+                    "name": "ExampleCValue",
+                    "owner": "ffi",
+                },
+                "c": {
+                    "name": "kmipkit_example_value_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "valid_name", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "ExampleCValue"},
+                "python": {"module": "kmipkit", "name": "ExampleCValue"},
+            }
+        )
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+    def test_c_header_renders_approved_exclusion_carrier_layout(self) -> None:
+        def exclusion(name: str, fields: list[dict[str, str]]) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {"name": name, "kind": "fixed-width-value", "fields": fields},
+            }
+
+        manifest = {
+            "formatVersion": 2,
+            "approvedExclusions": [
+                exclusion(
+                    "kmipkit_transport_config_v1_t",
+                    [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "client_certificates", "type": "const kmipkit_transport_input_v1_t *"},
+                        {"name": "client_private_key", "type": "kmipkit_transport_input_v1_t"},
+                        {"name": "connect_timeout", "type": "kmipkit_timeout_limit_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_transport_input_v1_t",
+                    [
+                        {"name": "source_kind", "type": "uint32_t"},
+                        {"name": "encoding", "type": "uint32_t"},
+                        {"name": "data", "type": "kmipkit_byte_span_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_timeout_limit_v1_t",
+                    [
+                        {"name": "kind", "type": "uint32_t"},
+                        {"name": "reserved", "type": "uint32_t"},
+                        {"name": "seconds", "type": "uint64_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_byte_span_v1_t",
+                    [
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                ),
+            ],
+            "publicDeclarations": [],
+            "types": [],
+            "limits": [],
+            "errorCategories": [],
+            "functions": [],
+        }
+
+        header = generate.render_c_header(manifest)
+
+        for name in (
+            "kmipkit_transport_config_v1_t",
+            "kmipkit_transport_input_v1_t",
+            "kmipkit_timeout_limit_v1_t",
+            "kmipkit_byte_span_v1_t",
+        ):
+            self.assertIn(f"typedef struct {name} {name};", header)
+        self.assertLess(
+            header.index("struct kmipkit_byte_span_v1_t {"),
+            header.index("struct kmipkit_transport_input_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_transport_input_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_timeout_limit_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertIn(
+            "    const kmipkit_transport_input_v1_t * client_certificates;", header
+        )
+        self.assertIn(
+            "    kmipkit_transport_input_v1_t client_private_key;", header
+        )
+
+    def test_approved_c_carrier_layout_references_must_resolve_without_cycles(self) -> None:
+        def exclusion(name: str, field_type: str) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": name,
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "value", "type": field_type}],
+                },
+            }
+
+        manifest = {
+            "approvedExclusions": [
+                exclusion("kmipkit_outer_v1_t", "kmipkit_inner_v1_t"),
+                exclusion("kmipkit_inner_v1_t", "uint32_t"),
+            ],
+            "types": [],
+        }
+        ordered = generate._ordered_approved_c_type_layouts(manifest)
+        self.assertEqual(
+            [record["name"] for record in ordered],
+            ["kmipkit_inner_v1_t", "kmipkit_outer_v1_t"],
+        )
+
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_missing_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_outer_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_reserved_c_and_cpp_field_names(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_reserved_field_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_reserved_field_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "class", "type": "uint32_t"}],
+                    },
+                }
+            ],
+            "types": [],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = (
+            "field__internal"
+        )
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_partially_declared_value_dependency(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_outer_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_outer_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "inner", "type": "kmipkit_partial_v1_t"}],
+                    },
+                }
+            ],
+            "types": [
+                {
+                    "c": {
+                        "name": "kmipkit_partial_v1_t",
+                        "kind": "fixed-width-value",
+                    }
+                }
+            ],
+            "limits": [{"cField": "first"}, {"cField": "second"}],
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": "kmipkit_partial_v1_t.first",
+                    "declarationState": "declared",
+                }
+            ],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "incomplete declared value"):
+            generate._ordered_approved_c_type_layouts(manifest)
 
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))

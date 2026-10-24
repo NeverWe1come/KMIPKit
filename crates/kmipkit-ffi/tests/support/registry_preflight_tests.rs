@@ -4,6 +4,13 @@ use super::*;
 mod invariant_guard_tests;
 
 #[test]
+fn join_split_key_identifier_copy_maps_reservation_failure_to_resource_limit() {
+    let result = copy_join_split_key_identifier_with_reservation("identifier", |_, _| Err(()));
+
+    assert_eq!(result, Err(ERROR_RESOURCE_LIMIT));
+}
+
+#[test]
 fn register_request_create_consumes_every_input_when_attributes_have_a_live_view() {
     let attributes: *mut kmipkit_ttlv_structure_t =
         make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
@@ -43,6 +50,73 @@ fn register_request_create_consumes_every_input_when_attributes_have_a_live_view
 
     kmipkit_ttlv_structure_view_release(attributes_view);
     drop(object_witness);
+}
+
+#[test]
+fn register_request_create_rejects_a_catalogued_attribute_with_the_wrong_ttlv_type() {
+    let cryptographic_length = Item::new(
+        RawTag::new(0x0042_002a)
+            .expect("Cryptographic Length tag is representable")
+            .try_checked()
+            .expect("Cryptographic Length is allocated"),
+        Value::text_string("not-an-integer".to_owned()),
+    )
+    .expect("a TextString TTLV item is structurally valid");
+    let mut attributes = Structure::new();
+    attributes
+        .try_push(cryptographic_length)
+        .expect("the test attribute fits the Structure");
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(attributes));
+    let opaque_object_tag = RawTag::new(0x0042_005b)
+        .expect("Opaque Object tag is representable")
+        .try_checked()
+        .expect("Opaque Object is allocated");
+    let object = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(opaque_object_tag, Value::structure(Structure::new()))
+                .expect("empty Opaque Object structure is structurally valid"),
+        ),
+    );
+    let mut request = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_register_request_create(8, attributes, object, &raw mut request),
+        ERROR_INVALID_INPUT
+    );
+    assert!(request.is_null());
+}
+
+#[test]
+fn register_request_context_rejects_an_unassigned_value() {
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let opaque_object_tag = RawTag::new(0x0042_005b)
+        .expect("Opaque Object tag is representable")
+        .try_checked()
+        .expect("Opaque Object is allocated");
+    let object = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(opaque_object_tag, Value::structure(Structure::new()))
+                .expect("empty Opaque Object structure is structurally valid"),
+        ),
+    );
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        kmipkit_register_request_create(8, attributes, object, &raw mut request),
+        SUCCESS
+    );
+
+    let mut contextual_request = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_register_request_with_opaque_object_context(
+            request,
+            0,
+            &raw mut contextual_request,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(contextual_request.is_null());
 }
 
 fn definition_handle() -> *mut kmipkit_extension_definition_t {

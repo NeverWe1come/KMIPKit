@@ -1,18 +1,47 @@
 # Public API design
 
+This reference describes the current API design and Rust declarations where
+identified. A Rust declaration does not establish 1.0 availability in all
+four languages. The reviewed [package status](../user-guide/en/language-packages.md)
+is the source for operation-level 1.0 readiness; `declared` and `verified`
+have distinct meanings, and `blocked` means the complete four-language
+mapping is unavailable.
+
 ## Three supported levels
+
+### Local API-level metadata
+
+The local API taxonomy is available through Rust `kmipkit::api_levels`, C
+`kmipkit_api_levels_get_v1`, Java `RuntimeMetadata.apiLevels()`, and Python
+`kmipkit.metadata.get_api_levels()`. Each query returns the fixed-order
+`high-level`, `typed-protocol`, and `generic-ttlv` levels without a network
+call. It describes the KMIPKit facade surface, is distinct from the KMIP
+Discover Versions operation, and does not assert that every KMIP operation is
+mapped or complete.
 
 ### High level
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
-not implement the general builder surface. The current typed client exposes
+not implement the general builder surface. This high-level section describes
+the initial Rust operation subset of the complete 52-variant typed request set,
+shown for batch execution and lifecycle conveniences. The complete set appears
+in the Typed protocol section below, and this subset does not establish
+four-language 1.0 availability. The current typed client exposes
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
-lifecycle calls and separate Poll, Cancel, Process, and Query Asynchronous
-Requests methods.
+lifecycle calls. In particular, explicit asynchronous
+follow-up operations remain blocked in the 1.0 manifest pending KMIPKIT-0009:
+
+| KMIP operation | Four-language 1.0 mapping |
+|---|---|
+| Cancel | blocked |
+| Poll | blocked |
+| Process | blocked |
+| Query Asynchronous Requests | blocked |
+
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -37,17 +66,47 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 
 ### Typed protocol
 
-KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
-with a closed typed request set. The currently implemented operation variants
-are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
-Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
-Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
-Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
-Revoke. The API does not accept generic Item values, raw message bytes, or
-caller-implemented conversions.
+KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
+`ClientBatch` with a closed typed request set. The complete Rust typed request
+set currently contains 52 variants, covering 52 of the 56 `client_1_0`
+operation types. It excludes the four explicit asynchronous follow-up
+operations Cancel, Poll, Process, and Query Asynchronous Requests, which remain
+blocked in the manifest pending KMIPKIT-0009. Variants: Discover Versions,
+Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
+Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
+Recover, Get, Locate, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Modify Attribute, Set Attribute, Get
+Attributes, Get Attribute List, Ping, Interop, Log, Validate, PKCS#11, Get
+Constraints, Set Constraints, Set Defaults, Get Usage Allocation, Query,
+Encrypt, Decrypt, Derive Key, Export, Import, Join Split Key, Hash, MAC, MAC
+Verify, Sign, Signature Verify, RNG Retrieve, and RNG Seed. Cross-language
+availability is summarized in the [Java and Python package
+guide](../user-guide/en/language-packages.md); exact operation and capability
+states remain in the [public API
+manifest](../../specification/api/public-api.json). The API does not accept
+generic Item values, raw message bytes, or caller-implemented conversions.
 Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
+
+Get Usage Allocation follows KMIP v2.1 §6.1.23, Tables 232–234, and encodes
+Usage Limits Count as the exact signed Long Integer from §7.40, Table 392.
+Its request accepts an optional Unique Identifier; a successful typed response
+exposes the resolved Unique Identifier. The Rust, C, Java, and Python facades
+share the operation mapping while the common batch result retains Success,
+Pending, Failure, correlation, and request-delivery state. Pending is returned
+to the caller without automatic polling or retry. A successful response also
+exposes the complete ordered generic TTLV response, including unknown fields:
+Rust lends a `StructureView`, C returns a caller-owned
+`kmipkit_ttlv_structure_t`, Java returns a `TtlvStructure` owned by its
+`GetUsageAllocationResponse`, and Python returns an owned `ttlv.Structure` from
+`response_ttlv`. Release the C handle with
+`kmipkit_ttlv_structure_release`; Java callers close the result, and Python
+callers close the result or its context-managed `response_ttlv` structure. The
+C, Java, and Python typed accessors do not return
+a generic response handle for Failure or Pending, and this does not expand the
+separate T081 error-only response-retention capability. The mapping follows
+the approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
 
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
@@ -113,6 +172,11 @@ Type code has no Value representation. The model checks that the Value
 determines the Item Type. It also preserves child order, raw Enumeration
 values, bitmask bits, and exact Big Integer Item Value octets. The tree has
 KMIPKit's 64-level Structure limit.
+
+All four language facades can construct Big Integer values. The C constructor
+`kmipkit_ttlv_value_big_integer` accepts an explicit-length byte span and the
+configured codec limits; C structure/value/item builders document when their
+opaque-handle ownership transfers.
 
 The generic TTLV layer does not establish wire or protocol validity. It does
 not store original framing, encoded lengths, or padding bytes, and does not
@@ -194,8 +258,7 @@ call itself.
 
 ## Protocol asynchronous outcome
 
-The 1.0 target includes explicit follow-up operations for KMIP asynchronous
-results. KMIPKIT-0007 represents a Pending item as
+KMIPKIT-0007 represents a Pending item as
 `ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
 Asynchronous Correlation Value behind an explicit borrowed accessor. The
 Pending value retains the originating typed response; `response()` returns a
@@ -203,8 +266,10 @@ borrowed `ClientResponseView` with a shared operation-result accessor and
 operation-specific accessors. The view also preserves Discover Versions'
 supported-version accessor. Formatted output is redacted and KMIPKit-owned
 correlation storage is zeroized when the Pending value is dropped. Poll,
-Cancel, result processing, automatic waiting, and background execution are not
-implemented by this foundation; see the
+Cancel, Process, and Query Asynchronous Requests remain blocked in the
+four-language 1.0 API pending approval and implementation of KMIPKIT-0009,
+even though KMIPKit preserves Pending outcomes and their correlation value.
+Automatic waiting and background execution are not implemented. See the
 [client execution guide](../user-guide/en/client-execution.md).
 
 ## Secrets

@@ -34,7 +34,7 @@
 - Pending is accepted only if the request option permits it under known semantics and the response contains the required Asynchronous Correlation Value from the accepted 0006 model. Preserve its opaque bytes unchanged through the `Client::execute` result for later explicit operations. Unknown extension-range indicator values do not grant Pending permission without an explicit registry policy. Under `KMIPKIT-DEC-002`, outbound Batch Error Continuation accepts assigned values only for this slice; generic decoding preserves all raw Enumeration values. This project policy does not claim that Table 435's extension allocation is invalid under OASIS. The separate `KMIPKIT-DISC-001` remains open for Continue/Undo execution effects.
 - Treat the Asynchronous Correlation Value as capability-like sensitive metadata: expose it only through an explicit borrowed accessor, redact it from formatted output, errors, and logs, and retain KMIPKit-owned bytes in zeroizing storage until drop without an ordinary unzeroized duplicate.
 - Unrecognized critical Message Extensions fail the complete response as required by OASIS §9.13. Unknown non-critical extension TTLV is preserved as KMIPKit policy; OASIS permits processing it as absent.
-- Result and payload errors redact all request/response bytes and secret material.
+- Result and payload errors redact all request/response bytes and secret material from diagnostics. Generic response TTLV is accessible through the dedicated error accessor only for the successful-operation Unique Identifier shape failures defined by KMIPKIT-0021-FR-015.
 
 ## Source metadata
 

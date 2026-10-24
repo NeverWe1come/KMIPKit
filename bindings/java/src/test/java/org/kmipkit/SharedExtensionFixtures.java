@@ -1,4 +1,4 @@
-// Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: 342aa42c61621ea9dbfecb901defe634953f9d46f19d5644ed9c74556d98c638. Do not edit.
+// Generated from specification/api/public-api.json and tests/fixtures/extensions/cases.json. API contract sha256: 4678cf0597e7f1ba3f14ba15fb7675cced89f395c8557186e9c5d4fbe9fa6a92. Do not edit.
 package org.kmipkit;
 
 import java.util.List;

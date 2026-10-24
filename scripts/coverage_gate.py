@@ -5,12 +5,15 @@ from __future__ import annotations
 
 import argparse
 from bisect import bisect_left, bisect_right
+from functools import lru_cache
 import html
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tokenize
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 import xml.etree.ElementTree as ET
@@ -21,15 +24,17 @@ class CoverageDataError(RuntimeError):
 
 
 class CoverageReport(dict[str, dict[int, int]]):
-    """A physical-line map plus conservative per-file summary residuals."""
+    """Line hits plus conservative summary residuals and documented exclusions."""
 
     def __init__(
         self,
         lines: dict[str, dict[int, int]],
         summary_uncovered_excess: dict[str, int],
+        documented_exclusions: dict[str, int] | None = None,
     ) -> None:
         super().__init__(lines)
         self.summary_uncovered_excess = summary_uncovered_excess
+        self.documented_exclusions = documented_exclusions or {}
 
 
 class InlineTestModuleError(CoverageDataError):
@@ -69,6 +74,17 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
     }
 )
+
+# Maturin generates these CFFI bridge wrappers at install time. Python coverage
+# explicitly omits them in bindings/python/pyproject.toml because they are not
+# maintained source; their native behavior is exercised by the binding tests.
+_PYTHON_GENERATED_SOURCE_EXCLUSIONS = frozenset(
+    {
+        "bindings/python/src/kmipkit/_native_ffi/__init__.py",
+        "bindings/python/src/kmipkit/_native_ffi/ffi.py",
+    }
+)
+_COVERAGE_SOURCE_EXCLUSIONS = _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
 
 
 def _mask_rust_non_code(source: str) -> str:
@@ -227,7 +243,7 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+    if normalized in _COVERAGE_SOURCE_EXCLUSIONS:
         return False
     if _is_rust_source_tree_path(normalized):
         return True
@@ -242,7 +258,10 @@ def is_coverage_source_path(path: str | Path) -> bool:
         return normalized.endswith(".java")
     if len(parts) >= 5 and parts[:4] == ("bindings", "python", "src", "kmipkit"):
         return normalized.endswith(".py")
-    return normalized == "bindings/java/native/kmipkit_jni.cpp"
+    return normalized in {
+        "bindings/java/native/kmipkit_jni.cpp",
+        "bindings/java/native/response_identifier_validation.hpp",
+    }
 
 
 def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
@@ -278,9 +297,12 @@ def scan_adapter_sources(workspace_root: str | Path) -> dict[str, set[str]]:
         if walk_errors:
             raise CoverageDataError(f"Adapter source scan is incomplete: {walk_errors[0]}")
 
-    jni_source = root / "bindings/java/native/kmipkit_jni.cpp"
-    if jni_source.is_file():
-        sources["JNI bridge"].add(jni_source.relative_to(root).as_posix())
+    for jni_source in (
+        root / "bindings/java/native/kmipkit_jni.cpp",
+        root / "bindings/java/native/response_identifier_validation.hpp",
+    ):
+        if jni_source.is_file():
+            sources["JNI bridge"].add(jni_source.relative_to(root).as_posix())
     return sources
 
 
@@ -1067,6 +1089,331 @@ def changed_code_result(changed_lines: set[tuple[str, int]] | set[int], coverage
     return f"{covered}/{executable} executable changed lines covered ({percent:.2f}%)"
 
 
+def _is_structural_only_source_line(source_line: str) -> bool:
+    """Exclude blank and delimiter-only lines that coverage regions can span."""
+    content = source_line.strip()
+    return not content or all(character in "{};" for character in content)
+
+
+def _is_executable_changed_line(
+    workspace: Path,
+    source: str,
+    line: int,
+    source_lines_cache: dict[str, list[str]],
+) -> bool:
+    if source not in source_lines_cache:
+        try:
+            source_lines_cache[source] = (workspace / PurePosixPath(source)).read_text(
+                encoding="utf-8", errors="strict"
+            ).splitlines()
+        except (OSError, UnicodeError) as error:
+            raise CoverageDataError(f"Changed production source could not be read as UTF-8: {source}") from error
+    source_lines = source_lines_cache[source]
+    if line < 1 or line > len(source_lines):
+        raise CoverageDataError(f"Changed production line is outside its source file: {source}:{line}.")
+    source_line = source_lines[line - 1]
+    if _has_documented_coverage_exclusion(source, tuple(source_lines), line):
+        return False
+    if source.endswith(".rs") and line in _rust_function_signature_lines(tuple(source_lines)):
+        return False
+    return not _is_structural_only_source_line(source_line)
+
+
+def _has_documented_coverage_exclusion(source: str, source_lines: tuple[str, ...], line: int) -> bool:
+    """Recognize only explicit line-comment exclusions with an adjacent reason."""
+    if not source.endswith((".rs", ".cpp", ".java", ".py")):
+        if any("COVERAGE-EXCLUDE:" in source_line for source_line in source_lines):
+            raise CoverageDataError(f"Coverage exclusion marker is unsupported for source file: {source}.")
+        return False
+
+    line_comment = next(
+        ((column, comment_text) for comment_line, column, comment_text in _source_line_comments(source, source_lines)
+         if comment_line == line),
+        None,
+    )
+    if line_comment is None:
+        return False
+    comment_start, comment_text = line_comment
+    comment_prefix = "#" if source.endswith(".py") else "//"
+    comment_body = comment_text[len(comment_prefix) :].lstrip()
+    marker = "COVERAGE-EXCLUDE:"
+    if not comment_body.startswith(marker):
+        return False
+    reason = comment_body[len(marker) :].strip()
+    code = source_lines[line - 1][:comment_start].rstrip()
+    if not code or not reason or _is_structural_only_source_line(code):
+        raise CoverageDataError(
+            f"Coverage exclusion at {source} requires a reason on an executable source line."
+        )
+    return True
+
+
+def _exclude_documented_coverage_lines(
+    report: Mapping[str, Mapping[int, int]],
+    workspace_root: str | Path,
+) -> CoverageReport:
+    """Remove explicitly documented unreachable lines from source coverage totals."""
+    workspace = Path(workspace_root).resolve()
+    filtered: dict[str, dict[int, int]] = {}
+    documented_exclusions: dict[str, int] = {}
+    for source, line_counts in report.items():
+        try:
+            source_lines = (workspace / PurePosixPath(source)).read_text(
+                encoding="utf-8", errors="strict"
+            ).splitlines()
+        except (OSError, UnicodeError) as error:
+            raise CoverageDataError(
+                f"Coverage source could not be read while applying exclusions: {source}."
+            ) from error
+        immutable_source_lines = tuple(source_lines)
+        excluded = {
+            line
+            for line, _, comment_text in _source_line_comments(source, immutable_source_lines)
+            if "COVERAGE-EXCLUDE:" in comment_text
+            and _has_documented_coverage_exclusion(source, immutable_source_lines, line)
+            and line_counts.get(line, 0) == 0
+        }
+        documented_exclusions[source] = len(excluded)
+        filtered[source] = {
+            line: count for line, count in line_counts.items() if line not in excluded
+        }
+    summary_uncovered_excess = (
+        report.summary_uncovered_excess if isinstance(report, CoverageReport) else {}
+    )
+    return CoverageReport(filtered, dict(summary_uncovered_excess), documented_exclusions)
+
+
+_RUST_RAW_STRING_START = re.compile(r"(?:br|cr|r)(?P<hashes>#*)\"")
+_RUST_LIFETIME_START = re.compile(r"'[A-Za-z_][A-Za-z0-9_]*")
+_CPP_RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\(')
+
+
+def _is_cpp_digit_separator(text: str, index: int) -> bool:
+    """Distinguish C++ numeric separators from prefixed character literals."""
+    if index == 0 or index + 1 >= len(text):
+        return False
+
+    token_start = index - 1
+    while token_start > 0:
+        previous = text[token_start - 1]
+        if not (previous.isascii() and (previous.isalnum() or previous in "_.")):
+            break
+        token_start -= 1
+    numeric_prefix = text[token_start:index]
+    if not numeric_prefix or not (
+        numeric_prefix[0].isascii() and numeric_prefix[0].isdigit()
+        or numeric_prefix.startswith(".")
+        and len(numeric_prefix) > 1
+        and numeric_prefix[1].isascii()
+        and numeric_prefix[1].isdigit()
+    ):
+        return False
+
+    lowercase_prefix = numeric_prefix.lower()
+    if lowercase_prefix.startswith("0x") and "p" not in lowercase_prefix:
+        digit_characters = "0123456789abcdefABCDEF"
+    elif lowercase_prefix.startswith("0b"):
+        digit_characters = "01"
+    elif (
+        numeric_prefix.startswith("0")
+        and len(numeric_prefix) > 1
+        and numeric_prefix[1].isdigit()
+        and not any(character in numeric_prefix for character in ".eEpP")
+    ):
+        digit_characters = "01234567"
+    else:
+        digit_characters = "0123456789"
+
+    return text[index - 1] in digit_characters and text[index + 1] in digit_characters
+
+
+@lru_cache(maxsize=32)
+def _source_line_comments(source: str, source_lines: tuple[str, ...]) -> tuple[tuple[int, int, str], ...]:
+    """Return actual line-comment spans while skipping literals and block comments."""
+    text = "\n".join(source_lines)
+    if source.endswith(".py"):
+        comments: list[tuple[int, int, str]] = []
+        try:
+            for token in tokenize.generate_tokens(io.StringIO(text).readline):
+                if token.type == tokenize.COMMENT:
+                    comments.append((token.start[0], token.start[1], token.string))
+        except (IndentationError, tokenize.TokenError) as error:
+            raise CoverageDataError(f"Python source could not be tokenized for coverage exclusions: {source}.") from error
+        return tuple(comments)
+
+    comments = []
+    line = 1
+    column = 0
+    index = 0
+    block_comment_depth = 0
+    quote: str | None = None
+    raw_end: str | None = None
+    text_block = False
+
+    while index < len(text):
+        if text[index] == "\n":
+            line += 1
+            column = 0
+            index += 1
+            continue
+
+        if block_comment_depth:
+            if text.startswith("*/", index):
+                block_comment_depth -= 1
+                index += 2
+                column += 2
+            elif source.endswith(".rs") and text.startswith("/*", index):
+                block_comment_depth += 1
+                index += 2
+                column += 2
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if raw_end is not None:
+            if text.startswith(raw_end, index):
+                index += len(raw_end)
+                column += len(raw_end)
+                raw_end = None
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if text_block:
+            backslashes = 0
+            preceding = index - 1
+            while preceding >= 0 and text[preceding] == "\\":
+                backslashes += 1
+                preceding -= 1
+            if text.startswith('"""', index) and backslashes % 2 == 0:
+                index += 3
+                column += 3
+                text_block = False
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if quote is not None:
+            if text[index] == "\\":
+                index += 1
+                column += 1
+                if index < len(text):
+                    if text[index] == "\n":
+                        line += 1
+                        column = 0
+                    else:
+                        column += 1
+                    index += 1
+            elif text[index] == quote:
+                quote = None
+                index += 1
+                column += 1
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if text.startswith("/*", index):
+            block_comment_depth = 1
+            index += 2
+            column += 2
+            continue
+        if text.startswith("//", index):
+            end = text.find("\n", index)
+            if end < 0:
+                end = len(text)
+            comments.append((line, column, text[index:end]))
+            column += end - index
+            index = end
+            continue
+
+        rust_raw = _RUST_RAW_STRING_START.match(text, index) if source.endswith(".rs") else None
+        if rust_raw is not None:
+            hashes = rust_raw.group(1) or ""
+            raw_end = f'"{hashes}'
+            index += rust_raw.end()
+            column += rust_raw.end()
+            continue
+
+        cpp_raw = (
+            _CPP_RAW_STRING_START.match(text, index)
+            if source.endswith(".cpp")
+            else None
+        )
+        if cpp_raw is not None:
+            raw_end = f'){cpp_raw.group(1)}"'
+            index += cpp_raw.end()
+            column += cpp_raw.end()
+            continue
+
+        if source.endswith(".java") and text.startswith('"""', index):
+            text_block = True
+            index += 3
+            column += 3
+            continue
+
+        if source.endswith(".rs") and text[index] == "'":
+            lifetime = _RUST_LIFETIME_START.match(text, index)
+            if lifetime is not None and (lifetime.end() == len(text) or text[lifetime.end()] != "'"):
+                index += 1
+                column += 1
+                continue
+
+        if source.endswith(".cpp") and text[index] == "'" and _is_cpp_digit_separator(text, index):
+            index += 1
+            column += 1
+            continue
+
+        if text[index] in "\"'":
+            quote = text[index]
+            index += 1
+            column += 1
+            continue
+
+        index += 1
+        column += 1
+
+    return tuple(comments)
+
+
+@lru_cache(maxsize=32)
+def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[int]:
+    """Return one-based multiline Rust function declaration lines without body code."""
+    declaration_lines: set[int] = set()
+    declaration_start = re.compile(
+        r"^\s*(?:(?:pub(?:\([^)]*\))?|unsafe|async|const|default|extern(?:\s+\"[^\"]+\")?)\s+)*fn\s+[A-Za-z_][A-Za-z0-9_]*\b"
+    )
+    line_index = 0
+    while line_index < len(source_lines):
+        if not declaration_start.match(source_lines[line_index]):
+            line_index += 1
+            continue
+        start = line_index
+        for end in range(start, len(source_lines)):
+            declaration_line = source_lines[end].rstrip()
+            code_line = _mask_rust_non_code(declaration_line).rstrip()
+            opening_brace = code_line.find("{")
+            if opening_brace >= 0:
+                body = code_line[opening_brace + 1 :]
+                if body.replace("}", "").strip() or "}" in body:
+                    declaration_lines.update(range(start + 1, end + 1))
+                else:
+                    declaration_lines.update(range(start + 1, end + 2))
+                line_index = end + 1
+                break
+            if code_line.endswith(";"):
+                declaration_lines.update(range(start + 1, end + 2))
+                line_index = end + 1
+                break
+        else:
+            line_index += 1
+
+    return frozenset(declaration_lines)
+
+
 def _run_git_diff(workspace: Path, base: str, merge: str) -> str:
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", base) or not re.fullmatch(r"[0-9a-fA-F]{40,64}", merge):
         raise CoverageDataError("Base and merge identifiers must be full Git object IDs.")
@@ -1215,9 +1562,10 @@ def _load_adapter_reports(
         if len(platform_reports) == 1:
             # Preserve parser metadata such as LLVM's summary-only uncovered
             # line counts; only multi-platform Java reports need a union.
-            parsed[scope] = next(iter(platform_reports.values()))
+            combined = next(iter(platform_reports.values()))
         else:
-            parsed[scope] = merge_coverage_reports(platform_reports)
+            combined = merge_coverage_reports(platform_reports)
+        parsed[scope] = _exclude_documented_coverage_lines(combined, workspace)
     return parsed
 
 
@@ -1319,11 +1667,13 @@ def _evaluate_coverage(
             for source, count in report.summary_uncovered_excess.items():
                 adapter_summary_excess[source] = adapter_summary_excess.get(source, 0) + count
 
+    changed_source_lines: dict[str, list[str]] = {}
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
         for line in line_numbers
         if (source, line) in production_lines
+        and _is_executable_changed_line(workspace, source, line, changed_source_lines)
     }
     if changed_executable:
         covered = sum(production_lines[item] > 0 for item in changed_executable)
@@ -1402,8 +1752,15 @@ def _evaluate_coverage(
         if not meets_threshold(covered, total, threshold):
             raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
         percentage = covered * 100 / total
+        excluded = (
+            sum(report.documented_exclusions.values())
+            if isinstance(report, CoverageReport)
+            else 0
+        )
         results.append(
-            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%), "
+            f"excluding {excluded} documented unreachable line(s) and including "
+            f"{summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
         )
 
     covered = sum(count > 0 for count in all_lines.values())
@@ -1570,8 +1927,15 @@ def _evaluate_scoped_coverage(
         total = len(line_map) + extra
         if not meets_threshold(covered, total, 85):
             raise CoverageDataError(f"{label} coverage {covered}/{total} is below 85%.")
+        excluded = (
+            sum(report.documented_exclusions.values())
+            if isinstance(report, CoverageReport)
+            else 0
+        )
         results.append(
-            f"{label} coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (85% minimum)."
+            f"{label} coverage: {covered}/{total} ({covered * 100 / total:.2f}%), "
+            f"excluding {excluded} documented unreachable line(s) and including "
+            f"{extra} summary-only line(s) as uncovered (85% minimum)."
         )
 
     changed = parse_added_production_lines(diff)
@@ -1579,12 +1943,14 @@ def _evaluate_scoped_coverage(
         source: _coverage_scope_for_source(source, scoped_reports)
         for source in changed
     }
+    changed_source_lines: dict[str, list[str]] = {}
     changed_executable = {
         (source, line)
         for source, line_numbers in changed.items()
         if source_scopes[source] is not None
         for line in line_numbers
         if line in scoped_reports[source_scopes[source]].get(source, {})
+        and _is_executable_changed_line(workspace, source, line, changed_source_lines)
     }
     if changed_executable:
         covered = sum(

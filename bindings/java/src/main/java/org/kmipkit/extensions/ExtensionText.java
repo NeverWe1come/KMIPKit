@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import java.nio.charset.StandardCharsets;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.ResourceLimitException;
 
@@ -13,13 +14,19 @@ final class ExtensionText {
         if (value == null) {
             return;
         }
-        if (value.length() > MAX_BYTES || exceedsUtf8ByteLimit(value, description)) {
-            throw new ResourceLimitException(description + " exceeds its configured limit");
-        }
+        checkedUtf8Length(value, MAX_BYTES, description);
     }
 
-    private static boolean exceedsUtf8ByteLimit(String value, String description) {
-        int byteCount = 0;
+    static byte[] encodeUtf8(String value, int maximumBytes, String description) {
+        checkedUtf8Length(value, maximumBytes, description);
+        return value.getBytes(StandardCharsets.UTF_8);
+    }
+
+    static int checkedUtf8Length(String value, int maximumBytes, String description) {
+        if (value.length() > maximumBytes) {
+            throw new ResourceLimitException(description + " exceeds its configured limit");
+        }
+        long byteCount = 0;
         for (int index = 0; index < value.length(); index++) {
             char character = value.charAt(index);
             if (character <= 0x7F) {
@@ -37,10 +44,10 @@ final class ExtensionText {
             } else {
                 byteCount += 3;
             }
-            if (byteCount > MAX_BYTES) {
-                return true;
+            if (byteCount > maximumBytes) {
+                throw new ResourceLimitException(description + " exceeds its configured limit");
             }
         }
-        return false;
+        return (int) byteCount;
     }
 }

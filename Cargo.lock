@@ -326,6 +326,7 @@ dependencies = [
  "kmipkit-protocol",
  "kmipkit-transport",
  "kmipkit-ttlv",
+ "serde_json",
 ]
 
 [[package]]
@@ -339,6 +340,7 @@ dependencies = [
  "quickcheck",
  "rustls",
  "serde",
+ "serde_json",
  "static_assertions",
  "syn 2.0.119",
  "tokio",
@@ -350,6 +352,7 @@ dependencies = [
 name = "kmipkit-ffi"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "base64",
  "cc",
  "kmipkit",
@@ -360,6 +363,7 @@ dependencies = [
  "kmipkit-ttlv",
  "rcgen",
  "rustls",
+ "serde_json",
  "zeroize",
 ]
 
@@ -370,6 +374,7 @@ dependencies = [
  "kmipkit-ttlv",
  "quickcheck",
  "roxmltree",
+ "serde_json",
  "zeroize",
 ]
 
@@ -407,6 +412,7 @@ name = "kmipkit-ttlv"
 version = "1.0.0"
 dependencies = [
  "serde",
+ "serde_json",
  "trybuild",
  "zeroize",
 ]
@@ -671,9 +677,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.15"
+version = "0.103.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2"
+checksum = "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281"
 dependencies = [
  "aws-lc-rs",
  "ring",

@@ -715,19 +715,23 @@ trait Example { fn declaration(&self); }
             (source_dir / "lib.rs").write_text(
                 'pub fn production() {}\n'
                 '#[cfg(test)]\n'
-                '#[path = "../tests/unit/private_tests.rs"]\n'
+                '#[path = "../tests/support/private_tests.rs"]\n'
                 'mod private_tests;\n',
                 encoding="utf-8",
             )
-            test_source = root / "crates" / "sample" / "tests" / "unit" / "private_tests.rs"
+            test_source = root / "crates" / "sample" / "tests" / "support" / "private_tests.rs"
             test_source.parent.mkdir(parents=True)
             test_source.write_text("#[test] fn checks_private_behavior() {}\n", encoding="utf-8")
 
             scan = GATE.scan_production_sources(root)
+            support_path_is_production = GATE.is_coverage_source_path(
+                "crates/sample/tests/support/private_tests.rs"
+            )
 
         self.assertTrue(scan.eligible)
         self.assertTrue(scan.complete)
         self.assertEqual({"crates/sample/src/lib.rs"}, scan.eligible_files)
+        self.assertFalse(support_path_is_production)
 
     def test_cfg_test_module_path_into_production_source_fails_preflight(self) -> None:
         self.require_gate()
@@ -821,6 +825,255 @@ trait Example { fn declaration(&self); }
             {"crates/kmipkit/src/lib.rs": {4, 5}},
             GATE.parse_added_rust_lines(diff),
         )
+
+    def test_changed_coverage_excludes_multiline_rust_function_declarations(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub extern \"C\" fn response(\n"
+                "    item: *mut Item,\n"
+                "    out_present: *mut u8,\n"
+                ") -> i32 {\n"
+                "    let present = scalar_out!(out_present);\n"
+                "    SUCCESS\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            declaration_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in range(1, 5)
+            ]
+            body_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in (5, 6)
+            ]
+
+        self.assertEqual([False, False, False, False], declaration_results)
+        self.assertEqual([True, True], body_results)
+
+    def test_changed_coverage_keeps_inline_rust_function_bodies_executable(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn inline() { let answer = 42; answer }\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
+    def test_changed_coverage_keeps_inline_rust_body_before_multiline_function(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub fn inline() { let answer = 42; answer }\n"
+                "pub fn next(\n"
+                "    value: i32,\n"
+                ") -> i32 {\n"
+                "    value\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            first_line_is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+            next_signature_lines_are_declarations = [
+                not GATE._is_executable_changed_line(root, relative, line, {})
+                for line in (2, 3, 4)
+            ]
+
+        self.assertTrue(first_line_is_executable)
+        self.assertEqual([True, True, True], next_signature_lines_are_declarations)
+
+    def test_changed_coverage_counts_an_empty_inline_rust_function_body(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn added() {}\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
+    def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Successful FFI getters normalize this field.\n"
+                "    return nullptr;\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, source_lines)
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, source_lines)
+
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE:\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(GATE.CoverageDataError, "requires a reason"):
+                GATE._is_executable_changed_line(root, relative, 2, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_documented_coverage_exclusions_are_removed_from_scope_totals(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int unreachable() { return 0; } // COVERAGE-EXCLUDE: The ABI makes this state unreachable.\n"
+                "int exercised_but_marked() { return 1; } // COVERAGE-EXCLUDE: The state is invariant.\n"
+                "int exercised() { return 2; }\n",
+                encoding="utf-8",
+            )
+            report = GATE.CoverageReport(
+                {relative: {1: 0, 2: 1, 3: 1}},
+                {relative: 3},
+            )
+
+            filtered = GATE._exclude_documented_coverage_lines(report, root)
+
+        self.assertEqual({relative: {2: 1, 3: 1}}, filtered)
+        self.assertEqual({relative: 3}, filtered.summary_uncovered_excess)
+        self.assertEqual({relative: 1}, filtered.documented_exclusions)
+
+    def test_coverage_exclusion_markers_inside_literals_are_not_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "crates/kmipkit-ffi/src/client_abi.rs",
+                'let note = r#"// COVERAGE-EXCLUDE: string contents"#;\n',
+            ),
+            (
+                "bindings/python/src/kmipkit/client.py",
+                'note = "# COVERAGE-EXCLUDE: string contents"\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                'const char* note = R"tag(// COVERAGE-EXCLUDE: raw string contents)tag";\n',
+            ),
+            (
+                "bindings/java/src/main/java/org/kmipkit/extensions/Client.java",
+                'String note = "// COVERAGE-EXCLUDE: string contents";\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "int value = 1; /* // COVERAGE-EXCLUDE: block comment contents */\n",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative, source_text in cases:
+                with self.subTest(source=relative, text=source_text):
+                    source = root / relative
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertTrue(is_executable)
+
+    def test_cpp_digit_separators_do_not_hide_later_coverage_exclusions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int maximum_port = 65'535;\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Unreachable invalid-input fallback.\n"
+                "    return nullptr;\n",
+                encoding="utf-8",
+            )
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, {})
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_cpp_prefixed_character_literals_do_not_hide_coverage_exclusions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "const wchar_t letter = L'x'; // COVERAGE-EXCLUDE: Tested through API validation.\n"
+                "    return nullptr;\n",
+                encoding="utf-8",
+            )
+
+            excluded = GATE._is_executable_changed_line(root, relative, 1, {})
+            adjacent = GATE._is_executable_changed_line(root, relative, 2, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_cpp_digit_separators_respect_numeric_base(self) -> None:
+        self.require_gate()
+        decimal_with_hex_letter = "int value = 1'B;"
+        apostrophe = decimal_with_hex_letter.index("'")
+
+        self.assertFalse(GATE._is_cpp_digit_separator(decimal_with_hex_letter, apostrophe))
+
+    def test_rust_coverage_markers_respect_lifetimes_and_nested_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "fn process<'a>() { consume(); } // COVERAGE-EXCLUDE: test rationale\n",
+                False,
+            ),
+            (
+                "let value = 1; /* outer /* inner */ // COVERAGE-EXCLUDE: comment text */\n",
+                True,
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            for source_text, expected in cases:
+                with self.subTest(source_text=source_text):
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertEqual(expected, is_executable)
 
     def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
         self.require_gate()

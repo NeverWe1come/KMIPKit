@@ -10,19 +10,21 @@ Runtime code uses only the Python standard library.
 from __future__ import annotations
 
 import argparse
-from copy import deepcopy
 import json
 import math
 import os
 import re
 import stat
+import subprocess
 import sys
 import tempfile
+import tomllib
+import xml.etree.ElementTree as ET
+from copy import deepcopy
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any
-
 
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
@@ -30,6 +32,7 @@ CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
+MAX_RELEASE_METADATA_BYTES = 1024 * 1024
 OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",
@@ -85,8 +88,72 @@ _C_INTEGER_TYPES = {
     "int64_t": ("i64", 64, True),
     "uint64_t": ("u64", 64, False),
 }
+_C_KEYWORDS = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+    "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long",
+    "register", "restrict", "return", "short", "signed", "sizeof", "static", "struct",
+    "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+    "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
+    "_Noreturn", "_Static_assert", "_Thread_local",
+}
+# The public header is C++-includable; keep this to reserved C++20 tokens, not TS names.
+_CPP_KEYWORDS = {
+    "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch",
+    "char8_t", "char16_t",
+    "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype", "delete", "dynamic_cast",
+    "explicit", "export", "false", "friend", "mutable", "namespace", "new", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
+    "reinterpret_cast", "requires", "static_assert", "static_cast", "template", "this",
+    "thread_local", "throw", "true", "try", "typeid", "typename", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
+}
+_C_FAMILY_KEYWORDS = _C_KEYWORDS | _CPP_KEYWORDS
+_C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
+    r"(?P<const>const )?(?P<base>(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t))"
+    r"(?P<pointer> \*)?\Z"
+)
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
+_EXPECTED_RELEASE_SHARED_CAPABILITY_IDS = frozenset(
+    {
+        "generic_ttlv_model",
+        "public_binding_surface",
+        "rust_transport_exchange",
+        "ttlv_wire_codec",
+        "vendor_extension_registry",
+        "ffi_runtime_metadata",
+        "discover_versions_request_item",
+        "opaque_register_context",
+        "client_batch_model",
+        "client_execution",
+        "production_transport",
+        "api_level_discovery",
+        "server_generated_creation",
+        "crypto_response_ttlv",
+        "usage_allocation_guard",
+    }
+)
+_EXPECTED_PUBLIC_PACKAGE_IDS = frozenset(
+    {
+        "rust-kmipkit-ttlv",
+        "rust-kmipkit-protocol",
+        "rust-kmipkit-transport",
+        "rust-kmipkit-client",
+        "rust-kmipkit",
+        "c-kmipkit",
+        "java-kmipkit",
+        "python-kmipkit",
+    }
+)
+_CARGO_PUBLIC_PACKAGE_MANIFESTS = {
+    "rust-kmipkit-ttlv": "crates/kmipkit-ttlv/Cargo.toml",
+    "rust-kmipkit-protocol": "crates/kmipkit-protocol/Cargo.toml",
+    "rust-kmipkit-transport": "crates/kmipkit-transport/Cargo.toml",
+    "rust-kmipkit-client": "crates/kmipkit-client/Cargo.toml",
+    "rust-kmipkit": "crates/kmipkit/Cargo.toml",
+    "c-kmipkit": "crates/kmipkit-ffi/Cargo.toml",
+}
 _RUST_2024_KEYWORDS = {
     "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
     "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod",
@@ -513,10 +580,15 @@ def _feature_directory(root: Path, feature_id: Any) -> Path:
 
 
 def _status_from_document(content: str) -> str:
-    match = re.search(r"(?m)^\*\*Status\*\*:\s*(Approved|Accepted)\b", content)
+    match = re.search(r"(?m)^(?:\*\*Status\*\*|Status):\s*([^\r\n]+)", content)
     if match is None:
         raise ManifestError("manifest owner source is not approved or accepted")
-    return match.group(1)
+    status = match.group(1).strip()
+    if status.startswith("Approved"):
+        return "Approved"
+    if status.startswith("Accepted"):
+        return "Accepted"
+    return status
 
 
 def _validate_approval_source(
@@ -549,7 +621,15 @@ def _validate_approval_source(
         spec_path = root / "specs" / parts[1] / "spec.md"
         _, spec_content = _manifest_file(root, PurePosixPath(*spec_path.relative_to(root).parts).as_posix())
         actual_status = _status_from_document(spec_content)
-        if recorded_status != actual_status:
+        stale_status_covered_by_merged_pr = (
+            recorded_status == "Approved"
+            and actual_status.startswith("Draft")
+            and feature_id == "KMIPKIT-0018"
+            and _has_merged_specification_approval_record(root, feature_id)
+        )
+        if actual_status not in {"Approved", "Accepted"} and not stale_status_covered_by_merged_pr:
+            raise ManifestError("manifest owner source is not approved or accepted")
+        if recorded_status != actual_status and not stale_status_covered_by_merged_pr:
             raise ManifestError("manifest feature approval status differs from its specification")
         return
 
@@ -662,10 +742,35 @@ def _operation_owner_state(root: Path, owner_id: str | None) -> str:
     status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
     if status_match is None:
         raise ManifestError("operation owner specification has no recorded status")
-    return (
-        "approved"
-        if re.match(r"(?:Approved|Accepted)\b", status_match.group(1))
-        else "candidate"
+    if re.match(r"(?:Approved|Accepted)\b", status_match.group(1)):
+        return "approved"
+    if _has_merged_specification_approval_record(root, owner_id):
+        return "approved"
+    return "candidate"
+
+
+def _has_merged_specification_approval_record(root: Path, owner_id: str) -> bool:
+    """Recognize the recorded PR approval when the owner's checked-in status is stale."""
+    evidence_path = (
+        root
+        / "specs"
+        / "043-public-api-bindings"
+        / "implementation-evidence.md"
+    )
+    try:
+        evidence = evidence_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    required = (
+        f"`{owner_id}` is approved for implementation by specification PR #65",
+        "MERGED into `release/1.0.0` on `2026-10-09`",
+        "PR body gates implementation on approval and merge",
+        "checked-in owner status remains `Status: Draft for independent human review`",
+    )
+    return any(
+        all(marker in line for marker in required)
+        for line in evidence.splitlines()
+        if "Merged owner approval evidence" in line
     )
 
 
@@ -868,6 +973,16 @@ def _require_complete_readiness(
         record.get("apiState") != "verified" for record in operations
     ):
         raise ManifestError("release manifest contains an incomplete operation API")
+    capability_ids = [
+        record.get("capabilityId") for record in capabilities if isinstance(record, dict)
+    ]
+    if (
+        len(capability_ids) != len(capabilities)
+        or any(not isinstance(capability_id, str) for capability_id in capability_ids)
+        or len(set(capability_ids)) != len(capability_ids)
+        or set(capability_ids) != _EXPECTED_RELEASE_SHARED_CAPABILITY_IDS
+    ):
+        raise ManifestError("release manifest contains an incomplete capability inventory")
     if any(record.get("capabilityState") != "verified" for record in capabilities):
         raise ManifestError("release manifest contains an incomplete capability API")
     if any(record.get("declarationState") != "verified" for record in declarations):
@@ -924,7 +1039,14 @@ def _validate_v2_readiness(
         requirements,
         root,
     )
-    _validate_ready_mapping_targets(declarations, package_languages)
+    c_release_functions = {
+        ("c-kmipkit", c_api["releaseFunction"])
+        for type_record in manifest.get("types", [])
+        if isinstance(type_record, dict)
+        and isinstance((c_api := type_record.get("c")), dict)
+        and isinstance(c_api.get("releaseFunction"), str)
+    }
+    _validate_ready_mapping_targets(declarations, package_languages, c_release_functions)
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
@@ -936,7 +1058,9 @@ def _validate_v2_readiness(
 
 
 def _validate_ready_mapping_targets(
-    declarations: list[dict[str, Any]], package_languages: dict[Any, Any]
+    declarations: list[dict[str, Any]],
+    package_languages: dict[Any, Any],
+    c_release_functions: set[tuple[str, str]],
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
@@ -946,8 +1070,27 @@ def _validate_ready_mapping_targets(
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
         mapping_semantics = declaration.get("mappingSemantics")
-        if mapping_semantics not in {None, "native-handle-release"}:
+        if mapping_semantics not in {
+            None,
+            "native-handle-release",
+            "native-handle-release-managed-java-value",
+            "secret-buffer-wipe",
+        }:
             raise ManifestError("public declaration uses unknown mapping semantics")
+        lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
+        if lifecycle_by_language is not None and (
+            mapping_semantics != "secret-buffer-wipe"
+            or lifecycle_by_language
+            != {
+                "rust": "wipe-on-final-owner-drop",
+                "c": "release-shared-reference-wipe-on-final-owner-drop",
+                "java": "wipe-owned-copy-on-close",
+                "python": "wipe-owned-copy-on-close",
+            }
+        ):
+            raise ManifestError(
+                "secret response lifecycle mapping must describe each language's ownership boundary"
+            )
         mappings = declaration.get("languageMappings", {})
         required_languages = (
             ("rust",)
@@ -959,34 +1102,52 @@ def _validate_ready_mapping_targets(
             target = declarations_by_path.get(
                 (mapping.get("packageId"), mapping.get("name"))
             )
+            if (
+                target is None
+                and language == "c"
+                and mapping_semantics in {"native-handle-release", "secret-buffer-wipe"}
+                and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
+            ):
+                target = {
+                    "packageId": mapping["packageId"],
+                    "kind": "c-symbol",
+                    "declarationState": "verified",
+                }
             if target is None:
                 raise ManifestError("ready public declaration mapping target is not an exact listed export")
             if package_languages.get(target.get("packageId")) != language:
                 raise ManifestError("ready public declaration mapping target has the wrong language")
             if target.get("declarationState") not in {"declared", "verified"}:
                 raise ManifestError("ready public declaration mapping target is blocked")
-            if mapping_semantics == "native-handle-release":
+            if mapping_semantics in {
+                "native-handle-release",
+                "native-handle-release-managed-java-value",
+                "secret-buffer-wipe",
+            }:
+                managed_java_value = (
+                    mapping_semantics == "native-handle-release-managed-java-value"
+                )
                 expected_kind = {
                     "rust": "type",
                     "c": "c-symbol",
-                    "java": "java-member",
+                    "java": "type" if managed_java_value else "java-member",
                     "python": "python-export",
                 }[language]
                 if target.get("kind") != expected_kind:
                     raise ManifestError(
-                        "native handle release mapping targets the wrong declaration kind"
+                        "lifecycle mapping targets the wrong declaration kind"
                     )
                 target_name = mapping.get("name", "")
                 expected_suffix = {
                     "c": "_release",
-                    "java": ".close",
+                    "java": None if managed_java_value else ".close",
                     "python": ".close",
                 }.get(language)
                 if expected_suffix is not None and not target_name.endswith(
                     expected_suffix
                 ):
                     raise ManifestError(
-                        "native handle release mapping targets the wrong lifecycle operation"
+                        "lifecycle mapping targets the wrong cleanup operation"
                     )
 
 
@@ -1010,11 +1171,14 @@ def _validate_capability_mapping_inventories(
         for language in language_scope:
             expected = sorted(
                 {
-                    row["exportName"]
+                    row["languageMappings"][language]["name"]
                     for row in declarations
                     if row.get("capabilityId") == capability.get("capabilityId")
                     and row.get("declarationState") in {"declared", "verified"}
-                    and package_languages.get(row.get("packageId")) == language
+                    and language in row.get("languageMappings", {})
+                    and package_languages.get(
+                        row["languageMappings"][language].get("packageId")
+                    ) == language
                 }
             )
             if mappings.get(language) != expected:
@@ -1125,7 +1289,186 @@ def _validate_v2_manifest(
     _validate_schema(manifest, schema)
     _validate_operation_inventory(manifest, catalog)
     _validate_references(manifest)
+    if require_complete:
+        _validate_release_package_versions(manifest, root)
     _validate_v2_readiness(manifest, root, require_complete=require_complete)
+    if require_complete:
+        _validate_release_export_inventories(root)
+
+
+def _read_release_metadata(root: Path, relative_path: str) -> str:
+    try:
+        source_path = _safe_destination(root, relative_path)
+        with source_path.open("rb") as source:
+            content = source.read(MAX_RELEASE_METADATA_BYTES + 1)
+    except (OSError, PathSecurityError) as error:
+        raise ManifestError("release package version source is missing or invalid") from error
+    if len(content) > MAX_RELEASE_METADATA_BYTES:
+        raise ManifestError("release package version source exceeds its size limit")
+    try:
+        return content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ManifestError("release package version source is missing or invalid") from error
+
+
+def _validate_release_export_inventories(root: Path) -> None:
+    """Require source audits to account for all Rust and binding exports."""
+    scripts = (
+        "audit_rust_exports.py",
+        "audit_binding_exports.py",
+    )
+    for script_name in scripts:
+        command = [
+            sys.executable,
+            "-B",
+            str(root / "tools" / "api_manifest" / script_name),
+            "--repo-root",
+            str(root),
+            "--check",
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                cwd=root,
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=900,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ManifestError("release export inventory could not be validated") from error
+        if result.returncode != 0:
+            raise ManifestError("release export inventory is incomplete or inconsistent")
+
+
+def _validate_release_package_versions(
+    manifest: dict[str, Any], root: Path
+) -> None:
+    """Require package versions and identities to match release metadata."""
+    release_line = manifest.get("releaseLine")
+    packages = manifest.get("publicPackages")
+    if not isinstance(release_line, str) or not isinstance(packages, list):
+        raise ManifestError("release package inventory is malformed")
+
+    package_ids = [
+        package.get("id") for package in packages if isinstance(package, dict)
+    ]
+    if (
+        len(package_ids) != len(packages)
+        or any(not isinstance(package_id, str) for package_id in package_ids)
+        or len(set(package_ids)) != len(package_ids)
+        or set(package_ids) != _EXPECTED_PUBLIC_PACKAGE_IDS
+    ):
+        raise ManifestError("release package inventory is incomplete or duplicated")
+    if any(
+        package.get("versionSource") != "releaseLine"
+        for package in packages
+        if isinstance(package, dict)
+    ):
+        raise ManifestError("release package versions do not use releaseLine")
+
+    packages_by_id = {
+        package.get("id"): package
+        for package in packages
+        if isinstance(package, dict)
+    }
+
+    def read_toml(relative_path: str) -> dict[str, Any]:
+        try:
+            document = tomllib.loads(_read_release_metadata(root, relative_path))
+        except tomllib.TOMLDecodeError as error:
+            raise ManifestError("release package version source is missing or invalid") from error
+        if not isinstance(document, dict):
+            raise ManifestError("release package version source is malformed")
+        return document
+
+    workspace = read_toml("Cargo.toml")
+    workspace_section = workspace.get("workspace")
+    workspace_package = (
+        workspace_section.get("package")
+        if isinstance(workspace_section, dict)
+        else None
+    )
+    if not isinstance(workspace_package, dict):
+        raise ManifestError("Rust workspace package version source is malformed")
+    workspace_version = workspace_package.get("version")
+    if workspace_version != release_line:
+        raise ManifestError("Rust package versions are not synchronized with releaseLine")
+    for package_id, relative_path in _CARGO_PUBLIC_PACKAGE_MANIFESTS.items():
+        crate = read_toml(relative_path)
+        crate_package = crate.get("package")
+        if not isinstance(crate_package, dict):
+            raise ManifestError("Rust package version source is malformed")
+        version_source = crate_package.get("version")
+        if version_source != {"workspace": True}:
+            raise ManifestError("Rust package version does not inherit releaseLine")
+        # The unpublished FFI crate is a C version source, not a C package identity source.
+        if package_id != "c-kmipkit":
+            _require_release_package_identity(
+                packages_by_id, package_id, crate_package.get("name")
+            )
+
+    python = read_toml("bindings/python/pyproject.toml")
+    python_project = python.get("project")
+    if not isinstance(python_project, dict):
+        raise ManifestError("Python package version source is malformed")
+    if python_project.get("version") != release_line:
+        raise ManifestError("Python package version is not synchronized with releaseLine")
+    _require_release_package_identity(
+        packages_by_id, "python-kmipkit", python_project.get("name")
+    )
+
+    try:
+        gradle = _read_release_metadata(root, "bindings/java/build.gradle.kts")
+        pom = ET.fromstring(_read_release_metadata(root, "bindings/java/pom.xml"))
+    except ET.ParseError as error:
+        raise ManifestError("Java package version source is missing or invalid") from error
+    gradle_version = re.search(r'(?m)^\s*version\s*=\s*"([^"\r\n]+)"\s*$', gradle)
+    namespace = pom.tag.partition("}")[0] + "}" if "}" in pom.tag else ""
+    pom_version = pom.find(f"{namespace}version")
+    pom_group = pom.find(f"{namespace}groupId")
+    pom_artifact = pom.find(f"{namespace}artifactId")
+    if (
+        gradle_version is None
+        or gradle_version.group(1) != release_line
+        or pom_version is None
+        or pom_version.text != release_line
+        or pom_group is None
+        or not pom_group.text
+        or pom_group.text != pom_group.text.strip()
+        or pom_artifact is None
+        or not pom_artifact.text
+        or pom_artifact.text != pom_artifact.text.strip()
+    ):
+        raise ManifestError("Java package version or identity metadata is malformed")
+    gradle_group = re.search(r'(?m)^\s*group\s*=\s*"([^"\r\n]+)"\s*$', gradle)
+    if (
+        gradle_group is None
+        or not gradle_group.group(1).strip()
+        or gradle_group.group(1) != gradle_group.group(1).strip()
+        or gradle_group.group(1) != pom_group.text
+    ):
+        raise ManifestError("Java package identity metadata is inconsistent")
+    _require_release_package_identity(
+        packages_by_id,
+        "java-kmipkit",
+        f"{pom_group.text}:{pom_artifact.text}",
+    )
+
+
+def _require_release_package_identity(
+    packages_by_id: dict[Any, dict[str, Any]],
+    package_id: str,
+    source_identity: Any,
+) -> None:
+    """Require one manifest package name to match its authoritative metadata."""
+    package = packages_by_id.get(package_id)
+    if (
+        not isinstance(package, dict)
+        or not isinstance(source_identity, str)
+        or package.get("packageName") != source_identity
+    ):
+        raise ManifestError("release package identity does not match package metadata")
 
 
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
@@ -1135,6 +1478,29 @@ def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> se
     return set(values)
 
 
+def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -> None:
+    """Validate the complete ordered C layout before emitting a fixed-width value."""
+    fields = c_type.get("fields", [])
+    field_names = [field["name"] for field in fields]
+    if len(field_names) != len(set(field_names)):
+        raise ManifestError("C value type contains duplicate field names")
+    if fields and c_type["kind"] != "fixed-width-value":
+        raise ManifestError("only fixed-width C values may declare fields")
+    if c_type.get("versioned") and fields and [
+        (field["name"], field["type"]) for field in fields[:2]
+    ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
+        raise ManifestError("versioned C value must begin with its size and ABI version")
+    for field in fields:
+        if field["name"] in _C_FAMILY_KEYWORDS:
+            raise ManifestError("C or C++ keyword cannot be used as a fixed-width C field name")
+        if not _is_c_layout_field_name(field["name"]):
+            raise ManifestError("invalid fixed-width C field name")
+        _rust_identifier(field["name"])
+        base_type, _ = _c_field_base_and_pointer_count(field["type"])
+        if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
+            raise ManifestError("C value field references an unknown type")
+
+
 def _validate_references(manifest: dict[str, Any]) -> None:
     root_requirements = set(manifest["requirementIds"])
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
@@ -1142,6 +1508,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     _require_unique(manifest["functions"], "id", "function IDs")
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
+    _ordered_approved_c_type_layouts(manifest)
     if "publicDeclarations" in manifest:
         declarations_by_path = {
             (record["packageId"], record["exportName"]): record
@@ -1165,7 +1532,13 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         raise ManifestError(
                             "error category does not resolve to its canonical language export"
                         )
+    excluded_c_functions = [
+        exclusion["cFunction"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("cFunction") is not None
+    ]
     c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
+    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -1178,9 +1551,17 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     for record in [*manifest["types"], *manifest["functions"]]:
         if any(identifier not in root_requirements for identifier in record["requirementIds"]):
             raise ManifestError("declaration references an unknown requirement ID")
+    requirement_bearing_records = [
+        *manifest.get("capabilities", []),
+        *manifest.get("apiLevels", []),
+    ]
+    for record in requirement_bearing_records:
+        if any(identifier not in root_requirements for identifier in record["requirementIds"]):
+            raise ManifestError("manifest record references an unknown requirement ID")
     requirement_lists = [
         manifest["requirementIds"],
         *(record["requirementIds"] for record in [*manifest["types"], *manifest["functions"]]),
+        *(record["requirementIds"] for record in requirement_bearing_records),
     ]
     if any(identifiers != sorted(set(identifiers)) for identifiers in requirement_lists):
         raise ManifestError("requirement IDs must be unique and lexicographically sorted")
@@ -1193,6 +1574,9 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     }
+    c_type_names = {record["c"]["name"] for record in manifest["types"]}
+    for type_record in manifest["types"]:
+        _validate_c_value_layout(type_record["c"], c_type_names)
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -1212,6 +1596,93 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].rstrip("*").strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function handle parameter references an unknown opaque type")
+            elif param["kind"] == "consumed-handle-slot":
+                handle_name = param["handleType"]
+                if handle_name not in c_handle_names:
+                    raise ManifestError("function consumed handle slot references an unknown opaque type")
+                if param["type"] != f"{handle_name} **":
+                    raise ManifestError("function consumed handle slot does not match its opaque type")
+            elif param["kind"] == "input-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function input value pointer references an unknown fixed-width type")
+                if param["type"] != f"const {value_name} *" or param["ownership"] != "borrowed":
+                    raise ManifestError("function input value pointer does not match its borrowed const layout")
+            elif param["kind"] == "output-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function output value pointer references an unknown fixed-width type")
+                if param["type"] != f"{value_name} *":
+                    raise ManifestError("function output value pointer does not match its fixed-width type")
+            elif param["kind"] == "error-output":
+                value_name = param["valueType"]
+                if value_name not in c_handle_names:
+                    raise ManifestError("function error output references an unknown opaque handle")
+                if param["type"] != f"{value_name} **":
+                    raise ManifestError("function error output pointer does not match its opaque handle")
+            elif param["kind"] == "output-scalar-pointer":
+                if param["type"] != f"{param['valueType']} *":
+                    raise ManifestError("function scalar output pointer does not match its fixed-width type")
+            elif param["kind"] == "versioned-value-pointer":
+                value_name = param["type"].removeprefix("const ").removesuffix(" *")
+                value_record = next(
+                    (item["c"] for item in manifest["types"] if item["c"]["name"] == value_name),
+                    None,
+                )
+                carrier = next(
+                    (item for item in _ordered_approved_c_type_layouts(manifest) if item["name"] == value_name),
+                    None,
+                )
+                if not any(
+                    value is not None
+                    and value.get("kind") == "fixed-width-value"
+                    and value.get("versioned")
+                    for value in (value_record, carrier)
+                ):
+                    raise ManifestError("function versioned value pointer references an unknown versioned layout")
+                expected_const = param["direction"] == "input"
+                if param["type"] != f"{'const ' if expected_const else ''}{value_name} *":
+                    raise ManifestError("function versioned value pointer direction has the wrong const qualification")
+                if param["ownership"] != ("borrowed" if expected_const else "none"):
+                    raise ManifestError("function versioned value pointer direction has the wrong ownership")
             elif param["kind"] == "handle-array":
                 handle_name = param["handleType"]
                 if handle_name not in c_handle_names:
@@ -1221,11 +1692,34 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 count = param_by_name.get(param["countParameter"])
                 if count is None or count["kind"] != "scalar" or count["type"] != "uint64_t":
                     raise ManifestError("function handle array count must name a uint64_t scalar parameter")
+            elif param["kind"] == "input-array":
+                element_type = param["elementType"]
+                supported_elements = {
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "kmipkit_byte_span_v1_t",
+                }
+                if element_type not in supported_elements:
+                    raise ManifestError("function input array references an unsupported element type")
+                if param["type"] != f"const {element_type} *" or param["ownership"] != "borrowed":
+                    raise ManifestError("function input array must match its borrowed const element layout")
+                count = param_by_name.get(param["countParameter"])
+                if count is None or count["kind"] != "scalar" or count["type"] != "uint64_t":
+                    raise ManifestError("function input array count must name a uint64_t scalar parameter")
             elif param["kind"] == "output" and "**" in param["type"]:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
-        if any(parameter["kind"] in {"handle", "handle-array"} for parameter in params):
+        if any(
+            parameter["kind"] in {"handle", "handle-array", "input-array", "consumed-handle-slot"}
+            for parameter in params
+        ):
             if any(
                 "invalid_input" not in record[language]["errorCategories"]
                 for language in ("c", "java", "python")
@@ -1239,6 +1733,40 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 raise ManifestError("Java and Python Enumeration/Interval constructors must map invalid_input")
         if record["id"] == "ttlv_value_boolean" and "invalid_input" not in record["c"]["errorCategories"]:
             raise ManifestError("C Boolean construction must map invalid_input")
+
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None:
+            continue
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or c_function.get("symbol") != exclusion.get("exportName")
+            or not set(c_function.get("errorCategories", [])) <= error_ids
+        ):
+            raise ManifestError("C-only excluded function does not match its exact C export")
+        parameters = c_function.get("parameters", [])
+        names = [parameter["name"] for parameter in parameters]
+        if len(set(names)) != len(names):
+            raise ManifestError("C-only excluded function has duplicate parameter names")
+        for parameter in parameters:
+            if parameter["kind"] == "handle":
+                handle_name = parameter["type"].split()[0].rstrip("*").strip()
+                if handle_name not in c_handle_names:
+                    raise ManifestError("C-only excluded function references an unknown opaque handle")
+            elif parameter["kind"] == "output-value-pointer":
+                value_name = parameter["valueType"]
+                values = [
+                    record["c"]
+                    for record in manifest["types"]
+                    if record["c"]["name"] == value_name
+                ]
+                values.extend(
+                    carrier
+                    for carrier in _ordered_approved_c_type_layouts(manifest)
+                    if carrier["name"] == value_name
+                )
+                if not values or not any(value.get("kind") == "fixed-width-value" for value in values):
+                    raise ManifestError("C-only excluded function output references an unknown value layout")
 
     for record in manifest["types"]:
         if record["kind"] != "enum":
@@ -1279,6 +1807,163 @@ def _c_declaration(function: dict[str, Any]) -> str:
     return f"{function['c']['returnType']} {function['c']['symbol']}({arguments});"
 
 
+def _c_value_layout_is_complete(
+    declaration: dict[str, Any],
+    limits: list[dict[str, Any]],
+    declared_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> bool:
+    c_type = declaration["c"]
+    name = c_type["name"]
+    fields = c_type.get("fields", [])
+    expected = (
+        [f"{name}.{field['name']}" for field in fields]
+        if fields
+        else [f"{name}.{limit['cField']}" for limit in limits]
+    )
+    return include_blocked or all(field_name in declared_fields for field_name in expected)
+
+
+def _c_field_base_and_pointer_count(c_type: str) -> tuple[str, int]:
+    match = re.fullmatch(r"(?:const\s+)?([A-Za-z_][A-Za-z0-9_]*)(?:\s*(\*+))?", c_type)
+    if match is None:
+        raise ManifestError("C value field type cannot be represented in a public layout")
+    base_type, pointers = match.groups()
+    return base_type, len(pointers) if pointers else 0
+
+
+def _is_c_layout_field_name(value: Any) -> bool:
+    """Return whether a C/C++ header field name is syntactically safe and unreserved."""
+    return (
+        isinstance(value, str)
+        and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", value) is not None
+        and "__" not in value
+        and value not in _C_FAMILY_KEYWORDS
+    )
+
+
+def _validate_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> None:
+    declarations = manifest["types"]
+    types_by_name = {record["c"]["name"]: record for record in declarations}
+    all_fields_ready = include_blocked or ready_c_exports is None
+
+    def type_is_ready(name: str) -> bool:
+        return ready_c_exports is None or name in ready_c_exports
+
+    def layout_is_complete(record: dict[str, Any]) -> bool:
+        return _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+
+    for record in declarations:
+        c_type = record["c"]
+        if c_type["kind"] != "fixed-width-value" or not type_is_ready(c_type["name"]):
+            continue
+        if not c_type.get("fields") or not layout_is_complete(record):
+            continue
+        for field in c_type["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            if base_type in _C_INTEGER_TYPES:
+                continue
+            target = types_by_name.get(base_type)
+            if target is None or not type_is_ready(base_type):
+                raise ManifestError("ready C value references a blocked C type")
+            target_c_type = target["c"]
+            if target_c_type["kind"] == "opaque-handle" and pointer_count == 0:
+                raise ManifestError("opaque C handle cannot be embedded by value")
+            if (
+                target_c_type["kind"] == "fixed-width-value"
+                and pointer_count == 0
+                and not layout_is_complete(target)
+            ):
+                raise ManifestError("ready C value references an incomplete C type by value")
+
+    for function in manifest["functions"]:
+        c_function = function["c"]
+        if ready_c_exports is not None and c_function["symbol"] not in ready_c_exports:
+            continue
+        signature_types = [c_function["returnType"]]
+        signature_types.extend(parameter["type"] for parameter in c_function["parameters"])
+        for signature_type in signature_types:
+            for name, record in types_by_name.items():
+                match = re.search(
+                    rf"(?:const\s+)?{re.escape(name)}(?:\s*(\*+))?(?![A-Za-z0-9_])",
+                    signature_type,
+                )
+                if match is None:
+                    continue
+                if not type_is_ready(name):
+                    raise ManifestError("ready C function references a blocked C type")
+                if (
+                    record["c"]["kind"] == "fixed-width-value"
+                    and not layout_is_complete(record)
+                    and not match.group(1)
+                ):
+                    raise ManifestError("ready C function uses an incomplete C value by value")
+
+
+def _ordered_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> list[dict[str, Any]]:
+    all_fields_ready = include_blocked or ready_c_exports is None
+    records = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value"
+        and record["c"].get("fields")
+        and (ready_c_exports is None or record["c"]["name"] in ready_c_exports)
+        and _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+    }
+    types_by_name = {record["c"]["name"]: record for record in manifest["types"]}
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("C fixed-width value layouts contain a by-value cycle")
+        visiting.add(name)
+        record = records[name]
+        for field in record["c"]["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            target = types_by_name.get(base_type)
+            if (
+                pointer_count == 0
+                and target is not None
+                and target["c"]["kind"] == "fixed-width-value"
+                and base_type in records
+            ):
+                visit(base_type)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(record)
+
+    for name in records:
+        visit(name)
+    return ordered
+
+
 def _rust_c_type(c_type: str) -> str:
     match = re.fullmatch(r"(const\s+)?([A-Za-z_][A-Za-z0-9_]*)(\s*\*+)?", c_type)
     if match is None:
@@ -1288,13 +1973,15 @@ def _rust_c_type(c_type: str) -> str:
     pointer_count = stars.count("*") if stars else 0
     if pointer_count == 0:
         return rust_base
-    pointer = "*const" if const and pointer_count == 1 else "*mut"
-    return " ".join([pointer] * pointer_count + [rust_base])
+    pointer_kinds = ["*mut"] * pointer_count
+    if const:
+        pointer_kinds[-1] = "*const"
+    return " ".join([*pointer_kinds, rust_base])
 
 
 def _rust_identifier(name: str) -> str:
     if name in _RUST_RAW_IDENTIFIER_FORBIDDEN:
-        raise ManifestError("C parameter name cannot be represented as a Rust FFI identifier")
+        raise ManifestError("name cannot be represented as a Rust FFI identifier")
     return f"r#{name}" if name in _RUST_2024_KEYWORDS else name
 
 
@@ -1322,12 +2009,26 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
                 lines.append(f"pub const {const_name}: {name} = {value['value']};")
         elif c_type["kind"] == "fixed-width-value":
             lines.extend(["#[repr(C)]", f"pub struct {name} {{"])
-            if c_type.get("versioned"):
-                lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
-            for limit in manifest["limits"]:
-                lines.append(f"    pub {limit['cField']}: u64,")
+            fields = c_type.get("fields")
+            if fields:
+                for field in fields:
+                    lines.append(
+                        f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
+                    )
+            else:
+                if c_type.get("versioned"):
+                    lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
+                for limit in manifest["limits"]:
+                    lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
         lines.append("")
+    for c_type in _ordered_approved_c_type_layouts(manifest):
+        lines.extend(["#[repr(C)]", f"pub struct {c_type['name']} {{"])
+        for field in c_type["fields"]:
+            lines.append(
+                f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
+            )
+        lines.extend(["}", ""])
     lines.extend(["unsafe extern \"C\" {"])
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1363,6 +2064,137 @@ def _ready_c_export_names(manifest: dict[str, Any]) -> set[str] | None:
     return names
 
 
+def _ordered_approved_c_type_layouts(
+    manifest: dict[str, Any],
+    *,
+    include_blocked: bool = False,
+) -> list[dict[str, Any]]:
+    """Validate and order approved C-only carrier layouts by value dependencies."""
+    layouts: dict[str, dict[str, Any]] = {}
+    for exclusion in manifest.get("approvedExclusions", []):
+        if not isinstance(exclusion, dict):
+            raise ManifestError("manifest approved exclusion is malformed")
+        c_type = exclusion.get("cType")
+        if c_type is None:
+            continue
+        if not isinstance(c_type, dict):
+            raise ManifestError("approved C carrier layout is malformed")
+        name = c_type.get("name")
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or name != exclusion.get("exportName")
+            or not isinstance(name, str)
+            or re.fullmatch(r"kmipkit_[a-z0-9_]+_t", name) is None
+            or c_type.get("kind") != "fixed-width-value"
+        ):
+            raise ManifestError("approved C carrier layout must match its excluded C export")
+        if name in layouts:
+            raise ManifestError("manifest contains a duplicate approved C carrier layout")
+        layouts[name] = c_type
+
+    regular_types = {
+        record.get("c", {}).get("name"): record
+        for record in manifest.get("types", [])
+        if isinstance(record.get("c", {}).get("name"), str)
+    }
+    if set(layouts) & set(regular_types):
+        raise ManifestError("approved C carrier layout duplicates a declared C type")
+    ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
+    declared_c_fields = {
+        declaration.get("exportName")
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "field"
+        and (
+            ready_c_exports is None
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
+    }
+    declared_c_fields.update(
+        exclusion.get("exportName")
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
+
+    def regular_type_is_complete(name: str, record: dict[str, Any]) -> bool:
+        c_type = record.get("c", {})
+        if c_type.get("kind") == "enum":
+            return True
+        if c_type.get("kind") != "fixed-width-value":
+            return False
+        fields = c_type.get("fields") or [
+            {"name": limit.get("cField")}
+            for limit in manifest.get("limits", [])
+        ]
+        expected_fields = [f"{name}.{field['name']}" for field in fields]
+        return bool(expected_fields) and all(
+            field_name in declared_c_fields
+            and (ready_c_exports is None or field_name in ready_c_exports)
+            for field_name in expected_fields
+        )
+
+    by_value_dependencies: dict[str, set[str]] = {name: set() for name in layouts}
+    for name, c_type in layouts.items():
+        fields = c_type.get("fields")
+        if not isinstance(fields, list) or not fields:
+            raise ManifestError("approved C carrier layout must contain fields")
+        field_names: set[str] = set()
+        for field in fields:
+            if not isinstance(field, dict):
+                raise ManifestError("approved C carrier field is malformed")
+            field_name = field.get("name")
+            if (
+                not _is_c_layout_field_name(field_name)
+                or field_name in field_names
+            ):
+                raise ManifestError(
+                    "approved C carrier layout contains duplicate, invalid, or reserved fields"
+                )
+            field_names.add(field_name)
+            field_type = field.get("type")
+            match = (
+                _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field_type)
+                if isinstance(field_type, str)
+                else None
+            )
+            if match is None:
+                raise ManifestError("approved C carrier field has an unsafe or unsupported C type")
+            base_type = match.group("base")
+            if not base_type.startswith("kmipkit_"):
+                continue
+            if base_type in layouts:
+                if not match.group("pointer"):
+                    by_value_dependencies[name].add(base_type)
+                continue
+            referenced = regular_types.get(base_type)
+            if referenced is None:
+                raise ManifestError("approved C carrier field references an unknown KMIPKit type")
+            if not match.group("pointer") and referenced.get("c", {}).get("kind") == "opaque-handle":
+                raise ManifestError("approved C carrier cannot contain an opaque handle by value")
+            if not match.group("pointer") and not regular_type_is_complete(base_type, referenced):
+                raise ManifestError("approved C carrier contains an incomplete declared value by value")
+
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("approved C carrier layouts contain a by-value dependency cycle")
+        visiting.add(name)
+        for dependency in sorted(by_value_dependencies[name]):
+            visit(dependency)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(layouts[name])
+
+    for name in layouts:
+        visit(name)
+    return ordered
+
+
 def render_c_header(
     manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
 ) -> str:
@@ -1382,46 +2214,125 @@ def render_c_header(
         for declaration in manifest.get("publicDeclarations", [])
         if declaration.get("packageId") == "c-kmipkit"
         and declaration.get("kind") == "field"
+        and (
+            include_blocked
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
     }
+    declared_c_fields.update(
+        exclusion["exportName"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
+    _validate_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    )
     emitted: set[str] = set()
+    # Enums must be complete before value layouts can refer to them.
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         name = c_type["name"]
         if ready_c_exports is not None and name not in ready_c_exports:
             continue
-        if name in emitted:
+        if c_type["kind"] != "enum" or name in emitted:
             continue
         emitted.add(name)
-        if c_type["kind"] == "opaque-handle":
-            lines.append(f"typedef struct {name} {name};")
-        elif c_type["kind"] == "enum":
-            lines.append(f"typedef {c_type['underlyingType']} {name};")
-            prefix = name[:-2].upper()
-            for value in declaration["enumRepresentation"]["values"]:
-                const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
-                if ready_c_exports is not None and const_name not in ready_c_exports:
-                    continue
-                lines.append(f"#define {const_name} (({name}){value['value']})")
-        elif c_type["kind"] == "fixed-width-value":
-            ready_fields = [
-                limit["cField"]
-                for limit in manifest["limits"]
-                if f"{name}.{limit['cField']}" in declared_c_fields
-                and (
-                    ready_c_exports is None
-                    or f"{name}.{limit['cField']}" in ready_c_exports
-                )
-            ]
-            if not ready_fields:
-                lines.append(f"typedef struct {name} {name};")
-                lines.append("")
+        lines.append(f"typedef {c_type['underlyingType']} {name};")
+        prefix = name[:-2].upper()
+        for value in declaration["enumRepresentation"]["values"]:
+            const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
+            if ready_c_exports is not None and const_name not in ready_c_exports:
                 continue
-            lines.append("typedef struct {")
-            if c_type.get("versioned"):
-                lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
-            for field in ready_fields:
-                lines.append(f"    uint64_t {field};")
-            lines.append(f"}} {name};")
+            lines.append(f"#define {const_name} (({name}){value['value']})")
+        lines.append("")
+
+    # Forward declarations make pointer members independent of manifest order.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        if c_type["kind"] == "opaque-handle" or (
+            c_type["kind"] == "fixed-width-value" and c_type.get("fields")
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            emitted.add(name)
+    if emitted:
+        lines.append("")
+
+    c_layouts = _ordered_approved_c_type_layouts(
+        manifest,
+        include_blocked=include_blocked,
+    )
+    for c_type in c_layouts:
+        lines.append(f"typedef struct {c_type['name']} {c_type['name']};")
+    if c_layouts:
+        lines.append("")
+
+    # Preserve the existing generated layout for limit records without explicit fields.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if (
+            c_type["kind"] != "fixed-width-value"
+            or c_type.get("fields")
+            or name in emitted
+            or (ready_c_exports is not None and name not in ready_c_exports)
+        ):
+            continue
+        emitted.add(name)
+        if not _c_value_layout_is_complete(
+            declaration,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=include_blocked or ready_c_exports is None,
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            lines.append("")
+            continue
+        lines.append("typedef struct {")
+        if c_type.get("versioned"):
+            lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
+        for limit in manifest["limits"]:
+            lines.append(f"    uint64_t {limit['cField']};")
+        lines.append(f"}} {name};")
+        lines.append("")
+
+    for declaration in _ordered_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    ):
+        c_type = declaration["c"]
+        lines.append(f"struct {c_type['name']} {{")
+        lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
+        lines.extend(["};", ""])
+    if ready_c_exports is not None:
+        carrier_layout_names = {layout["name"] for layout in c_layouts}
+        emitted_type_names = {
+            declaration["c"]["name"]
+            for declaration in manifest["types"]
+            if declaration["c"]["name"] in ready_c_exports
+        }
+        for c_type in c_layouts:
+            for field in c_type["fields"]:
+                match = _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field["type"])
+                base_type = match.group("base") if match is not None else ""
+                if (
+                    base_type.startswith("kmipkit_")
+                    and base_type not in emitted_type_names
+                    and base_type not in carrier_layout_names
+                ):
+                    raise ManifestError("approved C carrier references a blocked C type")
+    for c_type in c_layouts:
+        lines.append(f"struct {c_type['name']} {{")
+        for field in c_type["fields"]:
+            lines.append(f"    {field['type']} {field['name']};")
+        lines.append("};")
         lines.append("")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1454,16 +2365,30 @@ def render_c_header(
             lines.append(" */")
         requirement_comment = ", ".join(function["requirementIds"])
         if any(
-            parameter["kind"] == "handle-array" and parameter["nullable"]
+            parameter["kind"] in {"handle-array", "input-array"} and parameter["nullable"]
             for parameter in function["c"]["parameters"]
         ):
             lines.extend([
-                "/* For nullable handle arrays, NULL is valid only when the linked count is zero.",
+                "/* For nullable arrays, NULL is valid only when the linked count is zero.",
                 " * Implementations must check the count before reading elements and return",
                 " * invalid_input when a NULL array has a nonzero count. */",
             ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None or (
+            ready_c_exports is not None
+            and c_function["symbol"] not in ready_c_exports
+        ):
+            continue
+        documentation = c_function.get("documentation", [])
+        if documentation:
+            lines.append("/* " + documentation[0])
+            lines.extend(" * " + line for line in documentation[1:])
+            lines.append(" */")
+        lines.append(f"/* Approved exact C-only exclusion: {exclusion['exportName']} */")
+        lines.append(_c_declaration({"c": c_function}))
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
 
@@ -1489,6 +2414,7 @@ def _encode_generated_text(value: str) -> bytes:
 def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
     """Preserve one full-manifest function in the original registry-slice shape."""
     projected = deepcopy(record)
+    projected.get("c", {}).pop("documentation", None)
     projected["requirementIds"] = [
         requirement for requirement in projected["requirementIds"]
         if requirement.startswith("KMIPKIT-0012-")
@@ -1654,19 +2580,30 @@ def render_public_rust_api(projection: dict[str, Any]) -> str:
 
 def render_public_java_api(projection: dict[str, Any]) -> str:
     declarations = _dump_json(_language_declarations(projection, "java"))
-    escaped = declarations.replace("\\", "\\\\").replace('"', '\\"')
-    return "\n".join([
+    # Keep each Java constant-pool UTF-8 entry below the class-file limit.
+    # Eight thousand Unicode code points remain below 48 KiB even when every
+    # code point is encoded as a surrogate pair in modified UTF-8.
+    chunk_size = 8_000
+    chunks = [
+        declarations[offset:offset + chunk_size]
+        for offset in range(0, len(declarations), chunk_size)
+    ] or [""]
+    lines = [
         "// @generated by tools/api_manifest/generate.py; do not edit.",
         "package org.kmipkit.generated;",
         "",
         "/** Generated metadata for the approved public Java declarations. */",
         "public final class PublicApi {",
         "    public static final int FORMAT_VERSION = 2;",
-        f'    public static final String DECLARATIONS_JSON = "{escaped}";',
+        "    private static final String[] DECLARATIONS_JSON_PARTS = {",
+        *(f"        {_java_string_literal(chunk)}," for chunk in chunks),
+        "    };",
+        '    public static final String DECLARATIONS_JSON = String.join("", DECLARATIONS_JSON_PARTS);',
         "    private PublicApi() {}",
         "}",
         "",
-    ])
+    ]
+    return "\n".join(lines)
 
 
 def _java_string_literal(value: str) -> str:
@@ -1898,7 +2835,7 @@ def _atomic_write(destination: Path, data: bytes, root: Path, relative: str) -> 
                 pass
 
 
-def _run(root_path: Path, write: bool) -> int:
+def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int:
     try:
         root = root_path.resolve(strict=True)
         manifest = _load_json(root, MANIFEST_PATH, MAX_MANIFEST_BYTES)
@@ -1909,8 +2846,12 @@ def _run(root_path: Path, write: bool) -> int:
             catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
             if not isinstance(catalog, dict):
                 raise ManifestError("normative catalog root must be a JSON object")
-            _validate_v2_manifest(manifest, schema, catalog, root)
+            _validate_v2_manifest(
+                manifest, schema, catalog, root, require_complete=require_complete
+            )
         else:
+            if require_complete:
+                raise ManifestError("release validation requires a v2 public API manifest")
             _validate_schema(manifest, schema)
             _validate_references(manifest)
         outputs = render_outputs(manifest)
@@ -1948,8 +2889,19 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true", help="write the six generated API files")
     mode.add_argument("--check", action="store_true", help="compare generated files without writing")
+    parser.add_argument(
+        "--require-complete",
+        action="store_true",
+        help="require release-ready API mappings and synchronized packages (check mode only)",
+    )
     arguments = parser.parse_args(argv)
-    return _run(arguments.repo_root, arguments.write)
+    if arguments.require_complete and not arguments.check:
+        parser.error("--require-complete can only be used with --check")
+    return _run(
+        arguments.repo_root,
+        arguments.write,
+        require_complete=arguments.require_complete,
+    )
 
 
 if __name__ == "__main__":

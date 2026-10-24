@@ -156,6 +156,62 @@ fn inspect_export_without_formatting_material(response: &ClientBatchItemResponse
 fn main() {}
 ```
 
+## Export API across languages
+
+All four language surfaces use the same KMIP 2.1 §6.1.18 Table 217 choices.
+The identifier, Key Format Type, Key Wrap Type, Key Compression Type, and Key
+Wrapping Specification are optional; enum selectors retain unknown raw values.
+
+| Language | Create the request | Inspect the typed result |
+|---|---|---|
+| Rust | `Client::export(ExportRequest)` | `ClientBatchOutcome::Export` and `ExportResponse` |
+| C | `kmipkit_client_batch_item_export` | `kmipkit_client_batch_item_response_export` and `kmipkit_client_batch_item_response_export_ttlv` |
+| Java | `ClientBatchItem.export(...)` | `ClientBatchItemResult.exportResponse()` and `ExportResponse.close()` |
+| Python | `client_batch_item_export(...)` | `BatchItemResult.export_response` and `ExportResponse.close()` |
+
+Read the batch item's `Result Status` before using successful payload fields.
+A KMIP Failure remains a typed Export result and retains its complete ordered
+response TTLV. On Success, Table 218 requires Object Type, Unique Identifier,
+Attributes, and Any Object. Object Type is exposed as a raw unsigned value,
+Unique Identifier retains its wire type, and Attributes and Any Object remain
+generic TTLV. The C, Java, and Python Any Object value is a one-item Structure
+whose child retains the original polymorphic item tag and order.
+
+Close caller-owned response copies when finished. KMIPKit zeroizes memory it
+owns, but Java and Python runtimes may retain external copies outside that
+control. Do not format, log, or place object data, Attributes, or raw response
+TTLV in errors.
+
+## Import API across languages
+
+Import follows OASIS KMIP Specification v2.1 §6.1.25, Tables 238–240. The
+caller supplies the required Unique Identifier, raw Object Type, Attributes,
+and one complete Any Object item. `Replace Existing` is omitted until selected
+explicitly, so an explicit `false` remains distinct from absence. For wrapped
+key objects, pass the raw Key Wrap Type when the object contains Key Wrapping
+Data. KMIPKit preserves the supplied representation and performs no unwrap or
+local cryptographic operation.
+
+Any Object is built with the generic TTLV value model. Big Integer values are
+available in Rust, C, Java, and Python; C callers can use
+`kmipkit_ttlv_value_big_integer(limits, bytes, length, &value)`. The public C
+header documents ownership transfer for builders that accept opaque handles.
+
+| Language | Create the request | Inspect a successful result |
+|---|---|---|
+| Rust | `ImportRequest::new(...)` and `Client::import(...)` | `ClientBatchOutcome::Import` and `ImportResponse` |
+| C | `kmipkit_client_batch_item_import` | `kmipkit_client_batch_item_response_import` and `kmipkit_client_batch_item_response_import_ttlv` |
+| Java | `ClientBatchItem.importObject(...)` | `ClientBatchItemResult.importResponse()` and `ImportResponse.close()` |
+| Python | `client_batch_item_import(...)` | `BatchItemResult.import_response` and `ImportResponse.close()` |
+
+On Success, the typed result exposes the resulting Unique Identifier and an
+owned copy of the complete ordered response TTLV, including unknown fields.
+Pending and Failure remain common batch outcomes and do not expose a success
+response TTLV. Read `Result Status` before using typed success data. Each Import
+operation is sent once; KMIPKit does not retry, poll, or issue a follow-up
+operation. Close response copies when finished. KMIPKit zeroizes memory it
+owns; Java and Python runtimes may retain external copies outside that control.
+
 The caller supplies exact identifier occurrences and their known Split Key
 thresholds. KMIPKit requires one context per occurrence and checks that the
 number of entries, including repeated identifiers, meets the largest supplied
@@ -177,3 +233,44 @@ Every method returns the server result from one request. A local validation
 failure reports `NotSent`; transport failures retain their strongest delivery
 state. Pending results remain explicit when the caller enables asynchronous
 handling; KMIPKit does not poll automatically.
+
+## Join Split Key API across languages
+
+Join Split Key follows OASIS KMIP Specification v2.1 §6.1.27, Tables 244–246.
+Each reference pairs one Unique Identifier occurrence with that split key's
+caller-known Split Key Threshold. Create one reference per transmitted entry,
+including repeated identifiers. Before sending, KMIPKit requires at least one
+reference and checks that the entry count is greater than or equal to the
+largest supplied threshold. Thresholds stay local and are never serialized or
+looked up remotely; different entries may have different thresholds. KMIPKit
+does not combine key material locally.
+
+The C, Java, and Python bindings cap the combined UTF-8 text identifier bytes
+in one Join Split Key request at 16 MiB before copying them into the native
+request. Repeated occurrences each count toward this limit; an over-limit call
+returns a resource-limit error.
+
+Table 244 requires Object Type and one or more Unique Identifier entries. The
+request preserves their order and repetitions. Secret Data Type, Attributes,
+and Protection Storage Masks are optional. On Success, Table 245 requires the
+resulting Unique Identifier. Failure and Pending remain common batch outcomes;
+read Result Status and retain the shared result and delivery metadata before
+using successful response fields.
+
+| Language | Pair identifiers and local thresholds | Read a successful result |
+|---|---|---|
+| Rust | `SplitKeyReference::new(identifier).with_split_key_threshold(threshold)` | `ClientBatchOutcome::JoinSplitKey` and `JoinSplitKeyResponse::with_ttlv` |
+| C | Create each opaque value with `kmipkit_split_key_reference_create`; pass the ordered pointer array to `kmipkit_client_batch_item_join_split_key`; release each handle after the call | `kmipkit_client_batch_item_response_join_split_key` and `kmipkit_client_batch_item_response_join_split_key_ttlv` |
+| Java | `new SplitKeyReference(identifier, threshold)` in the ordered list passed to `ClientBatchItem.joinSplitKey(...)`; close each reference | `ClientBatchItemResult.joinSplitKeyResponse()` and `JoinSplitKeyResponse.close()` |
+| Python | `extensions.SplitKeyReference(identifier, threshold)` in the ordered sequence passed to `extensions.client_batch_item_join_split_key(...)`; close each reference | `BatchItemResult.join_split_key_response` and `JoinSplitKeyResponse.close()` |
+
+The C response TTLV accessor returns an independent owned copy of the complete
+ordered response, including unknown fields; release it with
+`kmipkit_ttlv_structure_release`. Java and Python responses own their TTLV
+copies and must be closed. C arrays borrow reference handles only during the
+builder call, while the builder copies identifier and threshold context into
+the request. Java and Python own their reference handles and may retain
+external runtime copies; their runtimes do not promise deterministic
+zeroization of those copies. Avoid logging or formatting identifiers or raw
+response TTLV. These API tests do not claim official fixture, OASIS
+conformance, interoperability, profile support, or certification results.

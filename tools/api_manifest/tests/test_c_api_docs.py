@@ -11,7 +11,7 @@ AUDIT_REPORT = (
     / "specs"
     / "043-public-api-bindings"
     / "reports"
-    / "binding-export-report-2026-10-12.json"
+    / "binding-export-report-2026-10-22.json"
 )
 
 
@@ -22,7 +22,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json",
+            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-22.json",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)
@@ -47,10 +47,51 @@ class CApiDocumentationTests(unittest.TestCase):
                 self.assertEqual(
                     fields[2:5],
                     [
-                        str(counts["observed"]),
-                        str(counts["manifest"]),
-                        str(counts["exactMatches"]),
+                        f"{counts['observed']:,}",
+                        f"{counts['manifest']:,}",
+                        f"{counts['exactMatches']:,}",
                     ],
+                )
+
+    def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        declarations_by_package: dict[str, int] = {}
+        for declaration in manifest["publicDeclarations"]:
+            if (
+                declaration["packageId"] == "c-kmipkit"
+                and declaration["declarationState"] == "blocked"
+                and declaration["kind"] != "c-symbol"
+            ):
+                continue
+            package_id = declaration["packageId"]
+            declarations_by_package[package_id] = (
+                declarations_by_package.get(package_id, 0) + 1
+            )
+
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"], "scanner inventory must be complete")
+                self.assertTrue(
+                    package["matchesManifest"],
+                    f"unreconciled exports for {package['packageId']}: "
+                    f"missing={len(package['missingFromManifest'])}, "
+                    f"stale={len(package['notObserved'])}, "
+                    f"kind={len(package['kindMismatches'])}, "
+                    f"issues={len(package['issues'])}",
+                )
+                self.assertEqual([], package["missingFromManifest"])
+                self.assertEqual([], package["notObserved"])
+                self.assertEqual([], package["kindMismatches"])
+                self.assertEqual([], package["issues"])
+                self.assertEqual(
+                    declarations_by_package[package["packageId"]],
+                    package["counts"]["manifest"],
+                    "checked-in audit report must match the current manifest",
                 )
 
 

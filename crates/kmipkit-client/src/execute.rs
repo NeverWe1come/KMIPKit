@@ -28,8 +28,8 @@ use kmipkit_protocol::{
     LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
-    PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
@@ -40,6 +40,7 @@ use kmipkit_protocol::{
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+use kmipkit_protocol::{Pkcs11Request, Pkcs11Response};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
@@ -879,6 +880,8 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
 const GET_OPERATION: u32 = 0x0000_000A;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
+const QUERY_REQUEST_STRUCTURE_DEPTH: usize = 3;
+const QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH: usize = 4;
 
 /// One closed typed request and its optional Unique Batch Item ID.
 pub struct ClientBatchItem {
@@ -901,9 +904,43 @@ impl ClientBatchItem {
     }
 
     /// Creates a batch item for one typed Query request.
+    ///
+    /// The complete Request Message is checked against the execution codec limits before it is
+    /// encoded or sent.
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::new(ClientRequest::query(request))
+    }
+
+    /// Creates a Query batch item only when its payload fits the supplied codec limits.
+    ///
+    /// The client validates the complete Request Message before encoding or sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free resource-limit error when the Query payload exceeds
+    /// the configured element or message-byte budget, or its request depth exceeds
+    /// the configured structure-depth limit.
+    pub fn query_with_limits(
+        request: QueryRequest,
+        limits: &CodecLimits,
+    ) -> Result<Self, ProtocolError> {
+        if request.functions().is_empty() {
+            return Err(protocol_error(ProtocolErrorKind::InvalidInput));
+        }
+        let (elements, encoded_bytes) = estimate_query_request_limits(&request)?;
+        let required_depth = if request.object_groups().is_some() {
+            QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH
+        } else {
+            QUERY_REQUEST_STRUCTURE_DEPTH
+        };
+        if elements > limits.max_elements()
+            || encoded_bytes > limits.max_message_bytes()
+            || required_depth > limits.max_structure_depth()
+        {
+            return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+        }
+        Ok(Self::query(request))
     }
 
     /// Creates a batch item for one locally validated KMIP 2.1 Register request.
@@ -1001,6 +1038,12 @@ pub struct ClientBatch {
 }
 
 impl ClientBatch {
+    /// Creates an empty typed batch for incremental construction.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self::from_items(std::iter::empty())
+    }
+
     /// Creates a batch with one typed request item.
     #[must_use]
     pub fn new(item: ClientBatchItem) -> Self {
@@ -1260,7 +1303,7 @@ fn read_response_error<E: Error + 'static>(error: E) -> ProtocolError {
 
 struct ResponseValidationError {
     error: ProtocolError,
-    response_ttlv: ClientErrorResponseTtlv,
+    response_ttlv: Option<ClientErrorResponseTtlv>,
 }
 
 fn read_operation_outcome<T, E>(
@@ -1517,6 +1560,71 @@ pub enum ClientOperation {
     Process,
     /// Query outstanding asynchronous requests with a generic response.
     QueryAsyncRequests,
+}
+
+impl ClientOperation {
+    /// Returns the KMIP 2.1 Operation Enumeration from §11.36, Table 470.
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        match self {
+            Self::Activate => 0x12,
+            Self::AddAttribute => 0x0d,
+            Self::AdjustAttribute => 0x30,
+            Self::Archive => 0x15,
+            Self::Cancel => 0x19,
+            Self::Certify => 0x06,
+            Self::Check => 0x09,
+            Self::Create => 0x01,
+            Self::CreateKeyPair => 0x02,
+            Self::CreateSplitKey => 0x28,
+            Self::Decrypt => 0x20,
+            Self::DeleteAttribute => 0x0f,
+            Self::DeriveKey => 0x05,
+            Self::Destroy => 0x14,
+            Self::DiscoverVersions => 0x1e,
+            Self::Encrypt => 0x1f,
+            Self::Export => 0x2b,
+            Self::Get => 0x0a,
+            Self::GetAttributeList => 0x0c,
+            Self::GetAttributes => 0x0b,
+            Self::GetConstraints => 0x38,
+            Self::GetUsageAllocation => 0x11,
+            Self::Hash => 0x27,
+            Self::Import => 0x2a,
+            Self::Interop => 0x34,
+            Self::JoinSplitKey => 0x29,
+            Self::Log => 0x2c,
+            Self::Login => 0x2d,
+            Self::Logout => 0x2e,
+            Self::Locate => 0x08,
+            Self::Mac => 0x23,
+            Self::MacVerify => 0x24,
+            Self::ModifyAttribute => 0x0e,
+            Self::ObtainLease => 0x10,
+            Self::Pkcs11 => 0x33,
+            Self::Ping => 0x3b,
+            Self::Poll => 0x1a,
+            Self::Process => 0x3a,
+            Self::Query => 0x18,
+            Self::QueryAsyncRequests => 0x39,
+            Self::Recertify => 0x07,
+            Self::Recover => 0x16,
+            Self::Register => 0x03,
+            Self::Rekey => 0x04,
+            Self::RekeyKeyPair => 0x1d,
+            Self::ReProvision => 0x35,
+            Self::Revoke => 0x13,
+            Self::RngRetrieve => 0x25,
+            Self::RngSeed => 0x26,
+            Self::SetAttribute => 0x31,
+            Self::SetConstraints => 0x37,
+            Self::SetDefaults => 0x36,
+            Self::Sign => 0x21,
+            Self::SignatureVerify => 0x22,
+            Self::Validate => 0x17,
+            Self::DelegatedLogin => 0x2f,
+        }
+    }
 }
 
 /// A completed or Pending asynchronous operation response owned by the client.
@@ -2540,14 +2648,14 @@ impl ClientBatchOutcome {
             | Self::Interop(_)
             | Self::Log(_)
             | Self::Validate(_)
-            | Self::Pkcs11(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
             | Self::GetUsageAllocation(_)
             | Self::RngRetrieve(_)
             | Self::RngSeed(_)
-            | Self::Query(_) => None,
+            | Self::Query(_)
+            | Self::Pkcs11(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -3511,6 +3619,22 @@ impl ClientBatchItemResponse {
         self.unique_batch_item_id.as_deref()
     }
 
+    /// Lends the successful Discover Versions response list, when this item
+    /// contains one.
+    ///
+    /// The returned slice preserves the server's source order and repeated
+    /// Protocol Version values. `Some(&[])` is a successful empty response;
+    /// Pending results, non-success results, and other operations return
+    /// `None`.
+    #[must_use]
+    pub fn discover_versions_supported_versions(
+        &self,
+    ) -> Option<&[kmipkit_protocol::ProtocolVersion]> {
+        self.outcome
+            .discover_versions_response()?
+            .supported_versions()
+    }
+
     /// Returns the typed item outcome.
     #[must_use]
     pub const fn outcome(&self) -> &ClientBatchOutcome {
@@ -3771,6 +3895,8 @@ impl Client {
             )
         })?;
         validate_attribute_mutation_policy(&batch)?;
+        validate_query_batch_limits(&batch, limits)
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
 
         let request_identities = batch
             .items
@@ -3792,12 +3918,13 @@ impl Client {
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|failure| {
-            ClientError::protocol_response(
+        .map_err(|failure| match failure.response_ttlv {
+            Some(response_ttlv) => ClientError::protocol_response(
                 failure.error,
                 response_delivery_state,
-                failure.response_ttlv,
-            )
+                response_ttlv,
+            ),
+            None => ClientError::protocol(failure.error, response_delivery_state),
         })
     }
 
@@ -3884,6 +4011,11 @@ impl Client {
         .ok_or_else(|| {
             guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
         })?;
+        if crate::usage_allocation::is_id_placeholder(identifier) {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
         if identifier != context.unique_identifier() {
             return Err(guard_validation_error(
                 UsageAllocationContextError::MismatchedUniqueIdentifier,
@@ -3896,6 +4028,103 @@ impl Client {
             batch = batch.with_asynchronous_indicator(indicator);
         }
         match self.execute_one_typed_batch(batch, limits, &RequestOptions::default()) {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                context.settle_after_error(cost, error.delivery_state());
+                Err(error)
+            }
+        }
+    }
+
+    /// Executes one typed protection batch item through the local Usage
+    /// Allocation guard and returns the standard one-item batch response.
+    ///
+    /// The original item is consumed intact, so its Unique Batch Item ID and
+    /// Message Extensions are preserved. Only typed Encrypt, MAC, and Sign
+    /// requests are accepted.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with delivery evidence.
+    pub fn execute_guarded_protection_item(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_guarded_protection_item_inner(context, item, cost, None, limits)
+    }
+
+    /// Executes one guarded typed protection batch item with an explicit
+    /// Asynchronous Indicator, preserving its item metadata.
+    ///
+    /// Pending retains the reservation and never triggers Poll automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with delivery evidence.
+    pub fn execute_guarded_protection_item_with_asynchronous_indicator(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        asynchronous_indicator: u32,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_guarded_protection_item_inner(
+            context,
+            item,
+            cost,
+            Some(asynchronous_indicator),
+            limits,
+        )
+    }
+
+    fn execute_guarded_protection_item_inner(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let identifier = match item.request() {
+            ClientRequest::Encrypt(request) => request.unique_identifier(),
+            ClientRequest::Mac(request) => request.unique_identifier(),
+            ClientRequest::Sign(request) => request.unique_identifier(),
+            _ => {
+                return Err(guard_validation_error(
+                    UsageAllocationContextError::UnsupportedOperation,
+                ));
+            }
+        }
+        .ok_or_else(|| {
+            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
+        })?;
+        if crate::usage_allocation::is_id_placeholder(identifier) {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        if identifier != context.unique_identifier() {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        context.reserve(cost).map_err(guard_validation_error)?;
+
+        let mut batch = ClientBatch::new(item);
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match self.execute_with_options(batch, limits, &RequestOptions::default()) {
             Ok(response) => Ok(response),
             Err(error) => {
                 context.settle_after_error(cost, error.delivery_state());
@@ -5772,7 +6001,6 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Interop(_)
         | ClientRequest::Log(_)
         | ClientRequest::Validate(_)
-        | ClientRequest::Pkcs11(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::SetDefaults(_)
@@ -5790,7 +6018,8 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Sign(_)
         | ClientRequest::SignatureVerify(_)
         | ClientRequest::RngRetrieve(_)
-        | ClientRequest::RngSeed(_) => false,
+        | ClientRequest::RngSeed(_)
+        | ClientRequest::Pkcs11(_) => false,
     }
 }
 
@@ -6301,9 +6530,14 @@ fn validate_response(
         #[cfg(test)]
         pending_owner_observer,
     );
-    result.map_err(|error| ResponseValidationError {
-        error,
-        response_ttlv: ClientErrorResponseTtlv::new(response),
+    result.map_err(|error| {
+        let response_ttlv = error
+            .retains_generic_response()
+            .then(|| ClientErrorResponseTtlv::new(response));
+        ResponseValidationError {
+            error,
+            response_ttlv,
+        }
     })
 }
 
@@ -7457,6 +7691,99 @@ fn copy_structure(view: &StructureView<'_>) -> Result<Structure, ProtocolError> 
     Ok(structure)
 }
 
+fn validate_query_batch_limits(
+    batch: &ClientBatch,
+    limits: &CodecLimits,
+) -> Result<(), ProtocolError> {
+    let mut total_elements = 0_usize;
+    let mut total_encoded_bytes = 0_usize;
+    for item in &batch.items {
+        let ClientRequest::Query(request) = &item.request else {
+            continue;
+        };
+        let required_depth = if request.object_groups().is_some() {
+            QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH
+        } else {
+            QUERY_REQUEST_STRUCTURE_DEPTH
+        };
+        if required_depth > limits.max_structure_depth() {
+            return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+        }
+        let (elements, encoded_bytes) = estimate_query_request_limits(request)?;
+        total_elements = total_elements
+            .checked_add(elements)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        total_encoded_bytes = total_encoded_bytes
+            .checked_add(encoded_bytes)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    }
+
+    if total_elements > limits.max_elements() || total_encoded_bytes > limits.max_message_bytes() {
+        return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+    }
+    Ok(())
+}
+
+fn estimate_query_request_limits(request: &QueryRequest) -> Result<(usize, usize), ProtocolError> {
+    let mut elements = request
+        .functions()
+        .len()
+        .checked_add(1)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    let function_bytes = request
+        .functions()
+        .len()
+        .checked_mul(16)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    let mut payload_value_bytes = function_bytes;
+
+    if let Some(groups) = request.object_groups() {
+        elements = elements
+            .checked_add(1)
+            .and_then(|value| value.checked_add(groups.len()))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut group_structure_bytes = 0_usize;
+        for group in groups {
+            ensure_query_text_length_is_ttlv_representable(group.len())?;
+            let padded_length = group
+                .len()
+                .checked_add(7)
+                .map(|value| value & !7)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+            let group_item_bytes = 8_usize
+                .checked_add(padded_length)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+            group_structure_bytes = group_structure_bytes
+                .checked_add(group_item_bytes)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        }
+        ensure_query_ttlv_structure_length_is_representable(group_structure_bytes)?;
+        payload_value_bytes = payload_value_bytes
+            .checked_add(8)
+            .and_then(|value| value.checked_add(group_structure_bytes))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    }
+    ensure_query_ttlv_structure_length_is_representable(payload_value_bytes)?;
+    let encoded_bytes = payload_value_bytes
+        .checked_add(8)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    Ok((elements, encoded_bytes))
+}
+
+fn ensure_query_text_length_is_ttlv_representable(length: usize) -> Result<(), ProtocolError> {
+    u32::try_from(length)
+        .map(|_| ())
+        .map_err(|_| protocol_error(ProtocolErrorKind::ResourceLimit))
+}
+
+fn ensure_query_ttlv_structure_length_is_representable(length: usize) -> Result<(), ProtocolError> {
+    if u32::try_from(length).is_ok() {
+        Ok(())
+    } else {
+        Err(protocol_error(ProtocolErrorKind::ResourceLimit))
+    }
+}
+
 fn copy_value(view: ValueView<'_>) -> Result<Value, ProtocolError> {
     match view {
         ValueView::Structure(value) => Ok(Value::structure(copy_structure(&value)?)),
@@ -7519,3 +7846,7 @@ mod provenance_order_tests;
 #[cfg(test)]
 #[path = "../tests/unit/single_response_tests.rs"]
 mod single_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_payload_limits_tests.rs"]
+mod query_payload_limits_tests;

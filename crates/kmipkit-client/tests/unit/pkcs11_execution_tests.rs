@@ -5,7 +5,7 @@ use crate::execute_test_support::{
     asynchronous_response_bytes, test_item as item, test_structure as structure,
 };
 use crate::{ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest};
-use kmipkit_protocol::{Pkcs11Request, ResultReason, SecretBytes};
+use kmipkit_protocol::{Pkcs11Request, Pkcs11Response, ResultReason, SecretBytes};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -14,6 +14,66 @@ const OP: u32 = 0x33;
 const FUNCTION: u32 = 0x0042_015A;
 const RETURN: u32 = 0x0042_015D;
 const SENTINEL: &[u8] = b"pkcs11-client-secret-sentinel";
+fn parity_fixture() -> serde_json::Value {
+    serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .expect("the shared PKCS#11 parity fixture is valid JSON")
+}
+
+fn fixture_hex_u32(value: &serde_json::Value) -> u32 {
+    u32::from_str_radix(
+        value
+            .as_str()
+            .expect("shared fixture hexadecimal values are strings")
+            .strip_prefix("0x")
+            .expect("shared fixture hexadecimal values have a prefix"),
+        16,
+    )
+    .expect("shared fixture hexadecimal value fits u32")
+}
+
+fn fixture_hex_bytes(value: &serde_json::Value) -> Vec<u8> {
+    let text = value
+        .as_str()
+        .expect("shared fixture byte strings are hexadecimal strings");
+    let (pairs, remainder) = text.as_bytes().as_chunks::<2>();
+    assert_eq!(remainder, &[] as &[u8]);
+    pairs
+        .iter()
+        .map(|pair| {
+            let digits = std::str::from_utf8(pair).expect("hexadecimal digits are ASCII");
+            u8::from_str_radix(digits, 16).expect("shared fixture byte is hexadecimal")
+        })
+        .collect()
+}
+
+fn fixture_structure(value: &serde_json::Value) -> Option<Structure> {
+    if value.is_null() || !value["present"].as_bool().unwrap_or(false) {
+        return None;
+    }
+    let child_tag = fixture_hex_u32(&value["childTag"]);
+    let child_value = match value["childType"].as_str() {
+        Some("Integer") => Value::integer(
+            i32::try_from(value["childValue"].as_i64().expect("Integer field value"))
+                .expect("Integer field fits i32"),
+        ),
+        Some("Enumeration") => Value::enumeration(fixture_hex_u32(&value["childValue"])),
+        Some("ByteString") => Value::byte_string(fixture_hex_bytes(&value["childHex"])),
+        _ => panic!("shared fixture uses a supported KMIP TTLV type"),
+    };
+    Some(structure([item(child_tag, child_value)]))
+}
+
+fn expected_response_tags() -> Vec<u32> {
+    parity_fixture()["expectedOutput"]["responseTags"]
+        .as_array()
+        .expect("shared fixture response tags are an array")
+        .iter()
+        .map(fixture_hex_u32)
+        .collect()
+}
+
 fn request() -> Pkcs11Request {
     Pkcs11Request::new(structure([item(FUNCTION, Value::integer(-12345))]))
         .with_correlation_value(SecretBytes::new(SENTINEL.to_vec()))
@@ -23,26 +83,163 @@ fn request() -> Pkcs11Request {
         )]))
 }
 fn success() -> Structure {
-    structure([
-        item(
-            FUNCTION,
-            Value::structure(structure([item(FUNCTION, Value::integer(-12345))])),
-        ),
-        item(0x0042_00D6, Value::byte_string(SENTINEL.to_vec())),
-        item(
-            0x0042_015C,
-            Value::structure(structure([item(
-                0x0042_015C,
-                Value::byte_string(SENTINEL.to_vec()),
-            )])),
-        ),
-        item(
-            RETURN,
-            Value::structure(structure([item(RETURN, Value::enumeration(0xFFFF_1234))])),
-        ),
-        item(0x0054_1234, Value::integer(7)),
-    ])
+    let fixture = parity_fixture();
+    let expected = &fixture["expectedOutput"];
+    let typed = &expected["typedResponse"];
+    let mut interface = fixture_structure(&typed["interface"]);
+    let mut function = fixture_structure(&typed["function"]);
+    let mut output_parameters = fixture_structure(&typed["outputParameters"]);
+    let mut return_code = fixture_structure(&typed["returnCode"]);
+    let interface_tag =
+        (!typed["interface"].is_null()).then(|| fixture_hex_u32(&typed["interface"]["tag"]));
+    let function_tag = fixture_hex_u32(&typed["function"]["tag"]);
+    let output_parameters_tag = fixture_hex_u32(&typed["outputParameters"]["tag"]);
+    let return_code_tag = fixture_hex_u32(&typed["returnCode"]["tag"]);
+    let correlation = &typed["correlationValue"];
+    let vendor = &expected["vendorExtension"];
+    let mut payload = Vec::new();
+    for tag in expected_response_tags() {
+        if interface.is_some() && interface_tag == Some(tag) {
+            payload.push(item(
+                tag,
+                Value::structure(interface.take().expect("Interface is present")),
+            ));
+        } else if tag == function_tag {
+            payload.push(item(
+                tag,
+                Value::structure(function.take().expect("Function is present")),
+            ));
+        } else if correlation["present"].as_bool() == Some(true)
+            && tag == fixture_hex_u32(&correlation["tag"])
+        {
+            payload.push(item(
+                tag,
+                Value::byte_string(fixture_hex_bytes(&correlation["hex"])),
+            ));
+        } else if output_parameters.is_some() && tag == output_parameters_tag {
+            payload.push(item(
+                tag,
+                Value::structure(output_parameters.take().expect("Output Parameters present")),
+            ));
+        } else if return_code.is_some() && tag == return_code_tag {
+            payload.push(item(
+                tag,
+                Value::structure(return_code.take().expect("Return Code is present")),
+            ));
+        } else if tag == fixture_hex_u32(&vendor["tag"]) {
+            payload.push(item(
+                tag,
+                Value::integer(
+                    i32::try_from(
+                        vendor["integer"]
+                            .as_i64()
+                            .expect("vendor extension integer"),
+                    )
+                    .expect("vendor extension integer fits i32"),
+                ),
+            ));
+        } else {
+            panic!("shared fixture has an unmapped PKCS#11 response tag");
+        }
+    }
+    structure(payload)
 }
+
+fn assert_typed_response_mapping(result: &Pkcs11Response, fixture: &serde_json::Value) {
+    let typed = &fixture["expectedOutput"]["typedResponse"];
+    assert_eq!(result.with_interface(|_| true), None);
+    assert_eq!(
+        result.with_function(|function| {
+            function.children()[0].with_value(|value| {
+                matches!(value, ValueView::Integer(number)
+                    if i64::from(*number) == typed["function"]["childValue"].as_i64().unwrap_or_default())
+            })
+        }),
+        Some(true)
+    );
+    assert_eq!(
+        result.with_correlation_value(<[u8]>::to_vec),
+        Some(fixture_hex_bytes(&typed["correlationValue"]["hex"]))
+    );
+    assert_eq!(
+        result.with_output_parameters(|parameters| {
+            parameters.children()[0].with_value(|value| {
+                matches!(value, ValueView::ByteString(bytes)
+                    if bytes == fixture_hex_bytes(&typed["outputParameters"]["childHex"]))
+            })
+        }),
+        Some(true)
+    );
+    assert_eq!(
+        result.with_return_code(|return_code| {
+            return_code.children()[0].with_value(|value| {
+                matches!(value, ValueView::Enumeration(raw)
+                    if *raw == fixture_hex_u32(&typed["returnCode"]["childValue"]))
+            })
+        }),
+        Some(true)
+    );
+    assert_eq!(
+        result.with_ttlv_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .map(|child| child.tag().raw())
+                .collect::<Vec<_>>()
+        }),
+        Some(expected_response_tags())
+    );
+    assert_eq!(result.with_ttlv(|payload| payload.children().len()), 3);
+}
+
+fn assert_request_wire_fields(request_bytes: &[u8]) {
+    let decoded = decode_with_limits(request_bytes, &CodecLimits::defaults()).unwrap();
+    decoded.with_value(|value| {
+        let ValueView::Structure(root) = value else {
+            panic!("root")
+        };
+        let batch = root
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == 0x0042_000F)
+            .unwrap();
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("batch")
+            };
+            let operation = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == 0x0042_005C)
+                .unwrap();
+            operation.with_value(|value| {
+                assert!(matches!(value, ValueView::Enumeration(code) if *code == OP));
+            });
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == 0x0042_0079)
+                .unwrap();
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("payload")
+                };
+                assert_eq!(
+                    payload
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect::<Vec<_>>(),
+                    [FUNCTION, 0x0042_00D6, 0x0042_015B]
+                );
+                payload.children()[1].with_value(|value| {
+                    assert!(matches!(value, ValueView::ByteString(bytes) if bytes == SENTINEL));
+                });
+            });
+        });
+    });
+}
+
 #[test]
 fn pkcs11_sends_table_273_once_and_exposes_table_274_losslessly() {
     let (mut client, transport, captured) = client_for(ExchangeScript::Success {
@@ -57,62 +254,9 @@ fn pkcs11_sends_table_273_once_and_exposes_table_274_losslessly() {
     assert_eq!(outcome.outcome().result().status().raw(), 0);
     assert!(outcome.outcome().response().pkcs11().is_some());
     assert!(outcome.outcome().response().ping().is_none());
-    assert_eq!(
-        result.with_correlation_value(<[u8]>::to_vec),
-        Some(SENTINEL.to_vec())
-    );
-    assert_eq!(result.with_ttlv_payload(|p| p.children().len()), Some(5));
-    assert_eq!(result.with_ttlv(|p| p.children().len()), 3);
-    assert_eq!(
-        result
-            .with_return_code(|p| p.children()[0]
-                .with_value(|v| matches!(v, ValueView::Enumeration(0xFFFF_1234)))),
-        Some(true)
-    );
+    assert_typed_response_mapping(result, &parity_fixture());
     let captured = captured.borrow();
-    let decoded =
-        decode_with_limits(captured.as_deref().unwrap(), &CodecLimits::defaults()).unwrap();
-    decoded.with_value(|v| {
-        let ValueView::Structure(root) = v else {
-            panic!("root")
-        };
-        let batch = root
-            .children()
-            .iter()
-            .find(|f| f.tag().raw() == 0x0042_000F)
-            .unwrap();
-        batch.with_value(|v| {
-            let ValueView::Structure(batch) = v else {
-                panic!("batch")
-            };
-            let operation = batch
-                .children()
-                .iter()
-                .find(|f| f.tag().raw() == 0x0042_005C)
-                .unwrap();
-            operation
-                .with_value(|v| assert!(matches!(v,ValueView::Enumeration(code) if *code==OP)));
-            let payload = batch
-                .children()
-                .iter()
-                .find(|f| f.tag().raw() == 0x0042_0079)
-                .unwrap();
-            payload.with_value(|v| {
-                let ValueView::Structure(p) = v else {
-                    panic!("payload")
-                };
-                assert_eq!(
-                    p.children()
-                        .iter()
-                        .map(|f| f.tag().raw())
-                        .collect::<Vec<_>>(),
-                    [FUNCTION, 0x0042_00D6, 0x0042_015B]
-                );
-                p.children()[1]
-                    .with_value(|v| assert!(matches!(v,ValueView::ByteString(b) if b==SENTINEL)));
-            });
-        });
-    });
+    assert_request_wire_fields(captured.as_deref().unwrap());
     assert_eq!(transport.borrow().exchange_count(), 1);
     let diagnostics = format!(
         "{:?} {} {:?}",

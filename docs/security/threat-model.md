@@ -3,9 +3,10 @@
 Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
 client execution, KMIPKIT-0013 production transport, the Rust lifecycle
-operation additions in KMIPKIT-0036, and Register Opaque Object context in
-KMIPKIT-0044
-Last reviewed: 2026-10-13
+operation additions in KMIPKIT-0036, Register Opaque Object context in
+KMIPKIT-0044, and four-language operation mappings in KMIPKIT-0043, including
+PKCS#11 and Set Defaults (§6.1.53, T067).
+Last reviewed: 2026-10-21
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
@@ -19,6 +20,21 @@ operations do not establish complete KMIP 2.1 operation or profile coverage.
 C, Java, and Python parity for the Register Opaque Object context is implemented
 under KMIPKIT-0044. Full parity for the nine KMIPKIT-0036 lifecycle operations
 remains assigned to KMIPKIT-0043 and is not established by this branch.
+The PKCS#11 request/response mapping is public in Rust, C, Java, and Python
+under OASIS KMIP v2.1 §6.1.37. KMIPKIT-0040 remains **Approved for
+implementation**, and the direct implementation authorization dated
+2026-10-20 is recorded separately; formal acceptance remains false. This API
+mapping does not claim Profile support, complete KMIP conformance, or
+interoperability. Existing bounds, opaque parameter handling, zeroization,
+redaction, response ownership, and no-retry behavior apply to the new bindings.
+The Set Defaults mapping in KMIPKIT-0043 (T067) follows the approved
+KMIPKIT-0039 contract: omitted Defaults Information requests removal, while a
+present-empty structure remains distinct; only Success exposes complete
+response TTLV, and Failure/Pending retain common metadata without the response
+body. Existing parser bounds, redaction, ownership, correlation, and no-retry
+controls apply; this mapping adds no new trust boundary or profile-support
+claim. See the [approved operation contract](../../specs/025-policy-controls/spec.md)
+and [T067 traceability](../../specs/043-public-api-bindings/traceability.md#t067).
 Publication remains planned. Scenarios below remain hypotheses and security
 requirements unless a control is explicitly tied to executable evidence. The
 model must be revised as each executable boundary is introduced.
@@ -127,7 +143,7 @@ Evidence: `specs/022-object-lifecycle/spec.md:80-115`;
 | Request and response memory | Encoded requests, partial network responses, and decoded typed values, including lifecycle certificate and object payloads | KMIPKit owns bounded secret/request/response owners; dependencies and callers may make separate copies | KMIPKit-owned `Value` payloads, encoded request bytes, and initialized transport response bytes are zeroized on drop; earlier growth allocations, copies made before ownership transfer, spare capacity, and copies outside these owners are not covered | Caller, client, Hyper, rustls, OS, foreign runtimes | Lifecycle request `Debug` implementations omit supplied certificate/object payloads; typed client returns decoded results rather than raw response bytes; direct transport exposes redacted `TransportResponse`; copies in Hyper/rustls/OS/callers remain outside the guarantee | `crates/kmipkit-protocol/src/certify.rs:149-164`; `crates/kmipkit-protocol/src/register.rs:118-132`; `crates/kmipkit-protocol/src/reprovision.rs:83-93`; `crates/kmipkit-ttlv/src/value.rs:42-49,68-71`; `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-transport/src/response.rs:11-16,49-57`; `docs/architecture/transport-security.md` |
 | Exchange deadlines and delivery | Connect, write, read, total deadline, cancellation, and worker startup | Total deadline starts at public exchange entry and is monotonic; finite phase values must be representable by `Instant` | Defaults are 10s connect, 30s write, 30s read, 60s total; explicit unbounded is distinct from zero-duration immediate expiry | Caller thread, private worker, adapter, remote peer | Lazy worker startup and queueing are bounded by total deadline; invalid unrepresentable finite durations return `InvalidInput`/`NotSent`; atomic dispatch/response/finalization gate preserves truthful delivery state | `crates/kmipkit-transport/src/timeout.rs`; `crates/kmipkit-transport/src/worker.rs`; `crates/kmipkit-transport/tests/timeout_delivery.rs`; `crates/kmipkit-transport/tests/worker.rs` |
 | KMIP authentication | Message credentials, OTPs, and tickets | Credentials are modeled but are not added to the current typed operation request payloads | Current typed request paths do not send KMIP credentials; TLS client identity is a separate transport concern | Caller and a configured KMIP peer when a credential-bearing operation is implemented | Redaction and initialized-byte zeroization are implemented for typed execution; future credential-bearing operations require owner-through-transport evidence | `crates/kmipkit-protocol`; `crates/kmipkit-client/src/execute.rs`; foreign-runtime copies and external transport copies remain outside current evidence |
-| Native bindings | Rust-owned handles and result buffers | ABI version and structure size are checked at entry | Opaque handles; matching KMIPKit release functions own deallocation | C, JNI, CFFI callers | Fixed-width ABI, explicit lengths, panic containment, dedicated free functions | Designed in `docs/architecture/ffi-and-bindings.md:3-24`; implementation and sanitizer evidence pending |
+| Native bindings | Rust-owned handles and result buffers | ABI version and structure size are checked at entry | Opaque keyed tokens map to live Rust-owned handles; matching KMIPKit release functions own deallocation | C, JNI, CFFI callers | Fixed-width ABI, explicit lengths, panic containment, checked handle lookup, dedicated free functions | `crates/kmipkit-ffi/src/extension_registry.rs`; sanitizer and consumer evidence required per release |
 | Native package loading | Platform binary bundled with Java or Python package | Bundled binary first; explicit administrator path may override | Package-adjacent binary or private atomic extraction directory | Language runtime and current user | Package hash verification and ABI check; no runtime download | Designed in `docs/architecture/ffi-and-bindings.md:73-81`; exact extraction permissions and anti-swap procedure remain to be specified |
 | Vendor extensions | Data-only definitions in an immutable client registry | Explicit registration during client construction | Parsed, size-bounded in-memory schema | Caller, core validator, KMIP peer | Duplicate rejection, deterministic registration, core invariants cannot be disabled | Designed in `docs/architecture/extensions.md:18-59`; manifest format and complexity limits remain to be specified |
 | Release publication | Package registry and signing authority | Protected tag and CI workflow only | Short-lived publishing identities, signed artifacts, hashes, SBOM and provenance | Maintainers, CI, package registries, users | Protected review, pinned actions, trusted publishing | Designed in `docs/development/git-and-releases.md:44-64`; concrete workflows do not exist yet |
@@ -152,7 +168,7 @@ Evidence: `specs/022-object-lifecycle/spec.md:80-115`;
 | Network attacker | Observe, delay, drop, replay, fragment, or replace traffic; present an untrusted certificate | A trusted CA, the configured client private key, or control of the caller process |
 | Malicious or compromised KMIP server | Send arbitrary bytes after a successful authenticated connection; return inconsistent batches, extensions, pending states, and large messages | Direct native memory access or authority to change local configuration |
 | Untrusted application input | Influence KMIP operation fields or generic TTLV passed by an application | Permission to bypass the application's own authorization policy |
-| Faulty or hostile foreign caller | Pass invalid pointers, lengths, handles, call order, or concurrent calls into the C ABI | A guarantee that arbitrary invalid addresses can be safely dereferenced; C caller memory safety remains a shared boundary |
+| Faulty or hostile foreign caller | Pass invalid pointers, lengths, handles, call order, or concurrent calls into the C ABI | Safety for arbitrary invalid memory pointers or caller-owned buffers; opaque handle values are checked as registry tokens before payload access |
 | Malicious extension author | Supply complex or conflicting declarative definitions when the application registers them | Code execution through a declarative manifest or access to TLS internals |
 | Supply-chain attacker | Publish a dependency or package with a confusing name, tamper with an unprotected workflow, or substitute a native artifact | Protected repository administration or release credentials by default |
 | Local same-user attacker | Race or replace files in locations writable by the same OS identity | Privilege isolation from the application when both run as the same user |
@@ -222,6 +238,15 @@ work.
 11. **Source to release.** Generated artifacts are reproducible from reviewed
    inputs, third-party sources and licenses are controlled, and publication
    occurs only from protected CI (`docs/development/git-and-releases.md:44-64`).
+12. **Public PKCS#11 request and response handling.** Opaque parameters and
+   vendor values are untrusted and may contain sensitive data. The operation
+   reuses the bounded TTLV model, preserves unknown fields and order, redacts
+   diagnostics, zeroizes KMIPKit-owned sensitive buffers, returns owned
+   response TTLV, and never retries or follows up automatically. The compiled
+   C and JNI checks verify the public exports; cross-language tests exercise
+   ownership and redaction. The mapping does not imply formal acceptance,
+   Profile support, or server interoperability (`docs/architecture/ffi-and-bindings.md#pkcs11-public-mapping`;
+   `specification/api/public-api.json`).
 
 ### Assumptions and caller obligations
 
@@ -260,8 +285,6 @@ work.
   validation complexity budget.
 - Java native extraction directory permissions, file locking, atomic publish,
   cleanup, and resistance to same-user replacement.
-- The exact status-code taxonomy for invalid foreign pointers versus invalid
-  handles without attempting unsafe pointer recovery.
 - Release signing technology, protected-environment rules, artifact retention,
   and key-compromise recovery.
 
@@ -275,7 +298,7 @@ tests.
 |---|---|---|---|---|---|---|
 | High | A malicious server declares extreme or overflowing TTLV lengths to obtain excessive allocation, CPU exhaustion, or memory corruption | Authenticated or network-reachable server can send a response | Caller process crash, denial of service, or potentially native code execution if unsafe parsing is introduced | Header-first framing; HTTP parser capped at 64 headers/64 KiB; 16 MiB/depth 64/100,000 element defaults; overflow-safe checks; safe Rust codec | Keep codec safe Rust; limit before allocation; property tests, malformed vectors, fuzzing, Miri and sanitizers at native boundaries | `crates/kmipkit-transport/tests/https.rs`; `crates/kmipkit-client/tests/unit/response_boundary_tests.rs`; `docs/architecture/transport-security.md:5-12,67-78` |
 | High | A substituted CA, disabled name check, redirect, proxy, or unexpected platform trust bundle sends secrets to an attacker-controlled server | Caller selects unsafe trust input or the process environment changes `SSL_CERT_FILE` | Disclosure of keys and credentials; unauthorized KMIP operations | No insecure switch; mandatory chain, validity, and hostname checks; no redirects/proxies; explicit platform trust; environment override documented | Make unsafe states unrepresentable; test unknown CA, mismatch, redirects, proxy variables, and isolated `SSL_CERT_FILE` override; redact configuration diagnostics | `crates/kmipkit-transport/tests/unit/tls_policy_tests.rs`; `crates/kmipkit-transport/tests/https.rs`; ADR-0005 |
-| High | Invalid FFI lengths, stale handles, double free, or panic corrupts memory or unwinds into Java/Python/C | Foreign caller invokes ABI incorrectly or races lifecycle calls | Process compromise or crash | Opaque handles, explicit lengths, Rust-owned frees, panic containment, isolated unsafe crate | Define handle validation and concurrency state machine; compile C consumer; negative ABI tests; sanitizers; review every unsafe block | `docs/architecture/ffi-and-bindings.md:3-24`; `docs/development/testing.md:48-55` |
+| High | Invalid FFI lengths, guessed or stale handles, double release, or panic corrupts memory or unwinds into Java/Python/C | Foreign caller invokes ABI incorrectly or races lifecycle calls | Process compromise, disclosure or release of another live object, or crash | Keyed non-reused opaque-token permutation; bounded cycle walking; kind checks before payload access; serialized retain/consume/release; explicit lengths; Rust-owned frees; panic containment; isolated unsafe crate | Preserve token non-reuse and validation; fail closed after at most 128 cycle-walk steps; compile C consumer; exercise low guessed, forged positive JNI, stale, null, and wrong-kind handles; sanitizers; review every unsafe block | `crates/kmipkit-ffi/src/extension_registry.rs`; `crates/kmipkit-ffi/tests/support/opaque_handle_validation_tests.rs`; `bindings/java/src/test/java/org/kmipkit/NativeBridgeCoverageTest.java`; `docs/architecture/ffi-and-bindings.md` |
 | High | A forged or mismatched KMIP response is returned to the wrong operation or batch item | Compromised server, stale connection bytes, or client correlation defect | Application uses the wrong key/object or misreports operation success | Version, correlation, batch, and operation checks; response validation before returning typed results; invalid connections discarded | Typed state-machine tests for duplicates, reordering, missing items, stale responses, pending operations, and response/timeout races | `crates/kmipkit-client/tests/production_client.rs`; `docs/architecture/overview.md:88-94,119-122`; `crates/kmipkit-transport/tests/timeout_delivery.rs` |
 | High | A compromised build action, dependency, registry account, or generated catalog inserts malicious native code | Weak CI protections or publishing credentials | All downstream applications execute attacker code | Pinned actions, protected tags, CI-only publication, hashes, signatures, SBOM, provenance | Least-privilege jobs; trusted publishing; review generated diffs; dependency policy; reproducible release check; incident procedure | `docs/development/git-and-releases.md:44-64` |
 | Medium | Request timeout after partial delivery causes an application to repeat a non-idempotent operation | Network interruption and caller retries without delivery context | Duplicate keys, state changes, or destructive operations | No automatic retry; atomic delivery evidence distinguishes not sent, possibly sent, and response started; failures invalidate the connection | Preserve delivery state through every binding; document reconciliation; test partial writes, queue expiry, dispatch races, response-byte races, and timeouts | `crates/kmipkit-transport/tests/timeout_delivery.rs`; `crates/kmipkit-transport/tests/worker.rs`; `docs/architecture/transport-security.md:45-65` |

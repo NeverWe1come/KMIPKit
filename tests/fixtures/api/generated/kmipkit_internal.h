@@ -6,40 +6,6 @@
 extern "C" {
 #endif
 
-typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
-
-typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
-
-typedef struct kmipkit_ttlv_path_t kmipkit_ttlv_path_t;
-
-typedef struct kmipkit_extension_discriminator_t kmipkit_extension_discriminator_t;
-
-typedef struct kmipkit_extension_schema_t kmipkit_extension_schema_t;
-
-typedef struct kmipkit_extension_information_t kmipkit_extension_information_t;
-
-typedef struct kmipkit_extension_registry_limits_t kmipkit_extension_registry_limits_t;
-
-typedef struct kmipkit_extension_definition_t kmipkit_extension_definition_t;
-
-typedef struct kmipkit_client_extension_registry_t kmipkit_client_extension_registry_t;
-
-typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
-
-typedef struct kmipkit_validated_extension_value_t kmipkit_validated_extension_value_t;
-
-typedef struct kmipkit_registered_extension_value_t kmipkit_registered_extension_value_t;
-
-typedef struct kmipkit_client_request_message_extension_t kmipkit_client_request_message_extension_t;
-
-typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
-
-typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
-
-typedef struct kmipkit_extension_child_rule_t kmipkit_extension_child_rule_t;
-
-typedef struct kmipkit_extension_order_constraint_t kmipkit_extension_order_constraint_t;
-
 typedef uint8_t kmipkit_ttlv_item_type_t;
 #define KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ((kmipkit_ttlv_item_type_t)1)
 #define KMIPKIT_TTLV_ITEM_TYPE_INTEGER ((kmipkit_ttlv_item_type_t)2)
@@ -53,23 +19,75 @@ typedef uint8_t kmipkit_ttlv_item_type_t;
 #define KMIPKIT_TTLV_ITEM_TYPE_INTERVAL ((kmipkit_ttlv_item_type_t)10)
 #define KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME_EXTENDED ((kmipkit_ttlv_item_type_t)11)
 
+typedef uint32_t kmipkit_opaque_object_context_t;
+#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC ((kmipkit_opaque_object_context_t)1)
+#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT ((kmipkit_opaque_object_context_t)2)
+
+typedef uint32_t kmipkit_unique_identifier_kind_t;
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ((kmipkit_unique_identifier_kind_t)1)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
+
+typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
+typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
+typedef struct kmipkit_ttlv_path_t kmipkit_ttlv_path_t;
+typedef struct kmipkit_extension_discriminator_t kmipkit_extension_discriminator_t;
+typedef struct kmipkit_extension_schema_t kmipkit_extension_schema_t;
+typedef struct kmipkit_extension_information_t kmipkit_extension_information_t;
+typedef struct kmipkit_extension_definition_t kmipkit_extension_definition_t;
+typedef struct kmipkit_client_extension_registry_t kmipkit_client_extension_registry_t;
+typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
+typedef struct kmipkit_validated_extension_value_t kmipkit_validated_extension_value_t;
+typedef struct kmipkit_registered_extension_value_t kmipkit_registered_extension_value_t;
+typedef struct kmipkit_client_request_message_extension_t kmipkit_client_request_message_extension_t;
+typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
+typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+typedef struct kmipkit_extension_child_rule_t kmipkit_extension_child_rule_t;
+typedef struct kmipkit_extension_order_constraint_t kmipkit_extension_order_constraint_t;
 typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
-
 typedef struct kmipkit_extension_recognition_t kmipkit_extension_recognition_t;
-
 typedef struct kmipkit_raw_tag_t kmipkit_raw_tag_t;
-
 typedef struct kmipkit_tag_t kmipkit_tag_t;
-
 typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
-
 typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
-
 typedef struct kmipkit_ttlv_structure_view_t kmipkit_ttlv_structure_view_t;
-
 typedef struct kmipkit_ttlv_item_view_t kmipkit_ttlv_item_view_t;
-
 typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
+typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
+typedef struct kmipkit_client_t kmipkit_client_t;
+typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
+typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
+typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
+typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+typedef struct kmipkit_request_options_v1_t kmipkit_request_options_v1_t;
+typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
+typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
+typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
+typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
+typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
+typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
+
+typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
+typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
+typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
+typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
+
+typedef struct {
+    uint64_t max_definitions;
+    uint64_t max_schema_nodes;
+    uint64_t max_child_rules_per_structure;
+    uint64_t max_text_bytes_per_field;
+    uint64_t max_registry_text_bytes;
+    uint64_t max_discriminator_scalar_bytes;
+    uint64_t max_total_discriminator_scalar_bytes;
+    uint64_t max_constraint_members_per_rule;
+    uint64_t max_total_constraint_members;
+    uint64_t max_payload_index_records;
+    uint64_t max_lookup_comparisons;
+    uint64_t max_depth;
+} kmipkit_extension_registry_limits_t;
 
 typedef struct {
     uint32_t struct_size;
@@ -88,11 +106,98 @@ typedef struct {
     uint64_t max_depth;
 } kmipkit_extension_registry_limits_v1_t;
 
-typedef struct kmipkit_register_request_t kmipkit_register_request_t;
+struct kmipkit_timeout_limit_v1_t {
+    uint32_t kind;
+    uint32_t reserved;
+    uint64_t seconds;
+    uint32_t nanoseconds;
+    uint32_t reserved2;
+};
 
-typedef uint32_t kmipkit_opaque_object_context_t;
-#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_GENERIC ((kmipkit_opaque_object_context_t)1)
-#define KMIPKIT_OPAQUE_OBJECT_CONTEXT_MANAGED_CRYPTOGRAPHIC_OBJECT ((kmipkit_opaque_object_context_t)2)
+struct kmipkit_request_options_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_timeout_limit_v1_t connect_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t total_timeout;
+};
+
+struct kmipkit_protocol_version_v1_t {
+    int32_t major;
+    int32_t minor;
+};
+
+struct kmipkit_unique_identifier_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_unique_identifier_kind_t kind;
+    uint32_t reserved;
+    const uint8_t * text_data;
+    uint64_t text_length;
+    uint32_t enumeration_value;
+    int32_t integer_value;
+};
+
+struct kmipkit_client_batch_item_metadata_v2_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+    uint32_t has_result_message;
+    uint32_t reserved;
+    const uint8_t * result_message_data;
+    uint64_t result_message_length;
+};
+
+struct kmipkit_byte_span_v1_t {
+    const uint8_t * data;
+    uint64_t length;
+};
+
+struct kmipkit_client_batch_item_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+};
+
+struct kmipkit_transport_input_v1_t {
+    uint32_t source_kind;
+    uint32_t encoding;
+    kmipkit_byte_span_v1_t data;
+};
+
+struct kmipkit_transport_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t endpoint_kind;
+    uint32_t trust_kind;
+    uint32_t flags;
+    uint32_t reserved;
+    kmipkit_byte_span_v1_t endpoint;
+    uint16_t endpoint_port;
+    uint16_t reserved2;
+    const kmipkit_transport_input_v1_t * client_certificates;
+    uint64_t client_certificate_count;
+    kmipkit_transport_input_v1_t client_private_key;
+    const kmipkit_transport_input_v1_t * trust_certificates;
+    uint64_t trust_certificate_count;
+    const kmipkit_transport_input_v1_t * revocation_lists;
+    uint64_t revocation_list_count;
+    kmipkit_byte_span_v1_t tls_server_name;
+    kmipkit_byte_span_v1_t target_uri;
+    kmipkit_timeout_limit_v1_t connect_timeout;
+    kmipkit_timeout_limit_v1_t write_timeout;
+    kmipkit_timeout_limit_v1_t read_timeout;
+    kmipkit_timeout_limit_v1_t total_timeout;
+    uint64_t max_request_bytes;
+};
 
 void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
 void kmipkit_extension_compatibility_release(kmipkit_extension_compatibility_t *handle);
@@ -119,7 +224,16 @@ void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
 void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
 void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
+void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
+void kmipkit_client_release(kmipkit_client_t *handle);
+void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
+void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
+void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
+void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
+void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
+void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
+void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -127,7 +241,14 @@ void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 #define KMIPKIT_ERROR_INVALID_SCHEMA ((int32_t)5)
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
+#define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
+#define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
+#define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
 
+/* Creates a typed KMIP 2.1 Derive Key request from §6.1.14, Table 205. Source Unique Identifiers are required, ordered, and may repeat; unknown Object Type and Derivation Method values are preserved. Derivation Parameters and Attributes are borrowed and copied by the call. The source array is bounded to 100,000 identifiers and 16 MiB of aggregate Text String bytes.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_derive_key(uint32_t object_type, const kmipkit_unique_identifier_v1_t * unique_identifiers, uint64_t unique_identifier_count, uint32_t derivation_method, kmipkit_ttlv_structure_t * derivation_parameters, kmipkit_ttlv_structure_t * attributes, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);
 /* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -144,7 +265,7 @@ int32_t kmipkit_extension_definition_validate(kmipkit_extension_definition_t * d
 int32_t kmipkit_client_configuration_create(kmipkit_client_extension_registry_t * extension_registry, kmipkit_client_configuration_t ** out_configuration);
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_client_configuration_extension_registry(kmipkit_client_configuration_t * configuration, kmipkit_client_extension_registry_t ** out_registry);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -179,7 +300,7 @@ int32_t kmipkit_ttlv_path_with_child_tag(kmipkit_ttlv_path_t * path, uint32_t ta
 int32_t kmipkit_extension_discriminator_create(kmipkit_ttlv_path_t * path, kmipkit_ttlv_value_t * scalar_value, kmipkit_extension_discriminator_t ** out_discriminator);
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_schema_scalar(uint32_t item_type, kmipkit_extension_schema_t ** out_schema);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -284,12 +405,18 @@ int32_t kmipkit_ttlv_value_big_integer(kmipkit_codec_limits_t * limits, const ui
 int32_t kmipkit_ttlv_value_text_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_value_byte_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
+/* Transfers ownership of structure after the output slot and limits handle are valid. If validation fails before transfer, the caller retains structure; after transfer, the caller must not use or release it, even if this function returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_value_structure(kmipkit_ttlv_structure_t * structure, kmipkit_codec_limits_t * limits, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_structure_create(kmipkit_ttlv_structure_t ** out_structure);
+/* Transfers ownership of value only after the output slot, tag, and limits are valid. If validation fails before transfer, the caller retains value; after transfer, the caller must not use or release it, even if this function returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_item_create(kmipkit_tag_t * tag, kmipkit_ttlv_value_t * value, kmipkit_codec_limits_t * limits, kmipkit_ttlv_item_t ** out_item);
+/* Transfers ownership of each input structure and item as it is accepted. Validation errors before transfer leave that handle caller-owned; after transfer, the caller must not use or release it, even if later processing returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_structure_with_item(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_item_t * item, kmipkit_codec_limits_t * limits, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
@@ -335,15 +462,16 @@ int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint
 /* Copies the calling thread's most recent C error status and safe metadata without clearing the snapshot.
  * out_status receives an existing KMIPKIT_ERROR_* code, or KMIPKIT_SUCCESS when the snapshot is empty.
  * out_category receives 0 none, 1 validation, 2 protocol, 3 transport, 4 server result, or 5 other.
- * out_cause receives 0 none, 1 invalid input, or 10 other.
- * out_delivery is 0 when no KMIP request delivery information is attached; the current C surface does not execute client requests.
+ * Client execution status 8 means protocol (category 2). Status 9 means transport (category 3), and status 10 means a complete server result (category 4).
+ * out_cause receives 0 none, 1 invalid input, 2 protocol invalid value, 3 protocol invalid encoding, 4 other protocol, 5 transport I/O, 6 TLS, 7 HTTP, 8 timeout, 9 other transport, or 10 other.
+ * out_delivery receives 0 none, 1 not sent, 2 possibly sent, or 3 response started; server results use 0, while protocol and transport failures report the strongest observed delivery state.
  * Status codes are independent of category and cause values. The snapshot contains no source strings or request payloads.
  */
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
 int32_t kmipkit_last_error_get(int32_t * out_status, uint32_t * out_category, uint32_t * out_cause, uint32_t * out_delivery);
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
 int32_t kmipkit_last_error_clear(void);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0043-FR-007 */
@@ -358,6 +486,637 @@ int32_t kmipkit_register_request_create(uint32_t object_type, kmipkit_ttlv_struc
 int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_request_t * request, uint32_t context, kmipkit_register_request_t ** out_request);
 /* KMIPKIT-0044-FR-001, KMIPKIT-0044-FR-003, KMIPKIT-0044-FR-004, KMIPKIT-0044-FR-005, KMIPKIT-0044-FR-006, KMIPKIT-0044-FR-007 */
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_create(kmipkit_client_batch_t ** out_batch);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_set_request_time_stamp(kmipkit_client_batch_t * batch, int64_t time_stamp);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_set_order_option(kmipkit_client_batch_t * batch, uint8_t enabled);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t * batch, uint32_t indicator);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t * batch, kmipkit_client_batch_item_t ** inout_item);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_add_error_continuation_value(kmipkit_client_batch_t * batch, uint32_t value);
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t * batch, const uint8_t * value, uint64_t value_length);
+/* The item handle is consumed after the item handle and identifier span have been validated.
+ * If either validation fails, the caller retains ownership. Once ownership transfer begins, the caller must not use or release item, even if the call returns an error.
+ * On success, out_item receives the replacement handle.
+ */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
+/* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
+ * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
+/* The item-response handle retains its parent response, so closing the parent batch-response handle does not invalidate this span.
+ * The returned out_value is a borrowed byte span into the response-owned buffer. It remains valid and unchanged only while this item-response handle remains open; copy the bytes before releasing the handle.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_create(kmipkit_client_configuration_t * configuration, kmipkit_transport_config_t ** transport_configuration, kmipkit_client_t ** out_client);
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one caller-ordered batch with exchange-local timeout overrides.
+ * Timeout kind 0 inherits the client policy; kind 1 is bounded, including zero for an immediate deadline; kind 2 is unbounded.
+ * The existing kmipkit_client_execute symbol and signature remain available with inherited client-policy timeouts.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Returns the fixed-order local API-level taxonomy as borrowed UTF-8 spans into static strings.
+ * This query makes no network call and is distinct from the KMIP Discover Versions operation.
+ * The result describes the KMIPKit API taxonomy only; it does not assert that every operation is mapped or complete.
+ */
+/* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010 */
+int32_t kmipkit_api_levels_get_v1(kmipkit_byte_span_v1_t * out_high_level, kmipkit_byte_span_v1_t * out_typed_protocol, kmipkit_byte_span_v1_t * out_generic_ttlv);
+/* Call with out_versions NULL and capacity zero to query presence and required count. A present empty successful Discover Versions result is represented by out_present 1 and out_count 0; Pending, failure, and other operations are absent.
+ * Call again with a caller-owned array of at least out_count elements to copy versions in response order, preserving repeated values.
+ */
+/* KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_protocol_version_v1_t * out_versions, uint64_t capacity, uint64_t * out_count);
+/* Creates a typed Create request with required Attributes, including an empty Attributes structure. Protection Storage Masks may be NULL. The input TTLV structures are copied without changing order or repeated values.
+ */
+/* KMIPKIT-0014-FR-002, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create(uint32_t object_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Common, Private Key, and Public Key Attributes and mask groups are copied independently. Each nullable pointer means an absent group; a present empty structure remains distinct. Order and repeated entries are preserved.
+ */
+/* KMIPKIT-0014-FR-003, KMIPKIT-0014-FR-004, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create_key_pair(kmipkit_ttlv_structure_t * common_attributes, kmipkit_ttlv_structure_t * private_key_attributes, kmipkit_ttlv_structure_t * public_key_attributes, kmipkit_ttlv_structure_t * common_protection_storage_masks, kmipkit_ttlv_structure_t * private_protection_storage_masks, kmipkit_ttlv_structure_t * public_protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Creates Create Split Key with optional exact-wire Unique Identifier, signed part/threshold Integers, and open Split Key Method Enumeration. Attributes is required and may be empty. has_prime_field_size distinguishes absence from a present empty byte string; its bounded pointer/length input is checked before dereference.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-006, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0014-FR-014, KMIPKIT-0014-FR-015, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_create_split_key(uint32_t object_type, const kmipkit_unique_identifier_v1_t * unique_identifier, int32_t split_key_parts, int32_t split_key_threshold, uint32_t split_key_method, uint8_t has_prime_field_size, const uint8_t * prime_field_size_data, uint64_t prime_field_size_length, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Initializes additive version 2 metadata while leaving v1 unchanged. operation is the raw KMIP Operation Enumeration. Result Message presence and exact UTF-8 bytes are exposed, including present-empty; the pointer is borrowed while the response-item handle is open and its length is bounded by the response codec limit (16 MiB by default). Copy before releasing the handle. Keep the value out of diagnostics and logs.
+ */
+/* KMIPKIT-0014-FR-008, KMIPKIT-0014-FR-009, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_metadata_v2(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v2_t * out_metadata);
+/* Returns Object Type and the original-wire-form Unique Identifier only for successful Create; absent, Pending, and failure results are empty.
+ * Any text_data pointer in out_unique_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
+ */
+/* KMIPKIT-0014-FR-002, KMIPKIT-0014-FR-007, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns separate private-key and public-key identifiers in their original wire forms only for successful Create Key Pair.
+ * Any text_data pointer in either output identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
+ */
+/* KMIPKIT-0014-FR-003, KMIPKIT-0014-FR-004, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_key_pair(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_private_key_unique_identifier, kmipkit_unique_identifier_v1_t * out_public_key_unique_identifier);
+/* Queries presence and count; successful Create Split Key responses preserve one-or-more identifiers in wire order, subject to the local response-size limit.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_split_key_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
+/* Copies the caller-selected zero-based response identifier without changing its wire form or response order.
+ * Any text_data pointer in out_identifier is borrowed from the response item handle and remains valid only until kmipkit_client_batch_item_response_release(item); copy the text bytes before releasing item if they must outlive it.
+ */
+/* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(kmipkit_client_batch_item_response_t * item, uint64_t index, kmipkit_unique_identifier_v1_t * out_identifier);
+/* Creates a typed Hash request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_hash(kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_hash(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed MAC request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.32-001 */
+int32_t kmipkit_client_batch_item_mac(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.32-001 */
+int32_t kmipkit_client_batch_item_response_mac(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_mac_data_present, kmipkit_byte_span_v1_t * out_mac_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed MAC Verify request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.33-001-001, KMIPKIT-REQ-SPEC-6.1.33-001-002 */
+int32_t kmipkit_client_batch_item_mac_verify(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * mac_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.33-001-001, KMIPKIT-REQ-SPEC-6.1.33-001-002 */
+int32_t kmipkit_client_batch_item_response_mac_verify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_validity_present, uint32_t * out_validity_indicator, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Sign request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.55-001 */
+int32_t kmipkit_client_batch_item_sign(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * digested_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.55-001 */
+int32_t kmipkit_client_batch_item_response_sign(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_signature_data_present, kmipkit_byte_span_v1_t * out_signature_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Signature Verify request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.56-001-001, KMIPKIT-REQ-SPEC-6.1.56-002 */
+int32_t kmipkit_client_batch_item_signature_verify(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * digested_data, const kmipkit_byte_span_v1_t * signature_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.56-001-001, KMIPKIT-REQ-SPEC-6.1.56-002 */
+int32_t kmipkit_client_batch_item_response_signature_verify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_validity_present, uint32_t * out_validity_indicator, uint8_t * out_recovered_data_present, kmipkit_byte_span_v1_t * out_recovered_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Certify item; certificate request bytes are copied as sensitive data.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_certify(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_certificate_request_type, uint32_t certificate_request_type, const kmipkit_byte_span_v1_t * certificate_request_value, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed Re-certify item. Certificate Request Type is present only with Certificate Request Value; request bytes are staged as sensitive data and wiped after the synchronous ABI call.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-002, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-006-002, KMIPKIT-REQ-SPEC-6.1.45-008 */
+int32_t kmipkit_client_batch_item_recertify(const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_unique_identifier_v1_t * certificate_request_unique_identifier, uint8_t has_certificate_request_type, uint32_t certificate_request_type, const kmipkit_byte_span_v1_t * certificate_request_value, uint8_t has_offset, uint32_t offset, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns the generated certificate identifier only for a successful Certify result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.6-001, KMIPKIT-REQ-SPEC-6.1.6-002-001, KMIPKIT-REQ-SPEC-6.1.6-002-002, KMIPKIT-REQ-SPEC-6.1.6-002-003, KMIPKIT-REQ-SPEC-6.1.6-003, KMIPKIT-REQ-SPEC-6.1.6-007 */
+int32_t kmipkit_client_batch_item_response_certify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns the replacement certificate Unique Identifier only for a successful Re-certify result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-002, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-006-002, KMIPKIT-REQ-SPEC-6.1.45-008 */
+int32_t kmipkit_client_batch_item_response_recertify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Certify result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.6-001, KMIPKIT-REQ-SPEC-6.1.6-002-001, KMIPKIT-REQ-SPEC-6.1.6-002-002, KMIPKIT-REQ-SPEC-6.1.6-002-003, KMIPKIT-REQ-SPEC-6.1.6-003, KMIPKIT-REQ-SPEC-6.1.6-007 */
+int32_t kmipkit_client_batch_item_response_certify_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Re-certify result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.45-001, KMIPKIT-REQ-SPEC-6.1.45-002-001, KMIPKIT-REQ-SPEC-6.1.45-002-002, KMIPKIT-REQ-SPEC-6.1.45-004, KMIPKIT-REQ-SPEC-6.1.45-006-001, KMIPKIT-REQ-SPEC-6.1.45-006-002, KMIPKIT-REQ-SPEC-6.1.45-008 */
+int32_t kmipkit_client_batch_item_response_recertify_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Executes one caller-ordered batch and preserves the generic ResponseMessage only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
+ * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
+ * Diagnostics remain redacted and never include raw response bytes.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
+/* Creates a typed Get Usage Allocation item with the optional Unique Identifier and exact signed 64-bit Usage Limits Count from KMIP v2.1 §6.1.23, Table 232.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.23-002-001 */
+int32_t kmipkit_client_batch_item_get_usage_allocation(const kmipkit_unique_identifier_v1_t * unique_identifier, int64_t usage_limits_count, kmipkit_client_batch_item_t ** out_item);
+/* Returns the resolved identifier only for a successful Get Usage Allocation result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.23-002-001 */
+int32_t kmipkit_client_batch_item_response_get_usage_allocation(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Get Usage Allocation result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_get_usage_allocation_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns the derived object Unique Identifier only for a successful Derive Key result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_response_derive_key(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Derive Key result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_response_derive_key_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed Check item from KMIP 2.1 §6.1.7, Table 183. Each 0/1 presence discriminator selects its corresponding optional raw value.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005 */
+int32_t kmipkit_client_batch_item_check(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_usage_limits_count, int64_t usage_limits_count, uint8_t has_cryptographic_usage_mask, int32_t cryptographic_usage_mask, uint8_t has_lease_time, uint32_t lease_time, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed Check fields for any Check result. A failed result never exposes Unique Identifier through this accessor but retains any optional Usage Limits Count, Cryptographic Usage Mask, and Lease Time.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005 */
+int32_t kmipkit_client_batch_item_response_check(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_unique_identifier_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_usage_limits_count_present, int64_t * out_usage_limits_count, uint8_t * out_cryptographic_usage_mask_present, int32_t * out_cryptographic_usage_mask, uint8_t * out_lease_time_present, uint32_t * out_lease_time);
+/* Returns a caller-owned copy of the complete ordered generic Check response TTLV, including failure results. Unknown fields and their order are preserved.
+ * For a non-Check item, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005 */
+int32_t kmipkit_client_batch_item_response_check_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed KMIP 2.1 §6.1.12, Table 199 Delegated Login request. Rights is required; Lease Time kind 0 omits it, 1 selects Interval, and 2 selects Date Time. Pass NULL for optional Usage Limits. Generic Rights and Usage Limits child order and unknown tags are preserved.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_delegated_login(kmipkit_ttlv_structure_t * rights, uint32_t lease_time_kind, int64_t lease_time_value, uint8_t has_request_count, int32_t request_count, kmipkit_ttlv_structure_t * usage_limits, kmipkit_client_batch_item_t ** out_item);
+/* Returns the typed Delegated Login Ticket from §6.1.12, Table 200. Ticket Type remains raw and forward-compatible. Ticket Value is borrowed from the response item and must not be logged.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_delegated_login(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_ticket_present, uint32_t * out_ticket_type, kmipkit_byte_span_v1_t * out_ticket_value);
+/* Returns an owned generic copy of the §6.1.12 Table 200 Ticket Structure, preserving child order, unknown tags, and extension data. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_delegated_login_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_ticket_ttlv);
+/* Creates a typed KMIP 2.1 §6.1.30, Table 253 Login request. Lease Time kind 0 omits it, 1 selects Interval, and 2 selects Date Time. Pass NULL for optional Usage Limits. Generic Usage Limits child order and unknown tags are preserved.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_login(uint32_t lease_time_kind, int64_t lease_time_value, uint8_t has_request_count, int32_t request_count, kmipkit_ttlv_structure_t * usage_limits, kmipkit_client_batch_item_t ** out_item);
+/* Returns the typed Login Ticket from §6.1.30, Table 254. Ticket Type remains raw and forward-compatible. Ticket Value is borrowed from the response item and must not be logged.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_login(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_ticket_present, uint32_t * out_ticket_type, kmipkit_byte_span_v1_t * out_ticket_value);
+/* Returns an owned generic copy of the §6.1.30 Table 254 Ticket Structure, preserving child order, unknown tags, and extension data. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_login_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_ticket_ttlv);
+/* Creates a typed KMIP 2.1 §6.1.31, Table 256 Logout request with its required §7.39, Table 391 Ticket. Ticket contents are secret.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_logout(kmipkit_ttlv_structure_t * ticket, kmipkit_client_batch_item_t ** out_item);
+/* Reports whether the batch item has a typed Logout response, including Pending; the success payload is empty.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_logout(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
+/* Creates a typed KMIP v2.1 Export request, preserving the optional Table 217 selectors as raw unsigned values and borrowing the optional Key Wrapping Specification structure.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_export(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_key_format_type, uint32_t key_format_type, uint8_t has_key_wrap_type, uint32_t key_wrap_type, uint8_t has_key_compression_type, uint32_t key_compression_type, kmipkit_ttlv_structure_t * key_wrapping_specification, kmipkit_client_batch_item_t ** out_item);
+/* Returns a typed Export result for Success and KMIP Failure. On Success, the caller owns copies of the required Attributes and opaque Any Object structures; on Failure the payload outputs are empty.
+ * The caller must release each non-null structure output with kmipkit_ttlv_structure_release. Response data remains sensitive and is omitted from diagnostics.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_response_export(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_payload_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_ttlv_structure_t ** out_attributes, kmipkit_ttlv_structure_t ** out_any_object);
+/* Returns a caller-owned copy of the complete ordered Export response TTLV for Success and KMIP Failure; returns no structure for a non-Export result.
+ * The caller must release a non-null output with kmipkit_ttlv_structure_release. Raw response contents are sensitive and are not included in diagnostics.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_response_export_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates the empty typed Get Constraints request from KMIP v2.1 §6.1.22, Table 229.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_get_constraints(kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed KMIP v2.1 Set Constraints request from the required Constraints structure in §6.1.52, Table 325.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_set_constraints(kmipkit_ttlv_structure_t * constraints, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Get Constraints result. The required Constraints structure and unknown members remain intact.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_get_constraints_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns a caller-owned complete generic TTLV copy only for successful Set Constraints. The KMIP 2.1 §6.1.52 Table 326 operation payload is empty.
+ * For Failure or Pending, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_set_constraints_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates typed KMIP v2.1 Get from optional Table 220 selectors without synthesizing omitted values.
+ * The caller-supplied Key Wrapping Specification is borrowed into the typed request.
+ */
+/* KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0017-FR-004, KMIPKIT-0017-FR-005, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-007, KMIPKIT-0017-FR-008, KMIPKIT-0017-FR-009, KMIPKIT-0017-FR-010, KMIPKIT-0017-FR-011, KMIPKIT-0017-FR-012, KMIPKIT-0017-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.19-001, KMIPKIT-REQ-SPEC-6.1.19-002 */
+int32_t kmipkit_client_batch_item_get(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_key_format_type, uint32_t key_format_type, uint8_t has_key_wrap_type, uint32_t key_wrap_type, uint8_t has_key_compression_type, uint32_t key_compression_type, kmipkit_ttlv_structure_t * key_wrapping_specification, kmipkit_client_batch_item_t ** out_item);
+/* Returns the typed Get result. Success exposes an independently owned zeroizing Any Object Structure copy; Failure contains no success-only fields.
+ * The caller releases C Structure copies with kmipkit_ttlv_structure_release. Raw object contents are omitted from formatting and diagnostics.
+ */
+/* KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0017-FR-004, KMIPKIT-0017-FR-005, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-007, KMIPKIT-0017-FR-008, KMIPKIT-0017-FR-009, KMIPKIT-0017-FR-010, KMIPKIT-0017-FR-011, KMIPKIT-0017-FR-012, KMIPKIT-0017-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.19-001, KMIPKIT-REQ-SPEC-6.1.19-002 */
+int32_t kmipkit_client_batch_item_response_get(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_payload_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_ttlv_structure_t ** out_any_object);
+/* Creates typed KMIP v2.1 Locate with required Attributes.
+ * Preserves empty Attributes, omitted fields, explicit zero values, and raw selector values.
+ */
+/* KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0017-FR-004, KMIPKIT-0017-FR-005, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-007, KMIPKIT-0017-FR-008, KMIPKIT-0017-FR-009, KMIPKIT-0017-FR-010, KMIPKIT-0017-FR-011, KMIPKIT-0017-FR-012, KMIPKIT-0017-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.28-001, KMIPKIT-REQ-SPEC-6.1.28-002, KMIPKIT-REQ-SPEC-6.1.28-011, KMIPKIT-REQ-SPEC-6.1.28-013-001, KMIPKIT-REQ-SPEC-6.1.28-013-002 */
+int32_t kmipkit_client_batch_item_locate(uint8_t has_maximum_items, int32_t maximum_items, uint8_t has_offset_items, int32_t offset_items, uint8_t has_storage_status_mask, uint32_t storage_status_mask, uint8_t has_object_group_member, uint32_t object_group_member, kmipkit_ttlv_structure_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Returns optional Located Items and repeated Unique Identifier count for a completed Locate response.
+ * The caller reads identifiers by index; server order and repetition are preserved.
+ */
+/* KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0017-FR-004, KMIPKIT-0017-FR-005, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-007, KMIPKIT-0017-FR-008, KMIPKIT-0017-FR-009, KMIPKIT-0017-FR-010, KMIPKIT-0017-FR-011, KMIPKIT-0017-FR-012, KMIPKIT-0017-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.28-001, KMIPKIT-REQ-SPEC-6.1.28-002, KMIPKIT-REQ-SPEC-6.1.28-011, KMIPKIT-REQ-SPEC-6.1.28-013-001, KMIPKIT-REQ-SPEC-6.1.28-013-002 */
+int32_t kmipkit_client_batch_item_response_locate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_payload_present, uint8_t * out_located_items_present, int32_t * out_located_items, uint64_t * out_unique_identifier_count);
+/* Copies one indexed Unique Identifier in original server order.
+ * Out-of-range indexes are rejected without changing server results.
+ */
+/* KMIPKIT-0017-FR-001, KMIPKIT-0017-FR-002, KMIPKIT-0017-FR-003, KMIPKIT-0017-FR-004, KMIPKIT-0017-FR-005, KMIPKIT-0017-FR-006, KMIPKIT-0017-FR-007, KMIPKIT-0017-FR-008, KMIPKIT-0017-FR-009, KMIPKIT-0017-FR-010, KMIPKIT-0017-FR-011, KMIPKIT-0017-FR-012, KMIPKIT-0017-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.28-001, KMIPKIT-REQ-SPEC-6.1.28-002, KMIPKIT-REQ-SPEC-6.1.28-011, KMIPKIT-REQ-SPEC-6.1.28-013-001, KMIPKIT-REQ-SPEC-6.1.28-013-002 */
+int32_t kmipkit_client_batch_item_response_locate_unique_identifier_at(kmipkit_client_batch_item_response_t * item, uint64_t index, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Creates a typed Import request from KMIP v2.1 §6.1.25, Table 238. Required Attributes and the one-item Any Object are borrowed and copied into zeroizing protocol-owned storage; selectors and object values are preserved.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.25-001, KMIPKIT-REQ-SPEC-6.1.25-004, KMIPKIT-REQ-SPEC-6.1.25-006 */
+int32_t kmipkit_client_batch_item_import(const kmipkit_unique_identifier_v1_t * unique_identifier, uint32_t object_type, uint8_t has_replace_existing, uint8_t replace_existing, uint8_t has_key_wrap_type, uint32_t key_wrap_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * any_object, kmipkit_client_batch_item_t ** out_item);
+/* Returns the resulting Unique Identifier only for a successful Import response. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.25-001, KMIPKIT-REQ-SPEC-6.1.25-004, KMIPKIT-REQ-SPEC-6.1.25-006 */
+int32_t kmipkit_client_batch_item_response_import(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Import result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.25-001, KMIPKIT-REQ-SPEC-6.1.25-004, KMIPKIT-REQ-SPEC-6.1.25-006 */
+int32_t kmipkit_client_batch_item_response_import_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates an Interop request from KMIP v2.1 §6.1.26, Table 241. The Function Enumeration is open; the required Identifier is a UTF-8 byte span copied into redacted, zeroizing request storage.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_interop(uint32_t interop_function, const uint8_t * interop_identifier_data, uint64_t interop_identifier_length, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned copy of the complete Interop response TTLV for Success, Failure, or Pending. Unknown fields and their order are preserved.
+ * This accessor applies only to a valid Interop result handle; local transport, protocol, and validation errors never expose response bodies. For a non-Interop item, sets present to 0 and the output handle to NULL. Release a returned handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_interop_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates one reference pairing a transmitted Unique Identifier occurrence with its caller-known Split Key Threshold. The threshold is local context and is never serialized.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_split_key_reference_create(const kmipkit_unique_identifier_v1_t * unique_identifier, uint32_t split_key_threshold, kmipkit_split_key_reference_t ** out_reference);
+/* Creates a typed KMIP v2.1 Join Split Key request from §6.1.27, Table 244. Every ordered reference pairs one Unique Identifier occurrence with its own caller-known threshold. Repetitions and order are preserved; reference handles and optional Structures are borrowed and copied. Thresholds are validation-only and never serialized.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_join_split_key(uint32_t object_type, kmipkit_split_key_reference_t ** references, uint64_t reference_count, uint8_t has_secret_data_type, uint32_t secret_data_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns the joined object Unique Identifier only for a successful Join Split Key result.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_response_join_split_key(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns an owned copy of the complete ordered generic TTLV response for a successful Join Split Key result. Unknown fields and their order are preserved.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_response_join_split_key_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a Log request from KMIP v2.1 §6.1.29, Table 250. The required UTF-8 Text String is copied into redacted, zeroizing request storage; callers must not submit secrets to a server log.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_log(const uint8_t * log_message_data, uint64_t log_message_length, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned copy of the complete Log response TTLV for Success, Failure, or Pending. Unknown fields and their order are preserved.
+ * This accessor applies only to a valid Log result handle; local transport, protocol, and validation errors never expose response bodies. For a non-Log item, sets present to 0 and the output handle to NULL. Release a returned handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_log_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates an Obtain Lease request from OASIS KMIP Specification v2.1 §6.1.35, Table 268. A null Unique Identifier leaves the optional field absent.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-007, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005 */
+int32_t kmipkit_client_batch_item_obtain_lease(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Returns successful Table 269 fields. Identifier text is borrowed from the response item; non-success outputs are cleared.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-007, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005 */
+int32_t kmipkit_client_batch_item_response_obtain_lease(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint32_t * out_lease_time, int64_t * out_last_change_date);
+/* Returns an owned copy of the full ordered response TTLV only on success; unknown fields and order are preserved. Non-success results clear outputs.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-007, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.35-001-001, KMIPKIT-REQ-SPEC-6.1.35-001-002, KMIPKIT-REQ-SPEC-6.1.35-002, KMIPKIT-REQ-SPEC-6.1.35-005 */
+int32_t kmipkit_client_batch_item_response_obtain_lease_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed Decrypt request while copying caller-supplied secret spans at the ABI boundary.
+ */
+/* KMIPKIT-0019-FR-001, KMIPKIT-0019-FR-002, KMIPKIT-0019-FR-003, KMIPKIT-0019-FR-004, KMIPKIT-0019-FR-006, KMIPKIT-0019-FR-009, KMIPKIT-0019-FR-011, KMIPKIT-0019-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-4.16-001-001, KMIPKIT-REQ-SPEC-4.16-001-002, KMIPKIT-REQ-SPEC-4.16-002, KMIPKIT-REQ-SPEC-4.16-003 */
+int32_t kmipkit_client_batch_item_decrypt(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * iv_counter_nonce, const kmipkit_byte_span_v1_t * authenticated_encryption_tag, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, const kmipkit_byte_span_v1_t * authenticated_encryption_additional_data, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed Encrypt request while copying caller-supplied secret spans at the ABI boundary.
+ */
+/* KMIPKIT-0019-FR-001, KMIPKIT-0019-FR-002, KMIPKIT-0019-FR-003, KMIPKIT-0019-FR-004, KMIPKIT-0019-FR-006, KMIPKIT-0019-FR-009, KMIPKIT-0019-FR-011, KMIPKIT-0019-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-4.16-001-001, KMIPKIT-REQ-SPEC-4.16-001-002, KMIPKIT-REQ-SPEC-4.16-002, KMIPKIT-REQ-SPEC-4.16-003 */
+int32_t kmipkit_client_batch_item_encrypt(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * iv_counter_nonce, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, const kmipkit_byte_span_v1_t * authenticated_encryption_additional_data, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; returned byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0019-FR-001, KMIPKIT-0019-FR-005, KMIPKIT-0019-FR-007, KMIPKIT-0019-FR-009, KMIPKIT-0019-FR-011, KMIPKIT-0019-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_decrypt(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data, uint8_t * out_correlation_value_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Returns typed response fields only when the KMIP result is Success; returned byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0019-FR-001, KMIPKIT-0019-FR-005, KMIPKIT-0019-FR-007, KMIPKIT-0019-FR-009, KMIPKIT-0019-FR-011, KMIPKIT-0019-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_encrypt(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data, uint8_t * out_iv_counter_nonce_present, kmipkit_byte_span_v1_t * out_iv_counter_nonce, uint8_t * out_correlation_value_present, kmipkit_byte_span_v1_t * out_correlation_value, uint8_t * out_authenticated_encryption_tag_present, kmipkit_byte_span_v1_t * out_authenticated_encryption_tag);
+/* Creates an empty client-initiated Ping request batch item from KMIP 2.1 §6.1.36.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_ping(kmipkit_client_batch_item_t ** out_item);
+/* Reports whether the batch item has a typed Ping response, including Pending.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_ping(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
+/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40 after checking its payload against the default codec limits. The complete Request Message is checked again before transmission.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_query(const uint32_t * functions, uint64_t function_count, uint8_t has_object_groups, const kmipkit_byte_span_v1_t * object_groups, uint64_t object_group_count, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed client-initiated Query request batch item after checking its TTLV payload against the supplied codec limits. The complete Request Message is checked again before transmission.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_query_with_limits(kmipkit_codec_limits_t * limits, const uint32_t * functions, uint64_t function_count, uint8_t has_object_groups, const kmipkit_byte_span_v1_t * object_groups, uint64_t object_group_count, kmipkit_client_batch_item_t ** out_item);
+/* Copies the complete generic TTLV Query response payload, retaining ordered and unknown Items.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_response_query_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates local accounting only from a live successful Get Usage Allocation result and the caller supplied exact count and raw unit.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_create(kmipkit_client_batch_item_response_t * item, int64_t requested_units, uint32_t usage_limits_unit, kmipkit_usage_allocation_context_t ** out_context);
+/* Returns the caller supplied open Usage Limits Unit enumeration.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_usage_limits_unit(kmipkit_usage_allocation_context_t * context, uint32_t * out_unit);
+/* Returns the exact positive caller supplied allocation count.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_allocated_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns units not currently reserved through this context.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_available_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns units reserved through guarded calls in this context.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_reserved_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns the immutable server resolved identifier. Text bytes are borrowed from the context and remain valid until it is released.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_unique_identifier(kmipkit_usage_allocation_context_t * context, kmipkit_unique_identifier_v1_t * out_identifier);
+/* Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.
+ * Returns the standard one item batch result and preserves the original item metadata.
+ * A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_client_execute_guarded_protection_item(kmipkit_client_t * client, kmipkit_usage_allocation_context_t * context, kmipkit_client_batch_item_t ** item, int64_t cost, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.
+ * Returns the standard one item batch result and preserves the original item metadata.
+ * A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(kmipkit_client_t * client, kmipkit_usage_allocation_context_t * context, kmipkit_client_batch_item_t ** item, int64_t cost, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Returns a caller-owned copy of the complete PKCS#11 response TTLV for Success, Failure, or Pending. Unknown fields and their order are preserved.
+ * This accessor applies only to a valid PKCS#11 result handle; local transport, protocol, and validation errors never expose response bodies. For a non-PKCS#11 item, sets present to 0 and the output handle to NULL. Release a returned handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed PKCS#11 request from KMIP v2.1 §6.1.37, Table 273. Function is required; nullable Interface, Correlation Value, and Input Parameters preserve absent versus present-empty values. The request copies input data into KMIPKit-owned storage.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_pkcs11(kmipkit_ttlv_structure_t * function, kmipkit_ttlv_structure_t * interface, const kmipkit_byte_span_v1_t * correlation_value, kmipkit_ttlv_structure_t * input_parameters, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned copy of the optional PKCS#11 Interface Structure. For absence, sets present to 0 and the output handle to NULL. A returned handle owns independent TTLV storage and must be released with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_interface_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_interface);
+/* Returns a caller-owned copy of the optional PKCS#11 Function Structure, preserving unknown fields and values. For absence, sets present to 0 and the output handle to NULL. A returned handle owns independent TTLV storage and must be released with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_function_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_function);
+/* Returns the exact Correlation Value as a borrowed byte span into the response item. Copy it before releasing the item-response handle. Present-empty is present=1 with a zero-length span; absence is present=0 with that same empty span.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_correlation_value(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
+/* Returns a caller-owned copy of the optional PKCS#11 Output Parameters Structure, preserving unknown fields and values. For absence, sets present to 0 and the output handle to NULL. A returned handle owns independent TTLV storage and must be released with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_output_parameters);
+/* Returns a caller-owned copy of the optional PKCS#11 Return Code Structure; unknown enumeration and vendor values remain available in TTLV. For absence, sets present to 0 and the output handle to NULL. A returned handle owns independent TTLV storage and must be released with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_return_code);
+/* Creates a typed Re-key item with optional Unique Identifier, Offset, Attributes, and Protection Storage Masks.
+ * Input Attributes and Protection Storage Masks are copied during this call; both copies complete before this function returns, and callers retain ownership of the input structures.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001, KMIPKIT-REQ-SPEC-6.1.46-004-002 */
+int32_t kmipkit_client_batch_item_rekey(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_offset, uint32_t offset, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns the replacement key Unique Identifier only for a successful Re-key result.
+ * For a text Unique Identifier, out_unique_identifier.text_data is borrowed from the response item and becomes invalid when the response item is released; copy the text bytes before releasing it.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001, KMIPKIT-REQ-SPEC-6.1.46-004-002 */
+int32_t kmipkit_client_batch_item_response_rekey(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Re-key result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.46-001, KMIPKIT-REQ-SPEC-6.1.46-004-001, KMIPKIT-REQ-SPEC-6.1.46-004-002 */
+int32_t kmipkit_client_batch_item_response_rekey_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed Re-key Key Pair request using the optional fields in KMIP 2.1 §6.1.47, Table 310.
+ * Each supplied Attributes or Protection Storage Masks structure is copied before the constructor returns; the caller retains ownership of its input handles.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001, KMIPKIT-REQ-SPEC-6.1.47-004-002 */
+int32_t kmipkit_client_batch_item_rekey_key_pair(const kmipkit_unique_identifier_v1_t * private_key_unique_identifier, uint8_t has_offset, uint32_t offset, kmipkit_ttlv_structure_t * common_attributes, kmipkit_ttlv_structure_t * private_key_attributes, kmipkit_ttlv_structure_t * public_key_attributes, kmipkit_ttlv_structure_t * common_protection_storage_masks, kmipkit_ttlv_structure_t * private_protection_storage_masks, kmipkit_ttlv_structure_t * public_protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Copies the replacement Private and Public Key identifiers only from a successful Re-key Key Pair response.
+ * For text identifiers, each output text_data span is borrowed from the response item and becomes invalid when that item is released; copy the text bytes before releasing it.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001, KMIPKIT-REQ-SPEC-6.1.47-004-002 */
+int32_t kmipkit_client_batch_item_response_rekey_key_pair(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_private_key_unique_identifier, kmipkit_unique_identifier_v1_t * out_public_key_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Re-key Key Pair result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.47-001, KMIPKIT-REQ-SPEC-6.1.47-004-001, KMIPKIT-REQ-SPEC-6.1.47-004-002 */
+int32_t kmipkit_client_batch_item_response_rekey_key_pair_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates one typed Re-Provision request from KMIP 2.1 §6.1.48, Table 313.
+ * The optional Certificate Request and Certificate structures are copied before the constructor returns. Supply at most one; neither may be supplied for server-created credentials.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-004, KMIPKIT-REQ-SPEC-6.1.48-006 */
+int32_t kmipkit_client_batch_item_reprovision(kmipkit_ttlv_structure_t * certificate_request, kmipkit_ttlv_structure_t * certificate, kmipkit_client_batch_item_t ** out_item);
+/* Copies the optional Table 314 Unique Identifier from a successful Re-Provision result.
+ * out_present distinguishes a typed success response from no typed response; out_identifier_present reports the optional identifier independently. Text bytes are borrowed from the batch response and expire when it is released.
+ * Output regions must be writable and must not overlap.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-004, KMIPKIT-REQ-SPEC-6.1.48-006 */
+int32_t kmipkit_client_batch_item_response_reprovision(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_identifier_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Re-Provision result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.48-001, KMIPKIT-REQ-SPEC-6.1.48-004, KMIPKIT-REQ-SPEC-6.1.48-006 */
+int32_t kmipkit_client_batch_item_response_reprovision_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates KMIP 2.1 §6.1.49 Table 316 RNG Retrieve with the caller-supplied signed Data Length Integer.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_rng_retrieve(int32_t data_length, kmipkit_client_batch_item_t ** out_item);
+/* Reads Data from a successful RNG Retrieve result; the response bytes are secret and borrowed while the batch response item is alive.
+ * Failed and Pending results expose no typed success fields.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_rng_retrieve(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data);
+/* Returns a caller-owned copy of the complete ordered RNG Retrieve response TTLV only for Success. Unknown fields and their order are preserved.
+ * For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_rng_retrieve_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates KMIP 2.1 §6.1.50 Table 319 RNG Seed from required caller-supplied secret bytes.
+ * The seed is copied into KMIPKit-owned zeroizing storage; the caller-owned span remains unchanged. An empty present seed is distinct from omission.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.50-001 */
+int32_t kmipkit_client_batch_item_rng_seed(const kmipkit_byte_span_v1_t * data, kmipkit_client_batch_item_t ** out_item);
+/* Reads the server-reported Data Length from successful RNG Seed results, preserving zero and signed Integer values.
+ * Failed and Pending results expose no typed success fields.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.50-001 */
+int32_t kmipkit_client_batch_item_response_rng_seed(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_length_present, int32_t * out_data_length);
+/* Returns a caller-owned copy of the complete ordered RNG Seed response TTLV only for Success. Unknown fields and their order are preserved.
+ * For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.50-001 */
+int32_t kmipkit_client_batch_item_response_rng_seed_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Copies the required returned Unique Identifier only from a successful Register result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-REQ-SPEC-6.1.43-005, KMIPKIT-REQ-SPEC-6.1.43-007, KMIPKIT-REQ-SPEC-6.1.43-009-001, KMIPKIT-REQ-SPEC-6.1.43-009-002, KMIPKIT-REQ-SPEC-6.1.43-010-001, KMIPKIT-REQ-SPEC-6.1.43-010-002, KMIPKIT-REQ-SPEC-6.1.43-011 */
+int32_t kmipkit_client_batch_item_response_register(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Register result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-REQ-SPEC-6.1.43-005, KMIPKIT-REQ-SPEC-6.1.43-007, KMIPKIT-REQ-SPEC-6.1.43-009-001, KMIPKIT-REQ-SPEC-6.1.43-009-002, KMIPKIT-REQ-SPEC-6.1.43-010-001, KMIPKIT-REQ-SPEC-6.1.43-010-002, KMIPKIT-REQ-SPEC-6.1.43-011 */
+int32_t kmipkit_client_batch_item_response_register_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_revocation_reason_create(uint32_t raw_code, uint8_t has_message, const uint8_t * message_data, uint64_t message_length, kmipkit_revocation_reason_t ** out_reason);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_revoke_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_revocation_reason_t * reason, uint8_t has_compromise_occurrence_date, int64_t compromise_occurrence_date, kmipkit_revoke_request_t ** out_request);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_revoke(kmipkit_revoke_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Returns the required Unique Identifier only from a successful Revoke result. For Text String identifiers, text_data points into response-owned storage and is borrowed; it remains valid only until the response item is released. Copy the bytes before releasing the item.
+ * For non-success results, sets present to 0 and clears the identifier output. All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
+ */
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_response_revoke(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_response_revoke_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a KMIP v2.1 §6.1.53 Table 328 Set Defaults request. A null Defaults Information pointer omits the field; an empty Structure pointer preserves explicit presence.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_set_defaults(kmipkit_ttlv_structure_t * defaults_information, kmipkit_client_batch_item_t ** out_item);
+/* Returns a caller-owned complete generic TTLV copy only for successful Set Defaults. KMIP 2.1 §6.1.53 Table 329 defines an empty Success operation payload.
+ * For Failure or Pending, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_set_defaults_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates one KMIP 2.1 §6.1.57 Validate request. Certificate structures, Unique Identifier records, and payload extensions are borrowed and copied.
+ * Certificate, identifier, and extension order is preserved within each list. Null arrays are accepted only with zero counts; an omitted Validity Date remains absent.
+ * Input array storage and referenced identifier text bytes must not overlap out_item. Such overlap is rejected with InvalidInput before either region is written.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-007, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.57-001, KMIPKIT-REQ-SPEC-6.1.57-002-001, KMIPKIT-REQ-SPEC-6.1.57-002-002, KMIPKIT-REQ-SPEC-6.1.57-004, KMIPKIT-REQ-SPEC-6.1.57-005, KMIPKIT-REQ-SPEC-6.1.57-006 */
+int32_t kmipkit_client_batch_item_validate(kmipkit_ttlv_structure_t ** certificates, uint64_t certificate_count, const kmipkit_unique_identifier_v1_t * identifiers, uint64_t identifier_count, kmipkit_ttlv_item_t ** payload_extensions, uint64_t payload_extension_count, uint8_t has_validity_date, int64_t validity_date, kmipkit_client_batch_item_t ** out_item);
+/* Returns the raw open KMIP 2.1 §6.1.57 Validity Indicator only for Success; Failure and Pending expose no operation value.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-007, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.57-001, KMIPKIT-REQ-SPEC-6.1.57-002-001, KMIPKIT-REQ-SPEC-6.1.57-002-002, KMIPKIT-REQ-SPEC-6.1.57-004, KMIPKIT-REQ-SPEC-6.1.57-005, KMIPKIT-REQ-SPEC-6.1.57-006 */
+int32_t kmipkit_client_batch_item_response_validate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint32_t * out_validity_indicator);
+/* Returns a caller-owned complete generic TTLV copy only for a successful Validate result; unknown fields and order are preserved.
+ * For Failure and Pending, sets present to zero and the output handle to NULL.
+ */
+/* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-007, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.57-001, KMIPKIT-REQ-SPEC-6.1.57-002-001, KMIPKIT-REQ-SPEC-6.1.57-002-002, KMIPKIT-REQ-SPEC-6.1.57-004, KMIPKIT-REQ-SPEC-6.1.57-005, KMIPKIT-REQ-SPEC-6.1.57-006 */
+int32_t kmipkit_client_batch_item_response_validate_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates a typed Activate request from OASIS KMIP Specification v2.1 §6.1.1; a null Unique Identifier leaves the optional field absent.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_activate(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed Archive request from OASIS KMIP Specification v2.1 §6.1.4; a null Unique Identifier leaves the optional field absent.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.4-001 */
+int32_t kmipkit_client_batch_item_archive(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed Destroy request from OASIS KMIP Specification v2.1 §6.1.15; a null Unique Identifier leaves the optional field absent.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_destroy(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed Recover request from OASIS KMIP Specification v2.1 §6.1.42; a null Unique Identifier leaves the optional field absent.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.42-001-001, KMIPKIT-REQ-SPEC-6.1.42-001-002 */
+int32_t kmipkit_client_batch_item_recover(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Copies the required Unique Identifier only from a successful Activate result; response identifier bytes are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_activate(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the required Unique Identifier only from a successful Archive result; response identifier bytes are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.4-001 */
+int32_t kmipkit_client_batch_item_response_archive(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the required Unique Identifier only from a successful Destroy result; response identifier bytes are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_destroy(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the required Unique Identifier only from a successful Recover result; response identifier bytes are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0018-FR-001, KMIPKIT-0018-FR-002, KMIPKIT-0018-FR-003, KMIPKIT-0018-FR-004, KMIPKIT-0018-FR-005, KMIPKIT-0018-FR-006, KMIPKIT-0018-FR-007, KMIPKIT-0018-FR-008, KMIPKIT-0018-FR-009, KMIPKIT-0018-FR-010, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.42-001-001, KMIPKIT-REQ-SPEC-6.1.42-001-002 */
+int32_t kmipkit_client_batch_item_response_recover(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
+int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
+/* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
+ * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
+ * The generic response is preserved without placing raw response bytes in diagnostics.
+ */
+/* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
+int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
+/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
+int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 
 #ifdef __cplusplus
 }

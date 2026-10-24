@@ -3,7 +3,7 @@
 //! The typed request enum supports explicit Discover Versions, Activate,
 //! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-//! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
+//! Attribute List, Modify Attribute, Set Attribute, Query, Ping, and PKCS#11 operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
 //! Requests. The synchronous [`Client`] is constructed from an immutable client
 //! configuration and validated production transport configuration; callers
@@ -51,7 +51,7 @@ mod extension_execution_tests;
 
 mod execute;
 
-/// Typed opaque PKCS#11 forwarding models.
+/// Typed opaque KMIP 2.1 §6.1.37 PKCS#11 forwarding models.
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
 

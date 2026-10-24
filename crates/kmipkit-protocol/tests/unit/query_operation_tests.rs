@@ -306,6 +306,23 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     assert!(response.defaults_information().is_some());
     assert!(response.protection_storage_masks().is_some());
     assert_eq!(response.unknown_items().count(), 1);
+    let reconstructed = response
+        .to_ttlv_payload()
+        .expect("typed Query responses rebuild a generic TTLV payload");
+    let reconstructed_view = reconstructed.view();
+    assert_eq!(
+        reconstructed_view
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        response
+            .response_fields()
+            .iter()
+            .map(crate::QueryResponseField::tag)
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(reconstructed_view.children().len(), 17);
     assert_eq!(
         response
             .response_fields()

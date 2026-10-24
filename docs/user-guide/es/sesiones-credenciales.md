@@ -87,11 +87,33 @@ una estructura de derechos definida para su servidor KMIP. La biblioteca
 conserva esa estructura TTLV; no interpreta los derechos ni afirma que el
 servidor los haya concedido.
 
+Las entradas tipadas están disponibles en los cuatro lenguajes de 1.0:
+
+| Lenguaje | Mapeo de la petición | Mapeo de la respuesta tipada |
+| --- | --- | --- |
+| Rust | `ClientRequest::delegated_login(DelegatedLoginRequest::new(rights))` | `DelegatedLoginResponse::ticket()` y los accesores de `Ticket` |
+| C | `kmipkit_client_batch_item_delegated_login(...)` | `kmipkit_client_batch_item_response_delegated_login(...)` |
+| Java | `ClientBatchItem.delegatedLogin(...)` | `ClientBatchItemResult.delegatedLoginResponse()` |
+| Python | `client_batch_item_delegated_login(...)` | `BatchItemResult.delegated_login_response` |
+
+Cada enlace también expone la estructura TTLV completa y ordenada del Ticket,
+incluidos sus hijos desconocidos, y conserva los valores desconocidos de Ticket
+Type. Trata el Ticket Value y la estructura TTLV genérica del Ticket como datos
+secretos. El span de Ticket Value de C pertenece al elemento de respuesta y deja
+de ser válido al liberarlo. `ticketValue()` de Java devuelve un `byte[]` del
+llamador, que debe borrar; KMIPKit borra sus buffers Java internos y la copia
+propia de la respuesta al cerrarla. `ticket_value` de Python devuelve `bytes`
+inmutables, que el runtime de Python no puede borrar de forma determinista;
+KMIPKit borra su buffer mutable y la copia TTLV genérica propia de la respuesta
+al llamar a `close()`. Rust expone Ticket Value mediante un callback y lo posee
+en un tipo secreto que se pone a cero. No registres un Ticket, su TTLV genérico
+ni ninguna copia de Ticket Value.
+
 ## Alcance y limitaciones
 
-Estos ejemplos se compilan contra las API Rust de cliente y protocolo. El
-manifiesto aprobado KMIPKIT-0043 sigue definiendo la paridad de C, Java y
-Python. Las pruebas del proyecto cubren el fixture Login CN01 §2.48 fijado en
-el repositorio; las pruebas derivadas de la fuente para los demás casos no son
-fixtures oficiales. Esta guía no afirma interoperabilidad con servidores ni
-certificación formal.
+Los ejemplos de código se compilan contra las API Rust de cliente y protocolo.
+El manifiesto aprobado KMIPKIT-0043 y su registro de trazabilidad documentan los
+mapeos y la paridad de Delegated Login entre lenguajes. Las pruebas del proyecto
+cubren el fixture Login CN01 §2.48 fijado en el repositorio; las pruebas
+derivadas de la fuente para los demás casos no son fixtures oficiales. Esta guía
+no afirma interoperabilidad con servidores ni certificación formal.

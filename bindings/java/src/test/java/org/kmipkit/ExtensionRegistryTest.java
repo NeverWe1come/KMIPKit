@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -129,28 +130,99 @@ final class ExtensionRegistryTest {
 
     @Test
     void clientConfigurationsOwnImmutableIsolatedRegistrySnapshots() throws Exception {
-        List<ExtensionDefinition> callerDefinitions = new ArrayList<>();
-        callerDefinitions.add(alphaDefinition());
-        ClientExtensionRegistry alphaRegistry = registry(callerDefinitions, defaults());
-        callerDefinitions.clear();
-        ClientExtensionRegistry betaRegistry = registry(
-                List.of(definition("beta", "beta-v1", TtlvItemType.TextString)), defaults());
-        try (ClientConfiguration alphaConfiguration = ClientConfiguration.create(alphaRegistry);
+        String item = SharedCapabilityParityFixtureTest.caseById(
+                Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath()),
+                "client-configuration.registry-isolation.v1");
+        String input = SharedCapabilityParityFixtureTest.objectField(item, "input");
+        String expected = SharedCapabilityParityFixtureTest.objectField(item, "expectedOutput");
+        java.util.regex.Matcher expectedIdentityMatcher = java.util.regex.Pattern.compile(
+                "\\\"configurationIdentities\\\"\\s*:\\s*\\[\\s*\\[\\s*\\\"([^\\\"]+)\\\"\\s*\\]"
+                        + "\\s*,\\s*\\[\\s*\\\"([^\\\"]+)\\\"\\s*\\]\\s*\\]",
+                java.util.regex.Pattern.DOTALL).matcher(expected);
+        assertTrue(expectedIdentityMatcher.find(), "fixture configurationIdentities must contain two rows");
+        String alphaName = expectedIdentityMatcher.group(1);
+        String betaName = expectedIdentityMatcher.group(2);
+        java.util.regex.Matcher inputIdentityMatcher = java.util.regex.Pattern.compile(
+                "\\\"extensionIdentities\\\"\\s*:\\s*\\[\\s*\\\"([^\\\"]+)\\\"\\s*\\]")
+                .matcher(input);
+        List<String> inputIdentities = new ArrayList<>();
+        while (inputIdentityMatcher.find()) inputIdentities.add(inputIdentityMatcher.group(1));
+        assertEquals(List.of(alphaName, betaName), inputIdentities);
+        List<Long> expectedCounts = SharedCapabilityParityFixtureTest.numberArrayField(
+                expected, "configurationDefinitionCounts");
+        List<String> cleanup = SharedCapabilityParityFixtureTest.stringArrayField(item, "cleanup");
+        boolean registryStateIsShared = Boolean.parseBoolean(
+                SharedCapabilityParityFixtureTest.stringOrBooleanField(expected, "registryStateIsShared"));
+        assertEquals(List.of("close-configuration-owned-native-handles-once",
+                "release-returned-registry-views-once"), cleanup);
+
+        try (SharedConfigurationDefinition alphaDefinition = sharedConfigurationDefinition(
+                    alphaName, "alpha-v1", 0x420001);
+                SharedConfigurationDefinition betaDefinition = sharedConfigurationDefinition(
+                    betaName, "beta-v1", 0x420010);
+                ClientExtensionRegistry alphaRegistry = registry(
+                        List.of(alphaDefinition.definition()), defaults());
+                ClientConfiguration alphaConfiguration = ClientConfiguration.create(alphaRegistry);
+                ClientExtensionRegistry betaRegistry = registry(
+                        List.of(betaDefinition.definition()), defaults());
                 ClientConfiguration betaConfiguration = ClientConfiguration.create(betaRegistry)) {
             try (ClientExtensionRegistry alphaOwnedRegistry = alphaConfiguration.extensionRegistry();
                     ClientExtensionRegistry betaOwnedRegistry = betaConfiguration.extensionRegistry()) {
-                assertEquals(1, alphaOwnedRegistry.definitionCount());
-                assertEquals(1, betaOwnedRegistry.definitionCount());
-                assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                        alphaOwnedRegistry, identity(ALPHA_NAME)).isPresent());
-                assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                        alphaOwnedRegistry, identity("beta")).isEmpty());
-                assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                        betaOwnedRegistry, identity("beta")).isPresent());
-                assertTrue(ClientExtensionRegistry.definitionForIdentity(
-                        betaOwnedRegistry, identity(ALPHA_NAME)).isEmpty());
+                assertEquals(expectedCounts.get(0).longValue(), alphaOwnedRegistry.definitionCount());
+                assertEquals(expectedCounts.get(1).longValue(), betaOwnedRegistry.definitionCount());
+                assertTrue(definitionPresent(alphaOwnedRegistry, alphaName));
+                assertEquals(registryStateIsShared, definitionPresent(alphaOwnedRegistry, betaName));
+                assertTrue(definitionPresent(betaOwnedRegistry, betaName));
+                assertEquals(registryStateIsShared, definitionPresent(betaOwnedRegistry, alphaName));
+            }
+            try (ClientExtensionRegistry reopenedRegistry = alphaConfiguration.extensionRegistry()) {
+                assertEquals(expectedCounts.get(0).longValue(), reopenedRegistry.definitionCount(),
+                        "releasing a registry view must leave its configuration owner usable");
             }
         }
+    }
+
+    private static boolean definitionPresent(ClientExtensionRegistry registry, String name) throws Exception {
+        try (ExtensionIdentity identity = identity(name)) {
+            return ClientExtensionRegistry.definitionForIdentity(registry, identity).isPresent();
+        }
+    }
+
+    private record SharedConfigurationDefinition(
+            ExtensionDefinition definition,
+            ExtensionIdentity identity,
+            Compatibility compatibility,
+            Discriminator discriminator,
+            ExtensionSchema childSchema,
+            ExtensionChildRule childRule,
+            ExtensionSchema schema) implements AutoCloseable {
+        @Override
+        public void close() {
+            definition.close();
+            schema.close();
+            childRule.close();
+            childSchema.close();
+            discriminator.close();
+            compatibility.close();
+            identity.close();
+        }
+    }
+
+    private static SharedConfigurationDefinition sharedConfigurationDefinition(
+            String name, String marker, int rawTag) throws Exception {
+        ExtensionIdentity identity = identity(name);
+        Compatibility compatibility = Compatibility.create(2, 1, 2, 1, "0.0.0", "99.0.0");
+        Tag markerTag = tag(rawTag);
+        TtlvPath path = TtlvPath.create(markerTag);
+        TtlvValue markerValue = TtlvValue.TextString(marker.getBytes(StandardCharsets.UTF_8), CODEC_LIMITS);
+        Discriminator discriminator = Discriminator.create(path, markerValue);
+        ExtensionSchema childSchema = ExtensionSchema.scalar(TtlvItemType.TextString);
+        ExtensionChildRule childRule = ExtensionChildRule.required(markerTag, childSchema);
+        ExtensionSchema schema = ExtensionSchema.structure(List.of(childRule), List.of(), false);
+        ExtensionDefinition definition = ExtensionDefinition.create(
+                identity, compatibility, discriminator, schema);
+        return new SharedConfigurationDefinition(
+                definition, identity, compatibility, discriminator, childSchema, childRule, schema);
     }
 
     @Test
@@ -273,7 +345,16 @@ final class ExtensionRegistryTest {
 
     @Test
     void invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText() throws Exception {
-        String secret = "secret-value-must-not-appear-in-diagnostics";
+        String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
+        String item = SharedCapabilityParityFixtureTest.caseById(fixture, "errors.schema-redaction.v1");
+        String input = SharedCapabilityParityFixtureTest.objectField(item, "input");
+        String expected = SharedCapabilityParityFixtureTest.objectField(item, "expectedOutput");
+        String secret = SharedCapabilityParityFixtureTest.stringField(input, "diagnosticMarker");
+        assertEquals("invalid_schema", SharedCapabilityParityFixtureTest.stringField(item, "errorCategory"));
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                expected, "diagnosticOmitsInputMarker")));
+        assertFalse(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                expected, "diagnosticContainsPayload")));
         ExtensionDefinition withRequiredNumericField = definitionWithExtraRequiredField();
         ClientExtensionRegistry registry = registry(List.of(withRequiredNumericField), defaults());
         TtlvStructure secretPayload = alphaPayload(secret);

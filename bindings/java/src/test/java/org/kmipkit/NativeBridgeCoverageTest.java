@@ -1,6 +1,7 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -72,6 +73,162 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(0, 0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExtensionCriticalityIndicatorAt(0, 0));
+    }
+
+    @Test
+    void nativeTypedResponseBridgesRejectNullItemHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreate(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCertify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetConstraints(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseExport(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseHash(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMac(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMacVerify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSign(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.ttlvStructureView(0));
+    }
+
+    @Test
+    void nativeResponseBridgesRejectNullHandlesForRemainingOperations() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseRekey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponsePing(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseQueryTtlv(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponsePkcs11(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+    }
+
+    @Test
+    void usageAllocationContextBridgesRejectNullHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextUsageLimitsUnit(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextAllocatedUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextAvailableUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextReservedUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextUniqueIdentifier(0));
+    }
+
+    @Test
+    void nativeQueryBridgesRejectMalformedObjectGroupText() {
+        byte[][] malformedObjectGroups = {new byte[] {(byte) 0xff}};
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(new int[] {1}, malformedObjectGroups));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, malformedObjectGroups, CODEC_LIMITS));
+    }
+
+    @Test
+    void nativeQueryWithLimitsEnforcesElementBudgetBeforeAllocation() {
+        long[] limitsBelowMinimumQuerySize = {16_777_216, 64, 1};
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, null, limitsBelowMinimumQuerySize));
+    }
+
+    @Test
+    void nativeValidationBridgesRejectMalformedBoundaryInputs() {
+        byte[][] nullObjectGroups = new byte[1][];
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(new int[] {1}, nullObjectGroups));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, nullObjectGroups, CODEC_LIMITS));
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.splitKeyReferenceCreate(0, null, 0, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        -1, new long[] {1}, false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        1, new long[0], false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        1, new long[] {0}, false, 0, 0, 0));
+
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvValueEnumeration(-1));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvValueInterval(-1));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientCreate(0, 0));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchAddItem(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, -1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextCreate(0, 1, 0));
+    }
+
+    @Test
+    void nativePkcs11BridgeRejectsMissingTtlvInputs() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemPkcs11(0, 0, null, 0));
+    }
+
+    @Test
+    void nativeRekeyBridgeRejectsInvalidIdentifiersAndOffsets() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemRekey(99, null, 0, false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemRekey(
+                        1, new byte[] {'k'}, 0, true, -1, 0, 0));
+    }
+
+    @Test
+    void nativeClientOperationBridgesRejectMalformedIdentifiersAndAbsentValues() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCheck(
+                        4, null, 0, false, 0, false, 0, false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCheck(
+                        0, null, 0, false, 0, false, 0, false, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetUsageAllocation(4, null, 0, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                        1, 2, 1, 1, 3, null, (long) Integer.MAX_VALUE + 1,
+                        null, 0, 0));
+    }
+
+    @Test
+    void nativeReleaseIgnoresNullAndForgedPositiveJniHandles() {
+        assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0));
+        assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0x1000L));
     }
 
     @Test

@@ -1,0 +1,62 @@
+{
+  "formatVersion": 2,
+  "packages": [
+    {
+      "complete": true,
+      "counts": {
+        "exactMatches": 394,
+        "kindMismatches": 0,
+        "manifest": 394,
+        "matched": 394,
+        "missingFromManifest": 0,
+        "notObserved": 0,
+        "observed": 431,
+        "pathMatches": 394
+      },
+      "issues": [],
+      "kindMismatches": [],
+      "matchesManifest": true,
+      "missingFromManifest": [],
+      "notObserved": [],
+      "packageId": "c-kmipkit"
+    },
+    {
+      "complete": true,
+      "counts": {
+        "exactMatches": 732,
+        "kindMismatches": 0,
+        "manifest": 732,
+        "matched": 732,
+        "missingFromManifest": 0,
+        "notObserved": 0,
+        "observed": 920,
+        "pathMatches": 732
+      },
+      "issues": [],
+      "kindMismatches": [],
+      "matchesManifest": true,
+      "missingFromManifest": [],
+      "notObserved": [],
+      "packageId": "java-kmipkit"
+    },
+    {
+      "complete": true,
+      "counts": {
+        "exactMatches": 704,
+        "kindMismatches": 0,
+        "manifest": 704,
+        "matched": 704,
+        "missingFromManifest": 0,
+        "notObserved": 0,
+        "observed": 1207,
+        "pathMatches": 704
+      },
+      "issues": [],
+      "kindMismatches": [],
+      "matchesManifest": true,
+      "missingFromManifest": [],
+      "notObserved": [],
+      "packageId": "python-kmipkit"
+    }
+  ]
+}

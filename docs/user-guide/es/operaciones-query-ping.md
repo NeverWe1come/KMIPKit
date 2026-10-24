@@ -19,6 +19,12 @@ lista vacía codifica una estructura presente sin miembros; si no se usa el
 builder, el campo queda ausente. KMIPKit no añade grupos ni elimina valores
 repetidos.
 
+Los builders `ClientBatchItem` específicos de Query pueden comprobar el payload
+Query con los límites de códec elegidos por el llamador antes de copiarlo o
+codificarlo. Al ejecutar, se comprueba el mensaje Request completo, incluidas
+las cabeceras y los contenedores del batch, con esos mismos límites antes del
+intercambio de transporte.
+
 ```rust,kmipkit-test
 use kmipkit_client::{Client, ClientBatchItemResponse, ClientError};
 use kmipkit_protocol::{QueryFunction, QueryRequest};

@@ -1,6 +1,8 @@
 //! An authoritative DNS fixture bound only to IPv4 loopback over UDP and TCP.
 
 use std::collections::BTreeMap;
+use std::error::Error;
+use std::fmt;
 use std::io::{self, Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
@@ -210,39 +212,120 @@ impl LocalDnsFixture {
 
 fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
     bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
         UdpSocket::bind,
+        UdpSocket::local_addr,
+        TcpListener::bind,
+        TcpListener::local_addr,
     )
 }
 
-fn bind_local_dns_sockets_with(
-    mut bind_tcp: impl FnMut() -> io::Result<TcpListener>,
-    mut bind_udp: impl FnMut(SocketAddr) -> io::Result<UdpSocket>,
-) -> io::Result<(UdpSocket, TcpListener)> {
-    let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
-    loop {
-        let tcp_listener = match bind_tcp() {
-            Ok(listener) => listener,
-            Err(error) => {
-                retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                continue;
+fn bind_local_dns_sockets_with<Udp, Tcp>(
+    mut bind_udp: impl FnMut(SocketAddr) -> io::Result<Udp>,
+    udp_local_addr: impl Fn(&Udp) -> io::Result<SocketAddr>,
+    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<Tcp>,
+    tcp_local_addr: impl Fn(&Tcp) -> io::Result<SocketAddr>,
+) -> io::Result<(Udp, Tcp)> {
+    let udp_bind_address = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    let tcp_bind_address = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    let mut bind_tcp_first = false;
+
+    for attempt in 1..=MAX_SOCKET_PAIR_BIND_ATTEMPTS {
+        if bind_tcp_first {
+            let tcp_listener = match bind_tcp(tcp_bind_address) {
+                Ok(listener) => listener,
+                Err(source) => {
+                    retry_dns_socket_pair_bind("TCP", tcp_bind_address, attempt, source)?;
+                    bind_tcp_first = !bind_tcp_first;
+                    continue;
+                }
+            };
+            let local_addr = tcp_local_addr(&tcp_listener)?;
+            match bind_udp(local_addr) {
+                Ok(udp_socket) => return Ok((udp_socket, tcp_listener)),
+                Err(source) => {
+                    retry_dns_socket_pair_bind("UDP", local_addr, attempt, source)?;
+                    bind_tcp_first = !bind_tcp_first;
+                }
             }
-        };
-        let local_addr = tcp_listener.local_addr()?;
-        match bind_udp(local_addr) {
-            Ok(socket) => return Ok((socket, tcp_listener)),
-            Err(error) => retry_socket_pair_bind(&mut attempts_remaining, error)?,
+        } else {
+            let udp_socket = match bind_udp(udp_bind_address) {
+                Ok(socket) => socket,
+                Err(source) => {
+                    retry_dns_socket_pair_bind("UDP", udp_bind_address, attempt, source)?;
+                    bind_tcp_first = !bind_tcp_first;
+                    continue;
+                }
+            };
+            let local_addr = udp_local_addr(&udp_socket)?;
+            match bind_tcp(local_addr) {
+                Ok(listener) => return Ok((udp_socket, listener)),
+                Err(source) => {
+                    retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
+                    bind_tcp_first = !bind_tcp_first;
+                }
+            }
         }
+    }
+
+    Err(io::Error::other(
+        "DNS fixture exhausted socket-pair bind attempts without a bind error",
+    ))
+}
+
+#[derive(Debug)]
+struct DnsSocketBindError {
+    protocol: &'static str,
+    address: SocketAddr,
+    attempt: usize,
+    source: io::Error,
+}
+
+impl fmt::Display for DnsSocketBindError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "DNS fixture {} bind to {} failed on attempt {}/{}: {}",
+            self.protocol, self.address, self.attempt, MAX_SOCKET_PAIR_BIND_ATTEMPTS, self.source
+        )
     }
 }
 
-fn retry_socket_pair_bind(attempts_remaining: &mut usize, error: io::Error) -> io::Result<()> {
-    if !is_retryable_socket_pair_bind_error(error.kind()) || *attempts_remaining <= 1 {
-        return Err(error);
+impl Error for DnsSocketBindError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.source)
     }
+}
 
-    *attempts_remaining -= 1;
-    Ok(())
+fn retry_dns_socket_pair_bind(
+    protocol: &'static str,
+    address: SocketAddr,
+    attempt: usize,
+    source: io::Error,
+) -> io::Result<()> {
+    let error = with_dns_socket_bind_context(protocol, address, attempt, source);
+    if is_retryable_socket_pair_bind_error(error.kind()) && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
+    {
+        Ok(())
+    } else {
+        Err(error)
+    }
+}
+
+fn with_dns_socket_bind_context(
+    protocol: &'static str,
+    address: SocketAddr,
+    attempt: usize,
+    source: io::Error,
+) -> io::Error {
+    io::Error::new(
+        source.kind(),
+        DnsSocketBindError {
+            protocol,
+            address,
+            attempt,
+            source,
+        },
+    )
 }
 
 fn is_retryable_socket_pair_bind_error(kind: io::ErrorKind) -> bool {

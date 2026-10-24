@@ -130,7 +130,7 @@ An application developer installs an official Java or Python package and loads i
 
 The complete 1.0 target is the 56 KMIP 2.1 operations classified `client_1_0` in the normative catalog and the three API levels defined in `docs/design/project-definition.md` and ADR-0006. Set Endpoint Role (§6.1.54) remains cataloged as `client_1_1` and outside this release scope. This feature defines the versioned public contract, manifest/generator rules, four-language mapping, parity verification, and supported binding packaging. It does not restate or implement KMIP operation semantics. Each operation API is added only from its separately approved operation specification and its implemented Rust contract.
 
-The active release catalog currently links all 56 `client_1_0` operations to owner specifications. Thirty-seven operations have Approved/Accepted owners (0007, 0014, 0017, 0021, and 0036–0042); 19 remain linked to unapproved candidates (0009, 0016, 0018, 0019, and 0020) and must remain blocked in the API manifest. Set Endpoint Role (§6.1.54) remains `client_1_1` per the catalog and is not a 1.0 operation dependency. This feature does not assign future IDs.
+The active release catalog currently links all 56 `client_1_0` operations to owner specifications. Forty-one operations have Approved/Accepted owners (0007, 0014, 0017, 0021, and 0036–0042); 15 remain linked to unapproved candidates (0009, 0016, 0018, 0019, and 0020) and remain blocked in the API manifest. Set Endpoint Role (§6.1.54) remains `client_1_1` per the catalog and is not a 1.0 operation dependency. This feature does not assign future IDs.
 
 ## Assumptions
 

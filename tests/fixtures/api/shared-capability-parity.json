@@ -2,27 +2,85 @@
   "format": "kmipkit-shared-api-parity-fixtures",
   "formatVersion": 2,
   "releaseLine": "1.0.0",
-  "parityLanguages": ["rust", "c", "java"],
-  "plannedConsumerLanguages": ["rust", "c"],
-  "executableConsumerLanguages": ["java"],
+  "parityLanguages": [
+    "rust",
+    "c",
+    "java",
+    "python"
+  ],
+  "plannedConsumerLanguages": [],
+  "executableConsumerLanguages": [
+    "rust",
+    "c",
+    "java",
+    "python"
+  ],
   "cases": [
     {
       "id": "api-levels.shared.v1",
       "capability": "api_level_discovery",
-      "requirementIds": ["KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010"],
-      "input": {"discovery": "local-api-levels"},
-      "expectedOutput": {
-        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
-        "networkCalls": 0
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "input": {
+        "discovery": "local-api-levels"
       },
-      "javaObservedOutput": {"available": false, "networkCalls": 0},
+      "expectedOutput": {
+        "apiLevels": [
+          "high-level",
+          "typed-protocol",
+          "generic-ttlv"
+        ],
+        "networkCalls": 0,
+        "distinctFromKmipOperation": "Discover Versions",
+        "operationMappingCompleteness": "not-asserted"
+      },
+      "javaObservedOutput": {
+        "available": true,
+        "apiLevels": [
+          "high-level",
+          "typed-protocol",
+          "generic-ttlv"
+        ],
+        "networkCalls": 0,
+        "distinctFromKmipOperation": "Discover Versions",
+        "operationMappingCompleteness": "not-asserted"
+      },
       "errorCategory": null,
-      "cleanup": ["no-handle-or-network-resource-created"],
+      "cleanup": [
+        "no-handle-or-network-resource-created"
+      ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit/tests/api_levels.rs",
+          "test": "api_levels_match_the_shared_fixture_without_network_calls"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "api_level_query_matches_shared_fixture_locally",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_compiles_and_runs",
+              "assertions": [
+                "fixture-driven-api-level-values",
+                "local-no-network"
+              ]
+            }
+          ]
+        },
         "java": {
-          "status": "blocked",
-          "reason": "The Java facade has no API-level discovery method or declared capability.",
-          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists"
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelQueryMatchesSharedFixtureLocally"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_api_level_query_matches_shared_fixture_locally"
         }
       }
     },
@@ -36,18 +94,48 @@
       ],
       "input": {
         "configurations": [
-          {"id": "configuration-a", "extensionIdentities": ["alpha"]},
-          {"id": "configuration-b", "extensionIdentities": ["beta"]}
+          {
+            "id": "configuration-a",
+            "extensionIdentities": [
+              "alpha"
+            ]
+          },
+          {
+            "id": "configuration-b",
+            "extensionIdentities": [
+              "beta"
+            ]
+          }
         ]
       },
       "expectedOutput": {
-        "configurationDefinitionCounts": [1, 1],
-        "configurationIdentities": [["alpha"], ["beta"]],
+        "configurationDefinitionCounts": [
+          1,
+          1
+        ],
+        "configurationIdentities": [
+          [
+            "alpha"
+          ],
+          [
+            "beta"
+          ]
+        ],
         "registryStateIsShared": false
       },
       "javaObservedOutput": {
-        "configurationDefinitionCounts": [1, 1],
-        "configurationIdentities": [["alpha"], ["beta"]],
+        "configurationDefinitionCounts": [
+          1,
+          1
+        ],
+        "configurationIdentities": [
+          [
+            "alpha"
+          ],
+          [
+            "beta"
+          ]
+        ],
         "registryStateIsShared": false
       },
       "errorCategory": null,
@@ -56,9 +144,35 @@
         "release-returned-registry-views-once"
       ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/extension_registry.rs",
+          "test": "client_configurations_own_isolated_immutable_registries"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_configuration_ownership_and_isolation",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_matches_shared_registry_cleanup_fixture",
+              "assertions": [
+                "fixture-identities-and-counts-passed-to-compiled-c",
+                "fixture-cleanup-actions-asserted"
+              ]
+            }
+          ]
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#clientConfigurationsOwnImmutableIsolatedRegistrySnapshots"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_registry_registration_is_immutable_owned_by_configuration_and_isolated"
         }
       }
     },
@@ -70,7 +184,9 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-011"
       ],
-      "input": {"diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"},
+      "input": {
+        "diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"
+      },
       "expectedOutput": {
         "errorCategory": "invalid_schema",
         "diagnosticOmitsInputMarker": true,
@@ -82,40 +198,251 @@
         "diagnosticContainsPayload": false
       },
       "errorCategory": "invalid_schema",
-      "cleanup": ["release-registry-and-payload-owners-once"],
+      "cleanup": [
+        "release-registry-and-payload-owners-once"
+      ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-protocol/tests/extension_redaction.rs",
+          "test": "schema_error_debug_display_and_source_chain_redact_payload_secrets"
+        },
+        "c": {
+          "status": "available",
+          "diagnosticSurface": "none",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_redacted_stable_errors_and_invalid_handles",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
+              "assertions": [
+                "fixture-marker-passed-to-compiled-c",
+                "stable-error-category",
+                "no-diagnostic-text-channel"
+              ]
+            }
+          ]
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_failure_and_default_diagnostics_redact_secret_fixture_values"
         }
       }
     },
     {
       "id": "batch.ordered-completed-pending-failed.v1",
-      "capability": "ordered_batch_outcomes",
+      "capability": "client_execution",
       "requirementIds": [
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0006-FR-010",
         "KMIPKIT-0007-FR-008"
       ],
-      "input": {"discovery": "ordered-client-batch-outcomes"},
+      "input": {
+        "discovery": "ordered-client-batch-outcomes",
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ]
+      },
       "expectedOutput": {
-        "itemIndexes": [0, 1, 2],
-        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
+        "itemIndexes": [
+          0,
+          1,
+          2
+        ],
+        "resultStatuses": [
+          "Success",
+          "Operation Pending",
+          "Operation Failed"
+        ],
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ],
         "pendingCount": 1,
         "correlationValueHex": "00a17f",
         "automaticFollowUp": false,
         "transportExchangeCount": 1
       },
-      "javaObservedOutput": {"available": false, "transportExchangeCount": 0},
+      "javaObservedOutput": {
+        "available": true,
+        "itemIndexes": [
+          0,
+          1,
+          2
+        ],
+        "resultStatuses": [
+          "Success",
+          "Operation Pending",
+          "Operation Failed"
+        ],
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ],
+        "pendingCount": 1,
+        "correlationValueHex": "00a17f",
+        "automaticFollowUp": false,
+        "transportExchangeCount": 1
+      },
       "errorCategory": null,
-      "cleanup": ["no-batch-or-transport-resource-created"],
+      "cleanup": [
+        "release-batch-item-results-and-transport-resources-once-after-one-exchange"
+      ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+          "test": "execute_lifecycle_tests::ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange"
+        },
+        "c": {
+          "status": "available",
+          "adapterAssertions": [
+            "ordered-mixed-outcomes",
+            "pending-correlation",
+            "fixture-driven-first-three-batch-ids-and-statuses",
+            "fixture-driven-pending-count"
+          ],
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "execute_public_tls_request",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+              "assertions": [
+                "fixture-driven-batch-ids-statuses-correlation-and-count",
+                "transportExchangeCount"
+              ]
+            }
+          ]
+        },
         "java": {
-          "status": "blocked",
-          "reason": "The Java facade has no KMIP batch executor or ordered result model.",
-          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#orderedBatchOutcomesRemainUnavailableUntilTheExecutorExists"
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange"
+        },
+        "python": {
+          "status": "available",
+          "adapterAssertions": [
+            "ordered-mixed-outcomes",
+            "pending-correlation",
+            "singleNativeExecuteInvocation"
+          ],
+          "testFile": "bindings/python/tests/test_client.py",
+          "test": "test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+              "test": "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
+              "assertions": [
+                "transportExchangeCount"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "discover-versions.supported-versions.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §6.1.16, Tables 211–213",
+      "input": {
+        "operation": "Discover Versions",
+        "offeredVersions": [
+          {
+            "major": 2,
+            "minor": 1
+          }
+        ]
+      },
+      "expectedOutput": {
+        "supportedVersions": [
+          {
+            "major": 2,
+            "minor": 1
+          },
+          {
+            "major": 2,
+            "minor": 1
+          }
+        ],
+        "preservesSourceOrderAndRepetitions": true,
+        "emptySuccessfulResponseIsPresent": true,
+        "emptySuccessfulResponseVersions": [],
+        "pendingAndFailureHaveNoSupportedVersions": true,
+        "automaticFollowUp": false
+      },
+      "javaObservedOutput": {
+        "supportedVersions": [
+          {
+            "major": 2,
+            "minor": 1
+          },
+          {
+            "major": 2,
+            "minor": 1
+          }
+        ],
+        "preservesSourceOrderAndRepetitions": true,
+        "emptySuccessfulResponseIsPresent": true,
+        "emptySuccessfulResponseVersions": [],
+        "pendingAndFailureHaveNoSupportedVersions": true,
+        "automaticFollowUp": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "copy-version-values-before-closing-native-item-handle"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+          "test": "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange"
+        },
+        "c": {
+          "status": "available",
+          "adapterAssertions": [
+            "fixture-driven-supported-version-count-and-order"
+          ],
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "execute_public_tls_request",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+              "assertions": [
+                "fixture-driven-supported-versions-response"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_client.py",
+          "test": "test_discover_versions_response_mapping_matches_shared_fixture"
         }
       }
     },
@@ -131,29 +458,73 @@
         "structure": {
           "type": "Structure",
           "children": [
-            {"tag": "0x540001", "type": "Enumeration", "value": 3775005444},
-            {"tag": "0x540002", "type": "ByteString", "valueHex": "80ff01"}
+            {
+              "tag": "0x540001",
+              "type": "Enumeration",
+              "value": 3775005444
+            },
+            {
+              "tag": "0x540002",
+              "type": "ByteString",
+              "valueHex": "80ff01"
+            }
           ]
         }
       },
       "expectedOutput": {
-        "childTagsInOrder": ["0x540001", "0x540002"],
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
         "enumerationValue": 3775005444,
         "byteStringHex": "80ff01",
         "unknownValuesPreserved": true
       },
       "javaObservedOutput": {
-        "childTagsInOrder": ["0x540001", "0x540002"],
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
         "enumerationValue": 3775005444,
         "byteStringHex": "80ff01",
         "unknownValuesPreserved": true
       },
       "errorCategory": null,
-      "cleanup": ["close-structure-view-once", "retain-structure-owner-independently"],
+      "cleanup": [
+        "close-structure-view-once",
+        "retain-structure-owner-independently"
+      ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+          "test": "generic_ttlv_shared_fixture_preserves_open_values_and_child_order"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "shared_ttlv_fixture_preserves_open_values_and_order",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
+              "assertions": [
+                "open-enumeration",
+                "ordered-children",
+                "owner-lifecycle"
+              ]
+            }
+          ]
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle"
         }
       }
     },
@@ -168,26 +539,588 @@
       ],
       "input": {
         "sourceFixture": "tests/fixtures/extensions/cases.json",
-        "caseIds": ["valid-recognized", "unknown-preserved"]
+        "caseIds": [
+          "valid-recognized",
+          "unknown-preserved"
+        ]
       },
       "expectedOutput": {
-        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "caseOutcomes": [
+          "recognized",
+          "unrecognized.no_match"
+        ],
         "genericPayloadPreserved": true,
         "registrationOrderAffectsResult": false
       },
       "javaObservedOutput": {
-        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "caseOutcomes": [
+          "recognized",
+          "unrecognized.no_match"
+        ],
         "genericPayloadPreserved": true,
         "registrationOrderAffectsResult": false
       },
       "errorCategory": null,
-      "cleanup": ["release-registry-recognition-value-and-payload-handles-once"],
+      "cleanup": [
+        "release-registry-recognition-value-and-payload-handles-once"
+      ],
       "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/extension_registry_tests.rs",
+          "test": "every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/extension_registry.c",
+          "test": "test_inbound_inspection_and_generic_preservation"
+        },
         "java": {
           "status": "available",
           "test": "org.kmipkit.ExtensionRegistryTest#everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_extension_registry.py",
+          "test": "test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved"
         }
       }
+    },
+    {
+      "id": "creation.create.request-response.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §6.1.8, Tables 186–188; §5.1, Table 157",
+      "input": {
+        "operation": "Create",
+        "objectType": 4294967295,
+        "attributesPresent": true,
+        "attributeItems": [],
+        "protectionStorageMasks": {
+          "present": true,
+          "childTags": []
+        }
+      },
+      "expectedOutput": {
+        "requestObjectType": 4294967295,
+        "attributesPresent": true,
+        "attributeTagsInOrder": [],
+        "protectionStorageMasksPresent": true,
+        "responseObjectType": 7,
+        "uniqueIdentifier": {
+          "wireType": "Integer",
+          "integer": -8
+        },
+        "resultStatus": 0,
+        "resultReason": null,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true
+      },
+      "javaObservedOutput": {
+        "requestObjectType": 4294967295,
+        "attributesPresent": true,
+        "attributeTagsInOrder": [],
+        "protectionStorageMasksPresent": true,
+        "responseObjectType": 7,
+        "uniqueIdentifier": {
+          "wireType": "Integer",
+          "integer": -8
+        },
+        "resultStatus": 0,
+        "resultReason": null,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "release-created-batch-item-and-result-view-once"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
+          "test": "create_request_and_result_match_shared_creation_fixture"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "creation_create_matches_shared_fixture"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#creationCreateMatchesSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_creation_create_matches_shared_fixture"
+        }
+      }
+    },
+    {
+      "id": "creation.key-pair.request-response.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-003",
+        "KMIPKIT-0014-FR-004",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §6.1.9, Tables 189–192; §§5.2–5.4, Tables 158–160",
+      "input": {
+        "operation": "Create Key Pair",
+        "commonAttributes": {
+          "present": true,
+          "attributeTagsInOrder": ["0x540001", "0x540001"]
+        },
+        "privateKeyAttributes": {
+          "present": true,
+          "attributeTagsInOrder": ["0x420028", "0x540002", "0x540002"]
+        },
+        "publicKeyAttributes": {
+          "present": true,
+          "attributeTagsInOrder": ["0x420028", "0x540003"]
+        },
+        "protectionStorageMasks": {
+          "commonPresent": true,
+          "privatePresent": false,
+          "publicPresent": true
+        },
+        "effectiveTable191ValuesEqual": true
+      },
+      "expectedOutput": {
+        "commonAttributeTagsInOrder": ["0x540001", "0x540001"],
+        "privateAttributeTagsInOrder": ["0x420028", "0x540002", "0x540002"],
+        "publicAttributeTagsInOrder": ["0x420028", "0x540003"],
+        "groupsRemainDistinct": true,
+        "commonMasksPresent": true,
+        "privateMasksPresent": false,
+        "publicMasksPresent": true,
+        "privateUniqueIdentifier": {
+          "wireType": "Enumeration",
+          "enumeration": 4294967295
+        },
+        "publicUniqueIdentifier": {
+          "wireType": "TextString",
+          "text": "public-key-α"
+        },
+        "resultStatus": 0,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true
+      },
+      "javaObservedOutput": {
+        "commonAttributeTagsInOrder": ["0x540001", "0x540001"],
+        "privateAttributeTagsInOrder": ["0x420028", "0x540002", "0x540002"],
+        "publicAttributeTagsInOrder": ["0x420028", "0x540003"],
+        "groupsRemainDistinct": true,
+        "commonMasksPresent": true,
+        "privateMasksPresent": false,
+        "publicMasksPresent": true,
+        "privateUniqueIdentifier": {
+          "wireType": "Enumeration",
+          "enumeration": 4294967295
+        },
+        "publicUniqueIdentifier": {
+          "wireType": "TextString",
+          "text": "public-key-α"
+        },
+        "resultStatus": 0,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "copy-both-key-identifiers-before-closing-result-view"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
+          "test": "create_key_pair_request_and_result_match_shared_creation_fixture"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "creation_create_key_pair_matches_shared_fixture"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#creationKeyPairMatchesSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_creation_key_pair_matches_shared_fixture"
+        }
+      }
+    },
+    {
+      "id": "creation.split-key.request-response.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-005",
+        "KMIPKIT-0014-FR-006",
+        "KMIPKIT-0014-FR-014",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157",
+      "input": {
+        "operation": "Create Split Key",
+        "objectType": 4026531840,
+        "uniqueIdentifier": {
+          "wireType": "Integer",
+          "integer": -7
+        },
+        "splitKeyParts": -3,
+        "splitKeyThreshold": 4,
+        "splitKeyMethod": 3735928559,
+        "primeFieldSizeHex": null,
+        "attributesPresent": true,
+        "attributeTagsInOrder": [],
+        "protectionStorageMasks": {
+          "present": true,
+          "childTags": []
+        }
+      },
+      "expectedOutput": {
+        "requestObjectType": 4026531840,
+        "uniqueIdentifier": {
+          "wireType": "Integer",
+          "integer": -7
+        },
+        "splitKeyParts": -3,
+        "splitKeyThreshold": 4,
+        "splitKeyMethod": 3735928559,
+        "primeFieldSizePresent": false,
+        "attributesPresent": true,
+        "protectionStorageMasksPresent": true,
+        "responseUniqueIdentifiersInWireOrder": [
+          {"wireType": "TextString", "text": "part-a"},
+          {"wireType": "Enumeration", "enumeration": 4294967295},
+          {"wireType": "Integer", "integer": -7},
+          {"wireType": "TextString", "text": "part-a"}
+        ],
+        "resultStatus": 0,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true,
+        "pendingMetadata": {
+          "sourceOperation": 40,
+          "status": 2,
+          "resultReason": null,
+          "resultMessage": null,
+          "correlationValueHex": "00ff80"
+        },
+        "automaticFollowUp": false
+      },
+      "javaObservedOutput": {
+        "requestObjectType": 4026531840,
+        "uniqueIdentifier": {
+          "wireType": "Integer",
+          "integer": -7
+        },
+        "splitKeyParts": -3,
+        "splitKeyThreshold": 4,
+        "splitKeyMethod": 3735928559,
+        "primeFieldSizePresent": false,
+        "attributesPresent": true,
+        "protectionStorageMasksPresent": true,
+        "responseUniqueIdentifiersInWireOrder": [
+          {"wireType": "TextString", "text": "part-a"},
+          {"wireType": "Enumeration", "enumeration": 4294967295},
+          {"wireType": "Integer", "integer": -7},
+          {"wireType": "TextString", "text": "part-a"}
+        ],
+        "resultStatus": 0,
+        "resultMessage": null,
+        "resultMessagePresencePreserved": true,
+        "pendingMetadata": {
+          "sourceOperation": 40,
+          "status": 2,
+          "resultReason": null,
+          "resultMessage": null,
+          "correlationValueHex": "00ff80"
+        },
+        "automaticFollowUp": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "copy-identifiers-and-result-message-before-closing-result-view",
+        "preserve-correlation-bytes-exactly"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
+          "test": "create_split_key_request_and_result_match_shared_creation_fixture"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "creation_create_split_key_matches_shared_fixture"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#creationSplitKeyMatchesSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_creation_split_key_matches_shared_fixture"
+        }
+      }
+    },
+    {
+      "id": "creation.result-message-on-failure.v1",
+      "capability": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0014-FR-001",
+        "KMIPKIT-0014-FR-002",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "normativeSource": "OASIS KMIP v2.1 §8.6, Table 399; §9.17",
+      "input": {
+        "operation": "Create",
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓"
+      },
+      "expectedOutput": {
+        "operation": 1,
+        "outcomeKind": 1,
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓",
+        "resultMessagePresencePreserved": true,
+        "responsePayloadPresent": false
+      },
+      "javaObservedOutput": {
+        "operation": 1,
+        "outcomeKind": 1,
+        "resultStatus": 1,
+        "resultReason": 5,
+        "resultMessage": "création refusée ✓",
+        "resultMessagePresencePreserved": true,
+        "responsePayloadPresent": false
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "copy-result-message-before-closing-result-view",
+        "redact-result-message-from-default-formatting"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
+          "test": "creation_result_message_fixture_is_limited_to_operation_failure"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "execute_public_tls_request"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.extensions.CreationResultValueTest#failureResultMessageMatchesTheSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_creation_result_message_matches_failure_fixture"
+        }
+      }
+    },
+    {
+      "id": "codec-limits.defaults-and-ranges.v1",
+      "capability": "generic_ttlv_model",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "input": {
+        "defaults": true,
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": 65
+      },
+      "expectedOutput": {
+        "defaults": {
+          "maxMessageBytes": 16777216,
+          "maxStructureDepth": 64,
+          "maxElements": 100000
+        },
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": {
+          "value": 65,
+          "accepted": false,
+          "errorCategory": "resource_limit"
+        }
+      },
+      "javaObservedOutput": {
+        "defaults": {
+          "maxMessageBytes": 16777216,
+          "maxStructureDepth": 64,
+          "maxElements": 100000
+        },
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": {
+          "value": 65,
+          "accepted": false,
+          "errorCategory": "resource_limit"
+        }
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "release-default-and-custom-limits-once"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+          "test": "codec_limits_shared_fixture_covers_defaults_ranges_and_rejection"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_matches_the_shared_codec_limits_fixture",
+              "assertions": [
+                "fixture-default-limits",
+                "fixture-configured-limits",
+                "fixture-invalid-range"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#codecLimitsFixtureMatchesDefaultsRangesAndErrors"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors"
+        }
+      }
+    },
+    {
+      "id": "usage-allocation.guard-accounting.v1",
+      "capability": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "input": {
+        "allocationIdentifier": "allocation-object",
+        "allocationCount": 5,
+        "usageLimitsUnit": 4275878552,
+        "operation": "Encrypt",
+        "successfulCost": 2,
+        "overBudgetCost": 4
+      },
+      "expectedOutput": {
+        "initial": {
+          "allocated": 5,
+          "reserved": 0,
+          "available": 5
+        },
+        "afterSuccessfulProtection": {
+          "allocated": 5,
+          "reserved": 2,
+          "available": 3
+        },
+        "overBudgetAttempt": {
+          "accepted": false,
+          "stateUnchanged": true
+        },
+        "transportExchangeCount": 2,
+        "localOnlyAccounting": true
+      },
+      "javaObservedOutput": {
+        "initial": {
+          "allocated": 5,
+          "reserved": 0,
+          "available": 5
+        },
+        "afterSuccessfulProtection": {
+          "allocated": 5,
+          "reserved": 2,
+          "available": 3
+        },
+        "overBudgetAttempt": {
+          "accepted": false,
+          "stateUnchanged": true
+        },
+        "transportExchangeCount": 2,
+        "localOnlyAccounting": true
+      },
+      "errorCategory": "invalid_input",
+      "cleanup": [
+        "release-usage-allocation-context-and-native-client-resources-once"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs",
+          "test": "fixture_usage_allocation_guard_matches_shared_accounting_contract"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "shared_usage_allocation_guard_matches_fixture",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+              "test": "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+              "assertions": [
+                "two-transport-exchanges",
+                "guarded-cost-reservation",
+                "over-budget-no-send"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#usageAllocationContextGuardsJavaProtectionExecutionLocally"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_usage_allocation_guard_native_integration.py",
+          "test": "test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport"
+        }
+      },
+      "normativeSource": "OASIS KMIP Specification v2.1 §6.1.23, Table 232; approved local guard interpretation in KMIPKIT-0039"
     }
   ]
 }

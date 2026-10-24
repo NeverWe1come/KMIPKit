@@ -141,10 +141,13 @@ fn contains_response_sentinel(tree: &kmipkit_ttlv::StructureView<'_>) -> bool {
 #[test]
 fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
     let invalid_payloads = [
-        test_structure([test_item(
-            RESPONSE_SHAPE_SENTINEL_TAG,
-            Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
-        )]),
+        test_structure([
+            test_item(VALIDITY_INDICATOR, Value::enumeration(1)),
+            test_item(
+                RESPONSE_SHAPE_SENTINEL_TAG,
+                Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
+            ),
+        ]),
         test_structure([
             test_item(
                 UNIQUE_IDENTIFIER,
@@ -160,7 +163,10 @@ fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
             ),
         ]),
         test_structure([
-            test_item(UNIQUE_IDENTIFIER, Value::integer(7)),
+            test_item(
+                UNIQUE_IDENTIFIER,
+                Value::byte_string(b"invalid-id-kind".to_vec()),
+            ),
             test_item(
                 RESPONSE_SHAPE_SENTINEL_TAG,
                 Value::byte_string(RESPONSE_SHAPE_SENTINEL.to_vec()),
@@ -168,7 +174,7 @@ fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
         ]),
     ];
 
-    for payload in invalid_payloads {
+    for (index, payload) in invalid_payloads.into_iter().enumerate() {
         let (mut client, _) = client(response_with_payload(payload));
         let error = client
             .execute(
@@ -182,9 +188,10 @@ fn client_errors_retain_generic_ttlv_for_malformed_success_payloads() {
             error.delivery_state(),
             Some(RequestDeliveryState::ResponseStarted)
         );
+        assert!(error.response_ttlv().is_some(), "payload case {index}");
         let sentinel_is_retained = error
             .response_ttlv()
-            .expect("typed response errors retain the generic response")
+            .expect("Unique Identifier response-shape errors retain the generic response")
             .with_ttlv(|tree| contains_response_sentinel(&tree));
         assert!(sentinel_is_retained);
 
@@ -221,11 +228,7 @@ fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
         .expect_err("a non-final verification response cannot contain Validity Indicator");
 
     assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
-    let sentinel_is_retained = error
-        .response_ttlv()
-        .expect("typed response errors retain the generic response")
-        .with_ttlv(|tree| contains_response_sentinel(&tree));
-    assert!(sentinel_is_retained);
+    assert!(error.response_ttlv().is_none());
 }
 
 fn operation_failure_response() -> Vec<u8> {

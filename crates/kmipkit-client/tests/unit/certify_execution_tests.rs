@@ -222,7 +222,10 @@ fn certify_sends_table_179_request_once_and_exposes_identifier_and_generic_respo
             "generated-certificate".to_owned()
         ))
     );
-    assert!(typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        typed.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
     assert_certify_request(
         captured
             .borrow()
@@ -266,6 +269,12 @@ fn certify_failure_preserves_table_181_result_without_retry() {
             .reason()
             .map(kmipkit_protocol::ResultReason::raw),
         Some(INVALID_CSR)
+    );
+    assert!(
+        item.outcome()
+            .response()
+            .certify()
+            .is_some_and(|response| response.with_ttlv(|_| ()).is_none())
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

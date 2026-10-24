@@ -118,6 +118,13 @@ fn large_success_payload() -> Structure {
 }
 
 fn response_bytes(items: impl IntoIterator<Item = Item>) -> Vec<u8> {
+    response_bytes_with_limits(items, &CodecLimits::defaults())
+}
+
+fn response_bytes_with_limits(
+    items: impl IntoIterator<Item = Item>,
+    limits: &CodecLimits,
+) -> Vec<u8> {
     let items = items.into_iter().collect::<Vec<_>>();
     let version = test_structure([
         test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
@@ -133,7 +140,7 @@ fn response_bytes(items: impl IntoIterator<Item = Item>) -> Vec<u8> {
     ]);
     let mut message = vec![item(RESPONSE_HEADER, Value::structure(header))];
     message.extend(items);
-    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+    encode_message_for_test(test_structure(message), limits)
         .expect("fixture response message is encodable")
 }
 
@@ -240,6 +247,47 @@ fn create_split_key_encodes_the_kmip_2_1_operation_enumeration() {
         .as_deref()
         .expect("the fake transport captured the encoded request");
     assert_eq!(request_operation(request), CREATE_SPLIT_KEY);
+}
+
+#[test]
+fn create_split_key_preserves_more_than_one_hundred_thousand_response_identifiers() {
+    let identifier_count = 100_001_usize;
+    let limits = CodecLimits::new(16 * 1024 * 1024, 64, 400_000)
+        .expect("the fixture raises only the response item-count limit");
+    let payload = test_structure((0..identifier_count).map(|index| {
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::integer(i32::try_from(index).expect("fixture index fits in Integer")),
+        )
+    }));
+    let response = response_bytes_with_limits(
+        [response_batch_item(
+            None,
+            SUCCESS,
+            None,
+            None,
+            None,
+            Some(payload),
+        )],
+        &limits,
+    );
+    let (transport, _) = bounded_transport(response);
+    let mut client = Client::for_test(transport);
+
+    let response = client
+        .create_split_key(empty_request(), &limits)
+        .expect("Rust client preserves all identifiers accepted by configured decoder limits");
+    let ClientBatchOutcome::CreateSplitKeyCompleted(typed) = response.outcome() else {
+        panic!("successful Create Split Key has its typed result");
+    };
+    let identifiers = typed.unique_identifiers();
+    assert_eq!(identifiers.len(), identifier_count);
+    assert_eq!(identifiers[0], UniqueIdentifier::Integer(0));
+    assert_eq!(identifiers[50_000], UniqueIdentifier::Integer(50_000));
+    assert_eq!(
+        identifiers[identifier_count - 1],
+        UniqueIdentifier::Integer(100_000)
+    );
 }
 
 fn client_for(script: ExchangeScript) -> (Client, Rc<RefCell<ScriptedTransport>>) {

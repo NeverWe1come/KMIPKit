@@ -77,7 +77,9 @@ def load_native_library(
         library = backend(str(selected_path))
     except Exception:
         raise NativeLibraryLoadError(
-            "KMIPKit could not load the selected native library."
+            "KMIPKit could not load the selected native library; install a package "
+            "for this OS and architecture or set KMIPKIT_NATIVE_LIBRARY to a "
+            "compatible library."
         ) from None
 
     try:
@@ -92,7 +94,8 @@ def load_native_library(
         or actual_abi_version != expected_abi_version
     ):
         raise NativeAbiMismatchError(
-            "KMIPKit native library has an incompatible ABI version."
+            "KMIPKit native library has an incompatible ABI version; install a "
+            "matching package or set KMIPKIT_NATIVE_LIBRARY to a compatible library."
         )
 
     return library

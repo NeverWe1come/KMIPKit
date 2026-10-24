@@ -47,7 +47,7 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportResponse::as_bytes",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0009", "KMIPKIT-0010"}
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-13.json")
+REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-16.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -205,6 +205,12 @@ def _verify_ready_mapping_exports(
         for row in manifest.get("publicDeclarations", [])
         if row.get("declarationState") in {"declared", "verified"}
     ]
+    shared_capability_ids = {
+        row.get("capabilityId") for row in manifest.get("capabilities", [])
+    }
+    operation_ids = {
+        row.get("operationId") for row in manifest.get("operations", [])
+    }
     aggregate: dict[str, dict[str, set[str]]] = {}
     for row in ready_rows:
         capability_id = row.get("capabilityId")
@@ -215,6 +221,12 @@ def _verify_ready_mapping_exports(
         if _RUST_AUDIT._canonical_export_name(rust_name) not in observed_names.get(package_id, set()):
             raise InventoryError(
                 f"ready declaration maps to no exact published Rust export: {row.get('declarationId')}"
+            )
+        if capability_id not in shared_capability_ids:
+            if capability_id in operation_ids:
+                continue
+            raise InventoryError(
+                f"ready declaration references no shared capability or operation: {row.get('declarationId')}"
             )
         language_names = aggregate.setdefault(capability_id, {})
         for language, mapping in mappings.items():
@@ -302,6 +314,7 @@ def build_inventory(
     capabilities = {
         row.get("capabilityId"): row for row in manifest.get("capabilities", [])
     }
+    operation_ids = {row.get("operationId") for row in manifest.get("operations", [])}
     mapped: list[dict[str, Any]] = []
     rust_only: list[dict[str, Any]] = []
     for key in sorted(observed):
@@ -309,6 +322,8 @@ def build_inventory(
             continue
         declaration = manifest_by_key[key]
         if declaration.get("declarationState") not in {"declared", "verified"}:
+            continue
+        if declaration.get("capabilityId") in operation_ids:
             continue
         capability = capabilities.get(declaration.get("capabilityId"))
         if capability is None or capability.get("capabilityState") not in {"declared", "verified"}:
@@ -395,7 +410,7 @@ def build_inventory(
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-13.json",
+        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json",
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,
@@ -432,7 +447,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-13.json"
+    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-17.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

@@ -11,8 +11,10 @@ from jsonschema import Draft202012Validator
 
 from tools.api_manifest import generate
 from tools.api_manifest.generate import ManifestError
-from tools.api_manifest.tests.test_manifest_v2 import _valid_v2_manifest
-
+from tools.api_manifest.tests.test_manifest_v2 import (
+    EXPECTED_RELEASE_SHARED_CAPABILITIES,
+    _valid_v2_manifest,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
@@ -183,21 +185,48 @@ def _complete_readiness_manifest(root: Path) -> dict[str, object]:
         for index, operation in enumerate(manifest["operations"])
         for language in LANGUAGES
     ]
+    manifest["publicDeclarations"].extend(
+        {
+            "declarationId": f"shared_capability_{index:02d}_{language}",
+            "packageId": language_packages[language],
+            "kind": "function",
+            "exportName": f"{language}.shared_{index:02d}",
+            "capabilityId": capability_id,
+            "requirementIds": ["KMIPKIT-0043-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "approvalSource": _approved_feature_source(),
+            "languageMappings": {
+                mapped_language: {
+                    "packageId": language_packages[mapped_language],
+                    "name": f"{mapped_language}.shared_{index:02d}",
+                }
+                for mapped_language in LANGUAGES
+            },
+            "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+        }
+        for index, capability_id in enumerate(
+            sorted(EXPECTED_RELEASE_SHARED_CAPABILITIES)
+        )
+        for language in LANGUAGES
+    )
     manifest["capabilities"] = [
         {
-            "capabilityId": operation["operationId"],
+            "capabilityId": capability_id,
             "requirementIds": ["KMIPKIT-0043-FR-001"],
             "capabilityState": "verified",
             "parityScope": "four-language",
             "ownerSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
             "mappings": {
-                language: [f"{language}.operation_{index:02d}"]
+                language: [f"{language}.shared_{index:02d}"]
                 for language in LANGUAGES
             },
             "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
         }
-        for index, operation in enumerate(manifest["operations"])
+        for index, capability_id in enumerate(
+            sorted(EXPECTED_RELEASE_SHARED_CAPABILITIES)
+        )
     ]
     return manifest
 
@@ -264,6 +293,176 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_feature_owner_id_resolves_through_spec_feature_branch(self) -> None:
         feature = generate._feature_directory(ROOT, "KMIPKIT-0036")
         self.assertEqual(feature.name, "022-object-lifecycle")
+
+    def test_merged_spec_pr_approval_evidence_resolves_stale_owner_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "018-managed-object-lifecycle" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Lifecycle\n\n**Status**: Draft for independent human review\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0018` is approved "
+                "for implementation by specification PR #65, MERGED into "
+                "`release/1.0.0` on `2026-10-09`; the PR body gates implementation "
+                "on approval and merge. The checked-in owner status remains "
+                "`Status: Draft for independent human review`.\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "approved", generate._operation_owner_state(root, "KMIPKIT-0018")
+            )
+
+    def test_merged_spec_pr_allows_manifest_source_with_stale_draft_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "018-managed-object-lifecycle" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Lifecycle\n\n"
+                "**Status**: Draft for independent human review\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0018` is approved "
+                "for implementation by specification PR #65, MERGED into "
+                "`release/1.0.0` on `2026-10-09`; the PR body gates implementation "
+                "on approval and merge. The checked-in owner status remains "
+                "`Status: Draft for independent human review`.\n",
+                encoding="utf-8",
+            )
+
+            generate._validate_approval_source(
+                {
+                    "kind": "feature-specification",
+                    "path": "specs/018-managed-object-lifecycle/spec.md",
+                    "status": "Approved",
+                    "evidence": "**Status**: Draft for independent human review",
+                },
+                root,
+                feature_id="KMIPKIT-0018",
+            )
+
+    def test_pkcs11_dependency_matrix_preserves_implementation_only_approval(self) -> None:
+        matrix_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "contracts"
+            / "operation-dependencies.md"
+        )
+        matrix = matrix_path.read_text(encoding="utf-8")
+        pkcs11_row = next(
+            line
+            for line in matrix.splitlines()
+            if line.startswith("| §6.1.37 | PKCS#11 |")
+        )
+        owner_spec = (
+            ROOT / "specs" / "026-pkcs11" / "spec.md"
+        ).read_text(encoding="utf-8")
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        pkcs11_operation = next(
+            operation
+            for operation in manifest["operations"]
+            if operation["section"] == "6.1.37"
+        )
+
+        self.assertIn("Approved for implementation", owner_spec)
+        self.assertIn("does not start implementation", owner_spec)
+        self.assertEqual(pkcs11_operation["apiState"], "verified")
+        self.assertEqual(
+            pkcs11_operation["ownerDependency"],
+            {"state": "approved", "specId": "KMIPKIT-0040"},
+        )
+        self.assertEqual(
+            pkcs11_operation["approvalEvidence"]["status"], "Approved"
+        )
+        self.assertNotIn("blockedReason", pkcs11_operation)
+        self.assertIn("Approved for implementation", pkcs11_row)
+        self.assertIn("not formal acceptance", pkcs11_row)
+        self.assertNotIn("Approved owner", pkcs11_row)
+
+        fixture = json.loads(
+            (ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(fixture["authorization"]["manifestApiState"], "verified")
+        self.assertEqual(
+            fixture["authorization"]["implementationAuthorization"]["date"],
+            "2026-10-20",
+        )
+        self.assertFalse(fixture["authorization"]["formalAcceptance"])
+
+    def test_dependency_matrix_matches_current_owner_and_api_readiness(self) -> None:
+        matrix_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "contracts"
+            / "operation-dependencies.md"
+        )
+        matrix = matrix_path.read_text(encoding="utf-8")
+        operation_rows = {
+            fields[1]: fields[3]
+            for line in matrix.splitlines()
+            if line.startswith("| §6.1.")
+            for fields in [[field.strip() for field in line.strip("|").split("|")]]
+        }
+        owner_counts = {
+            state: sum(
+                operation["ownerDependency"]["state"] == state
+                for operation in self._release_manifest()["operations"]
+            )
+            for state in ("approved", "candidate", "unassigned")
+        }
+        manifest = self._release_manifest()
+
+        self.assertEqual(56, len(operation_rows))
+        self.assertEqual(45, owner_counts["approved"])
+        self.assertEqual(11, owner_counts["candidate"])
+        self.assertEqual(0, owner_counts["unassigned"])
+        self.assertIn(
+            f"Linked to an approved/accepted owner: **{owner_counts['approved']} operations**.",
+            matrix,
+        )
+        self.assertIn(
+            f"Linked to an unapproved candidate owner: **{owner_counts['candidate']} operations**.",
+            matrix,
+        )
+
+        for operation in manifest["operations"]:
+            if operation["apiState"] == "verified":
+                with self.subTest(operation=operation["name"]):
+                    self.assertNotIn("binding remains blocked", operation_rows[operation["name"]])
+
+    def _release_manifest(self) -> dict[str, object]:
+        return json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()
@@ -443,6 +642,13 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             adr.parent.mkdir(parents=True)
             adr.write_text(
                 "# ADR-0014\n\n**Status**: Accepted.\n\n"
+                "Maintainer acceptance for release 1.0.0\n",
+                encoding="utf-8",
+            )
+            _validate_v2_readiness(self, manifest, root)
+
+            adr.write_text(
+                "# ADR-0014\n\nStatus: Accepted.\n\n"
                 "Maintainer acceptance for release 1.0.0\n",
                 encoding="utf-8",
             )

@@ -12,6 +12,7 @@ zeroize.workspace = true
 
 [dev-dependencies]
 serde = "=1.0.228"
+serde_json.workspace = true
 trybuild = "=1.0.121"
 
 [lints]

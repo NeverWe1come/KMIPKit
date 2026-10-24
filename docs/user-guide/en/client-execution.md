@@ -1,9 +1,9 @@
 # Typed client execution
 
-This guide describes the typed execution foundation introduced by KMIPKIT-0007
-and its operation APIs: Discover Versions, Create, Create Key Pair, Create
-Split Key, Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes,
-Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive,
+This guide describes the Rust typed execution foundation introduced by
+KMIPKIT-0007 and its Rust operation APIs: Discover Versions, Create, Create
+Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive,
 Destroy, Recover, Encrypt, Decrypt, Query, and Ping. For Encrypt and Decrypt
 single-part and caller-driven multipart examples, see the
 [Encrypt and Decrypt guide](encrypt-decrypt.md). For lifecycle-specific behavior, see the
@@ -11,13 +11,19 @@ single-part and caller-driven multipart examples, see the
 see the [Query and Ping guide](query-ping.md). For configuring a production
 connection, see the [TLS and HTTPS transport guide](production-transports.md).
 
+This guide describes the Rust `kmipkit-client` API surface. A Rust model or
+accessor does not establish four-language 1.0 operation availability. In the
+manifest, `blocked` means the complete four-language 1.0 operation mapping is
+unavailable, even if Rust types exist. See the [language and package
+status](language-packages.md) for current operation and capability states.
+
 ## Typed request boundary
 
-The synchronous `kmipkit_client::Client::execute` API accepts a
-`ClientBatch` containing only the closed `ClientRequest` variants. The client
-supports explicitly requested client-to-server Discover Versions, Create,
-Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
-Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
+The synchronous Rust `kmipkit_client::Client::execute` API accepts a
+`ClientBatch` containing only the closed `ClientRequest` variants. The Rust
+client supports explicitly requested client-to-server Discover Versions,
+Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query, and Ping
 requests.
 Discover Versions advertises exactly the KMIP 2.1 version pair (2, 1), as
@@ -122,6 +128,46 @@ Create Split Key may return repeated Unique Identifiers. Its request advertises
 the largest signed KMIP Integer. The client independently enforces its local
 byte cap before entering the TTLV decoder, including when a peer ignores the
 advertised size.
+
+The C, Java, and Python batch-item APIs expose the same three request shapes:
+C uses `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair`, and
+`kmipkit_client_batch_item_create_split_key`; Java uses
+`ClientBatchItem.create`, `createKeyPair`, and `createSplitKey`; Python uses
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair`,
+and `client_batch_item_create_split_key`. Create requires an Attributes
+structure, which may be empty. Create Key Pair keeps its six optional attribute
+and mask groups separate. Create Split Key retains signed part and threshold
+values, the open method value, and the optional input identifier and prime
+field bytes.
+
+Successful response accessors preserve each Unique Identifier's original
+TTLV type. C provides `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair`, and the bounded count/index pair
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java exposes `createResponse()`, `createKeyPairResponse()`, and
+`createSplitKeyUniqueIdentifiers()`; Python exposes the corresponding
+`BatchItemResult` response fields. Private and public key identifiers remain
+distinct, and split-key identifiers remain in response wire order.
+
+C's additive `kmipkit_client_batch_item_response_metadata_v2` exposes the raw
+source operation and exact optional UTF-8 Result Message. The existing v1
+metadata struct and function remain unchanged. The message pointer is borrowed
+while the response-item handle is open; copy it before releasing the handle.
+Java's `ClientBatchItemResult.metadataV2()` and Python's
+`BatchItemResult.metadata_v2` copy the message into their runtime string before
+the native response is closed. These external runtime copies are not guaranteed
+to be zeroized when discarded. The configured complete-message limit bounds
+the text (16 MiB by default). An absent message differs from a present empty
+message.
+
+Result Message is untrusted server text. It is available through explicit
+metadata inspection and is omitted from default formatting, logs, errors, and
+diagnostics. OASIS KMIP v2.1 §8.6, Table 399 makes it optional only when Result
+Status is neither Pending nor Success; §9.17 permits a descriptive error
+message. Accordingly, the shared success and Pending fixtures omit it, while
+`creation.result-message-on-failure.v1` checks exact text and UTF-8 preservation
+on an Operation Failed result.
 
 `Client::new` constructs a production client from an immutable client
 configuration and a validated `TransportConfig`. It accepts raw TTLV over TLS
