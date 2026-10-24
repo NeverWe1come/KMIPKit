@@ -722,6 +722,7 @@ const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const LOGIN_OPERATION: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
 const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
@@ -1507,6 +1508,40 @@ fn client_delegated_login_rights_is_required_structure(
         DelegatedLoginFieldType::RightsStructure,
         true,
     )
+}
+
+fn client_login_lease_time_is_optional_interval_or_date_time(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOGIN_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut lease_time_seen = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == LEASE_TIME)
+                    .all(|field| {
+                        !std::mem::replace(&mut lease_time_seen, true)
+                            && field.with_value(|value| {
+                                matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
+                            })
+                    })
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
@@ -7017,6 +7052,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-001",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_login_lease_time_is_optional_interval_or_date_time),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
