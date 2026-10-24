@@ -3071,6 +3071,40 @@ fn profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs() 
 }
 
 #[test]
+fn profile_rejects_validate_request_without_a_chain_member() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the one-chain requirement has a typed profile rule");
+    let evaluate = mapping
+        .evaluator
+        .expect("the one-chain requirement has a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for payload in [
+        structure([]),
+        structure([tagged(VALIDITY_DATE_TAG, Value::date_time(17))]),
+    ] {
+        let request = request_message_with_operation_payload(VALIDATE_OPERATION, payload);
+        assert!(!evaluate(Some(&request), None));
+        let error = result
+            .validate_request(&request)
+            .expect_err("a Validity Date does not supply a certificate-chain member");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+    }
+}
+
+#[test]
 fn profile_maps_validate_repeated_certificates_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Certificate optional
     // and permits it to be repeated in a Validate request.

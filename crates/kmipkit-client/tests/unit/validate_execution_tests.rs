@@ -320,6 +320,21 @@ fn omitted_chain_and_date_are_forwarded_without_local_policy() {
 }
 
 #[test]
+fn validate_without_chain_member_is_not_sent() {
+    let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .validate(ValidateRequest::new(), &CodecLimits::defaults())
+        .unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn unknown_request_extensions_are_sent_once_and_redacted() {
     let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
     let (mut client, transport, captured) = client_for(ExchangeScript::Success {

@@ -69,6 +69,27 @@ fn req_001_models_one_chain_and_rejects_malformed_certificate_wrapper() {
 }
 
 #[test]
+fn req_001_rejects_empty_chain_even_when_validity_date_is_present() {
+    let empty = ValidateRequest::new();
+    assert_eq!(empty.chain_len(), 0);
+    assert!(empty.into_ttlv_payload().is_err());
+
+    let date_only = ValidateRequest::new().with_validity_date(17);
+    assert_eq!(date_only.chain_len(), 0);
+    assert!(date_only.into_ttlv_payload().is_err());
+
+    let identifier_and_date = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
+        .with_validity_date(17);
+    assert_eq!(
+        field_tags(&identifier_and_date.into_ttlv_payload().unwrap()),
+        [IDENTIFIER, DATE]
+    );
+}
+
+#[test]
 fn req_002_001_certificate_identifier_and_mixed_inputs_are_available() {
     let certificate_only = ValidateRequest::new().with_certificate(certificate(SENTINEL));
     assert_eq!(
