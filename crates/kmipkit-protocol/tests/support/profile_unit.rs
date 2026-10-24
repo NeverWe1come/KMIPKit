@@ -7399,6 +7399,161 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
     assert_register_signature_omission_rejects_malformed_certificates();
 }
 
+#[test]
+fn profile_maps_register_omission_pair_metadata_branches() {
+    const REQUIREMENT_IDS: [&str; 3] = [
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-011",
+    ];
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches";
+
+    for requirement_id in REQUIREMENT_IDS {
+        let mapping = register_omission_mapping(requirement_id);
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == PROFILE_TEST_ID
+                && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+        }));
+        assert!(!(mapping.evaluator.expect("the rule has an evaluator"))(
+            None, None
+        ));
+    }
+
+    assert_register_table293_outer_pair_metadata_branches();
+    assert_register_signature_algorithm_presence_branches();
+}
+
+fn assert_register_table293_outer_pair_metadata_branches() {
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
+
+    let paired = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([
+                    tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            ),
+        ]),
+    );
+    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+        assert!(register_omission_rule_accepts(requirement_id, &paired));
+    }
+
+    let one_sided_pair = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                    Value::enumeration(3),
+                )])),
+            ),
+        ]),
+    );
+    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+        assert!(!register_omission_rule_accepts(
+            requirement_id,
+            &one_sided_pair
+        ));
+    }
+
+    let invalid_object_type = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(
+            OBJECT_TYPE_TAG,
+            Value::text_string("symmetric-key".to_owned()),
+        )]),
+    );
+    assert!(!register_omission_rule_accepts(
+        ALGORITHM_REQUIREMENT_ID,
+        &invalid_object_type
+    ));
+
+    let missing_object_type = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
+    );
+    assert!(!register_omission_rule_accepts(
+        ALGORITHM_REQUIREMENT_ID,
+        &missing_object_type
+    ));
+
+    let missing_key_block_object = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    assert!(!register_omission_rule_accepts(
+        ALGORITHM_REQUIREMENT_ID,
+        &missing_key_block_object
+    ));
+}
+
+fn assert_register_signature_algorithm_presence_branches() {
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_003A;
+
+    let signature_algorithm_present = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    DIGITAL_SIGNATURE_ALGORITHM_TAG,
+                    Value::enumeration(4),
+                )])),
+            ),
+        ]),
+    );
+    assert!(register_omission_rule_accepts(
+        SIGNATURE_REQUIREMENT_ID,
+        &signature_algorithm_present
+    ));
+
+    let non_certificate_object = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+    );
+    assert!(register_omission_rule_accepts(
+        SIGNATURE_REQUIREMENT_ID,
+        &non_certificate_object
+    ));
+
+    let invalid_signature_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    DIGITAL_SIGNATURE_ALGORITHM_TAG,
+                    Value::text_string("RSA".to_owned()),
+                )])),
+            ),
+        ]),
+    );
+    assert!(!register_omission_rule_accepts(
+        SIGNATURE_REQUIREMENT_ID,
+        &invalid_signature_algorithm
+    ));
+}
+
+fn register_omission_rule_accepts(requirement_id: &str, request: &crate::RequestMessage) -> bool {
+    register_omission_mapping(requirement_id)
+        .evaluator
+        .expect("the rule has an evaluator")(Some(request), None)
+}
+
 fn register_omission_mapping(requirement_id: &str) -> &'static TypedRuleMapping {
     TYPED_RULE_MAPPINGS
         .iter()
