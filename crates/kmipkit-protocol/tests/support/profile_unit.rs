@@ -94,6 +94,7 @@ const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
 const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
+const DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
@@ -1710,57 +1711,36 @@ fn profile_maps_required_derive_key_symmetric_output_attributes() {
         .expect("a derived Symmetric Key supplies both required attributes");
 
     for malformed in [
-        derive_key_payload_with_attributes(
-            2,
-            [tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3))],
-        ),
-        derive_key_payload_with_attributes(
-            2,
-            [tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256))],
-        ),
-        derive_key_payload_with_attributes(
-            2,
-            [
-                tagged(
-                    CRYPTOGRAPHIC_LENGTH_TAG,
-                    Value::text_string("256".to_owned()),
-                ),
-                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
-            ],
-        ),
-        derive_key_payload_with_attributes(
-            2,
-            [
-                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
-                tagged(
-                    CRYPTOGRAPHIC_ALGORITHM_TAG,
-                    Value::text_string("AES".to_owned()),
-                ),
-            ],
-        ),
-        derive_key_payload_with_attributes(
-            2,
-            [
-                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
-                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(512)),
-                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
-            ],
-        ),
-        derive_key_payload_with_attributes(
-            2,
-            [
-                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
-                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
-                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(4)),
-            ],
-        ),
+        symmetric_derive_key_payload([tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3))]),
+        symmetric_derive_key_payload([tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256))]),
+        symmetric_derive_key_payload([
+            tagged(
+                CRYPTOGRAPHIC_LENGTH_TAG,
+                Value::text_string("256".to_owned()),
+            ),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+        ]),
+        symmetric_derive_key_payload([
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+            tagged(
+                CRYPTOGRAPHIC_ALGORITHM_TAG,
+                Value::text_string("AES".to_owned()),
+            ),
+        ]),
+        symmetric_derive_key_payload([
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(512)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+        ]),
+        symmetric_derive_key_payload([
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(4)),
+        ]),
     ] {
-        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
-        assert_request_rejected_for_requirement(
+        assert_symmetric_derive_key_payload_rejected(
             &result,
-            &request,
-            REQUIREMENT_ID,
-            SOURCE_CLAUSE_ID,
+            malformed,
             "a derived Symmetric Key rejects a missing, mistyped, or duplicated required attribute",
         );
     }
@@ -1781,15 +1761,9 @@ fn profile_maps_required_derive_key_symmetric_output_attributes() {
         .validate_request(&future_object_type)
         .expect("an unknown future Object Type is not interpreted as a Symmetric Key");
 
-    let missing_object_type = request_message_with_operation_payload(
-        DERIVE_KEY_OPERATION,
-        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
-    );
-    assert_request_rejected_for_requirement(
+    assert_symmetric_derive_key_payload_rejected(
         &result,
-        &missing_object_type,
-        REQUIREMENT_ID,
-        SOURCE_CLAUSE_ID,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
         "the rule cannot determine applicability when Object Type is missing",
     );
 
@@ -2185,6 +2159,25 @@ fn derive_key_payload_with_attributes(
         tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
         tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes))),
     ])
+}
+
+fn symmetric_derive_key_payload(attributes: impl IntoIterator<Item = Item>) -> Structure {
+    derive_key_payload_with_attributes(DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE, attributes)
+}
+
+fn assert_symmetric_derive_key_payload_rejected(
+    result: &ProfileValidationResult,
+    payload: Structure,
+    reason: &str,
+) {
+    let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, payload);
+    assert_request_rejected_for_requirement(
+        result,
+        &request,
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
+        reason,
+    );
 }
 
 fn assert_request_rejected_for_requirement(

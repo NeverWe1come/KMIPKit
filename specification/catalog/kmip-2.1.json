@@ -93271,15 +93271,17 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_symmetric_output_attributes"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The Baseline Client profile mapping checks outbound request representation for the symmetric-key condition in KMIP Specification v2.1 §6.1.14 Table 205. Unknown Object Type values are not interpreted as Symmetric Key outputs. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
