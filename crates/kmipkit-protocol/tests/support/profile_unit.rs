@@ -2103,6 +2103,56 @@ fn profile_requires_get_wrapping_key_information_pairing() {
 }
 
 #[test]
+fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
+    // KMIP Specification v2.1 §7.18 requires the client to provide this
+    // structure when it requests a wrapped key; Get uses its presence as that
+    // request, while omission leaves the client asking for an unwrapped key.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("requesting a wrapped Get has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the wrapped Get requirement resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("wrapped Get requests have executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the wrapped Get requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let get_requesting_wrapped_key = get_request_with_wrapping_key_information(true, false);
+    let get_requesting_plain_key = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("plain-object".to_owned()),
+        )]),
+    );
+
+    for request in [&get_requesting_wrapped_key, &get_requesting_plain_key] {
+        assert!(evaluate(Some(request), None));
+        result
+            .validate_request(request)
+            .expect("wrapped and unwrapped Get requests are represented explicitly");
+    }
+}
+
+#[test]
 fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
     // KMIP Specification v2.1 §8.2 Table 395 permits Attestation Type to repeat.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.2-002";
