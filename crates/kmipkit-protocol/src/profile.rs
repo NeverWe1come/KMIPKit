@@ -792,6 +792,8 @@ const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE_TYPE_ATTRIBUTE: u32 = 0x0042_001D;
 const LINK_ATTRIBUTE: u32 = 0x0042_004A;
+const LINK_TYPE: u32 = 0x0042_004B;
+const LINKED_OBJECT_IDENTIFIER: u32 = 0x0042_004C;
 const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
@@ -1880,6 +1882,102 @@ fn client_can_send_partial_structured_locate_attributes(
                     && found_attributes
             })
             .unwrap_or(false)
+    })
+}
+
+fn client_link_type_is_required_in_object_state(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_link_members_are_required_in_object_state(request, response, true, false)
+}
+
+fn client_linked_object_identifier_is_required_in_object_state(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_link_members_are_required_in_object_state(request, response, false, true)
+}
+
+fn client_link_members_are_required_in_object_state(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+    require_link_type: bool,
+    require_linked_object_identifier: bool,
+) -> bool {
+    if response.is_some() {
+        return true;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation == LOCATE_OPERATION {
+            // §6.1.28 permits partial structured Link search criteria.
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                object_state_links_have_required_members(
+                    &payload,
+                    require_link_type,
+                    require_linked_object_identifier,
+                )
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn object_state_links_have_required_members(
+    structure: &StructureView<'_>,
+    require_link_type: bool,
+    require_linked_object_identifier: bool,
+) -> bool {
+    structure.children().iter().all(|field| {
+        if field.tag().raw() == LINK_ATTRIBUTE {
+            field.with_value(|value| match value {
+                ValueView::Structure(link) => {
+                    (!require_link_type || link_has_required_type(&link))
+                        && (!require_linked_object_identifier
+                            || link_has_required_object_identifier(&link))
+                }
+                _ => false,
+            })
+        } else {
+            field.with_value(|value| match value {
+                ValueView::Structure(nested) => object_state_links_have_required_members(
+                    &nested,
+                    require_link_type,
+                    require_linked_object_identifier,
+                ),
+                _ => true,
+            })
+        }
+    })
+}
+
+fn link_has_required_type(link: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(link_type) = field_presence(link, LINK_TYPE) else {
+        return false;
+    };
+    link_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+}
+
+fn link_has_required_object_identifier(link: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(identifier) = field_presence(link, LINKED_OBJECT_IDENTIFIER) else {
+        return false;
+    };
+    identifier.with_value(|value| {
+        matches!(
+            value,
+            ValueView::TextString(_) | ValueView::Enumeration(_) | ValueView::Integer(_)
+        )
     })
 }
 
@@ -5447,6 +5545,42 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.31-004",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_link_type_is_required_in_object_state),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.31-005",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_linked_object_identifier_is_required_in_object_state),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],

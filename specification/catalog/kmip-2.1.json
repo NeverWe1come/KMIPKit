@@ -89759,12 +89759,18 @@
         "KMIPKIT-TEST-CN01-2-66"
       ],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_link_type_is_required_in_object_state",
+        "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state"
+      ],
+      "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Link Type member in a complete Link value. This mapping is limited by §6.1.28: partial structured Locate criteria may specify Linked Object Identifier without Link Type, so this requirement does not require complete Link values in Locate filters. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering PGP public and private key blocks and adding links between the Managed Objects, but its fixture is unavailable in the pinned tree. No official execution evidence is claimed. No local typed Link validation or verification evidence is linked."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Link Type member as an Enumeration in each complete Link value represented as client object state. The typed rule validates client-originated request structures, permits repeated Link attributes and unknown Link Type enumeration values, and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This records client request representation only; it makes no claim about server-provided object state, server acceptance, or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.31-005",
@@ -89802,12 +89808,18 @@
         "KMIPKIT-TEST-CN01-2-66"
       ],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_linked_object_identifier_is_required_in_object_state",
+        "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state"
+      ],
+      "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Linked Object Identifier member in a complete Link value. This mapping is limited by §6.1.28: partial structured Locate criteria may specify Linked Object Identifier without Link Type, so this requirement does not require complete Link values in Locate filters. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering PGP public and private key blocks and adding links between the Managed Objects, but its fixture is unavailable in the pinned tree. No official execution evidence is claimed. No local typed Link validation or verification evidence is linked."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Linked Object Identifier member as Text String, Enumeration, or Integer in each complete Link value represented as client object state. The typed rule validates client-originated request structures, permits repeated Link attributes, and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This records client request representation only; it makes no claim about server-provided object state, server acceptance, or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-001",
