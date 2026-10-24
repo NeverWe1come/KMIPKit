@@ -4817,6 +4817,116 @@ fn profile_maps_rekey_key_pair_offset_as_optional_interval() {
         .expect("a Re-key Key Pair-only rule does not constrain Locate requests");
 }
 
+#[test]
+fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.55 and Table 334 permit omitting
+    // Cryptographic Parameters when the managed object provides them.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.55-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.55-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const SIGN_OPERATION_TAG: u32 = 0x0000_0021;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DATA_TAG: u32 = 0x0042_00C2;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Sign Cryptographic Parameters omission has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("optional Sign Cryptographic Parameters has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional Sign Cryptographic Parameters has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional Sign Cryptographic Parameters has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted = structure([
+        tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("signing-key".to_owned()),
+        ),
+        tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
+    ]);
+    let supplied = structure([
+        tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("signing-key".to_owned()),
+        ),
+        tagged(
+            CRYPTOGRAPHIC_PARAMETERS_TAG,
+            Value::structure(Structure::new()),
+        ),
+        tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
+    ]);
+    for payload in [omitted, supplied] {
+        let request = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted and supplied Cryptographic Parameters are valid request shapes");
+    }
+
+    for payload in [
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("signing-key".to_owned()),
+            ),
+            tagged(
+                CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::text_string("not-a-Structure".to_owned()),
+            ),
+            tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
+        ]),
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("signing-key".to_owned()),
+            ),
+            tagged(
+                CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(Structure::new()),
+            ),
+            tagged(
+                CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(Structure::new()),
+            ),
+            tagged(DATA_TAG, Value::byte_string(b"message".to_vec())),
+        ]),
+    ] {
+        let malformed = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("Cryptographic Parameters must be one Structure when supplied");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Sign-only rule does not constrain Locate requests");
+}
+
 fn reprovision_malformed_request_payloads() -> [Structure; 7] {
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
     const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
