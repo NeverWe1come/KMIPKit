@@ -5593,3 +5593,20 @@ Mapped `KMIPKIT-REQ-SPEC-3.3-001-001` and `KMIPKIT-REQ-SPEC-3.3-001-002` from KM
 | Hosted CI | Exact-head run after the batch is pushed | Pending. |
 
 Baseline Client now has 111 valid executable typed mappings of 265 assigned requirements; 154 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Repeated Attribute capabilities (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-5.1-002` from KMIP Specification v2.1 §5.1, Table 157, with profile evidence for repeated direct Attributes in a client Register request and a successful Get Attributes response. Mapped `KMIPKIT-REQ-SPEC-5.2-002`, `-5.3-002`, and `-5.4-002` from §§5.2–5.4, Tables 158–160, with request evidence for repeated Common, Private Key, and Public Key Attributes in KMIP Specification v2.1 §6.1.9, Table 189 Create Key Pair requests. These rules validate only the client-side request or response representation; they do not claim server-side processing, union semantics, acceptance, or formal conformance. The Common Attributes inventory direction is scoped to the Table 189 client request use.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `2fc70856`; `cargo test -p kmipkit-protocol profile_maps_repeated --all-features` | Expected failure: the new §5.1–§5.4 profile selections had no typed rule mappings (`MissingRuleMapping`). |
+| Green | DCO commit `42255f54`; added four OptionalCapability mappings and scoped evaluators | PASS: focused profile tests accept repeated direct attributes in Register/Get Attributes and each Create Key Pair request group. |
+| Refactor | DCO commit `a72710aa`; shared repeated-attribute test fixture, catalog implementation/verification links, direction scope, and regenerated coverage report | PASS: report snapshot updated for the four new typed mappings. |
+| Rust checks | `cargo test -p kmipkit-protocol profile_maps_repeated --all-features`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 5 filtered profile tests, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py`; `generate_profiles.py --check`; `report.py --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated metadata and report are current. |
+| Traceability and report snapshot | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`; `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` | PASS: both focused catalog tests pass. |
+| Hosted CI | Exact-head run after this batch is pushed | Pending. |
+
+Baseline Client now has 115 valid executable typed mappings of 265 assigned requirements; 150 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
