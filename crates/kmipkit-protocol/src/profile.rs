@@ -1471,7 +1471,7 @@ fn client_can_include_optional_create_split_key_source_identifier(
     request.is_some()
 }
 
-fn client_can_include_optional_delete_attribute_reference(
+fn client_can_represent_optional_delete_attribute_reference(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -5418,7 +5418,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL"),
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_delete_attribute_reference),
+        evaluator: Some(client_can_represent_optional_delete_attribute_reference),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
