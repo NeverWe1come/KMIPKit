@@ -240,8 +240,14 @@ impl ProfileValidationResult {
         Ok(())
     }
 
-    /// Evaluates the selected typed rules against one complete outbound KMIP
-    /// request before the client sends it.
+    /// Evaluates selected rules that can be observed in one outbound KMIP
+    /// [`RequestMessage`].
+    ///
+    /// This standalone method cannot validate caller-owned context that is not
+    /// encoded in TTLV. An `Ok` result alone does not establish operation-level
+    /// requirements that depend on that context. Use the typed
+    /// `Client::execute_with_profiles` path for an exchange; typed operation
+    /// serializers validate such context before constructing the message.
     ///
     /// # Errors
     ///
@@ -257,8 +263,12 @@ impl ProfileValidationResult {
         )
     }
 
-    /// Evaluates the selected typed rules against one received response while
-    /// retaining its original request context.
+    /// Evaluates selected rules observable in a received response and its
+    /// original [`RequestMessage`].
+    ///
+    /// As with [`Self::validate_request`], this standalone method cannot
+    /// recover caller-owned context that is absent from TTLV. The typed client
+    /// exchange path validates that context before sending the request.
     ///
     /// # Errors
     ///
@@ -1853,7 +1863,7 @@ fn join_split_key_identifier_entries_are_well_formed(payload: &StructureView<'_>
         let valid_identifier = field.with_value(|value| {
             matches!(
                 value,
-                ValueView::TextString(_) | ValueView::ByteString(_) | ValueView::Enumeration(_)
+                ValueView::TextString(_) | ValueView::Integer(_) | ValueView::Enumeration(_)
             )
         });
         if valid_identifier {
