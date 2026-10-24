@@ -3577,6 +3577,70 @@ fn client_register_preserves_optional_wrapped_key_value(
     })
 }
 
+fn client_register_key_value_attributes_are_structured(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| {
+                        !matches!(
+                            field.tag().raw(),
+                            REGISTER_OBJECT_TYPE
+                                | REGISTER_ATTRIBUTES
+                                | REGISTER_PROTECTION_STORAGE_MASKS
+                        )
+                    })
+                    .all(register_object_key_value_attributes_are_structured)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_object_key_value_attributes_are_structured(object: &Item) -> bool {
+    object.with_value(|value| match value {
+        ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+            FieldPresence::Missing => true,
+            FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => match field_presence(&key_block, KEY_VALUE) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Unique(key_value) => key_value.with_value(|value| match value {
+                        ValueView::ByteString(_) => true,
+                        ValueView::Structure(key_value) => {
+                            match field_presence(&key_value, ATTRIBUTES) {
+                                FieldPresence::Missing => true,
+                                FieldPresence::Unique(attributes) => attributes
+                                    .with_value(|value| matches!(value, ValueView::Structure(_))),
+                                FieldPresence::Duplicate => false,
+                            }
+                        }
+                        _ => false,
+                    }),
+                    FieldPresence::Duplicate => false,
+                },
+                _ => false,
+            }),
+            FieldPresence::Duplicate => false,
+        },
+        _ => false,
+    })
+}
+
 fn register_payload_preserves_optional_key_wrapping(payload: &StructureView<'_>) -> bool {
     for object in payload.children().iter().filter(|field| {
         !matches!(
@@ -4218,6 +4282,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.2-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.2-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_key_value_attributes_are_structured),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_key_value_attributes_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
