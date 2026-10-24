@@ -721,6 +721,9 @@ const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
+const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
+const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
 const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const CERTIFY_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -1472,6 +1475,47 @@ fn client_can_include_optional_create_split_key_source_identifier(
 ) -> bool {
     // §6.1.10 permits a caller to identify the existing split source.
     request.is_some()
+}
+
+fn client_create_split_key_requires_prime_field_size_for_polynomial_method(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CREATE_SPLIT_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(method) = field_presence(&payload, SPLIT_KEY_METHOD)
+                else {
+                    return false;
+                };
+                let Some(method) = method.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+
+                match field_presence(&payload, PRIME_FIELD_SIZE) {
+                    FieldPresence::Missing => method != POLYNOMIAL_SHARING_PRIME_FIELD,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(size) => {
+                        size.with_value(|value| matches!(value, ValueView::BigInteger(_)))
+                    }
+                }
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_can_represent_optional_delete_attribute_reference(
@@ -4506,6 +4550,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.8-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.8-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_create_split_key_requires_prime_field_size_for_polynomial_method),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_request_requires_the_explicit_client_input",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_size_is_preserved_as_big_integer",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::table_193_prime_field_size_remains_optional_for_other_methods_and_future_values",
+                kind: RuleTestKind::PositiveBehavior,
             },
         ],
         constraints: &[],

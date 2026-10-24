@@ -8,6 +8,7 @@ use super::{
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
     client_add_attribute_random_number_generator_is_well_formed,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
+    client_create_split_key_requires_prime_field_size_for_polynomial_method,
     client_get_or_export_key_compression_type_is_enumeration,
     client_key_value_present_is_not_modified,
     client_key_wrapping_data_is_absent_or_has_required_key_information,
@@ -4163,25 +4164,73 @@ fn profile_maps_create_split_key_optional_source_identifier() {
 }
 #[test]
 fn profile_requires_prime_field_size_for_polynomial_split_key_requests() {
-    // KMIP Specification v2.1 §2.8, Table 9 requires Prime Field Size for
-    // Polynomial Sharing Prime Field.
+    // KMIP Specification v2.1 §2.8, Table 9 and §6.1.10, Table 193 require
+    // Prime Field Size for Polynomial Sharing Prime Field Create Split Key.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.8-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-2.8-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the conditional Prime Field Size rule has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the conditional requirement resolves to generated profile metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required capability has positive executable evidence");
+    assert!(!client_create_split_key_requires_prime_field_size_for_polynomial_method(None, None));
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let request = create_split_key_profile_request(3, None);
+    for (method, prime_field_size) in [
+        (3, Some(Value::big_integer(vec![0x01, 0x00, 0x01]))),
+        (1, None),
+        (1, Some(Value::big_integer(vec![0x01, 0x00, 0x01]))),
+        (0x8000_0000, None),
+    ] {
+        let request = create_split_key_profile_request(method, prime_field_size);
+        result
+            .validate_request(&request)
+            .expect("the source requires the field only for Polynomial Sharing Prime Field");
+    }
+
+    let missing_size = create_split_key_profile_request(3, None);
     let error = result
-        .validate_request(&request)
-        .expect_err("a polynomial split request requires an explicit Prime Field Size");
+        .validate_request(&missing_size)
+        .expect_err("Polynomial Sharing Prime Field requires an explicit size");
 
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let malformed_size = create_split_key_profile_request(3, Some(Value::enumeration(1)));
+    let error = result
+        .validate_request(&malformed_size)
+        .expect_err("Prime Field Size is encoded as a Big Integer");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let unrelated =
+        request_message_with_operation_payload(REGISTER_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("Create Split Key rules do not constrain unrelated operations");
 }
 
 fn create_split_key_profile_request(
