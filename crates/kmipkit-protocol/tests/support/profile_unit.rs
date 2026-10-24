@@ -11266,7 +11266,7 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
 
 #[test]
 fn profile_maps_optional_register_nist_key_type_capability() {
-    // KMIP Specification v2.1 §4.34 Table 97 and §11.32 define its optional Enumeration form.
+    // KMIP Specification v2.1 §4.34 Table 97 and §§11.32, 11.34 define applicability and encoding.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.34-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.34-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -11297,11 +11297,11 @@ fn profile_maps_optional_register_nist_key_type_capability() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let register_with_nist_key_types = |values: Vec<Value>| {
+    let register_with_nist_key_types = |object_type: u32, values: Vec<Value>| {
         request_message_with_operation_payload(
             REGISTER_OPERATION_TAG,
             structure([
-                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
                 tagged(
                     ATTRIBUTES_TAG,
                     Value::structure(structure(
@@ -11313,33 +11313,57 @@ fn profile_maps_optional_register_nist_key_type_capability() {
             ]),
         )
     };
-    let with_nist_key_type = register_with_nist_key_types(vec![Value::enumeration(6)]);
+    let with_nist_key_type = register_with_nist_key_types(2, vec![Value::enumeration(6)]);
     assert!(evaluate(Some(&with_nist_key_type), None));
     result
         .validate_request(&with_nist_key_type)
         .expect("the client can set NIST Key Type in a Register request");
 
-    let without_nist_key_type = register_with_nist_key_types(vec![]);
+    for object_type in [3, 4, 5, 7] {
+        let request = register_with_nist_key_types(object_type, vec![Value::enumeration(6)]);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("NIST Key Type is applicable to Key and Secret Data object types");
+    }
+
+    let without_nist_key_type = register_with_nist_key_types(2, vec![]);
     assert!(evaluate(Some(&without_nist_key_type), None));
     result
         .validate_request(&without_nist_key_type)
         .expect("NIST Key Type remains optional");
 
     let with_extension_nist_key_type =
-        register_with_nist_key_types(vec![Value::enumeration(0x8123_4567)]);
+        register_with_nist_key_types(2, vec![Value::enumeration(0x8123_4567)]);
     assert!(evaluate(Some(&with_extension_nist_key_type), None));
     result
         .validate_request(&with_extension_nist_key_type)
         .expect("future or vendor NIST Key Type enumeration values remain representable");
 
-    let malformed_nist_key_type = register_with_nist_key_types(vec![Value::integer(6)]);
+    let malformed_nist_key_type = register_with_nist_key_types(2, vec![Value::integer(6)]);
     assert!(!evaluate(Some(&malformed_nist_key_type), None));
     assert!(result.validate_request(&malformed_nist_key_type).is_err());
 
     let duplicate_nist_key_type =
-        register_with_nist_key_types(vec![Value::enumeration(6), Value::enumeration(7)]);
+        register_with_nist_key_types(2, vec![Value::enumeration(6), Value::enumeration(7)]);
     assert!(!evaluate(Some(&duplicate_nist_key_type), None));
     assert!(result.validate_request(&duplicate_nist_key_type).is_err());
+
+    let opaque_object_with_nist_key_type =
+        register_with_nist_key_types(8, vec![Value::enumeration(6)]);
+    assert!(!evaluate(Some(&opaque_object_with_nist_key_type), None));
+    assert!(
+        result
+            .validate_request(&opaque_object_with_nist_key_type)
+            .is_err()
+    );
+
+    let future_object_type_with_nist_key_type =
+        register_with_nist_key_types(0x8123_4567, vec![Value::enumeration(6)]);
+    assert!(evaluate(Some(&future_object_type_with_nist_key_type), None));
+    result
+        .validate_request(&future_object_type_with_nist_key_type)
+        .expect("future or vendor object types remain uninterpreted");
 
     let unrelated_operation =
         request_message_with_operation_payload(TABLE12_GET_OPERATION, Structure::new());
