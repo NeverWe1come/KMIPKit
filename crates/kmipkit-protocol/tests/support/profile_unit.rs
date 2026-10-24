@@ -16302,8 +16302,6 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
-    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -16333,28 +16331,18 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
     // This standalone RequestMessage check can observe only wire fields;
     // repeated values remain separate entries. The typed client path checks
     // their count against the caller-supplied threshold before serialization.
-    let repeated_identifiers = request_message_with_operation_payload(
-        JOIN_SPLIT_KEY_OPERATION,
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("split-a".to_owned()),
-            ),
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("split-a".to_owned()),
-            ),
-            tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(42)),
-            tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(0x0000_000A)),
-        ]),
-    );
+    let repeated_identifiers = join_split_key_request_with_identifiers([
+        Value::text_string("split-a".to_owned()),
+        Value::text_string("split-a".to_owned()),
+        Value::integer(42),
+        Value::enumeration(0x0000_000A),
+    ]);
     assert!(evaluate(Some(&repeated_identifiers), None));
     result
         .validate_request(&repeated_identifiers)
         .expect("serialized Join Split Key retains each caller-approved identifier entry");
 
-    let missing_identifier =
-        request_message_with_operation_payload(JOIN_SPLIT_KEY_OPERATION, Structure::new());
+    let missing_identifier = join_split_key_request_with_identifiers([]);
     assert!(!evaluate(Some(&missing_identifier), None));
     let error = result
         .validate_request(&missing_identifier)
@@ -16366,19 +16354,30 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 
-    let malformed_identifier = request_message_with_operation_payload(
-        JOIN_SPLIT_KEY_OPERATION,
-        structure([tagged(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::byte_string(vec![0x01]),
-        )]),
-    );
+    let malformed_identifier =
+        join_split_key_request_with_identifiers([Value::byte_string(vec![0x01])]);
     assert!(!evaluate(Some(&malformed_identifier), None));
 
     let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
     result
         .validate_request(&unrelated)
         .expect("a Join Split Key-only rule does not constrain Locate requests");
+}
+
+fn join_split_key_request_with_identifiers(
+    identifiers: impl IntoIterator<Item = Value>,
+) -> crate::RequestMessage {
+    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+
+    request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure(
+            identifiers
+                .into_iter()
+                .map(|identifier| tagged(UNIQUE_IDENTIFIER_TAG, identifier)),
+        ),
+    )
 }
 
 #[test]
@@ -16388,8 +16387,6 @@ fn profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability() 
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-005";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
-    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -16410,19 +16407,10 @@ fn profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability() 
     let evaluate = mapping
         .evaluator
         .expect("Join Split Key repeated identifiers have a typed evaluator");
-    let request = request_message_with_operation_payload(
-        JOIN_SPLIT_KEY_OPERATION,
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("split-a".to_owned()),
-            ),
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("split-b".to_owned()),
-            ),
-        ]),
-    );
+    let request = join_split_key_request_with_identifiers([
+        Value::text_string("split-a".to_owned()),
+        Value::text_string("split-b".to_owned()),
+    ]);
     assert!(evaluate(Some(&request), None));
 
     ProfileValidationResult {
