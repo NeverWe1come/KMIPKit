@@ -7085,6 +7085,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_validate_chain_inputs_are_usable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
         source_gap_id: None,
