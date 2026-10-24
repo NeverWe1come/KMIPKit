@@ -16297,7 +16297,8 @@ fn profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_paylo
 fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence() {
     // KMIP Specification v2.1 §6.1.27 and Table 244 require at least the
     // caller-known Split Key Threshold number of Unique Identifier entries.
-    // Section 11.58 Table 145 permits Text String, Enumeration, or Integer.
+    // Section 11.58 Table 145 permits Text String, Enumeration, or Integer;
+    // Table 489 supplies the Join Split Key Enumeration value used below.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -16339,7 +16340,12 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
                 UNIQUE_IDENTIFIER_TAG,
                 Value::text_string("split-a".to_owned()),
             ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
             tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(42)),
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(0x0000_000A)),
         ]),
     );
     assert!(evaluate(Some(&repeated_identifiers), None));
