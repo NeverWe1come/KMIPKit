@@ -4918,7 +4918,7 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
 
 #[test]
 fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_capability() {
-    // KMIP Specification v2.1 §6.1.56 and Table 338 permit omission of
+    // KMIP Specification v2.1 §6.1.56 and Table 337 permit omission of
     // Cryptographic Parameters when the managed object provides them.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.56-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.56-002";
