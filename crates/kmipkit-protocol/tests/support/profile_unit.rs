@@ -7867,6 +7867,99 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 }
 
 #[test]
+fn profile_maps_register_key_value_attributes_as_optional_capability() {
+    // KMIP Specification v2.1 §3.2 Table 13 permits Attributes in structured Key Value.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.2-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-3.2-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Attributes have a typed optional-capability rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Key Value Attributes capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the capability has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let with_key_value_attributes = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(
+                TABLE12_SYMMETRIC_KEY,
+                false,
+                false,
+                Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
+            ),
+            [],
+        ),
+    );
+    assert!(evaluate(Some(&with_key_value_attributes), None));
+    result
+        .validate_request(&with_key_value_attributes)
+        .expect("the client can include optional Attributes in structured Key Value");
+
+    let without_key_value_attributes = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [],
+        ),
+    );
+    assert!(evaluate(Some(&without_key_value_attributes), None));
+    result
+        .validate_request(&without_key_value_attributes)
+        .expect("the optional Attributes do not become required");
+
+    let malformed = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            tagged(
+                TABLE12_SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    TABLE12_KEY_BLOCK,
+                    Value::structure(structure([
+                        tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
+                        tagged(
+                            TABLE12_KEY_VALUE,
+                            Value::structure(structure([
+                                tagged(
+                                    TABLE12_KEY_MATERIAL,
+                                    Value::byte_string(b"synthetic-key-material".to_vec()),
+                                ),
+                                tagged(TABLE12_ATTRIBUTES, Value::integer(3)),
+                            ])),
+                        ),
+                    ])),
+                )])),
+            ),
+            [],
+        ),
+    );
+    assert!(!evaluate(Some(&malformed), None));
+    assert!(result.validate_request(&malformed).is_err());
+}
+
+#[test]
 fn profile_maps_register_object_type_and_attributes_as_required() {
     // KMIP Specification v2.1 §6.1.43 Table 291 and the Register text require
     // Object Type and the Attributes object for each applicable request.
