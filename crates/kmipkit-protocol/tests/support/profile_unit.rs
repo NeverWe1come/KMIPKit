@@ -2152,6 +2152,98 @@ fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
 }
 
 #[test]
+fn profile_maps_optional_get_return_format_controls() {
+    const REQUIREMENTS: [(&str, &str); 4] = [
+        (
+            "KMIPKIT-REQ-SPEC-6.1.19-003",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.19-004",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.19-005",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.19-006",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
+        ),
+    ];
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mut request = crate::GetRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key".to_owned()))
+        .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4567))
+        .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_4568))
+        .with_key_compression_type(crate::KeyCompressionType::from_raw(0xF123_4569));
+    request = request.with_key_wrapping_specification(structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]));
+    let request_with_all_options = request_message_with_operation_payload(
+        GET_OPERATION,
+        request
+            .to_ttlv_payload()
+            .expect("the caller-selected Get options encode in Table 220 order"),
+    );
+    let request_without_options = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key".to_owned()))
+            .to_ttlv_payload()
+            .expect("Get permits omission of each optional return-format control"),
+    );
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENTS
+            .iter()
+            .map(|(requirement_id, _)| (*requirement_id).to_owned())
+            .collect(),
+    };
+
+    for (requirement_id, source_gap_id) in REQUIREMENTS {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("each Table 220 option has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("each Table 220 option resolves to generated normative metadata");
+        assert_eq!(mapping.source_clause_id, "");
+        assert_eq!(mapping.source_gap_id, Some(source_gap_id));
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::OptionalCapability
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the option mapping uses its exact source-gap row and evidence");
+
+        let evaluate = mapping
+            .evaluator
+            .expect("each option has an executable evaluator");
+        assert!(!evaluate(None, None));
+        assert!(evaluate(Some(&request_with_all_options), None));
+        assert!(evaluate(Some(&request_without_options), None));
+    }
+
+    result
+        .validate_request(&request_with_all_options)
+        .expect("all caller-selected Get return-format controls remain usable");
+    result
+        .validate_request(&request_without_options)
+        .expect("profile validation leaves all optional controls absent by default");
+}
+
+#[test]
 fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
     // KMIP Specification v2.1 §8.2 Table 395 permits Attestation Type to repeat.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.2-002";
