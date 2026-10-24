@@ -4896,6 +4896,77 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/https.rs::https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/tls_integrity.rs::raw_tls_rejects_a_tampered_post_handshake_application_record",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/tls_integrity.rs::https_invalidates_a_connection_after_a_tampered_post_handshake_application_record",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_unknown_server_ca",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_expired_server_certificate",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_server_name_mismatch",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-11.56-001",
         source_gap_id: None,

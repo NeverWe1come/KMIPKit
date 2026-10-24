@@ -1260,8 +1260,16 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             for record in catalog["requirements"]
             if record["requirement_id"] == field_order_id
         )
-        self.assertEqual(global_field_order["status"], "unassigned")
-        self.assertIsNone(global_field_order["feature_spec"])
+        self.assertEqual(global_field_order["status"], "scoped_verified")
+        self.assertEqual(global_field_order["feature_spec"], "KMIPKIT-0005")
+        self.assertEqual(
+            global_field_order["implementation_refs"],
+            ["crates/kmipkit-client/src/wire_encoder.rs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding",
+            global_field_order["verification_refs"],
+        )
 
         coverage_row = by_id["KMIPKIT-0006-SC-007"]
         self.assertEqual(coverage_row["status"], "verified")
