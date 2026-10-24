@@ -854,6 +854,7 @@ const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const GET_OPERATION: u32 = 0x0000_000A;
 const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
+const NIST_KEY_TYPE_ATTRIBUTE: u32 = 0x0042_013A;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_OPAQUE_OBJECT: u32 = 0x0042_005B;
 const CERTIFICATE: u32 = 0x0042_0013;
@@ -4101,6 +4102,44 @@ fn client_register_length_requires_algorithm(
     )
 }
 
+fn client_register_nist_key_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| register_nist_key_type_is_enumeration(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn register_nist_key_type_is_enumeration(payload: &StructureView<'_>) -> bool {
+    match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                match field_presence(&attributes, NIST_KEY_TYPE_ATTRIBUTE) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(nist_key_type) => {
+                        nist_key_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    }
+                }
+            }
+            _ => false,
+        }),
+    }
+}
+
 fn client_register_table293_pair_may_be_in_key_block(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -6450,6 +6489,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_nist_key_type_is_enumeration),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_register_nist_key_type_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
