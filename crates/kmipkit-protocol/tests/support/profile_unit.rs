@@ -49,6 +49,7 @@ const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
+const CHECK_OPERATION_TAG: u32 = 0x0000_0009;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
@@ -85,6 +86,7 @@ const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
+const USAGE_LIMITS_COUNT_TAG: u32 = 0x0042_0096;
 const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
 
@@ -3754,6 +3756,100 @@ fn profile_maps_optional_locate_offset_items_capability() {
 
     let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
     assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
+fn profile_maps_client_check_optional_usage_fields() {
+    // KMIP Specification v2.1 §6.1.7 Table 182 describes Usage Limits Count
+    // and Cryptographic Usage Mask; Table 183 makes both optional Check fields.
+    const USAGE_LIMITS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-003";
+    const CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-004-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let locate_payload = structure([tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x0C))]);
+    let check_payload = crate::CheckRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "checked-object".to_owned(),
+        ))
+        .with_usage_limits_count(3)
+        .with_cryptographic_usage_mask(0x04)
+        .into_ttlv_payload()
+        .expect("typed Check fields are representable as TTLV");
+    let locate_then_check = request_message_with_batch_operations([
+        (LOCATE_OPERATION_TAG, locate_payload),
+        (CHECK_OPERATION_TAG, check_payload),
+    ]);
+
+    for requirement_id in [
+        USAGE_LIMITS_REQUIREMENT_ID,
+        CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID,
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("each optional Check field has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("each optional Check field resolves to generated metadata");
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the optional rule is linked to its source and executable test");
+
+        let result = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+        result
+            .validate_request(&locate_then_check)
+            .expect("the client can send each optional Check field");
+
+        let omitted_check = request_message_with_operation_payload(
+            CHECK_OPERATION_TAG,
+            crate::CheckRequest::new()
+                .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                    "checked-object".to_owned(),
+                ))
+                .into_ttlv_payload()
+                .expect("optional Check fields may be omitted"),
+        );
+        result
+            .validate_request(&omitted_check)
+            .expect("profile validation does not require optional Check fields");
+    }
+
+    let usage_limits_result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![USAGE_LIMITS_REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_usage_limits = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(
+            USAGE_LIMITS_COUNT_TAG,
+            Value::text_string("three units".to_owned()),
+        )]),
+    );
+    assert!(
+        usage_limits_result
+            .validate_request(&malformed_usage_limits)
+            .is_err()
+    );
+
+    let cryptographic_usage_result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_cryptographic_usage = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(
+            CRYPTOGRAPHIC_USAGE_MASK_TAG,
+            Value::text_string("encrypt".to_owned()),
+        )]),
+    );
+    assert!(
+        cryptographic_usage_result
+            .validate_request(&malformed_cryptographic_usage)
+            .is_err()
+    );
 }
 
 #[test]
