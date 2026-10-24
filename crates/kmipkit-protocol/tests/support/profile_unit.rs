@@ -7173,6 +7173,149 @@ fn typed_rule_evaluators_tolerate_missing_context() {
 }
 
 #[test]
+fn profile_requires_key_wrapping_data_for_wrapped_register_and_import_values() {
+    // KMIP Specification v2.1 §3.1 and Table 12 require Key Wrapping Data
+    // whenever the Key Value is wrapped.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for request in [
+        register_key_value_wrapping_request(
+            Value::structure(Structure::new()),
+            None,
+        ),
+        register_key_value_wrapping_request(
+            Value::byte_string(b"wrapped-register-key".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        secret_data_import_request(Value::structure(Structure::new()), None),
+        secret_data_import_request(
+            Value::byte_string(b"wrapped-import-data".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+    ] {
+        result
+            .validate_request(&request)
+            .expect("plaintext and correctly wrapped client key values are representable");
+    }
+
+    for request in [
+        register_key_value_wrapping_request(
+            Value::byte_string(b"wrapped-register-key".to_vec()),
+            None,
+        ),
+        secret_data_import_request(
+            Value::byte_string(b"wrapped-import-data".to_vec()),
+            None,
+        ),
+    ] {
+        let error = result
+            .validate_request(&request)
+            .expect_err("a wrapped client Key Value requires Key Wrapping Data");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+}
+
+#[test]
+fn profile_omits_key_wrapping_data_for_plaintext_register_and_import_values() {
+    // KMIP Specification v2.1 §3.1, Table 12 prohibits Key Wrapping Data when
+    // the client Key Value is plaintext.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for request in [
+        register_key_value_wrapping_request(
+            Value::structure(Structure::new()),
+            None,
+        ),
+        register_key_value_wrapping_request(
+            Value::byte_string(b"wrapped-register-key".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        secret_data_import_request(Value::structure(Structure::new()), None),
+        secret_data_import_request(
+            Value::byte_string(b"wrapped-import-data".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ),
+    ] {
+        result
+            .validate_request(&request)
+            .expect("Key Wrapping Data accompanies only wrapped client Key Values");
+    }
+
+    for request in [
+        register_key_value_wrapping_request(
+            Value::structure(Structure::new()),
+            Some(valid_secret_data_wrapping()),
+        ),
+        secret_data_import_request(
+            Value::structure(Structure::new()),
+            Some(valid_secret_data_wrapping()),
+        ),
+    ] {
+        let error = result
+            .validate_request(&request)
+            .expect_err("plaintext client Key Values must omit Key Wrapping Data");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+}
+
+fn register_key_value_wrapping_request(
+    key_value: Value,
+    wrapping_data: Option<Value>,
+) -> crate::RequestMessage {
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let mut key_block = vec![
+        tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        tagged(KEY_VALUE, key_value),
+    ];
+    if let Some(wrapping_data) = wrapping_data {
+        key_block.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
+    }
+
+    request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure(key_block)),
+                )])),
+            ),
+        ]),
+    )
+}
+
+#[test]
 fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
     // KMIP Specification v2.1 §3.3 says a Key Block MAY provide optional Key
     // Wrapping Data. Section 3.1 requires the structure when the Key Value is
