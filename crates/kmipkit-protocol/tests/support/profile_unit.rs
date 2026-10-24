@@ -1003,6 +1003,46 @@ fn get_attributes_response_with_payload(
     .expect("test Get Attributes response payload has a valid message envelope")
 }
 
+fn response_message_with_operation_status(
+    operation: Option<u32>,
+    status: u32,
+    reason: Option<u32>,
+    payload: Option<Structure>,
+) -> crate::ResponseMessage {
+    let mut batch_item = Structure::new();
+    if let Some(operation) = operation {
+        batch_item
+            .try_push(tagged(OPERATION_TAG, Value::enumeration(operation)))
+            .expect("test response operation fits its batch item");
+    }
+    batch_item
+        .try_push(tagged(RESULT_STATUS_TAG, Value::enumeration(status)))
+        .expect("test response status fits its batch item");
+    if let Some(reason) = reason {
+        batch_item
+            .try_push(tagged(0x0042_007E, Value::enumeration(reason)))
+            .expect("test response reason fits its batch item");
+    }
+    if let Some(payload) = payload {
+        batch_item
+            .try_push(tagged(RESPONSE_PAYLOAD_TAG, Value::structure(payload)))
+            .expect("test response payload fits its batch item");
+    }
+
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(BATCH_ITEM_TAG, Value::structure(batch_item)),
+    ]))
+    .expect("test response operation result has a valid message envelope")
+}
+
 #[test]
 fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
     // KMIP Specification v2.1 §6.1.50 permits the server to ignore seed data;
@@ -1044,6 +1084,48 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
     validation
         .validate_response(&request, &response)
         .expect("a successful zero Data Length response is not an RNG Seed error");
+
+    let server_failure = response_message_with_operation_status(
+        Some(RNG_SEED_OPERATION),
+        1,
+        Some(0x0000_000A),
+        None,
+    );
+    validation
+        .validate_response(&request, &server_failure)
+        .expect("the RNG Seed profile rule leaves server operation failures intact");
+
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    let unrelated_response =
+        get_attributes_response_with_payload(LOCATE_OPERATION_TAG, Structure::new());
+    validation
+        .validate_response(&unrelated_request, &unrelated_response)
+        .expect("the RNG Seed response rule does not constrain other operations");
+
+    for malformed_response in [
+        response_message_with_operation_status(
+            None,
+            0,
+            None,
+            Some(structure([tagged(DATA_LENGTH, Value::integer(0))])),
+        ),
+        response_message_with_operation_status(
+            Some(LOCATE_OPERATION_TAG),
+            0,
+            None,
+            Some(structure([tagged(DATA_LENGTH, Value::integer(0))])),
+        ),
+    ] {
+        let error = validation
+            .validate_response(&request, &malformed_response)
+            .expect_err("a missing or mismatched response Operation cannot stand in for RNG Seed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::ResponseRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
 }
 
 fn opaque_object_attributes_ttlv(attributes: impl IntoIterator<Item = Item>) -> Item {
