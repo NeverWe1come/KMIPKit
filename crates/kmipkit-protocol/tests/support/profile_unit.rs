@@ -11319,7 +11319,7 @@ fn profile_maps_optional_register_nist_key_type_capability() {
         .validate_request(&with_nist_key_type)
         .expect("the client can set NIST Key Type in a Register request");
 
-    for object_type in [3, 4, 5, 7] {
+    for object_type in [3, 4, 5, 7, 9] {
         let request = register_with_nist_key_types(object_type, vec![Value::enumeration(6)]);
         assert!(evaluate(Some(&request), None));
         result
@@ -11349,14 +11349,12 @@ fn profile_maps_optional_register_nist_key_type_capability() {
     assert!(!evaluate(Some(&duplicate_nist_key_type), None));
     assert!(result.validate_request(&duplicate_nist_key_type).is_err());
 
-    let opaque_object_with_nist_key_type =
-        register_with_nist_key_types(8, vec![Value::enumeration(6)]);
-    assert!(!evaluate(Some(&opaque_object_with_nist_key_type), None));
-    assert!(
-        result
-            .validate_request(&opaque_object_with_nist_key_type)
-            .is_err()
-    );
+    for object_type in [1, 6, 8, 10] {
+        let known_non_key_object =
+            register_with_nist_key_types(object_type, vec![Value::enumeration(6)]);
+        assert!(!evaluate(Some(&known_non_key_object), None));
+        assert!(result.validate_request(&known_non_key_object).is_err());
+    }
 
     let future_object_type_with_nist_key_type =
         register_with_nist_key_types(0x8123_4567, vec![Value::enumeration(6)]);
