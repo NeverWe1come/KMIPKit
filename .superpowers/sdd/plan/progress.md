@@ -242,3 +242,12 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - Local generated report: 98/265 assigned Baseline requirements have valid executable typed mappings; 167 remain unmapped. Three mandatory fixtures remain blocked and 77 profile cases unavailable. T040 remains open and no profile-conformance claim is made.
 - Local verification passed: 942 `kmipkit-protocol` library tests; protocol Clippy; 55 report tests (one skipped); catalog validation (4 sources, 1,411 clauses, 4,123 records); generated profile/report checks; rustfmt.
 - Exact previously published PR head `fc5f9380` failed the selected-scope changed-Rust coverage gate at 3,475/3,660 (94.95%). Its platform coverage producers and main cross-platform build jobs passed. These local commits are not in that run; publish only after completing the batch checks, then use exact-head CI to verify the updated threshold.
+
+## KMIPKIT-0010 T040 continuation — repeated Get wrapping Attribute Names (2026-10-24)
+
+- Active worktree: `C:\Users\ramp1953\.codex\worktrees\0010-t040-profile-evidence\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`.
+- Added the Baseline Client optional mapping for `KMIPKIT-REQ-SPEC-7.18-006` (KMIP Specification v2.1 §7.18 Table 370; Get carries the wrapping specification under §6.1.19 Table 220). The profile regression accepts two repeated Attribute Name values and confirms the wrapping specification remains optional. DCO Red/Green/Refactor commits: `f8f0a613`, `693a19ff`, `d91f6971`.
+- Current generated coverage is 99/265 valid executable typed mappings; 166 remain. Three mandatory fixtures remain blocked and 77 profile cases unavailable; T040 remains open, with no conformance claim.
+- Verification passed locally: 943 protocol library tests, focused all-features regression, protocol Clippy, formatting, diff check, typed-profile traceability, 55 report tests (1 skipped), report/profile generation checks, and catalog validation (4 sources, 1,411 clauses, 4,123 records).
+- The prior exact-head CI run `40056665741` remains in progress on `cafb844b` and does not include this tranche. Do not push until that run is terminal; then publish the completed batch once and run exact-head CI.
+- The §7.8 multipart correlation requirement remains deliberately unmapped because current request-local profile evaluation cannot prove response-to-follow-up correlation continuity. Existing client tests cover Encrypt/Decrypt examples but do not satisfy the complete inherited-operation scope on their own.

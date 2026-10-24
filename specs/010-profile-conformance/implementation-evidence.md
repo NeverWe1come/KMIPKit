@@ -5462,6 +5462,22 @@ Added a Baseline Client typed `RequiredBehavior` rule for the `Asynchronous Corr
 
 This increment raises Baseline Client to 98 valid executable typed mappings out of 265 assigned requirements, leaving 167 unmapped. T040 remains open; the three blocked mandatory fixtures and 77 unavailable profile cases also prevent readiness. No profile-conformance claim is made.
 
+### KMIPKIT-0010 T040 — Repeated Get wrapping Attribute Names (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-7.18-006` as a Baseline Client `OptionalCapability`. KMIP Specification v2.1 §7.18 Table 370 permits repeated `Attribute Name` Text Strings in a Key Wrapping Specification; §6.1.19 Table 220 carries that specification in Get. The typed evaluator keeps wrapping optional, while the profile regression constructs a valid Get request with two repeated names and verifies profile acceptance. The existing Get model test verifies those values remain ordered and lossless. No official Test Case is linked, and this does not claim server-side wrapping behavior.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `f8f0a613`; `cargo test -p kmipkit-protocol --lib profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability` | Expected failure: the requirement had no typed profile mapping. |
+| Green | DCO commit `693a19ff`; `client_can_repeat_get_wrapping_attribute_names` and the `OptionalCapability` mapping | PASS: the focused profile test accepts repeated names and also accepts Get without a wrapping specification. |
+| Refactor | DCO commit `d91f6971`; extracted `get_request_with_repeated_wrapping_attribute_names` as a named test fixture | PASS: focused test remains green; formatting is clean. |
+| Rust verification | `cargo test -p kmipkit-protocol --lib`; protocol Clippy with all targets/features; focused all-features regression; `cargo fmt --all --check`; `git diff --check` | PASS: 943 protocol library tests; Clippy clean; focused all-features regression, formatting, and diff checks pass. |
+| Traceability and report | Typed profile traceability test; full report suite; report generator `--check`; profile generator `--check` | PASS: traceability test; 55 report tests (1 skipped); generated report and profile metadata current. |
+| Normative catalog | `python -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,123 records. |
+| Hosted CI | Exact-head run required after publishing this batch | Pending. The current remote run `40056665741` is still running on the preceding head `cafb844b`; it does not include this increment. |
+
+Baseline Client now has 99 valid executable typed mappings out of 265 assigned requirements, leaving 166 unmapped. The three blocked mandatory fixtures and 77 unavailable profile cases remain. T040 stays open and no profile-conformance claim is made. The stateful KMIP Specification v2.1 §7.8 multipart correlation requirement remains unmapped until executable evidence can prove correlation is carried from the first response into subsequent requests; no request-local check is presented as sufficient evidence.
+
 ### KMIPKIT-0010 T040 — Repeated Get wrapping Attribute Names
 
 KMIP Specification v2.1 §7.18 Table 370 permits repeated `Attribute Name` Text Strings in a Key Wrapping Specification, which Get carries under §6.1.19 Table 220. The existing Get model test verifies that two distinct names survive in order. The profile-level regression will link this optional capability to the Baseline rule registry and verify that profile validation accepts a Get carrying those repeated names while leaving wrapping optional.
