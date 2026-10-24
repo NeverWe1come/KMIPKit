@@ -4568,7 +4568,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-006",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-006",
         source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_wrapping_data_is_only_present_for_wrapped_key_value),
         test_evidence: &[
             RuleTestEvidence {

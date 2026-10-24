@@ -5610,3 +5610,20 @@ Mapped `KMIPKIT-REQ-SPEC-5.1-002` from KMIP Specification v2.1 §5.1, Table 157,
 | Hosted CI | Exact-head run after this batch is pushed | Pending. |
 
 Baseline Client now has 115 valid executable typed mappings of 265 assigned requirements; 150 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Wrapped Key Value consistency (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-3.1-002` and `KMIPKIT-REQ-SPEC-3.1-006` from KMIP Specification v2.1 §3.1 and Table 12 (pinned `kmip-spec-v2.1-os.html`, lines 7654 and 7814). The client profile evaluator now requires Key Wrapping Data for outbound Register and Import Key Blocks whose Key Value is a wrapped Byte String, and rejects Key Wrapping Data when the Key Value uses the plaintext Structure form or is absent. The rule is scoped to supported key-bearing object types; unknown/vendor object types remain uninterpreted. Tests cover Register Symmetric Key and Import Symmetric Key, Secret Data, and PGP Key request shapes. This is client request evidence only: KMIPKit does not perform wrapping or claim server acceptance, official Test Case execution, or profile conformance.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `ad1b6fd6`; `cargo test -p kmipkit-protocol key_wrapping_data --all-features` | Expected failure: both new tests returned `MissingRuleMapping` for §3.1-002 and §3.1-006. |
+| Green | DCO commit `49b851dc`; added the typed evaluators, mappings, and Register/Import request profile cases | PASS: wrapped values with Key Wrapping Data and plaintext values without it are accepted; wrapped values missing the structure and plaintext values carrying it are rejected. |
+| Refactor | Catalog, generated profile metadata/report, and report snapshot updated; the `3.1-006` mapping category follows the source keyword `SHALL` as `RequiredBehavior` | PASS: report snapshot and typed profile traceability pass. The DCO commit containing this refactor is recorded in the following evidence update. |
+| Rust checks | `cargo test -p kmipkit-protocol --lib key_wrapping_data --all-features`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 3 focused profile tests, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py --repo-root .`; `generate_profiles.py --check`; `report.py --check`; `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` | PASS: 4 sources, 1,411 clauses, and 4,123 catalog records; generated metadata and report are current; report snapshot passes. |
+| Traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability` | PASS: 20 tests, 1 skipped; the two mappings resolve to the Baseline Client closure, implementation, category-appropriate tests, and exact source clauses. |
+| Hosted CI | Exact-head run after the batch is pushed | Pending. |
+
+Baseline Client now has 117 valid executable typed mappings of 265 assigned requirements; 148 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.

@@ -87251,19 +87251,28 @@
       "subject": "Key Wrapping Data",
       "summary": "The client must include Key Wrapping Data when the key value is wrapped.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Key Value is encrypted, MACed/signed, or both.",
       "scope_state": "client_1_0",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_wrapped_key_value_requires_key_wrapping_data",
+        "crates/kmipkit-protocol/src/profile.rs::key_wrapping_rule_holds_for_payload",
+        "crates/kmipkit-protocol/src/profile.rs::key_wrapping_rule_holds_for_key_block",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 and Table 12 require Key Wrapping Data when a Key Value is wrapped. The Baseline Client evaluator checks outbound Register and Import Key Blocks for supported key-bearing Object Types and requires the structure when Key Value is a Byte String. Tests cover Register Symmetric Key and Import Symmetric Key, Secret Data, and PGP Key forms, including rejection when wrapped bytes omit Key Wrapping Data. This is request-representation evidence only; KMIPKit does not perform wrapping and no server acceptance or formal profile-conformance claim is made. No requirement-specific official Test Case ID is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-003",
@@ -87511,19 +87520,28 @@
       "subject": "Key Wrapping Data",
       "summary": "The client must not include Key Wrapping Data for an unwrapped key.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Present only when the key is wrapped.",
       "scope_state": "client_1_0",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_is_only_present_for_wrapped_key_value",
+        "crates/kmipkit-protocol/src/profile.rs::key_wrapping_rule_holds_for_payload",
+        "crates/kmipkit-protocol/src/profile.rs::key_wrapping_rule_holds_for_key_block",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 Table 12 permits Key Wrapping Data only with a wrapped Key Value. The Baseline Client evaluator checks outbound Register and Import Key Blocks for supported key-bearing Object Types and rejects Key Wrapping Data paired with a plaintext Structure or with an absent Key Value. Tests cover Register Symmetric Key and Import Symmetric Key, Secret Data, and PGP Key forms, while preserving valid wrapped values. This is request-representation evidence only; no server behavior, acceptance, or formal profile-conformance claim is made. No requirement-specific official Test Case ID is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.10-001",
