@@ -1951,64 +1951,55 @@ fn profile_maps_required_derive_key_derivation_method() {
 fn profile_maps_required_derive_key_parameters() {
     // KMIP Specification v2.1 §6.1.14 Table 205 marks Derivation Parameters required.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-012";
-    const SOURCE_GAP_ID: &str =
-        "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PBKDF2_METHOD: u32 = 1;
     const FUTURE_METHOD: u32 = 0xF123_4567;
 
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("required Derive Key parameters have an executable profile mapping");
-    let requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("Derivation Parameters resolve to generated normative metadata");
-    assert_eq!(mapping.source_clause_id, "");
-    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
-    assert_eq!(
-        mapping.verification_category,
-        GeneratedVerificationCategory::RequiredBehavior
-    );
-    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("the table-row mapping preserves its source gap and evidence");
+    assert_required_derive_key_parameters_mapping_is_traceable();
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let parameters = || {
-        structure([
-            tagged(
-                DERIVE_KEY_SALT_TAG,
-                Value::byte_string(vec![0xA5; 16]),
-            ),
-            tagged(
-                DERIVE_KEY_ITERATION_COUNT_TAG,
-                Value::integer(1_000),
-            ),
-        ])
-    };
 
     for method in [PBKDF2_METHOD, FUTURE_METHOD] {
         let request = request_message_with_operation_payload(
             DERIVE_KEY_OPERATION,
-            structure([
-                tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::enumeration(method)),
-                tagged(
-                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                    Value::structure(parameters()),
-                ),
-            ]),
+            derive_key_parameters_payload(
+                method,
+                Value::structure(valid_pbkdf2_derivation_parameters()),
+            ),
         );
         result
             .validate_request(&request)
             .expect("Derive Key carries its method parameters in a Structure");
     }
 
-    for malformed in [
-        Structure::new(),
+    let missing_parameters = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([tagged(
+            DERIVE_KEY_DERIVATION_METHOD_TAG,
+            Value::enumeration(PBKDF2_METHOD),
+        )]),
+    );
+    assert_derivation_parameters_request_rejected(
+        &result,
+        &missing_parameters,
+        "Derive Key requires Derivation Parameters",
+    );
+
+    let malformed_parameters = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(PBKDF2_METHOD, Value::integer(1)),
+    );
+    assert_derivation_parameters_request_rejected(
+        &result,
+        &malformed_parameters,
+        "Derivation Parameters must be a Structure",
+    );
+
+    let duplicate_parameters = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
         structure([
             tagged(
                 DERIVE_KEY_DERIVATION_METHOD_TAG,
@@ -2016,46 +2007,27 @@ fn profile_maps_required_derive_key_parameters() {
             ),
             tagged(
                 DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                Value::integer(1),
-            ),
-        ]),
-        structure([
-            tagged(
-                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                Value::structure(parameters()),
+                Value::structure(valid_pbkdf2_derivation_parameters()),
             ),
             tagged(
                 DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                Value::structure(parameters()),
+                Value::structure(valid_pbkdf2_derivation_parameters()),
             ),
         ]),
-    ] {
-        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
-        let error = result
-            .validate_request(&request)
-            .expect_err("Derive Key requires exactly one Derivation Parameters Structure");
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected
-        );
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), None);
-        assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
-    }
+    );
+    assert_derivation_parameters_request_rejected(
+        &result,
+        &duplicate_parameters,
+        "Derive Key has exactly one Derivation Parameters Structure",
+    );
 
     let batch_with_missing_parameters = request_message_with_batch_operations([
         (
             DERIVE_KEY_OPERATION,
-            structure([
-                tagged(
-                    DERIVE_KEY_DERIVATION_METHOD_TAG,
-                    Value::enumeration(PBKDF2_METHOD),
-                ),
-                tagged(
-                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                    Value::structure(parameters()),
-                ),
-            ]),
+            derive_key_parameters_payload(
+                PBKDF2_METHOD,
+                Value::structure(valid_pbkdf2_derivation_parameters()),
+            ),
         ),
         (
             DERIVE_KEY_OPERATION,
@@ -2065,11 +2037,11 @@ fn profile_maps_required_derive_key_parameters() {
             )]),
         ),
     ]);
-    let error = result
-        .validate_request(&batch_with_missing_parameters)
-        .expect_err("a valid Derive Key item does not hide missing parameters in another item");
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+    assert_derivation_parameters_request_rejected(
+        &result,
+        &batch_with_missing_parameters,
+        "a valid Derive Key item does not hide missing parameters in another item",
+    );
 
     let unrelated_operation = request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
@@ -2471,6 +2443,43 @@ fn derive_key_payload_with_attributes(
     ])
 }
 
+fn derive_key_parameters_payload(method: u32, parameters: Value) -> Structure {
+    structure([
+        tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::enumeration(method)),
+        tagged(DERIVE_KEY_DERIVATION_PARAMETERS_TAG, parameters),
+    ])
+}
+
+fn assert_required_derive_key_parameters_mapping_is_traceable() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-012";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("required Derive Key parameters have an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derivation Parameters resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the table-row mapping preserves its source gap and evidence");
+}
+
+fn valid_pbkdf2_derivation_parameters() -> Structure {
+    structure([
+        tagged(DERIVE_KEY_SALT_TAG, Value::byte_string(vec![0xA5; 16])),
+        tagged(DERIVE_KEY_ITERATION_COUNT_TAG, Value::integer(1_000)),
+    ])
+}
+
 fn symmetric_derive_key_payload(attributes: impl IntoIterator<Item = Item>) -> Structure {
     derive_key_payload_with_attributes(DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE, attributes)
 }
@@ -2504,6 +2513,24 @@ fn assert_request_rejected_for_requirement(
     );
     assert_eq!(error.requirement_id(), Some(requirement_id));
     assert_eq!(error.source_clause_id(), Some(source_clause_id));
+}
+
+fn assert_derivation_parameters_request_rejected(
+    result: &ProfileValidationResult,
+    request: &crate::RequestMessage,
+    reason: &str,
+) {
+    let error = result.validate_request(request).expect_err(reason);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-6.1.14-012"));
+    assert_eq!(error.source_clause_id(), None);
+    assert_eq!(
+        error.source_gap_id(),
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED")
+    );
 }
 
 #[test]
