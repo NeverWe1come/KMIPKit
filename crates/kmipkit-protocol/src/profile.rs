@@ -2246,6 +2246,34 @@ fn client_can_represent_optional_delete_attribute_selector(
     request.is_some()
 }
 
+fn client_can_represent_optional_modify_attribute_selector(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != MODIFY_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, CURRENT_ATTRIBUTE) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(current_attribute) => {
+                    current_attribute.with_value(|value| matches!(value, ValueView::Structure(_)))
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_can_include_optional_get_attributes_attribute_references(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7857,6 +7885,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_represent_optional_delete_attribute_selector),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_represent_optional_modify_attribute_selector),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_current_attribute_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
