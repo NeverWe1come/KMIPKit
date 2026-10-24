@@ -5705,6 +5705,46 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
         result
             .validate_request(&request)
             .expect("the client can represent each §6.1.9 attribute assignment group");
+        let omitted = request_message_with_operation_payload(
+            CREATE_KEY_PAIR_OPERATION,
+            Structure::new(),
+        );
+        result
+            .validate_request(&omitted)
+            .expect("the §6.1.9 MAY capability does not require supplying the group");
+    }
+
+    let separate_groups_result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-6.1.9-001-002".to_owned()],
+    };
+    for fields in [
+        vec![
+            tagged(
+                PRIVATE_KEY_ATTRIBUTES,
+                Value::structure(repeated_context_attributes()),
+            ),
+            tagged(PUBLIC_KEY_ATTRIBUTES, Value::enumeration(1)),
+        ],
+        vec![
+            tagged(PRIVATE_KEY_ATTRIBUTES, Value::enumeration(1)),
+            tagged(
+                PUBLIC_KEY_ATTRIBUTES,
+                Value::structure(repeated_context_attributes()),
+            ),
+        ],
+    ] {
+        let malformed = request_message_with_operation_payload(
+            CREATE_KEY_PAIR_OPERATION,
+            structure(fields),
+        );
+        let error = separate_groups_result
+            .validate_request(&malformed)
+            .expect_err("both separate attribute groups must retain Structure form");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
     }
 }
 
