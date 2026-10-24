@@ -5023,6 +5023,95 @@ fn profile_maps_client_export_key_compression_type_selector() {
         .expect("the selector rule does not constrain unrelated operations");
 }
 
+fn optional_export_profile_result(requirement_id: &str) -> ProfileValidationResult {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the optional Export selector has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the optional Export selector resolves to generated metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional rule is linked to its source and executable test");
+    assert!(!mapping
+        .evaluator
+        .expect("the optional Export rule has a typed evaluator")(
+        None, None
+    ));
+
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![requirement_id.to_owned()],
+    }
+}
+
+#[test]
+fn profile_maps_client_export_optional_format_and_wrap_selectors() {
+    // KMIP Specification v2.1 §6.1.18 Table 217 marks both request selectors
+    // optional and specifies their effect on the format of the returned value.
+    const FORMAT_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-005";
+    const WRAP_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-006";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+    const KEY_FORMAT_TYPE_SELECTOR_TAG: u32 = 0x0042_0042;
+    const KEY_WRAP_TYPE_SELECTOR_TAG: u32 = 0x0042_00F8;
+
+    let format_result = optional_export_profile_result(FORMAT_REQUIREMENT_ID);
+    let wrap_result = optional_export_profile_result(WRAP_REQUIREMENT_ID);
+    let selected = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .with_key_format_type(crate::KeyFormatType::from_raw(0xF123_4569))
+            .with_key_wrap_type(crate::KeyWrapType::from_raw(0xF123_456A))
+            .into_ttlv_payload()
+            .expect("typed Export selectors retain caller-selected values"),
+    );
+    format_result
+        .validate_request(&selected)
+        .expect("the client can select an Export Key Format Type");
+    wrap_result
+        .validate_request(&selected)
+        .expect("the client can select an Export Key Wrap Type");
+
+    let omitted = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("export-key".to_owned()))
+            .into_ttlv_payload()
+            .expect("both selectors are optional"),
+    );
+    format_result
+        .validate_request(&omitted)
+        .expect("the optional Export Key Format Type remains omittable");
+    wrap_result
+        .validate_request(&omitted)
+        .expect("the optional Export Key Wrap Type remains omittable");
+
+    for (result, selector_tag) in [
+        (format_result, KEY_FORMAT_TYPE_SELECTOR_TAG),
+        (wrap_result, KEY_WRAP_TYPE_SELECTOR_TAG),
+    ] {
+        let malformed = request_message_with_operation_payload(
+            EXPORT_OPERATION,
+            structure([tagged(
+                selector_tag,
+                Value::text_string("not-an-enumeration".to_owned()),
+            )]),
+        );
+        assert!(result.validate_request(&malformed).is_err());
+        let duplicate = request_message_with_operation_payload(
+            EXPORT_OPERATION,
+            structure([
+                tagged(selector_tag, Value::enumeration(1)),
+                tagged(selector_tag, Value::enumeration(2)),
+            ]),
+        );
+        assert!(result.validate_request(&duplicate).is_err());
+    }
+}
+
 #[test]
 fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
     // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
