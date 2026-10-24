@@ -7349,6 +7349,47 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
             .expect("Algorithm and Length may be omitted from Attributes when in the Key Block");
     }
 
+    let nested_key_value = tagged(
+        TABLE12_KEY_VALUE,
+        Value::structure(structure([
+            tagged(
+                TABLE12_KEY_MATERIAL,
+                Value::byte_string(b"nested-key-material".to_vec()),
+            ),
+            tagged(
+                TABLE12_ATTRIBUTES,
+                Value::structure(structure([
+                    tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            ),
+        ])),
+    );
+    let nested_key_block = tagged(
+        TABLE12_KEY_BLOCK,
+        Value::structure(structure([
+            tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
+            nested_key_value,
+        ])),
+    );
+    let nested_object = tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([nested_key_block])),
+    );
+    let nested_key_block_request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            nested_object,
+            [tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3))],
+        ),
+    );
+    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+        table12_profile_result(&[requirement_id])
+            .validate_request(&nested_key_block_request)
+            .expect("Key Value Attributes also carry the omitted Algorithm and Length");
+    }
+
     let incomplete_key_block_request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
