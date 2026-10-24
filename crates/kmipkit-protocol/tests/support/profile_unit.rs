@@ -4059,6 +4059,34 @@ fn profile_maps_client_check_cryptographic_usage_mask() {
 }
 
 #[test]
+fn profile_maps_client_check_intended_cryptographic_uses() {
+    // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit the client to
+    // state intended Check uses with an optional Integer Cryptographic Usage Mask.
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-001");
+    let with_mask = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        crate::CheckRequest::new()
+            .with_cryptographic_usage_mask(0x04)
+            .into_ttlv_payload()
+            .expect("typed Check mask is representable"),
+    );
+    result
+        .validate_request(&with_mask)
+        .expect("the client can specify intended cryptographic uses");
+
+    let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the optional Check mask may be omitted");
+
+    let unrelated_operation =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("a Check-only rule does not reject unrelated operations");
+}
+
+#[test]
 fn profile_maps_client_locate_attributes_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.28 Table 247 marks Locate Attributes required.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-001";
