@@ -13663,3 +13663,105 @@ fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
         .validate_request(&valid_request)
         .expect("a unique key identifier satisfies the client requirement");
 }
+
+fn register_or_import_split_key_request(
+    operation: u32,
+    split_key_parts: Value,
+    key_part_identifier: Value,
+) -> crate::RequestMessage {
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SPLIT_KEY_OBJECT_TYPE: u32 = 5;
+    const SPLIT_KEY: u32 = 0x0042_0089;
+    const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+    const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
+    const SPLIT_KEY_THRESHOLD: u32 = 0x0042_008C;
+    const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let mut fields = vec![tagged(
+        OBJECT_TYPE,
+        Value::enumeration(SPLIT_KEY_OBJECT_TYPE),
+    )];
+    if operation == IMPORT_OPERATION {
+        fields.push(tagged(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("split-key".to_owned()),
+        ));
+    }
+    fields.push(tagged(
+        SPLIT_KEY,
+        Value::structure(structure([
+            tagged(SPLIT_KEY_PARTS, split_key_parts),
+            tagged(KEY_PART_IDENTIFIER, key_part_identifier),
+            tagged(SPLIT_KEY_THRESHOLD, Value::integer(1)),
+            tagged(SPLIT_KEY_METHOD, Value::enumeration(1)),
+            tagged(
+                KEY_BLOCK,
+                Value::structure(structure([
+                    tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                    tagged(
+                        KEY_VALUE,
+                        Value::structure(structure([tagged(
+                            KEY_MATERIAL,
+                            Value::byte_string(vec![0x5A]),
+                        )])),
+                    ),
+                ])),
+            ),
+        ])),
+    ));
+    assert!(matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION));
+    request_message_with_operation_payload(operation, structure(fields))
+}
+
+#[test]
+fn profile_constrains_split_key_part_identifier_to_declared_parts() {
+    // KMIP Specification v2.1 §2.8 and Table 9 require
+    // 1 <= Key Part Identifier <= Split Key Parts.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.8-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-2.8-001";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for operation in [REGISTER_OPERATION, IMPORT_OPERATION] {
+        for key_part_identifier in [0, 4] {
+            let request = register_or_import_split_key_request(
+                operation,
+                Value::integer(3),
+                Value::integer(key_part_identifier),
+            );
+            let error = result
+                .validate_request(&request)
+                .expect_err("Key Part Identifier must be between one and Split Key Parts");
+            assert_eq!(
+                error.code(),
+                ProfileValidationErrorCode::RequestRuleRejected
+            );
+            assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+            assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+        }
+
+        for key_part_identifier in [1, 3] {
+            let request = register_or_import_split_key_request(
+                operation,
+                Value::integer(3),
+                Value::integer(key_part_identifier),
+            );
+            result
+                .validate_request(&request)
+                .expect("both inclusive Key Part Identifier bounds are valid");
+        }
+    }
+}
