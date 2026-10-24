@@ -62,6 +62,8 @@ const DELEGATED_LOGIN_RIGHTS_TAG: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT_TAG: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
+const USAGE_LIMITS_TOTAL_TAG: u32 = 0x0042_0097;
+const USAGE_LIMITS_UNIT_TAG: u32 = 0x0042_0098;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
@@ -3964,6 +3966,16 @@ fn delegated_login_rights() -> Structure {
     )])
 }
 
+fn delegated_login_usage_limits() -> Structure {
+    // KMIP Specification v2.1 §7.40 Table 392 requires all three members;
+    // §11.60 Table 491 assigns Byte the Usage Limits Unit value 1.
+    structure([
+        tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+        tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+        tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(1)),
+    ])
+}
+
 #[test]
 fn profile_maps_client_check_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
@@ -4249,7 +4261,8 @@ fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
 
 #[test]
 fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
-    // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Usage Limits.
+    // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Usage Limits;
+    // its value uses the required members from §7.40 Table 392.
     let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-007");
     let omitted = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
@@ -4264,9 +4277,9 @@ fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
     let supplied = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
         crate::DelegatedLoginRequest::new(delegated_login_rights())
-            .with_usage_limits(Structure::new())
+            .with_usage_limits(delegated_login_usage_limits())
             .into_ttlv_payload()
-            .expect("Structure Usage Limits is representable"),
+            .expect("a Table 392 Usage Limits structure is representable"),
     );
     result
         .validate_request(&supplied)
@@ -4283,6 +4296,47 @@ fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
         ]),
     );
     assert!(result.validate_request(&malformed).is_err());
+}
+
+#[test]
+fn profile_rejects_delegated_login_usage_limits_missing_or_malformed_members() {
+    // KMIP Specification v2.1 §7.40 Table 392 marks all three Usage Limits
+    // members as required and assigns their TTLV encodings.
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-007");
+    let malformed_values = [
+        Structure::new(),
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+        ]),
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+            tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(1)),
+        ]),
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::integer(10)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(1)),
+        ]),
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_UNIT_TAG, Value::integer(1)),
+        ]),
+    ];
+
+    for usage_limits in malformed_values {
+        let request = request_message_with_operation_payload(
+            DELEGATED_LOGIN_OPERATION_TAG,
+            crate::DelegatedLoginRequest::new(delegated_login_rights())
+                .with_usage_limits(usage_limits)
+                .into_ttlv_payload()
+                .expect("malformed Table 392 values remain representable as generic TTLV"),
+        );
+        assert!(result.validate_request(&request).is_err());
+    }
 }
 
 #[test]
