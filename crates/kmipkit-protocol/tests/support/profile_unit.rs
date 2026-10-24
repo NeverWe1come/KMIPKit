@@ -1980,13 +1980,13 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
 }
 
 #[test]
-fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
+fn profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability() {
     // KMIP Specification v2.1 §7.18 Table 370 permits repeated Attribute Name
-    // Text Strings in a Key Wrapping Specification carried by Get (§6.1.19).
+    // Text Strings in Get (§6.1.19) and Export (§6.1.18) wrapping requests.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-006";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability";
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -2041,7 +2041,7 @@ fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
 }
 
 #[test]
-fn profile_requires_get_wrapping_key_information_pairing() {
+fn profile_requires_get_and_export_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
     const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
@@ -2173,7 +2173,7 @@ fn assert_wrapping_key_information_mapping(
 }
 
 #[test]
-fn profile_maps_get_wrapped_key_requests_to_key_wrapping_specification() {
+fn profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification() {
     // KMIP Specification v2.1 §7.18 requires this structure when the client
     // requests a wrapped key; Get and Export make it optional otherwise.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-001-001";
@@ -2397,9 +2397,9 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
 }
 
 #[test]
-fn profile_maps_get_key_format_client_assumption() {
+fn profile_maps_get_and_export_key_format_client_assumption() {
     // KMIP Specification v2.1 §6.1.19 makes the same-as-registered format a
-    // client assumption; the client cannot inspect server-held format state.
+    // client assumption; §6.1.18 applies it to Export as well.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.19-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;

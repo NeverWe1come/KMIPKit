@@ -6256,7 +6256,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_get_or_export_key_format_type_is_enumeration),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_key_format_client_assumption",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_key_format_client_assumption",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
@@ -6316,7 +6316,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_repeat_get_or_export_wrapping_attribute_names),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
@@ -6328,7 +6328,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_supports_get_or_export_wrapped_key_request),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
@@ -6340,7 +6340,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
@@ -6352,7 +6352,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
