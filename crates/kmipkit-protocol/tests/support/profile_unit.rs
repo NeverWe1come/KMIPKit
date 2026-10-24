@@ -62,6 +62,7 @@ const DELEGATED_LOGIN_RIGHTS_TAG: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT_TAG: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
+const USAGE_LIMITS_TAG: u32 = 0x0042_0095;
 const USAGE_LIMITS_TOTAL_TAG: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT_TAG: u32 = 0x0042_0098;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
@@ -15252,4 +15253,115 @@ fn profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_paylo
         Some(&duplicate_split_key_parts),
         None
     ));
+}
+
+#[test]
+fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
+    // KMIP Specification v2.1 §4.59 paragraph 3 prohibits setting or modifying
+    // Usage Limits Count through Add Attribute or Modify Attribute.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Usage Limits Count Add/Modify has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Usage Limits Count Add/Modify resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHALL NOT has negative executable evidence");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let count_value = || {
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(1)),
+        ])
+    };
+    let allowed_total_and_unit = || {
+        structure([
+            tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(10)),
+            tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(1)),
+        ])
+    };
+    let new_attribute = |usage_limits: Structure| {
+        tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                USAGE_LIMITS_TAG,
+                Value::structure(usage_limits),
+            )])),
+        )
+    };
+    let current_attribute = || {
+        tagged(
+            CURRENT_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                USAGE_LIMITS_TAG,
+                Value::structure(allowed_total_and_unit()),
+            )])),
+        )
+    };
+
+    for (operation, payload) in [
+        (
+            ADD_ATTRIBUTE_OPERATION,
+            structure([new_attribute(count_value())]),
+        ),
+        (
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([current_attribute(), new_attribute(count_value())]),
+        ),
+    ] {
+        let request = request_message_with_operation_payload(operation, payload);
+        let error = result
+            .validate_request(&request)
+            .expect_err("the client SHALL NOT set or modify Usage Limits Count here");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+
+    for (operation, payload) in [
+        (
+            ADD_ATTRIBUTE_OPERATION,
+            structure([new_attribute(allowed_total_and_unit())]),
+        ),
+        (
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([current_attribute(), new_attribute(allowed_total_and_unit())]),
+        ),
+    ] {
+        let request = request_message_with_operation_payload(operation, payload);
+        result
+            .validate_request(&request)
+            .expect("this clause does not prohibit Total or Unit without Count");
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        structure([new_attribute(count_value())]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Add/Modify-only rule does not constrain Locate");
 }
