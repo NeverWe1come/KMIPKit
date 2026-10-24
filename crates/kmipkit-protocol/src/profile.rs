@@ -743,6 +743,7 @@ const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const USAGE_LIMITS_ATTRIBUTE: u32 = 0x0042_0095;
 const LEASE_TIME: u32 = 0x0042_0049;
 const TICKET: u32 = 0x0042_0149;
+const RECERTIFY_OFFSET: u32 = 0x0042_0058;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1539,6 +1540,19 @@ fn client_logout_ticket_is_required_structure(
     )
 }
 
+fn client_recertify_offset_is_optional_interval(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        RECERTIFY_OPERATION,
+        RECERTIFY_OFFSET,
+        OperationFieldType::Interval,
+        false,
+    )
+}
+
 fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1581,6 +1595,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
 #[derive(Clone, Copy)]
 enum OperationFieldType {
     Integer,
+    Interval,
     LeaseTime,
     Structure,
     RightsStructure,
@@ -1591,6 +1606,7 @@ impl OperationFieldType {
     fn accepts(self, value: ValueView<'_>) -> bool {
         match self {
             Self::Integer => matches!(value, ValueView::Integer(_)),
+            Self::Interval => matches!(value, ValueView::Interval(_)),
             Self::LeaseTime => matches!(value, ValueView::Interval(_) | ValueView::DateTime(_)),
             Self::Structure => matches!(value, ValueView::Structure(_)),
             Self::RightsStructure => match value {
@@ -6430,6 +6446,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_recertify_offset_is_optional_interval),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],

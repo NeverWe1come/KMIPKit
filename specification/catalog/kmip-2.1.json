@@ -96312,12 +96312,14 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.45 Table 300 marks Offset optional and defines its TTLV type as Interval. The profile regression verifies omission and an Interval, and rejects wrong-type or duplicate fields; the protocol and fake-transport client tests verify encoding and transmission. Evidence covers client request representation only, not server-side date calculation. No requirement-specific official Test Case is linked by the pinned OASIS sources; no official case-level pass or conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-002",
