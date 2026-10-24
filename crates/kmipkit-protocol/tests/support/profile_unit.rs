@@ -4613,14 +4613,39 @@ fn profile_maps_rekey_offset_as_optional_interval() {
 
 #[test]
 fn profile_maps_reprovision_certificate_request_forms() {
-    // KMIP Specification v2.1 §6.1.48 and Table 313 permit a certificate
-    // request, a certificate, or no parameters when the server creates one.
+    // KMIP Specification v2.1 §6.1.48 and Table 313 permit optional
+    // Certificate Request and Certificate fields; §§2.1 Table 2 and 2.2
+    // Table 3 define their required nested Enumeration and Byte String fields.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.48-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.48-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REPROVISION_OPERATION_TAG: u32 = 0x0000_0035;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
     const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+    const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
+    const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
+
+    fn certificate_object() -> Structure {
+        structure([
+            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                CERTIFICATE_VALUE_TAG,
+                Value::byte_string(b"certificate".to_vec()),
+            ),
+        ])
+    }
+
+    fn certificate_request_object() -> Structure {
+        structure([
+            tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                CERTIFICATE_REQUEST_VALUE_TAG,
+                Value::byte_string(b"certificate-request".to_vec()),
+            ),
+        ])
+    }
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -4653,13 +4678,18 @@ fn profile_maps_reprovision_certificate_request_forms() {
             .into_ttlv_payload()
             .expect("parameterless Re-Provision is permitted for server-created credentials"),
         crate::ReProvisionRequest::new()
-            .with_certificate_request(Structure::new())
+            .with_certificate_request(certificate_request_object())
             .into_ttlv_payload()
             .expect("a certificate signing request is permitted"),
         crate::ReProvisionRequest::new()
-            .with_certificate(Structure::new())
+            .with_certificate(certificate_object())
             .into_ttlv_payload()
             .expect("a replacement certificate is permitted"),
+        crate::ReProvisionRequest::new()
+            .with_certificate_request(certificate_request_object())
+            .with_certificate(certificate_object())
+            .into_ttlv_payload()
+            .expect("Table 313 does not declare the optional fields mutually exclusive"),
     ];
     for payload in requests {
         let request = request_message_with_operation_payload(REPROVISION_OPERATION_TAG, payload);
@@ -4670,24 +4700,51 @@ fn profile_maps_reprovision_certificate_request_forms() {
     }
 
     for payload in [
-        structure([
-            tagged(CERTIFICATE_REQUEST_TAG, Value::structure(Structure::new())),
-            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
-        ]),
         structure([tagged(
             CERTIFICATE_REQUEST_TAG,
             Value::text_string("not-a-Structure".to_owned()),
         )]),
         structure([
-            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
-            tagged(CERTIFICATE_TAG, Value::structure(Structure::new())),
+            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
+            tagged(CERTIFICATE_TAG, Value::structure(certificate_object())),
         ]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(Structure::new()),
+        )]),
+        structure([tagged(
+            CERTIFICATE_TAG,
+            Value::structure(structure([
+                tagged(
+                    CERTIFICATE_TYPE_TAG,
+                    Value::text_string("not-an-Enumeration".to_owned()),
+                ),
+                tagged(
+                    CERTIFICATE_VALUE_TAG,
+                    Value::byte_string(b"certificate".to_vec()),
+                ),
+            ])),
+        )]),
+        structure([tagged(
+            CERTIFICATE_REQUEST_TAG,
+            Value::structure(structure([
+                tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    CERTIFICATE_REQUEST_VALUE_TAG,
+                    Value::byte_string(b"request".to_vec()),
+                ),
+                tagged(
+                    CERTIFICATE_REQUEST_VALUE_TAG,
+                    Value::byte_string(b"duplicate".to_vec()),
+                ),
+            ])),
+        )]),
     ] {
         let malformed = request_message_with_operation_payload(REPROVISION_OPERATION_TAG, payload);
         assert!(!evaluate(Some(&malformed), None));
         let error = result
             .validate_request(&malformed)
-            .expect_err("Re-Provision forms are exclusive and structurally valid");
+            .expect_err("Re-Provision objects must use unique fields and the §2 structures");
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
