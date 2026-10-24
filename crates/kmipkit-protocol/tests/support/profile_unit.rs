@@ -46,6 +46,8 @@ const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
+const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
@@ -2382,7 +2384,6 @@ fn profile_maps_optional_maximum_response_size_capability() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -2415,24 +2416,10 @@ fn profile_maps_optional_maximum_response_size_capability() {
         .validate_request(&omitted)
         .expect("the OPTIONAL field may be omitted");
 
-    let supplied = crate::RequestMessage::try_from_ttlv(structure([
-        tagged(
-            REQUEST_HEADER_TAG,
-            Value::structure(structure([
-                test_protocol_version(),
-                tagged(MAXIMUM_RESPONSE_SIZE_TAG, Value::integer(4096)),
-                tagged(BATCH_COUNT_TAG, Value::integer(1)),
-            ])),
-        ),
-        tagged(
-            BATCH_ITEM_TAG,
-            Value::structure(structure([
-                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
-                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
-            ])),
-        ),
-    ]))
-    .expect("the optional Maximum Response Size request is valid");
+    let supplied = request_message_with_optional_maximum_response_size(
+        DISCOVER_VERSIONS_OPERATION,
+        Some(4096),
+    );
     assert_eq!(supplied.header().maximum_response_size(), Some(4096));
     assert!(evaluate(Some(&supplied), None));
     result
@@ -2447,8 +2434,6 @@ fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
-    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
