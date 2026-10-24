@@ -101761,6 +101761,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.31"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.39"
         }
       ],
       "source_keyword": null,
@@ -101799,7 +101803,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.31 Table 256, request payload row Ticket (HTML lines 29866-29881), requires the client Logout request to include one Ticket Structure. The typed profile test accepts a caller-supplied Ticket Structure and rejects omission or a wrong TTLV type; the model test verifies construction. This checks client request representation only. No requirement-specific official Test Cases ID is explicitly linked; no official case-level pass, ticket validity, or server behavior is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.31 Table 256, request payload row Ticket (HTML lines 29866-29881), requires the client Logout request to include one Ticket. Section 7.39 Table 391 defines the Ticket Structure encoding. The typed profile test accepts a caller-supplied Ticket Structure and rejects omission or a wrong TTLV type; the model test verifies construction. This checks client request representation only. No requirement-specific official Test Cases ID is explicitly linked; no official case-level pass, ticket validity, or server behavior is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-003",

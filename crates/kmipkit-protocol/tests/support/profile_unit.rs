@@ -4373,7 +4373,8 @@ fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
 
 #[test]
 fn profile_maps_client_logout_required_ticket_as_required_behavior() {
-    // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout.
+    // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout;
+    // §7.39 Table 391 defines Ticket as a Structure.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.31-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
