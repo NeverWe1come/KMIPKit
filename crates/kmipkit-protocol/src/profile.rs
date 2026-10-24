@@ -1339,6 +1339,9 @@ fn client_get_or_export_key_compression_type_is_enumeration(
     })
 }
 
+// §6.1.19-002 is conditional on requesting a particular format. Request-local
+// validation can preserve that selector, but cannot inspect the server's
+// registered format or establish response-format support.
 fn client_get_key_format_type_is_enumeration(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
