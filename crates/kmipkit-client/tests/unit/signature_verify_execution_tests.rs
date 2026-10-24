@@ -10,7 +10,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{SecretBytes, SignatureVerifyRequest, UniqueIdentifier};
+use kmipkit_protocol::{OperationData, SecretBytes, SignatureVerifyRequest, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
@@ -29,6 +29,7 @@ const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const VALIDITY_INDICATOR: u32 = 0x0042_0128;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const DATA: u32 = 0x0042_00C2;
 const DIGESTED_DATA: u32 = 0x0042_0107;
 const SIGNATURE_DATA: u32 = 0x0042_00C3;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
@@ -229,6 +230,7 @@ fn contains_response_sentinel(tree: &kmipkit_ttlv::StructureView<'_>) -> bool {
 
 #[test]
 fn request_table_337_single_part_fields_reach_the_fake_transport_unchanged() {
+    let data = [0x02, 0x82, 0xFD];
     let digest = [0x01, 0x81, 0xFE];
     let signature = [0x00, 0x80, 0xFF];
     let (mut client, state) = client(response(1));
@@ -239,6 +241,7 @@ fn request_table_337_single_part_fields_reach_the_fake_transport_unchanged() {
                     .with_unique_identifier(UniqueIdentifier::TextString(
                         "verification-key".to_owned(),
                     ))
+                    .with_data(OperationData::ByteString(SecretBytes::new(data.to_vec())))
                     .with_digested_data(SecretBytes::new(digest.to_vec()))
                     .with_signature_data(SecretBytes::new(signature.to_vec()))
                     .with_init_indicator(true)
@@ -260,6 +263,7 @@ fn request_table_337_single_part_fields_reach_the_fake_transport_unchanged() {
                 UNIQUE_IDENTIFIER,
                 CapturedSignatureVerifyField::Text("verification-key".to_owned()),
             ),
+            (DATA, CapturedSignatureVerifyField::Bytes(data.to_vec())),
             (
                 DIGESTED_DATA,
                 CapturedSignatureVerifyField::Bytes(digest.to_vec()),
