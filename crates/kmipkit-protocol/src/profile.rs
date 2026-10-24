@@ -740,6 +740,7 @@ const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const LEASE_TIME: u32 = 0x0042_0049;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
+const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
@@ -1502,7 +1503,7 @@ fn client_delegated_login_rights_is_required_structure(
     client_delegated_login_field_is_well_formed(
         request,
         DELEGATED_LOGIN_RIGHTS,
-        DelegatedLoginFieldType::Structure,
+        DelegatedLoginFieldType::RightsStructure,
         true,
     )
 }
@@ -1547,7 +1548,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
 enum DelegatedLoginFieldType {
     Integer,
     LeaseTime,
-    Structure,
+    RightsStructure,
     UsageLimitsStructure,
 }
 
@@ -1585,12 +1586,15 @@ fn client_delegated_login_field_is_well_formed(
                                 DelegatedLoginFieldType::LeaseTime => {
                                     matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
                                 }
-                                DelegatedLoginFieldType::Structure => {
-                                    matches!(value, ValueView::Structure(_))
-                                }
+                                DelegatedLoginFieldType::RightsStructure => match value {
+                                    ValueView::Structure(value) => {
+                                        delegated_login_rights_are_well_formed(&value)
+                                    }
+                                    _ => false,
+                                },
                                 DelegatedLoginFieldType::UsageLimitsStructure => match value {
                                     ValueView::Structure(value) => {
-                                        delegated_login_usage_limits_are_well_formed(value)
+                                        delegated_login_usage_limits_are_well_formed(&value)
                                     }
                                     _ => false,
                                 },
@@ -1602,8 +1606,15 @@ fn client_delegated_login_field_is_well_formed(
     })
 }
 
+fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
+    structure.children().iter().all(|field| {
+        field.tag().raw() != DELEGATED_LOGIN_RIGHT
+            || field.with_value(|value| matches!(value, ValueView::Structure(_)))
+    })
+}
+
 fn delegated_login_usage_limits_are_well_formed(
-    structure: kmipkit_ttlv::StructureView<'_>,
+    structure: &kmipkit_ttlv::StructureView<'_>,
 ) -> bool {
     let mut total_seen = false;
     let mut count_seen = false;
