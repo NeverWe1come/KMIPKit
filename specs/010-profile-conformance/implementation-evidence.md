@@ -5525,3 +5525,20 @@ Mapped the four optional request controls from KMIP Specification v2.1 §6.1.19 
 | Hosted CI | Prior PR head `23cfd0db`, run `40062079953` | Completed. Core, platform, adapter, coverage, and inventory jobs passed. Script Contracts failed on Ubuntu, Windows, and macOS because reviewed notes for `7.18-001-001`, `7.18-004`, and `7.18-005` lacked the `pinned` marker. The catalog notes are corrected in this batch; exact-head hosted CI remains pending. |
 
 Baseline Client now has 106 valid executable typed mappings of 265 assigned requirements; 159 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Conditional Get key-format assumption (2026-10-24)
+
+KMIP Specification v2.1 §6.1.19 clause `KMIPKIT-CLAUSE-SPEC-6.1.19-002` states that the client SHALL assume the server can return a registered key in that same format. The following source clause assigns the SHALL to the server, and the next clause says other conversions MAY be supported. KMIPKit's client-side evidence therefore covers the conditional Get selector: callers can encode `Key Format Type`, while omission remains valid when no particular format is requested. This request-local rule cannot inspect the server's registered format or establish response-format support; those are explicitly outside this evidence. No requirement-specific official Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `c9903f68`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_get_key_format_client_assumption` | Expected failure: the client requirement had no typed profile rule. |
+| Green | DCO commit `35b2442d`; `RequiredBehavior` typed rule reuses the optional Get Key Format Type Enumeration evaluator | PASS: the focused test verifies request selection, omission, and metadata linkage. |
+| Refactor | DCO commit `ccfaa2a8`; documented the request-local/server-state boundary | PASS: formatting and the focused test remain green. |
+| Traceability reader correction | DCO commit `37c8fef5`; confined implementation source reader accepts `.md`, `.py`, and `.rs`, while executable-test references remain limited to `.py` and `.rs` | PASS: the Markdown guide references resolve without weakening path confinement; traversal is rejected. The typed traceability test now passes. |
+| Rust verification | `cargo test -p kmipkit-protocol --lib --all-features`; protocol Clippy; format check | PASS: 948 tests; Clippy with `-D warnings`; formatting passes. |
+| Catalog and generated evidence | Catalog validator; profile generator `--check`; coverage report `--check`; report snapshot; typed profile traceability | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and report are current; the new requirement has a typed rule and category test. |
+| Hosted CI | Run `40064413813` on prior head `5dc0494e` | In progress at this note: Ubuntu Script Contracts has failed; Windows and macOS Script Contracts are pending. Run logs are not available until completion. This run does not include the commits above. |
+
+Baseline Client now has 107 valid executable typed mappings of 265 assigned requirements; 158 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
