@@ -722,6 +722,7 @@ const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
 const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
 const POLYNOMIAL_SHARING_PRIME_FIELD: u32 = 3;
@@ -736,6 +737,9 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const LEASE_TIME: u32 = 0x0042_0049;
+const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
+const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
+const DELEGATED_LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
 const CTR_MODE: u32 = 6;
 const CCM_MODE: u32 = 8;
@@ -1487,6 +1491,107 @@ fn client_check_optional_cryptographic_usage_mask_is_integer(
         CRYPTOGRAPHIC_USAGE_MASK,
         CheckOptionalFieldType::Integer,
     )
+}
+
+fn client_delegated_login_rights_is_required_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_delegated_login_field_is_well_formed(
+        request,
+        DELEGATED_LOGIN_RIGHTS,
+        DelegatedLoginFieldType::Structure,
+        true,
+    )
+}
+
+fn client_delegated_login_lease_time_is_optional_interval_or_date_time(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_delegated_login_field_is_well_formed(
+        request,
+        LEASE_TIME,
+        DelegatedLoginFieldType::LeaseTime,
+        false,
+    )
+}
+
+fn client_delegated_login_request_count_is_optional_integer(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_delegated_login_field_is_well_formed(
+        request,
+        DELEGATED_LOGIN_REQUEST_COUNT,
+        DelegatedLoginFieldType::Integer,
+        false,
+    )
+}
+
+fn client_delegated_login_usage_limits_is_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_delegated_login_field_is_well_formed(
+        request,
+        DELEGATED_LOGIN_USAGE_LIMITS,
+        DelegatedLoginFieldType::Structure,
+        false,
+    )
+}
+
+#[derive(Clone, Copy)]
+enum DelegatedLoginFieldType {
+    Integer,
+    LeaseTime,
+    Structure,
+}
+
+fn client_delegated_login_field_is_well_formed(
+    request: Option<&RequestMessage>,
+    field_tag: u32,
+    expected_type: DelegatedLoginFieldType,
+    required: bool,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DELEGATED_LOGIN_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut field_seen = false;
+                let well_formed = payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == field_tag)
+                    .all(|field| {
+                        !std::mem::replace(&mut field_seen, true)
+                            && field.with_value(|value| match expected_type {
+                                DelegatedLoginFieldType::Integer => {
+                                    matches!(value, ValueView::Integer(_))
+                                }
+                                DelegatedLoginFieldType::LeaseTime => matches!(
+                                    value,
+                                    ValueView::Interval(_) | ValueView::DateTime(_)
+                                ),
+                                DelegatedLoginFieldType::Structure => {
+                                    matches!(value, ValueView::Structure(_))
+                                }
+                            })
+                    });
+                well_formed && (!required || field_seen)
+            })
+            .unwrap_or(false)
+    })
 }
 
 #[derive(Clone, Copy)]
@@ -6713,6 +6818,78 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-003",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_delegated_login_rights_is_required_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_rights_as_required_structure",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-005",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_delegated_login_lease_time_is_optional_interval_or_date_time),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-006",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_delegated_login_request_count_is_optional_integer),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_request_count_as_optional_integer",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-007",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_delegated_login_usage_limits_is_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_usage_limits_as_optional_structure",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
