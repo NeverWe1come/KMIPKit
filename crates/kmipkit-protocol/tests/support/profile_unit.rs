@@ -3758,122 +3758,115 @@ fn profile_maps_optional_locate_offset_items_capability() {
     assert!(result.validate_request(&unrelated_operation).is_ok());
 }
 
-#[test]
-fn profile_maps_client_check_optional_usage_fields() {
-    // KMIP Specification v2.1 §6.1.7 Table 182 describes Usage Limits Count
-    // and Cryptographic Usage Mask; Table 183 makes both optional Check fields.
-    const USAGE_LIMITS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-003";
-    const CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-004-002";
+fn optional_check_profile_result(requirement_id: &str) -> ProfileValidationResult {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the optional Check field has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the optional Check field resolves to generated metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional rule is linked to its source and executable test");
+    assert!(!mapping
+        .evaluator
+        .expect("the optional Check rule has a typed evaluator")(
+        None, None
+    ));
 
-    let locate_payload = structure([tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x0C))]);
-    let check_payload = crate::CheckRequest::new()
-        .with_unique_identifier(crate::UniqueIdentifier::TextString(
-            "checked-object".to_owned(),
-        ))
-        .with_usage_limits_count(3)
-        .with_cryptographic_usage_mask(0x04)
-        .into_ttlv_payload()
-        .expect("typed Check fields are representable as TTLV");
-    let locate_then_check = request_message_with_batch_operations([
-        (LOCATE_OPERATION_TAG, locate_payload),
-        (CHECK_OPERATION_TAG, check_payload),
-    ]);
-
-    for requirement_id in [
-        USAGE_LIMITS_REQUIREMENT_ID,
-        CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID,
-    ] {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("each optional Check field has a typed profile rule");
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == requirement_id)
-            .expect("each optional Check field resolves to generated metadata");
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .expect("the optional rule is linked to its source and executable test");
-
-        let result = ProfileValidationResult {
-            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-            requirement_ids: vec![requirement_id.to_owned()],
-        };
-        result
-            .validate_request(&locate_then_check)
-            .expect("the client can send each optional Check field");
-
-        let omitted_check = request_message_with_operation_payload(
-            CHECK_OPERATION_TAG,
-            crate::CheckRequest::new()
-                .with_unique_identifier(crate::UniqueIdentifier::TextString(
-                    "checked-object".to_owned(),
-                ))
-                .into_ttlv_payload()
-                .expect("optional Check fields may be omitted"),
-        );
-        result
-            .validate_request(&omitted_check)
-            .expect("profile validation does not require optional Check fields");
-    }
-
-    let usage_limits_result = ProfileValidationResult {
+    ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![USAGE_LIMITS_REQUIREMENT_ID.to_owned()],
-    };
-    let malformed_usage_limits = request_message_with_operation_payload(
+        requirement_ids: vec![requirement_id.to_owned()],
+    }
+}
+
+#[test]
+fn profile_maps_client_check_usage_limits_count() {
+    // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
+    // optional Check field and its Long Integer representation.
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-003");
+    let with_count = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        crate::CheckRequest::new()
+            .with_usage_limits_count(3)
+            .into_ttlv_payload()
+            .expect("typed Usage Limits Count is representable"),
+    );
+    result
+        .validate_request(&with_count)
+        .expect("the client can send the optional usage amount");
+
+    let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the optional field remains omittable");
+
+    let malformed = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([tagged(
             USAGE_LIMITS_COUNT_TAG,
             Value::text_string("three units".to_owned()),
         )]),
     );
-    assert!(
-        usage_limits_result
-            .validate_request(&malformed_usage_limits)
-            .is_err()
-    );
-    let duplicate_usage_limits = request_message_with_operation_payload(
+    assert!(result.validate_request(&malformed).is_err());
+    let duplicate = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
         ]),
     );
-    assert!(
-        usage_limits_result
-            .validate_request(&duplicate_usage_limits)
-            .is_err()
-    );
+    assert!(result.validate_request(&duplicate).is_err());
+}
 
-    let cryptographic_usage_result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![CRYPTOGRAPHIC_USAGE_REQUIREMENT_ID.to_owned()],
-    };
-    let malformed_cryptographic_usage = request_message_with_operation_payload(
+#[test]
+fn profile_maps_client_check_cryptographic_usage_mask() {
+    // KMIP Specification v2.1 §6.1.7 Table 182 permits a different Check mask
+    // from a preceding Locate; Table 183 encodes the Check mask as Integer.
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-002");
+    let locate_then_check = request_message_with_batch_operations([
+        (
+            LOCATE_OPERATION_TAG,
+            structure([tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x0C))]),
+        ),
+        (
+            CHECK_OPERATION_TAG,
+            crate::CheckRequest::new()
+                .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                    "checked-object".to_owned(),
+                ))
+                .with_cryptographic_usage_mask(0x04)
+                .into_ttlv_payload()
+                .expect("typed Check mask is representable"),
+        ),
+    ]);
+    result
+        .validate_request(&locate_then_check)
+        .expect("the client can submit a distinct, narrower Check mask");
+
+    let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the optional Check mask remains omittable");
+
+    let malformed = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([tagged(
             CRYPTOGRAPHIC_USAGE_MASK_TAG,
             Value::text_string("encrypt".to_owned()),
         )]),
     );
-    assert!(
-        cryptographic_usage_result
-            .validate_request(&malformed_cryptographic_usage)
-            .is_err()
-    );
-    let duplicate_cryptographic_usage = request_message_with_operation_payload(
+    assert!(result.validate_request(&malformed).is_err());
+    let duplicate = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([
             tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x04)),
             tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x08)),
         ]),
     );
-    assert!(
-        cryptographic_usage_result
-            .validate_request(&duplicate_cryptographic_usage)
-            .is_err()
-    );
+    assert!(result.validate_request(&duplicate).is_err());
 }
 
 #[test]

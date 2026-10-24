@@ -4895,7 +4895,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_check_optional_usage_limits_count_is_long_integer),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_optional_usage_fields",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_usage_limits_count",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
@@ -4913,7 +4913,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_check_optional_cryptographic_usage_mask_is_integer),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_optional_usage_fields",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_cryptographic_usage_mask",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {

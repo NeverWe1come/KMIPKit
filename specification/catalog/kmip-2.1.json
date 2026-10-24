@@ -97720,15 +97720,17 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_usage_limits_count"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The typed Baseline Client evaluator confirms that Usage Limits Count is optional in outbound Check requests, accepts the KMIP Long Integer encoding when supplied, and rejects malformed or duplicate fields. The Check execution test verifies caller-selected value serialization. This does not claim server allocation or acceptance; no official Test Case ID is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-004-001",
@@ -97794,16 +97796,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_cryptographic_usage_mask"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The fake-transport test verifies the client can serialize a Locate Cryptographic Usage Mask of Encrypt plus Decrypt (0x0C) and a distinct Check mask of Encrypt (0x04) in the same caller-submitted batch. It makes no server matching or authorization claim. See specs/022-object-lifecycle/traceability.md for the boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "The typed Baseline Client evaluator confirms that Cryptographic Usage Mask is optional in outbound Check requests and preserves its KMIP Integer encoding. The profile regression and fake-transport test cover a preceding Locate mask of Encrypt plus Decrypt (0x0C) followed by a distinct Check mask of Encrypt (0x04). Evidence is limited to caller request representation and makes no server matching, authorization, or acceptance claim. No official Test Case ID is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005",
@@ -97868,18 +97872,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-          "crates/kmipkit-protocol/src/create_key_pair.rs",
-          "crates/kmipkit-protocol/src/profile.rs"
+        "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
-          "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-        "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator confirms the client can encode Common Attributes and leaves the optional group absent when omitted; it makes no claim about server assignment or outcome. No requirement-specific official OASIS Test Case is linked."
+      "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator confirms the client can encode Common Attributes and leaves the optional group absent when omitted; it makes no claim about server assignment or outcome. No requirement-specific official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-002",
@@ -97907,18 +97911,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-          "crates/kmipkit-protocol/src/create_key_pair.rs",
-          "crates/kmipkit-protocol/src/profile.rs"
+        "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
-          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-          "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-        "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator checks both optional Private Key Attributes and Public Key Attributes groups, while the request-construction tests use distinct values and preserve omission. It makes no claim about server-side attribute semantics or outcome. No requirement-specific official OASIS Test Case is linked."
+      "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator checks both optional Private Key Attributes and Public Key Attributes groups, while the request-construction tests use distinct values and preserve omission. It makes no claim about server-side attribute semantics or outcome. No requirement-specific official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-006",
