@@ -93542,18 +93542,20 @@
         "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_format_type",
         "crates/kmipkit-protocol/src/profile.rs::client_get_key_format_type_is_enumeration",
         "docs/user-guide/en/object-retrieval.md",
-        "docs/user-guide/es/object-retrieval.md"
+        "docs/user-guide/es/object-retrieval.md",
+        "crates/kmipkit-protocol/src/export.rs::ExportRequest::with_key_format_type",
+        "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_format_type_is_enumeration"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_format_type_enumeration",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_key_format_client_assumption",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_key_format_client_assumption",
         "crates/kmipkit-test-support/tests/fixtures/oasis_get_fixture_tests.rs::pkcs12_case_1_preserves_get_item_at_correlation_step_8",
         "crates/kmipkit-test-support/tests/fixtures/oasis_get_fixture_tests.rs::pkcs12_case_2_preserves_get_items_at_correlation_steps_5_7_and_9"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 states that the client SHALL assume the server can return a registered key in its registered format; the server MAY support other conversions. KMIPKit forwards a caller-selected Key Format Type, and its typed profile rule verifies the conditional Get selector is structurally usable while allowing omission when no format is requested. The linked local checks establish request representation only; they do not inspect server-held registration format or establish server response/conversion behavior or PKCS#12 validity. KMIPKIT-DEC-003 treats the lowercase PKCS#12 paragraph as informative guidance. No requirement-specific official Test Case ID is linked by the pinned sources; no official case-level pass is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.19 states the client assumption for a selected registered key format; §6.1.18 applies the same semantics to Export. The profile evaluator accepts an explicit Enumeration for Get and Export, rejects malformed selectors, and permits omission. Local checks establish request representation only; they cannot inspect server-held registration format or establish response conversion behavior. No requirement-specific official Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.2-001-001",
@@ -98154,15 +98156,16 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/profile.rs"
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-protocol/src/export.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_wrapped_key_requests_to_key_wrapping_specification"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §7.18 requires a client to include Key Wrapping Specification when requesting a wrapped key. Get Table 220 exposes Key Wrapping Specification as an optional request item; the focused profile test verifies that the client can express a wrapped-key request and that a request without that option remains accepted without inferring wrapped-key intent. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 requires Key Wrapping Specification when a client requests a wrapped key. The typed profile evaluator applies to Get and Export under §6.1.18; tests verify valid wrapped requests, omission when wrapping is not requested, and rejection of malformed structures. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-002",
@@ -98251,12 +98254,12 @@
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires Encryption Key Information when MAC/Signature Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires Encryption Key Information when MAC/Signature Key Information is omitted. The Get and Export profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves requests without wrapping unrestricted. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-005",
@@ -98285,12 +98288,12 @@
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_wrapping_key_information_pairing"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires MAC/Signature Key Information when Encryption Key Information is omitted. The Get profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves Get without wrapping unrestricted. No requirement-specific official Test Case is linked."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 requires MAC/Signature Key Information when Encryption Key Information is omitted. The Get and Export profile evaluator accepts Encryption-only, MAC/Signature-only, and paired requests, rejects a Key Wrapping Specification with neither, and leaves requests without wrapping unrestricted. No requirement-specific official Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-006",
@@ -98316,15 +98319,18 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/get.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_can_repeat_get_or_export_wrapping_attribute_names"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification"
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Spec v2.1 §7.18 Table 370 permits repeated Attribute Name Text Strings in a Key Wrapping Specification. The linked Get test asserts two direct Attribute Name values in order inside a structurally valid specification; it makes no server-wrapping or returned-value claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "review_note": "Pinned KMIP Specification v2.1 §7.18 Table 370 permits repeated Attribute Name Text Strings in a Key Wrapping Specification. Local request tests verify that Get and Export preserve repeated names in order inside a structurally valid specification; they make no server-wrapping or returned-value claim. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.26-001",
@@ -101121,12 +101127,24 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_export_controls_have_get_semantics"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_controls_with_get_semantics",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_key_format_client_assumption",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This pinned source atom is the client request duty only. The adjacent destroyed-object key-material SHALL not be returned predicate remains a separate server duty; implementation, positive verification, and applicable official test cases remain unassigned."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.18 requires the four Export controls to have the same semantics as Get. Typed profile checks and local tests cover caller-selected and omitted control fields, malformed and duplicate values, and the §7.18 wrapped-key request shape for Get and Export. These checks establish client request representation only; they do not claim server response behavior, returned-key wrapping, or destroyed-object behavior. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-005",
@@ -101260,10 +101278,12 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_compression_type_is_enumeration"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -101306,10 +101326,12 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/export.rs"
+        "crates/kmipkit-protocol/src/export.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_optional_wrapping_specification_is_structure"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+        "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification"
       ],
       "negative_verification_required": false,
       "decision_id": null,
