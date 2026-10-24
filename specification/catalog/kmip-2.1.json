@@ -87109,9 +87109,9 @@
       "source_keyword": "REQUIRED",
       "normative_strength": "mandatory",
       "subject": "Split Key Prime Field Size",
-      "summary": "The client must include Prime Field Size only when the Split Key Method is Polynomial Sharing Prime Field, where the table marks it required.",
+      "summary": "The client must include Prime Field Size when the Split Key Method is Polynomial Sharing Prime Field; the table does not require it for other methods.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": "Required only for Polynomial Sharing Prime Field.",
       "scope_state": "profile_conditional",
       "element_ids": [],
@@ -87137,12 +87137,22 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_create_split_key_requires_prime_field_size_for_polynomial_method",
+        "crates/kmipkit-protocol/src/create_split_key.rs::validate_client_policy",
+        "crates/kmipkit-protocol/src/create_split_key.rs::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_request_requires_the_explicit_client_input",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_size_is_preserved_as_big_integer",
+        "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::table_193_prime_field_size_remains_optional_for_other_methods_and_future_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §2.8 Table 9 marks Prime Field Size as REQUIRED only for Polynomial Sharing Prime Field; §6.1.10 Table 193 carries Split Key Method and the optional Prime Field Size in Create Split Key requests. The typed request model requires an explicit caller value for method 3 and encodes it as Big Integer. The Baseline Client profile evaluator rejects a missing or wrongly typed value for method 3, while preserving omission and a supplied Big Integer for other assigned and future method values. This is request-validation evidence only; it does not perform secret sharing or claim server acceptance. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.9-001",

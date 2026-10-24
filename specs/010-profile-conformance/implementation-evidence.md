@@ -5627,3 +5627,20 @@ Mapped `KMIPKIT-REQ-SPEC-3.1-002` and `KMIPKIT-REQ-SPEC-3.1-006` from KMIP Speci
 | Hosted CI | Exact-head run after the batch is pushed | Pending. |
 
 Baseline Client now has 117 valid executable typed mappings of 265 assigned requirements; 148 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Conditional Split Key Prime Field Size (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-2.8-003` from KMIP Specification v2.1 §2.8 Table 9 and §6.1.10 Table 193. The source requires Prime Field Size for Polynomial Sharing Prime Field; it does not prohibit the field for other methods. The existing typed Create Split Key model requires an explicit caller-supplied value for method 3 and encodes it as Big Integer. Baseline Client profile validation now enforces that conditional requirement on outbound Create Split Key requests while preserving omission and a supplied Big Integer for other assigned and future method values. It does not perform secret sharing or claim server acceptance. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `3f7e56a2`; `cargo test -p kmipkit-protocol --lib profile_requires_prime_field_size_for_polynomial_split_key_requests --all-features` | Expected failure: the incomplete request returned `MissingRuleMapping` instead of the normative `RequestRuleRejected`. |
+| Green | DCO commit `06e906b1`; added the typed Create Split Key evaluator, mapping, and positive/negative profile cases | PASS: method 3 requires a Big Integer; non-polynomial and future method values remain representable, and unrelated operations are unaffected. |
+| Refactor | Catalog links/status/wording, generated report, and report snapshot updated; exact refactor commit is recorded in the next evidence update | PASS: source keyword `REQUIRED` maps to `RequiredBehavior`; catalog and report snapshots pass. |
+| Rust checks | `cargo test -p kmipkit-protocol --all-features`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 957 library tests, integration tests, and doctests; Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py --repo-root .`; profile generator/report `--check`; full-profile report snapshot | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and report are current. |
+| Traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability` | PASS: 21 tests, 1 skipped; the mapping resolves to the source clause, Baseline Client closure, implementation, and category-appropriate tests. |
+| Hosted CI | Exact-head run after the next coherent batch is pushed | Pending. |
+
+Baseline Client now has 118 valid executable typed mappings of 265 assigned requirements; 147 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
