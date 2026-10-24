@@ -5414,3 +5414,17 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.14-006-001` from KMIP Specification v2.1 §6.1.14 T
 | Hosted CI | Next exact-head run after publishing this batch | Pending. The current run `40048821976` is on the prior head and cannot validate these commits. |
 
 Baseline now has 94 valid executable typed mappings of 265 assigned requirements; 171 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Register Table 293 edge-case evidence (2026-10-24)
+
+Added explicit profile evidence for the Table 293 Secret Data exception and fail-closed handling of duplicate Key Block attributes and malformed or duplicate Certificate fields. These cases exercise existing normative behavior; no production evaluator behavior changed. The exact source is the pinned KMIP Specification v2.1 §6.1.43 Table 293.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `8dfdd4a9`; focused Register omission evidence test | Expected failure: the three optional-capability mappings did not yet cite the new test ID. |
+| Green | DCO commit `058dfd66`; added the test reference to each typed mapping and the catalog, then regenerated the coverage report | PASS: the evidence registry resolves the test for all three Table 293 capabilities; Secret Data omission is accepted and malformed structures are rejected. |
+| Refactor | DCO commit `9f314314`; split scenario setup into Secret Data, duplicate Key Block, and malformed Certificate helpers | PASS: focused test and Clippy pass without a lint exception. |
+| Verification | `cargo llvm-cov -p kmipkit-protocol --lib --all-features --json`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; validator, report, and profile-generator test suites; catalog validation; profile generator `--check`; report `--check`; rustfmt and diff checks | PASS: 940 protocol library tests; 295 catalog tests, 55 report tests, and 66 profile-generator tests (one platform skip in each suite); 4 sources, 1,411 clauses, 4,123 records; generated artifacts current. The report test's fixed registry snapshot was updated for the three newly traced evidence references. |
+| Hosted CI | Exact-head PR run after publishing | Pending. Run `40048821976` covers the prior PR head and failed the changed-Rust coverage threshold at 3,439/3,635. |
+
+T040 remains open. This increment only adds test evidence for existing Register profile rules; it does not close the 171 unmapped Baseline requirements, the three blocked mandatory fixtures, or the 77 unavailable profile cases. No profile-conformance claim is made.
