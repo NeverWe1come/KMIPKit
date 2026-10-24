@@ -1573,7 +1573,9 @@ fn client_rekey_offset_is_optional_interval(
     )
 }
 
-fn client_reprovision_request_form_is_well_formed(
+// Table 313 marks both request objects optional; §6.1.48 does not say they
+// are mutually exclusive. Each present object still has the required §2 shape.
+fn client_reprovision_request_fields_are_well_formed(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -6587,7 +6589,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_reprovision_request_form_is_well_formed),
+        evaluator: Some(client_reprovision_request_fields_are_well_formed),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_certificate_request_forms",
