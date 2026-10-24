@@ -875,6 +875,7 @@ const PRIVATE_KEY_OBJECT_TYPE: u32 = 4;
 const SPLIT_KEY_OBJECT_TYPE: u32 = 5;
 const OPAQUE_OBJECT_TYPE: u32 = 8;
 const CERTIFICATE_REQUEST_OBJECT_TYPE: u32 = 10;
+const RESERVED_OBJECT_TYPE_6: u32 = 6;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
@@ -4127,21 +4128,50 @@ fn register_nist_key_type_is_enumeration(payload: &StructureView<'_>) -> bool {
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
             ValueView::Structure(attributes) => {
-                optional_attribute_is_enumeration(&attributes, NIST_KEY_TYPE_ATTRIBUTE)
+                register_nist_key_type_attribute_is_well_formed(payload, &attributes)
             }
             _ => false,
         }),
     }
 }
 
-fn optional_attribute_is_enumeration(attributes: &StructureView<'_>, tag: u32) -> bool {
-    match field_presence(attributes, tag) {
+fn register_nist_key_type_attribute_is_well_formed(
+    payload: &StructureView<'_>,
+    attributes: &StructureView<'_>,
+) -> bool {
+    match field_presence(attributes, NIST_KEY_TYPE_ATTRIBUTE) {
         FieldPresence::Missing => true,
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(attribute) => {
-            attribute.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+            if !attribute.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+                return false;
+            }
+
+            let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE)
+            else {
+                return false;
+            };
+            let Some(object_type) = object_type.with_value(|value| match value {
+                ValueView::Enumeration(value) => Some(*value),
+                _ => None,
+            }) else {
+                return false;
+            };
+
+            register_object_type_allows_nist_key_type(object_type)
         }
     }
+}
+
+fn register_object_type_allows_nist_key_type(object_type: u32) -> bool {
+    !matches!(
+        object_type,
+        CERTIFICATE_OBJECT_TYPE
+            | RESERVED_OBJECT_TYPE_6
+            | OPAQUE_OBJECT_TYPE
+            | PGP_KEY_OBJECT_TYPE
+            | CERTIFICATE_REQUEST_OBJECT_TYPE
+    )
 }
 
 fn client_register_table293_pair_may_be_in_key_block(
