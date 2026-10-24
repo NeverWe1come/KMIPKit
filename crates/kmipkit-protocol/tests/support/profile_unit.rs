@@ -34,6 +34,7 @@ const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
 const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
@@ -399,6 +400,35 @@ fn request_message_with_operation_payload(
         ),
     ]))
     .expect("test Request Message with operation payload is valid")
+}
+
+fn request_message_with_optional_maximum_response_size(
+    operation: u32,
+    maximum_response_size: Option<i32>,
+) -> crate::RequestMessage {
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(size) = maximum_response_size {
+        header_items.push(tagged(
+            MAXIMUM_RESPONSE_SIZE_TAG,
+            Value::integer(size),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure(header_items)),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has an optional Maximum Response Size")
 }
 
 fn request_message_with_batch_operations(
@@ -2411,6 +2441,74 @@ fn profile_maps_optional_maximum_response_size_capability() {
     result
         .validate_request(&supplied)
         .expect("a client may include Maximum Response Size");
+}
+
+#[test]
+fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
+    // KMIP Specification v2.1 §9.12; Discover Versions is not likely-large,
+    // while Create Split Key can return repeated key material (§6.1.10).
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the large-response recommendation has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the large-response recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the recommendation has executable category-matched evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the recommendation has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let discover_without_limit = request_message_with_optional_maximum_response_size(
+        DISCOVER_VERSIONS_OPERATION,
+        None,
+    );
+    assert!(evaluate(Some(&discover_without_limit), None));
+    result
+        .validate_request(&discover_without_limit)
+        .expect("Discover Versions may omit the peer-visible field");
+
+    let discover_with_limit = request_message_with_optional_maximum_response_size(
+        DISCOVER_VERSIONS_OPERATION,
+        Some(4096),
+    );
+    assert!(!evaluate(Some(&discover_with_limit), None));
+    let error = result
+        .validate_request(&discover_with_limit)
+        .expect_err("the recommended field is excluded for non-large Discover Versions replies");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    let split_key_with_limit = request_message_with_optional_maximum_response_size(
+        CREATE_SPLIT_KEY_OPERATION,
+        Some(4096),
+    );
+    assert!(evaluate(Some(&split_key_with_limit), None));
+    result
+        .validate_request(&split_key_with_limit)
+        .expect("a potentially large Create Split Key reply may advertise the configured cap");
 }
 
 #[test]
