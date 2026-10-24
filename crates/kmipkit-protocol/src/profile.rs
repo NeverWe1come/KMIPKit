@@ -3340,6 +3340,28 @@ fn derive_key_output_object_type(payload: &StructureView<'_>) -> Option<u32> {
     })
 }
 
+fn derive_key_includes_required_object_type(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| derive_key_output_object_type(&payload).is_some())
+            .unwrap_or(false)
+    })
+}
+
 fn derive_key_specifies_cryptographic_algorithm_for_key_output(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8346,6 +8368,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_symmetric_output_specifies_cryptographic_attributes),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_symmetric_output_attributes",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-009",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_includes_required_object_type),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_object_type",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],

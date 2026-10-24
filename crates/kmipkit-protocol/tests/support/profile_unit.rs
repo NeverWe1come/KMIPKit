@@ -1832,11 +1832,29 @@ fn profile_maps_required_derive_key_object_type() {
         assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
     }
 
-    let unrelated_operation =
-        request_message_with_operation_payload(REGISTER_OPERATION_TAG, Structure::new());
+    let unrelated_operation = request_message_with_batch_operations([
+        (REGISTER_OPERATION_TAG, Structure::new()),
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(0xFFFF))]),
+        ),
+    ]);
     result
         .validate_request(&unrelated_operation)
-        .expect("the Derive Key Object Type requirement does not constrain other operations");
+        .expect("the rule checks every Derive Key item and ignores other operations");
+
+    let batch_with_missing_object_type = request_message_with_batch_operations([
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        ),
+        (DERIVE_KEY_OPERATION, Structure::new()),
+    ]);
+    let error = result
+        .validate_request(&batch_with_missing_object_type)
+        .expect_err("each Derive Key item in the batch requires Object Type");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
 }
 
 #[test]
