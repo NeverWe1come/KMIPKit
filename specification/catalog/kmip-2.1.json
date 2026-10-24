@@ -87646,15 +87646,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/register.rs::into_ttlv_payload"
+        "crates/kmipkit-protocol/src/register.rs::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::client_register_key_value_attributes_are_structured"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material"
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_key_value_attributes_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Scoped evidence: KMIP Specification v2.1 §3.2 Table 13 permits optional Attributes in Key Value; §5.1 Table 157 defines their child grammar; §6.1.43 Table 291 supplies the client Register request context. The positive test establishes serialization of plaintext Key Value Attributes in a client-originated Register payload only. It does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources."
+      "review_note": "Scoped evidence: KMIP Specification v2.1 §3.2 Table 13 permits optional Attributes in Key Value; §5.1 Table 157 defines their child grammar; §6.1.43 Table 291 supplies the client Register request context. The operation test establishes serialization of plaintext Key Value Attributes, and the Baseline Client rule accepts their structured presence while leaving omission optional. This checks client request representation only; it does not establish server acceptance, wrapped-byte contents, response handling, or profile conformance. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.2-002",

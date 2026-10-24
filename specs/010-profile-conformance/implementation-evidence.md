@@ -5542,3 +5542,20 @@ KMIP Specification v2.1 §6.1.19 clause `KMIPKIT-CLAUSE-SPEC-6.1.19-002` states 
 | Hosted CI | Run `40064413813` on prior head `5dc0494e` | In progress at this note: Ubuntu Script Contracts has failed; Windows and macOS Script Contracts are pending. Run logs are not available until completion. This run does not include the commits above. |
 
 Baseline Client now has 107 valid executable typed mappings of 265 assigned requirements; 158 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Key Value Attributes (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-3.2-001` from KMIP Specification v2.1 §3.2 Table 13, with the attribute-child grammar from §5.1 Table 157 and the client Register request context from §6.1.43 Table 291. The typed rule accepts a structured Attributes field inside structured Key Value, permits its omission, and leaves wrapped Byte String contents opaque. It is request-shape evidence only: it does not establish server acceptance or profile conformance. No requirement-specific official Test Case is linked by the pinned source.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `d21ffa35`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_register_key_value_attributes_as_optional_capability` | Expected failure: no typed profile rule existed for §3.2-001. |
+| Green | DCO commit `f69f8ee0`; request-shape evaluator and OptionalCapability mapping | PASS: structured Attributes are accepted, omission remains optional, and a non-Structure Attributes value is rejected. |
+| Refactor | DCO commit `b07bdf66`; extracted Key Block shape validation into a focused helper | PASS: formatting, diff checks, and the focused profile test pass. |
+| Boundary regressions | DCO commit `0e917803`; expanded the profile test for absent Key Value, absent Key Block, wrapped Byte String, and unrelated operations | PASS: optional fields stay optional, wrapped bytes stay opaque, and the Register-only rule leaves unrelated operations unaffected. |
+| Report contract correction | Updated the typed mapping snapshot for both positive evidence references | PASS: `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures`. |
+| Catalog and generated evidence | Catalog validator; profile generator `--check`; report regeneration and `--check`; typed profile traceability | PASS: catalog has 4 sources, 1,411 clauses, and 4,123 records; generated report includes the new mapping. |
+| Hosted CI | Run `40064413813` on prior head `5dc0494e`; correction commit `d5edde73` | Not exact-head evidence. Script Contracts failed on Ubuntu, macOS, and Windows because the catalog correctly added `profile.rs` and its profile test as evidence for four Get controls, while `test_export_and_get_optional_request_rows_have_verified_catalog_evidence` expected only `get.rs`. The Windows contract suite took 1,676.605 seconds for 663 tests before reporting the same four stale expectations. The focused catalog contract now passes locally; exact-head hosted CI remains pending. |
+
+Baseline Client now has 108 valid executable typed mappings of 265 assigned requirements; 157 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
