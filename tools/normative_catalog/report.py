@@ -72,23 +72,21 @@ _RULE_TEST_KINDS = {
     "DiscouragedBehaviorAbsent",
     "OptionalCapabilityUsable",
 }
-_RULE_CONSTRAINTS = {
-    ("transport", "raw_tls"),
-    ("transport", "https"),
+_TRANSPORT_ONLY_RULE_CONSTRAINTS = {
     ("transport_security", "tls"),
     ("transport_security", "tls13"),
     ("tls13_cipher_suites", "kmip_profiles_3_1_2"),
+}
+_CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
+    *_TRANSPORT_ONLY_RULE_CONSTRAINTS,
     ("encoding", "ttlv"),
     ("client_profile_selection", "at_least_one"),
     ("client_profile_closure", "all_normative_statements"),
 }
-_CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
-    ("transport_security", "tls"),
-    ("transport_security", "tls13"),
-    ("tls13_cipher_suites", "kmip_profiles_3_1_2"),
-    ("encoding", "ttlv"),
-    ("client_profile_selection", "at_least_one"),
-    ("client_profile_closure", "all_normative_statements"),
+_RULE_CONSTRAINTS = {
+    ("transport", "raw_tls"),
+    ("transport", "https"),
+    *_CONFIGURATION_ONLY_RULE_CONSTRAINTS,
 }
 _DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
 _SINGLE_QUOTED_SECRET_VALUE = r"'(?:\\.|[^'\\\r\n])*'"
@@ -353,14 +351,8 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
             evaluator == "None"
             and bool(constraints)
             and all(
-                (
-                    constraint["key"] == "transport_security"
-                    and constraint["value"] in {"tls", "tls13"}
-                )
-                or (
-                    constraint["key"] == "tls13_cipher_suites"
-                    and constraint["value"] == "kmip_profiles_3_1_2"
-                )
+                (constraint["key"], constraint["value"])
+                in _TRANSPORT_ONLY_RULE_CONSTRAINTS
                 for constraint in constraints
             )
         )

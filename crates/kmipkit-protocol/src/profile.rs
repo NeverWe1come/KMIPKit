@@ -7526,17 +7526,11 @@ fn validate_mapping(
     if !source_matches || mapping.verification_category != requirement.verification_category {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
-    if mapping.constraints.iter().any(|constraint| {
-        !matches!(
-            (constraint.key, constraint.value),
-            ("transport", "raw_tls" | "https")
-                | ("transport_security", "tls" | "tls13")
-                | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
-                | ("encoding", "ttlv")
-                | ("client_profile_selection", "at_least_one")
-                | ("client_profile_closure", "all_normative_statements")
-        )
-    }) {
+    if mapping
+        .constraints
+        .iter()
+        .any(|constraint| !is_supported_rule_constraint(constraint))
+    {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
     if mapping.evaluator.is_none() && !is_configuration_only_mapping(mapping) {
@@ -7573,16 +7567,33 @@ fn validate_mapping(
 fn is_configuration_only_mapping(mapping: &TypedRuleMapping) -> bool {
     mapping.evaluator.is_none()
         && !mapping.constraints.is_empty()
-        && mapping.constraints.iter().all(|constraint| {
-            (constraint.key == "transport_security" && matches!(constraint.value, "tls" | "tls13"))
-                || (constraint.key == "tls13_cipher_suites"
-                    && constraint.value == "kmip_profiles_3_1_2")
-                || (constraint.key == "encoding" && constraint.value == "ttlv")
-                || (constraint.key == "client_profile_selection"
-                    && constraint.value == "at_least_one")
-                || (constraint.key == "client_profile_closure"
-                    && constraint.value == "all_normative_statements")
-        })
+        && mapping
+            .constraints
+            .iter()
+            .all(is_configuration_only_rule_constraint)
+}
+
+fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
+    matches!(
+        (constraint.key, constraint.value),
+        ("transport", "raw_tls" | "https")
+            | ("transport_security", "tls" | "tls13")
+            | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
+            | ("encoding", "ttlv")
+            | ("client_profile_selection", "at_least_one")
+            | ("client_profile_closure", "all_normative_statements")
+    )
+}
+
+fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
+    matches!(
+        (constraint.key, constraint.value),
+        ("transport_security", "tls" | "tls13")
+            | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
+            | ("encoding", "ttlv")
+            | ("client_profile_selection", "at_least_one")
+            | ("client_profile_closure", "all_normative_statements")
+    )
 }
 
 #[cfg(test)]
