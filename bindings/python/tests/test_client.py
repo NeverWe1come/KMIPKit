@@ -886,8 +886,7 @@ def test_batch_add_item_maps_cffi_conversion_error_and_releases_lock(
 
 
 def test_batch_add_item_rejects_untyped_item() -> None:
-    pointer, _storage = _opaque("kmipkit_client_batch_t")
-    batch = client.Batch(pointer)
+    batch = client.Batch.create()
     try:
         with pytest.raises(errors.InvalidInputError):
             batch.add_item(object())  # type: ignore[arg-type]
