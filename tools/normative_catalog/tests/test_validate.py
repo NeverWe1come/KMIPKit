@@ -22570,10 +22570,11 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Format Type",
                 [27211, 27228],
                 "KMIPKIT-0017",
-                ["crates/kmipkit-protocol/src/get.rs"],
+                ["crates/kmipkit-protocol/src/get.rs", "crates/kmipkit-protocol/src/profile.rs"],
                 [
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.19-004": (
@@ -22582,10 +22583,11 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Wrap Type",
                 [27229, 27247],
                 "KMIPKIT-0017",
-                ["crates/kmipkit-protocol/src/get.rs"],
+                ["crates/kmipkit-protocol/src/get.rs", "crates/kmipkit-protocol/src/profile.rs"],
                 [
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.19-005": (
@@ -22594,10 +22596,11 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Compression Type",
                 [27248, 27266],
                 "KMIPKIT-0017",
-                ["crates/kmipkit-protocol/src/get.rs"],
+                ["crates/kmipkit-protocol/src/get.rs", "crates/kmipkit-protocol/src/profile.rs"],
                 [
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.19-006": (
@@ -22606,10 +22609,11 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Wrapping Specification",
                 [27267, 27285],
                 "KMIPKIT-0017",
-                ["crates/kmipkit-protocol/src/get.rs"],
+                ["crates/kmipkit-protocol/src/get.rs", "crates/kmipkit-protocol/src/profile.rs"],
                 [
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_omits_every_optional_table_220_field_when_unspecified",
                     "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
         }
