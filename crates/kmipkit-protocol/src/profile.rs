@@ -5190,7 +5190,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(derive_key_repeated_unique_identifiers_are_usable),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_repeated_derive_key_unique_identifiers",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],

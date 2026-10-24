@@ -64,6 +64,7 @@ const VALIDITY_DATE_TAG: u32 = 0x0042_009A;
 const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
 const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
 const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-001";
 const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
 const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
@@ -198,6 +199,13 @@ fn derive_key_id_placeholder_mapping() -> &'static TypedRuleMapping {
         .iter()
         .find(|mapping| mapping.requirement_id == DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID)
         .expect("Derive Key ID Placeholder prohibition has a typed profile mapping")
+}
+
+fn derive_key_repeated_identifiers_mapping() -> &'static TypedRuleMapping {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID)
+        .expect("Derive Key repeated Unique Identifier capability has a typed profile mapping")
 }
 
 fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
@@ -1104,56 +1112,10 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     validate_mapping(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID, requirement, mapping)
         .expect("the prohibition has category-matched negative evidence");
 
-    const REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-001";
-    let repeated_identifier_mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REPEATED_IDENTIFIER_REQUIREMENT_ID)
-        .expect("Derive Key repeated Unique Identifier capability has a typed profile mapping");
-    let repeated_identifier_requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == REPEATED_IDENTIFIER_REQUIREMENT_ID)
-        .expect("the repeated Derive Key identifier requirement resolves to normative metadata");
-    assert_eq!(
-        repeated_identifier_mapping.source_clause_id,
-        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID
-    );
-    assert_eq!(
-        repeated_identifier_mapping.verification_category,
-        GeneratedVerificationCategory::OptionalCapability
-    );
-    validate_mapping(
-        DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID,
-        repeated_identifier_requirement,
-        repeated_identifier_mapping,
-    )
-    .expect("the repeated identifier capability has usable positive evidence");
-    assert!(repeated_identifier_mapping.test_evidence.iter().any(|evidence| {
-        evidence.test_id
-            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder"
-            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
-    }));
-
     let result = ProfileValidationResult {
         profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
         requirement_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID.to_owned()],
     };
-    let explicit_identifiers = request_message_with_operation_payload(
-        DERIVE_KEY_OPERATION,
-        structure([
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("source-key-1".to_owned()),
-            ),
-            tagged(
-                UNIQUE_IDENTIFIER_TAG,
-                Value::text_string("source-key-2".to_owned()),
-            ),
-        ]),
-    );
-    result
-        .validate_request(&explicit_identifiers)
-        .expect("repeated explicit source identifiers remain valid");
-
     let omitted_identifier =
         request_message_with_operation_payload(DERIVE_KEY_OPERATION, Structure::new());
     assert_request_rejected_for_requirement(
@@ -1168,6 +1130,54 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     result
         .validate_request(&unrelated_operation)
         .expect("the Derive Key prohibition does not constrain other operations");
+}
+
+#[test]
+fn profile_maps_optional_repeated_derive_key_unique_identifiers() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 permits repeated source IDs.
+    let mapping = derive_key_repeated_identifiers_mapping();
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("the repeated Derive Key identifier requirement resolves to normative metadata");
+    assert_eq!(
+        mapping.source_clause_id,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID, requirement, mapping)
+        .expect("the repeated identifier capability has usable positive evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_repeated_derive_key_unique_identifiers"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
+        requirement_ids: vec![DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID.to_owned()],
+    };
+    let repeated_identifiers = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key-1".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key-2".to_owned()),
+            ),
+        ]),
+    );
+    result
+        .validate_request(&repeated_identifiers)
+        .expect("repeated explicit source identifiers remain valid");
 }
 
 #[test]
