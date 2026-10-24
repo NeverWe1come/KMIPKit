@@ -4169,7 +4169,6 @@ fn register_object_type_allows_nist_key_type(object_type: u32) -> bool {
         CERTIFICATE_OBJECT_TYPE
             | RESERVED_OBJECT_TYPE_6
             | OPAQUE_OBJECT_TYPE
-            | PGP_KEY_OBJECT_TYPE
             | CERTIFICATE_REQUEST_OBJECT_TYPE
     )
 }
