@@ -5428,3 +5428,19 @@ Added explicit profile evidence for the Table 293 Secret Data exception and fail
 | Hosted CI | Exact-head PR run after publishing | Pending. Run `40048821976` covers the prior PR head and failed the changed-Rust coverage threshold at 3,439/3,635. |
 
 T040 remains open. This increment only adds test evidence for existing Register profile rules; it does not close the 171 unmapped Baseline requirements, the three blocked mandatory fixtures, or the 77 unavailable profile cases. No profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Register paired-metadata branch evidence (2026-10-24)
+
+Added executable evidence for the Table 293 Algorithm/Length metadata pair and Digital Signature Algorithm handling. The tests accept a complete Algorithm/Length pair, reject a one-sided pair and malformed or absent Object Type, reject an omission without a Key Block source, and check Certificate-specific signature-algorithm type handling. The mappings cite this evidence for `KMIPKIT-REQ-SPEC-6.1.43-009-001`, `-010-001`, and `-011`. No production evaluator behavior changed.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `50dd587f`; focused `profile_maps_register_omission_pair_metadata_branches` test | Expected failure before the new test ID was attached to the three typed mappings. |
+| Green | DCO commit `40e4a5d9`; typed mapping evidence, catalog verification references, generated coverage report, and report snapshot | PASS: the focused test passed and the report snapshot recognizes the added references. |
+| Refactor | DCO commit `690e9a0d`; share the Digital Signature Algorithm tag constant across profile tests | PASS: focused Register omission tests and protocol Clippy pass with no behavior change. |
+| Rust tests | `cargo test -p kmipkit-protocol --lib --all-features`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_register_omission` | PASS: 941 protocol library tests; both focused Register omission tests pass. |
+| Catalog and generated outputs | Catalog validation; `generate_profiles.py --check`; `report.py --check`; full `test_report` suite | PASS: 4 sources, 1,411 clauses, 4,123 records; report suite 55 passed, 1 skipped; generated outputs current. |
+| Quality | Protocol Clippy; `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Hosted CI | New exact-head PR run required after publishing this batch | Pending. Run `40052094645` is on the previous head `15602cfb` and its selected-scope changed-Rust coverage result was 3,464/3,660, below the 95% gate. This test increment has not yet been measured by hosted CI. |
+
+T040 remains open. The 171 unmapped Baseline requirements, three blocked mandatory fixtures, and 77 unavailable profile cases remain open; this increment does not establish profile readiness or a conformance claim.
