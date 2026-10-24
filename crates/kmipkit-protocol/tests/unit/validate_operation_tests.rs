@@ -361,6 +361,9 @@ fn generic_unknown_response_data_remains_exact_and_redacted() {
 #[test]
 fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
     let request = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
         .with_extension(item(
             0x0054_1234,
             Value::byte_string(b"extension-private-sentinel".to_vec()),
@@ -381,6 +384,9 @@ fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
         .with_value(|v| assert!(matches!(v, ValueView::Enumeration(0xf123_4567))));
     for known in [0x0042_0013, 0x0042_0094, 0x0042_009a] {
         let error = ValidateRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString(
+                "managed-certificate".to_owned(),
+            ))
             .with_extension(item(
                 known,
                 Value::text_string("extension-private-sentinel".to_owned()),
