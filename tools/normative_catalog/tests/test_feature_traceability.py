@@ -556,6 +556,22 @@ def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_join_split_key_threshold_uses_exact_unique_identifier_sources(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.27-001"
+        )
+
+        source_sections = {
+            reference["section"] for reference in requirement["source_refs"]
+        }
+        self.assertTrue({"4.58", "6.1.27", "11.58"}.issubset(source_sections))
+        self.assertIn("§4.58 Table 145", requirement["review_note"])
+        self.assertIn("§11.58 Table 489", requirement["review_note"])
+        self.assertNotIn("§11.58 Table 145", requirement["review_note"])
+
     def test_confined_implementation_reader_accepts_docs_but_test_reader_does_not(self) -> None:
         documentation_path = "docs/user-guide/en/object-retrieval.md"
         implementation = _read_confined_implementation_source(documentation_path)
