@@ -1816,6 +1816,53 @@ fn client_operation_field_is_well_formed(
     })
 }
 
+fn client_join_split_key_has_validated_identifier_entries(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // Thresholds are caller-supplied metadata absent from TTLV. The typed client
+    // serializer checks their count before this message exists; this rule confirms
+    // the encoded identifier entries remain present and well-formed.
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != JOIN_SPLIT_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut identifier_count = 0_usize;
+                let valid_entries = payload.children().iter().all(|field| {
+                    if field.tag().raw() != UNIQUE_IDENTIFIER {
+                        return true;
+                    }
+
+                    let valid_identifier = field.with_value(|value| {
+                        matches!(
+                            value,
+                            ValueView::TextString(_)
+                                | ValueView::ByteString(_)
+                                | ValueView::Enumeration(_)
+                        )
+                    });
+                    if valid_identifier {
+                        identifier_count += 1;
+                    }
+                    valid_identifier
+                });
+
+                valid_entries && identifier_count > 0
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
     structure.children().iter().all(|field| {
         field.tag().raw() != DELEGATED_LOGIN_RIGHT
@@ -7585,6 +7632,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_join_split_key_has_validated_identifier_entries),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
