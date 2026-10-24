@@ -5644,3 +5644,20 @@ Mapped `KMIPKIT-REQ-SPEC-2.8-003` from KMIP Specification v2.1 §2.8 Table 9 and
 | Hosted CI | Exact-head run after the next coherent batch is pushed | Pending. |
 
 Baseline Client now has 118 valid executable typed mappings of 265 assigned requirements; 147 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Create Key Pair attribute assignment groups (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.9-001-001` and `KMIPKIT-REQ-SPEC-6.1.9-001-002` from KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189. Baseline Client request validation confirms that the client can encode Common Attributes and the separate Private Key Attributes and Public Key Attributes groups; each remains optional. The combined evaluator checks that both separate groups, when supplied, retain Structure form and rejects malformed group types. It makes no claim that values are semantically different, that the server applies them or their precedence, or that the server creates the key pair. No requirement-specific official OASIS Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commits `e6553bd9`, `1bc0c3aa`; `cargo test -p kmipkit-protocol --lib profile_maps_client_create_key_pair_attribute_assignment_groups` | Expected failure before mapping: `MissingRuleMapping` for `KMIPKIT-REQ-SPEC-6.1.9-001-001`. The test also covers optional omission and rejection of malformed private/public groups. |
+| Green | DCO commit `ceced478`; added the typed optional-capability mappings and a scoped evaluator for both separate groups; updated catalog implementation and verification references and regenerated the profile metadata and coverage report | PASS: populated Common Attributes and distinct private/public values validate; omitted optional groups remain accepted; malformed group types are rejected. |
+| Refactor | DCO commit `9bfd4f32`; refreshed the report test's expected typed-mapping evidence rows | PASS: report snapshot matches the runtime registry. |
+| Rust checks | `cargo test -p kmipkit-protocol --all-features --locked`; focused profile test; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 958 protocol library tests, integration tests, and doctests; focused profile test, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py --repo-root .`; `generate_profiles.py --check`; `report.py --check`; `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` | PASS: 4 sources, 1,411 clauses, and 4,123 catalog records; generated profile metadata and report are current; report snapshot passes. |
+| Traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS: both optional capabilities resolve to the Baseline Client closure, implementation, executable tests, and exact source clause. |
+| Hosted CI | Exact-head run after the coherent batch is pushed | Pending. |
+
+Baseline Client now has 120 valid executable typed mappings of 265 assigned requirements; 145 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
