@@ -27,6 +27,8 @@ const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -326,8 +328,12 @@ fn revoke_can_consume_a_preceding_register_id_placeholder() {
     let (mut client, fake, captured) = client_for(ExchangeScript::FailBeforeWrite);
     let register = RegisterRequest::new(
         ObjectType::from_raw(1),
-        AttributeSet::try_new([test_item(CERTIFICATE_LENGTH, Value::integer(512))])
-            .expect("certificate length fixture is valid"),
+        AttributeSet::try_new([
+            test_item(CERTIFICATE_LENGTH, Value::integer(512)),
+            test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+        ])
+        .expect("certificate length fixture is valid"),
         test_item(CERTIFICATE, Value::structure(test_structure([]))),
     );
     let batch = ClientBatch::from_items([

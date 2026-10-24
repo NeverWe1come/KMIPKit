@@ -2,7 +2,7 @@
 //! Cryptographic Algorithm and Digital Signature Algorithm values follow
 //! §§11.12/11.16, Tables 443/447. These tests do not claim an official pass.
 //!
-//! Traceability: FR-003, FR-004, FR-009–FR-015; `KMIPKIT-ELEM-OP-C2S-SIGN`,
+//! Traceability: FR-003–FR-005, FR-009–FR-015; `KMIPKIT-ELEM-OP-C2S-SIGN`,
 //! `KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM`,
 //! `KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM`, and the shared Data,
 //! Digested Data, Correlation Value, Init Indicator, and Final Indicator.
@@ -28,7 +28,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
 const DATA: u32 = 0x0042_00C2;
 const DIGESTED_DATA: u32 = 0x0042_0107;
-const SIGNATURE_DATA: u32 = 0x0042_00C7;
+const SIGNATURE_DATA: u32 = 0x0042_00C3;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INIT_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
@@ -92,6 +92,7 @@ fn request_allows_optional_identifier_and_parameters_to_be_omitted() {
     assert_eq!(field_tags(&actual), [DATA]);
 }
 
+// OASIS KMIP v2.1 §6.1.55 Table 334: single-part Sign requires Data unless Digested Data is supplied.
 #[test]
 fn request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only() {
     assert!(
@@ -102,9 +103,14 @@ fn request_requires_data_or_digested_data_for_single_part_and_accepts_digest_onl
     let digest = [0x00, 0x81, 0xFF];
     let actual = SignRequest::new()
         .with_digested_data(SecretBytes::new(digest.to_vec()))
+        .with_init_indicator(true)
+        .with_final_indicator(true)
         .to_ttlv_payload()
-        .expect("single-part Sign may supply Digested Data without Data");
-    assert_eq!(field_tags(&actual), [DIGESTED_DATA]);
+        .expect("framed single-part Sign may supply Digested Data without Data");
+    assert_eq!(
+        field_tags(&actual),
+        [DIGESTED_DATA, INIT_INDICATOR, FINAL_INDICATOR]
+    );
     assert_eq!(
         snapshot(&actual.view().children()[0]),
         (DIGESTED_DATA, digest.to_vec())

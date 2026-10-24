@@ -106,10 +106,7 @@ fn allocate_context_with_count(count: i64) -> UsageAllocationContext {
         request_write_chunks: Vec::new(),
     });
     let response = client
-        .get_usage_allocation(
-            GetUsageAllocationRequest::new(count),
-            &CodecLimits::defaults(),
-        )
+        .get_usage_allocation(allocation_request(count), &CodecLimits::defaults())
         .expect("the allocation exchange succeeds");
     let response_view = response.outcome().response();
     let typed_response = response_view
@@ -117,6 +114,11 @@ fn allocate_context_with_count(count: i64) -> UsageAllocationContext {
         .expect("the exchange returns its typed allocation result");
     UsageAllocationContext::from_successful_allocation(typed_response, count, UNKNOWN_USAGE_UNIT)
         .expect("the caller supplies the exact requested count and known unit")
+}
+
+fn allocation_request(count: i64) -> GetUsageAllocationRequest {
+    GetUsageAllocationRequest::new(count)
+        .with_unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
 }
 
 fn execute_allocation(
@@ -136,7 +138,7 @@ fn execute_allocation(
     });
     client.execute(
         ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
-            GetUsageAllocationRequest::new(ALLOCATION),
+            allocation_request(ALLOCATION),
         ))),
         &CodecLimits::defaults(),
     )
@@ -246,7 +248,7 @@ fn unsuccessful_pending_malformed_and_nonpositive_allocations_cannot_create_cont
     let pending = pending_client
         .execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::get_usage_allocation(
-                GetUsageAllocationRequest::new(ALLOCATION),
+                allocation_request(ALLOCATION),
             )))
             .with_asynchronous_indicator(1),
             &CodecLimits::defaults(),

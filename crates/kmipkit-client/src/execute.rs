@@ -29,15 +29,17 @@ use kmipkit_protocol::{
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
     PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
-    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
-    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
-    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest, RngRetrieveResponse,
-    RngSeedRequest, RngSeedResponse, SetAttributeRequest, SetAttributeResponse,
-    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
-    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    ProcessResponse, ProfileTransport, ProfileValidationError, ProfileValidationResult,
+    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
+    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
+    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
+    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest,
+    RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
+    SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
+    SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    SignatureVerifyResponse, UniqueIdentifier,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
@@ -85,6 +87,10 @@ mod import_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/key_transfer_operations_execution_tests.rs"]
 mod key_transfer_operations_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/execute_id_placeholder_tests.rs"]
+mod id_placeholder_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/delegated_login_execution_tests.rs"]
@@ -205,6 +211,8 @@ const ASYNCHRONOUS_PROHIBITED: u32 = 3;
 const BATCH_ERROR_CONTINUATION_STOP: u32 = 2;
 const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
 const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
+// KMIP v2.1 §11.58, Table 489 assigns Enumeration 1 to ID Placeholder.
+const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const RESULT_STATUS_PENDING: u32 = 2;
 
 /// One request variant admitted by the typed client execution path.
@@ -696,25 +704,106 @@ impl ClientRequest {
         }
     }
 
-    fn omits_identifier_for_id_placeholder(&self) -> bool {
+    // Keep consumers aligned with KMIP v2.1 §§6.1.1–6.1.56 operation payload
+    // descriptions: some allow omission only when the operation-specific field
+    // is absent, while enum-backed fields also allow explicit Enumeration(1).
+    fn uses_id_placeholder(&self) -> bool {
         match self {
-            Self::Check(request) => request.unique_identifier().is_none(),
-            Self::ObtainLease(request) => request.unique_identifier().is_none(),
-            Self::Recertify(request) => request.unique_identifier().is_none(),
-            Self::Rekey(request) => request.unique_identifier().is_none(),
-            Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
-            Self::Revoke(request) => request.unique_identifier().is_none(),
-            Self::Encrypt(request) => request.unique_identifier().is_none(),
-            Self::Decrypt(request) => request.unique_identifier().is_none(),
+            Self::Activate(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::AddAttribute(request) => request.unique_identifier().is_none(),
+            Self::AdjustAttribute(request) => request.unique_identifier().is_none(),
+            Self::Archive(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            // Certify's direct Unique Identifier identifies the public key
+            // when the request value is omitted, but an explicit Enumeration(1)
+            // with request material selects the prior batch placeholder.
+            Self::Certify(request) => matches!(
+                request.unique_identifier(),
+                Some(UniqueIdentifier::Enumeration(
+                    ID_PLACEHOLDER_ENUMERATION_VALUE
+                ))
+            ),
+            Self::Check(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::DeleteAttribute(request) => request.unique_identifier().is_none(),
+            Self::Destroy(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::ObtainLease(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Recertify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+                    || matches!(
+                        request.certificate_request_unique_identifier(),
+                        Some(UniqueIdentifier::Enumeration(
+                            ID_PLACEHOLDER_ENUMERATION_VALUE
+                        ))
+                    )
+            }
+            Self::Rekey(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::RekeyKeyPair(request) => {
+                Self::id_placeholder_is_selected(request.private_key_unique_identifier())
+            }
+            Self::Recover(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Revoke(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Get(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::GetAttributes(request) => request.unique_identifier().is_none(),
+            Self::GetAttributeList(request) => request.unique_identifier().is_none(),
+            Self::GetUsageAllocation(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Import(request) => {
+                Self::id_placeholder_is_selected(Some(request.unique_identifier()))
+            }
+            Self::JoinSplitKey(request) => request.references().iter().any(|reference| {
+                Self::id_placeholder_is_selected(Some(reference.unique_identifier()))
+            }),
+            // Create Split Key uses an omitted identifier to create a new
+            // split key. Only an explicit Enumeration(1) selects the prior
+            // Batch Item's identifier.
+            Self::CreateSplitKey(request) => matches!(
+                request.unique_identifier(),
+                Some(UniqueIdentifier::Enumeration(
+                    ID_PLACEHOLDER_ENUMERATION_VALUE
+                ))
+            ),
+            Self::ModifyAttribute(request) => request.unique_identifier().is_none(),
+            Self::Export(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::SetAttribute(request) => request.unique_identifier().is_none(),
+            Self::Encrypt(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Decrypt(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Mac(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::MacVerify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Sign(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::SignatureVerify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
             _ => false,
         }
     }
 
+    fn id_placeholder_is_selected(identifier: Option<&UniqueIdentifier>) -> bool {
+        matches!(
+            identifier,
+            None | Some(UniqueIdentifier::Enumeration(
+                ID_PLACEHOLDER_ENUMERATION_VALUE
+            ))
+        )
+    }
+
     const fn is_id_placeholder_producer(&self) -> bool {
+        // §6.1 lists the general producers; §§6.1.10, 6.1.14, and 6.1.18
+        // additionally specify Create Split Key, Derive Key, and Export.
+        // Locate's actual placeholder value remains dependent on its response.
         matches!(
             self,
             Self::Create(_)
                 | Self::CreateKeyPair(_)
+                | Self::CreateSplitKey(_)
+                | Self::DeriveKey(_)
+                | Self::Export(_)
+                | Self::Locate(_)
                 | Self::Recover(_)
                 | Self::Certify(_)
                 | Self::Recertify(_)
@@ -3632,11 +3721,59 @@ enum ClientTransport {
     Test(TestTransport),
 }
 
+/// Internal profile checks applied at distinct exchange boundaries.
+///
+/// Keeping this contract inside the client crate lets the fake-transport tests
+/// exercise post-response delivery handling without registering synthetic
+/// rules in the production profile registry.
+pub(super) trait ProfileExchangeValidator {
+    fn validate_transport(&self, transport: ProfileTransport)
+    -> Result<(), ProfileValidationError>;
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError>;
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError>;
+}
+
+impl ProfileExchangeValidator for ProfileValidationResult {
+    fn validate_transport(
+        &self,
+        transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_transport(self, transport)
+    }
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        Self::validate_request(self, request)
+    }
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_response(self, request, response)
+    }
+}
+
 #[cfg(test)]
 #[path = "../tests/unit/production_transport_selection_tests.rs"]
 mod production_transport_selection_tests;
 
 impl ClientTransport {
+    fn profile_transport(&self) -> ProfileTransport {
+        match self {
+            Self::RawTls(_) => ProfileTransport::RawTtlvTls,
+            Self::Https(_) => ProfileTransport::Https,
+            #[cfg(test)]
+            Self::Test(_) => ProfileTransport::RawTtlvTls,
+        }
+    }
+
     fn from_configuration(configuration: TransportConfig) -> Result<Self, ClientError> {
         if configuration.target_uri().is_some() {
             HttpsTransport::new(configuration)
@@ -3755,6 +3892,69 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_inner(batch, limits, request_options, None)
+    }
+
+    /// Executes one typed request batch after explicitly validating a client
+    /// profile selection for this exchange.
+    ///
+    /// The selection is validated before request encoding or transport I/O.
+    /// A profile remains unavailable until every applicable requirement has a
+    /// complete typed rule and category-appropriate executable test. The
+    /// ordinary [`Self::execute`] method remains unprofiled.
+    ///
+    /// # Errors
+    ///
+    /// Returns stable profile error IDs with `NotSent` for selection or
+    /// outbound-rule failures, and preserves the exchange delivery state for
+    /// response-rule failures.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_with_profiles_and_options(batch, selection, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed request batch with explicit profile selection and
+    /// per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same profile, protocol, and transport failures as
+    /// [`Self::execute_with_profiles`], preserving the strongest delivery
+    /// evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles_and_options(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let profiles = selection.validate().map_err(|error| {
+            ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+        })?;
+        self.execute_inner(batch, limits, request_options, Some(&profiles))
+    }
+
+    /// Executes the shared exchange path with an already selected profile validator.
+    pub(super) fn execute_inner(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+        profiles: Option<&dyn ProfileExchangeValidator>,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        if let Some(profiles) = profiles {
+            profiles
+                .validate_transport(self.transport.profile_transport())
+                .map_err(|error| {
+                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+                })?;
+        }
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -3780,10 +3980,33 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let profile_request = if profiles.is_some() {
+            Some(
+                clone_request_message(&request_message, limits)
+                    .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?,
+            )
+        } else {
+            None
+        };
+        if let Some(profiles) = profiles {
+            profiles
+                .validate_request(&request_message)
+                .map_err(|error| {
+                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+                })?;
+        }
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
+        let profile_response = if profiles.is_some() {
+            Some(
+                clone_response_message(&response_message)
+                    .map_err(|error| protocol_failure_at(error, response_delivery_state))?,
+            )
+        } else {
+            None
+        };
 
-        validate_response(
+        let validated_response = validate_response(
             &request_identities,
             &options,
             response_message,
@@ -3798,7 +4021,17 @@ impl Client {
                 response_delivery_state,
                 failure.response_ttlv,
             )
-        })
+        })?;
+
+        if let (Some(profiles), Some(profile_request), Some(profile_response)) =
+            (profiles, profile_request, profile_response)
+        {
+            profiles
+                .validate_response(&profile_request, &profile_response)
+                .map_err(|error| ClientError::profile_validation(error, response_delivery_state))?;
+        }
+
+        Ok(validated_response)
     }
 
     /// Executes one Encrypt, MAC, or Sign request through an explicit local
@@ -5607,9 +5840,7 @@ impl fmt::Display for BatchValidationError {
             Self::EmptyBatch => "client batch must contain an item",
             Self::MissingBatchItemId => "multi-item request requires every batch item ID",
             Self::DuplicateBatchItemId => "request batch item IDs must be unique",
-            Self::IneligibleIdPlaceholder => {
-                "omitted Unique Identifier has no eligible preceding ID Placeholder producer"
-            }
+            Self::IneligibleIdPlaceholder => "ID Placeholder has no eligible preceding batch item",
             Self::InvalidAsynchronousIndicator => "asynchronous indicator is unassigned",
             Self::RepeatedBatchErrorContinuation => "batch error continuation is repeated",
             Self::SingleItemBatchErrorContinuation => {
@@ -5666,9 +5897,7 @@ fn validate_id_placeholder_eligibility(batch: &ClientBatch) -> Result<(), BatchV
     let mut eligible_producer_seen = false;
     for item in &batch.items {
         // Evaluate consumers against the prefix before recording the current item.
-        if item.request.omits_identifier_for_id_placeholder()
-            && !(batch_ordered && eligible_producer_seen)
-        {
+        if item.request.uses_id_placeholder() && !(batch_ordered && eligible_producer_seen) {
             return Err(BatchValidationError::IneligibleIdPlaceholder);
         }
         eligible_producer_seen |= item.request.is_id_placeholder_producer();
@@ -5922,6 +6151,44 @@ fn build_request_message(
     }
 
     RequestMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
+fn clone_request_message(
+    request: &RequestMessage,
+    limits: &CodecLimits,
+) -> Result<RequestMessage, ProtocolError> {
+    request
+        .with_ttlv(|message| private_wire_writer::validate_structure_limits(message, limits))
+        .map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidEncoding,
+                error,
+            )
+        })?;
+    let tree = request
+        .with_ttlv(|message| message.try_clone())
+        .map_err(model_protocol_error)?;
+    RequestMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
+fn clone_response_message(response: &ResponseMessage) -> Result<ResponseMessage, ProtocolError> {
+    let tree = response
+        .with_ttlv(|message| message.try_clone())
+        .map_err(model_protocol_error)?;
+    ResponseMessage::try_from_ttlv(tree).map_err(|error| {
         ProtocolError::new(
             ProtocolErrorKind::MalformedMessage,
             ProtocolCauseCategory::InvalidValue,
@@ -7515,6 +7782,10 @@ mod private_error_tests;
 #[cfg(test)]
 #[path = "../tests/unit/execute_provenance_order_tests.rs"]
 mod provenance_order_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/profile_message_clone_tests.rs"]
+mod profile_message_clone_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/single_response_tests.rs"]

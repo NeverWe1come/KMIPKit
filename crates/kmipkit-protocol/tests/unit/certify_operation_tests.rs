@@ -154,6 +154,18 @@ fn request_without_request_value_requires_public_key_identifier_and_certificate_
 }
 
 #[test]
+fn request_without_request_value_rejects_id_placeholder_as_public_key_identifier() {
+    let request = CertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::Enumeration(1))
+        .with_attributes(certificate_type_attributes());
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "DEC-013 requires a direct public-key identifier, not the ID Placeholder"
+    );
+}
+
+#[test]
 fn successful_response_returns_required_identifier_and_keeps_unknown_fields() {
     let generated_identifier = UniqueIdentifier::TextString("generated-certificate".to_owned());
     let payload = structure([

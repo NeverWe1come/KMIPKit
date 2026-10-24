@@ -22,7 +22,7 @@ For this feature, `not_claimed` means no readiness disposition has been recorded
 
 ## ProfileRuleMapping
 
-A `ProfileRuleMapping` is an explicit Rust rule associated with one or more stable normative requirement IDs. It has a typed rule kind, exact source references, and verification test references. Every applicable requirement must have at least one mapping and passing executable test before its profile can be selected for runtime validation. A mapping may cover multiple requirements only when its tests independently exercise each linked requirement. Unmapped requirements and tests without a mapped requirement remain visible gaps.
+A `ProfileRuleMapping` is an explicit Rust rule associated with one or more stable normative requirement IDs. It has a typed rule kind, exact source references, and verification test references. Every applicable requirement must have at least one mapping and passing category-appropriate executable test before its profile can be selected for runtime validation. `MUST`/`SHALL`/`REQUIRED` mappings need positive required-behavior tests; `MUST NOT`/`SHALL NOT` mappings need negative tests; `SHOULD`/`RECOMMENDED` mappings need behavior tests or an accepted deviation; `SHOULD NOT` mappings need tests that the discouraged behavior is absent or an accepted deviation; and every in-scope `MAY`/`OPTIONAL` capability must be represented, usable, and positively tested. A mapping may cover multiple requirements only when its tests independently exercise each linked requirement and keyword category. Unmapped requirements, wrong-category tests, and tests without a mapped requirement remain visible gaps. Baseline target membership alone does not imply runtime validation availability; incomplete mappings keep its runtime availability false.
 
 Rule coverage is computed from the typed Rust mapping registry and test evidence; it is not a catalog input or generated profile field. Catalog-generated profile records remain source and applicability metadata.
 
@@ -92,9 +92,11 @@ A `ProfileEvidence` record links one obligation to its implementation and verifi
 
 Every applicable MUST/SHALL is release-blocking. MUST NOT/SHALL NOT require negative tests. In-scope MAY/OPTIONAL capabilities remain representable and usable. The `verified` status is a current-run readiness result only; catalog assignments retain stable test/check identifiers and are never rewritten by CI run results.
 
+The normative catalog's `requirements[].status` (for example, `scoped_verified`) is a separate, feature-scoped traceability disposition. It is not a `ProfileEvidence.status`, does not establish profile readiness, and does not replace current-run CI verification.
+
 ## ProfileValidationError
 
-A profile validation error contains a stable error code, profile ID, requirement ID, exact source clause ID, and request delivery state. It contains no free-form source error, arbitrary diagnostic text, secret data, credentials, or raw KMIP body. Implementation references are repository-relative paths validated beneath the canonical checkout root; verification references are stable IDs, not caller-provided paths.
+A profile validation error contains a stable error code, profile ID, requirement ID, one exact source reference, and request delivery state. Clause requirements use their catalogued source clause ID. Normative table-body requirements without a clause ID use their catalogued source-gap ID and exact source locator; the gap must not be represented as a clause. An error never carries both source reference kinds. It contains no free-form source error, arbitrary diagnostic text, secret data, credentials, or raw KMIP body. Implementation references are repository-relative paths validated beneath the canonical checkout root; verification references are stable IDs, not caller-provided paths.
 
 ## CurrentVerificationManifest
 
@@ -121,7 +123,7 @@ The manifest and any readiness result derived from it are ephemeral outputs of t
 
 ## OfficialTestCaseEvidence
 
-An official test record preserves its catalog ID, OASIS case ID, profile links, requirement links, source section, mandatory/optional status, fixture path, and fixture availability. The test is evidence rather than an independent normative requirement. An unavailable or absent fixture cannot be passed or reconstructed.
+An official test record preserves its catalog ID, OASIS case ID, profile links, requirement links, source section, mandatory/optional status, fixture path, and fixture availability. The test is evidence rather than an independent normative requirement. Fixture availability means only that exact source bytes are pinned; it is not an execution result. An unavailable or absent fixture cannot be passed or reconstructed.
 
 ## ProfileReadiness
 

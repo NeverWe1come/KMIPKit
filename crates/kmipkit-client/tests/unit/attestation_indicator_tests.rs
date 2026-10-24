@@ -1,8 +1,10 @@
-//! OASIS KMIP v2.1 §9.3, Table 402; derived capability-boundary test.
+//! OASIS KMIP v2.1 §§9.3–9.4, Tables 402–403; derived capability-boundary tests.
 //!
-//! Traceability: KMIPKIT-REQ-SPEC-9.3-001-001/-002; KMIPKIT-0008-FR-008;
-//! KMIPKIT-0008-SC-004. This test asserts the non-secret header indicator and
-//! confirms that execution adds no Authentication or Credential payload.
+//! Traceability: KMIPKIT-REQ-SPEC-9.3-001-001/-002;
+//! KMIPKIT-REQ-SPEC-9.4-001-001; KMIPKIT-0008-FR-008; KMIPKIT-0008-SC-004.
+//! The Discover Versions test asserts the non-secret header indicator and
+//! confirms that execution adds no Authentication or Credential payload,
+//! covering the optional Authentication omission allowed by §9.4.
 
 use kmipkit_protocol::PollRequest;
 use kmipkit_test_support::ExchangeScript;

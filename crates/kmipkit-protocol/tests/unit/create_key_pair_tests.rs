@@ -253,8 +253,14 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         vendor_attribute(b"common-first"),
         vendor_attribute(b"common-second"),
     ]);
-    let private = attributes([vendor_attribute(b"private-value")]);
-    let public = attributes([vendor_attribute(b"public-value")]);
+    let private = attributes([
+        vendor_attribute(b"private-first"),
+        vendor_attribute(b"private-second"),
+    ]);
+    let public = attributes([
+        vendor_attribute(b"public-first"),
+        vendor_attribute(b"public-second"),
+    ]);
     let request = request_with_groups(Some(repeated_common), Some(private), Some(public))
         .with_common_protection_storage_masks(Structure::new())
         .with_private_protection_storage_masks(Structure::new())
@@ -299,6 +305,34 @@ fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_ord
         }
         _ => panic!("Common Attributes remains a Structure"),
     });
+    for (field, expected_values) in [
+        (&fields[1], [&b"private-first"[..], &b"private-second"[..]]),
+        (&fields[2], [&b"public-first"[..], &b"public-second"[..]]),
+    ] {
+        field.with_value(|value| match value {
+            ValueView::Structure(group) => {
+                assert_eq!(group.children().len(), expected_values.len());
+                for (attribute, expected_value) in group.children().iter().zip(expected_values) {
+                    assert_eq!(attribute.tag().raw(), 0x0042_0008);
+                    attribute.with_value(|value| match value {
+                        ValueView::Structure(attribute_fields) => {
+                            assert_eq!(attribute_fields.children().len(), 3);
+                            let attribute_value = &attribute_fields.children()[2];
+                            assert_eq!(attribute_value.tag().raw(), 0x0042_000b);
+                            attribute_value.with_value(|value| match value {
+                                ValueView::ByteString(actual) => {
+                                    assert_eq!(actual, expected_value);
+                                }
+                                _ => panic!("Vendor Attribute Value remains a Byte String"),
+                            });
+                        }
+                        _ => panic!("Vendor Attribute remains a Structure"),
+                    });
+                }
+            }
+            _ => panic!("Private and Public Key Attributes remain Structures"),
+        });
+    }
     assert!(
         fields[3..]
             .iter()

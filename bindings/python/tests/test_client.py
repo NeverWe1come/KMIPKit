@@ -957,33 +957,42 @@ def test_client_create_rejects_wrong_facade_types_and_null_client_handle(
 def test_client_execute_rejects_wrong_facade_types_and_null_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    released_client_pointers: list[object] = []
+    released_batch_pointers: list[object] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute=lambda _client, _slot, _limits, _output: 0,
+            kmipkit_client_release=lambda pointer: released_client_pointers.append(pointer),
+            kmipkit_client_batch_release=lambda pointer: released_batch_pointers.append(pointer),
+        ),
+    )
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
     handle = client.Client(client_pointer)
     limits = ttlv.codec_limits_defaults()
+    wrong_limits_batch = client.Batch(batch_pointer)
+    batch_pointer_2, _batch_storage_2 = _opaque("kmipkit_client_batch_t")
+    batch = client.Batch(batch_pointer_2)
     try:
         with pytest.raises(errors.InvalidInputError):
             handle.execute(object(), limits)  # type: ignore[arg-type]
         with pytest.raises(errors.InvalidInputError):
-            handle.execute(client.Batch(batch_pointer), object())  # type: ignore[arg-type]
-        batch_pointer_2, _batch_storage_2 = _opaque("kmipkit_client_batch_t")
-        batch = client.Batch(batch_pointer_2)
-        monkeypatch.setattr(
-            client,
-            "lib",
-            SimpleNamespace(
-                kmipkit_client_execute=lambda _client, _slot, _limits, _output: 0,
-                kmipkit_client_release=lambda _ptr: None,
-                kmipkit_client_batch_release=lambda _ptr: None,
-            ),
-        )
+            handle.execute(wrong_limits_batch, object())  # type: ignore[arg-type]
+        assert not wrong_limits_batch.closed
+        wrong_limits_batch.close()
         with pytest.raises(errors.KmipKitError):
             handle.execute(batch, limits)
         assert not batch.closed
         batch.close()
     finally:
+        wrong_limits_batch.close()
+        batch.close()
         limits.close()
         handle.close()
+    assert released_batch_pointers == [batch_pointer, batch_pointer_2]
+    assert released_client_pointers == [client_pointer]
 
 
 def test_zero_client_status_does_not_read_last_error() -> None:

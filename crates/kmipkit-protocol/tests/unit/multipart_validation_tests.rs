@@ -1,7 +1,8 @@
 //! Encrypt/Decrypt Data and multipart request-builder matrix from OASIS KMIP
-//! v2.1 §6.1, Decrypt Table 196 (§6.1.11), Encrypt Table 214 (§6.1.17), and
-//! §§7.8, 7.14, and 7.17. Tests exercise `to_ttlv_payload` as the local
-//! pre-encoding gate, not client dispatch or a complete OASIS Test Case.
+//! v2.1 §6.1, Decrypt Table 196 (§6.1.11), Encrypt Table 214 (§6.1.17), Hash
+//! Table 235 (§6.1.24), MAC Table 259 (§6.1.32), and §§7.8, 7.14, and 7.17.
+//! Tests exercise `to_ttlv_payload` as the local pre-encoding gate, not client
+//! dispatch or a complete OASIS Test Case.
 
 use crate::{
     DecryptRequest, EncryptRequest, OperationData, ProtocolCauseCategory, ProtocolError,
@@ -118,7 +119,7 @@ fn both_operations_accept_valid_single_initial_middle_and_final_shapes() {
             shape(true, None, None, false),
         ),
         (
-            "single request marked initial and final with Data",
+            "framed single-part request with Data",
             shape(true, Some(true), Some(true), false),
         ),
         (
@@ -183,6 +184,85 @@ fn both_operations_accept_valid_single_initial_middle_and_final_shapes() {
 }
 
 #[test]
+fn data_requiredness_covers_the_complete_init_final_indicator_matrix() {
+    // OASIS KMIP v2.1 §6.1 paragraph 009 says Data is required when neither
+    // indicator is true. For single-part requests, Tables 196, 214, 235, and
+    // 259 still require Data when both indicators frame one request as true.
+    let cases = [
+        ("unframed single-part", None, None, false, false),
+        (
+            "multipart middle with absent Init",
+            None,
+            Some(false),
+            true,
+            false,
+        ),
+        (
+            "multipart final with absent Init",
+            None,
+            Some(true),
+            true,
+            true,
+        ),
+        (
+            "multipart middle with absent Final",
+            Some(false),
+            None,
+            true,
+            false,
+        ),
+        (
+            "multipart middle with both false",
+            Some(false),
+            Some(false),
+            true,
+            false,
+        ),
+        (
+            "multipart final with Init false",
+            Some(false),
+            Some(true),
+            true,
+            true,
+        ),
+        (
+            "multipart initial with absent Final",
+            Some(true),
+            None,
+            false,
+            true,
+        ),
+        (
+            "multipart initial with Final false",
+            Some(true),
+            Some(false),
+            false,
+            true,
+        ),
+        ("framed single-part", Some(true), Some(true), false, false),
+    ];
+
+    for operation in Operation::ALL {
+        for (case, init, final_indicator, has_correlation_value, omission_is_valid) in cases {
+            let omitted_data = shape(false, init, final_indicator, has_correlation_value);
+            assert_eq!(
+                build_request(operation, omitted_data).is_ok(),
+                omission_is_valid,
+                "{} Data omission policy for {case}",
+                operation.name()
+            );
+
+            let included_data = shape(true, init, final_indicator, has_correlation_value);
+            assert!(
+                build_request(operation, included_data).is_ok(),
+                "{} should accept Data for {case}",
+                operation.name()
+            );
+        }
+    }
+}
+
+#[test]
 fn both_operations_reject_invalid_data_multipart_shapes_before_encoding() {
     let invalid_cases = [
         (
@@ -190,7 +270,7 @@ fn both_operations_reject_invalid_data_multipart_shapes_before_encoding() {
             shape(false, None, None, false),
         ),
         (
-            "true/true single request without Data while DISC-045 is open",
+            "framed single-part request without Data per Tables 196, 214, 235, and 259",
             shape(false, Some(true), Some(true), false),
         ),
         (

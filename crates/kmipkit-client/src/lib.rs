@@ -51,6 +51,10 @@ mod extension_execution_tests;
 
 mod execute;
 
+#[cfg(test)]
+#[path = "../tests/unit/profile_fixture_replay_tests.rs"]
+mod profile_fixture_replay_tests;
+
 /// Typed opaque PKCS#11 forwarding models.
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
@@ -275,11 +279,19 @@ mod object_read_execution_tests;
 #[path = "../tests/unit/transport_contract_tests.rs"]
 mod transport_contract_tests;
 
+#[cfg(test)]
+#[path = "../tests/unit/profile_preflight_tests.rs"]
+mod profile_preflight_tests;
+
 pub use error::{ClientCauseCategory, ClientError, ClientErrorCategory, ClientErrorResponseTtlv};
 pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, PendingOutcome,
+};
+pub use kmipkit_protocol::{
+    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationSelection,
 };
 pub use kmipkit_transport::RequestOptions;
 

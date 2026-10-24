@@ -376,7 +376,9 @@ impl Default for AttributeSet {
     }
 }
 
-fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), AttributeSetError> {
+pub(crate) fn validate_vendor_attribute(
+    structure: &StructureView<'_>,
+) -> Result<(), AttributeSetError> {
     let mut vendor_identification = false;
     let mut attribute_name = false;
     let mut attribute_value = false;

@@ -27,7 +27,7 @@ Add typed client models and explicit client calls for Interop (§6.1.26, Tables 
 - No local certificate validation, trust-anchor policy, server behavior, or server operation implementation is added: PASS.
 - Interop server-only production restriction is not misapplied to the client library: PASS.
 - KMIPKIT-DISC-017 assigns the mislabeled Query error prose in §6.1.29 to Log; use approved Table 252.
-- Six Validate client requirement IDs are explicitly traced and verified.
+- Five actor-attributed Validate client requirements and §6.1.57-006 request-serialization evidence are explicitly traced; no actor or date evaluation is inferred for 006.
 - Distinct Red, Green, Refactor evidence commits are required per story/layer.
 - 0043 gates only public cross-language manifest/adapters/parity; Rust work remains independent.
 
@@ -44,16 +44,16 @@ Rust protocol/client work can start before KMIPKIT-0043. Only public API manifes
 - Add interop.rs, log.rs, and validate.rs protocol modules with public exports.
 - Interop: required Interop Function Enumeration and Interop Identifier text; successful operation payload is empty. Keep future enum values lossless. The normative prohibition on an Interop operation being available on a production server applies to servers; KMIPKit is a client and does not implement or assert server availability.
 - Log: required Log Message text; successful operation payload is empty. Honor KMIPKIT-DISC-017 / approved spec: caller must not submit secrets. Regardless, redact the entire message from logs, Debug, Display, and errors. Use Table 252 for errors.
-- Validate: accept one certificate chain represented by the repeated Certificate and/or Unique Identifier fields, optionally with Validity Date. Encode the Certificate list, Unique Identifier list and optional Validity Date in Table 340 description order (section 10.1.2, unnumbered Type table Structure row), preserving relative order within each list and allowing mixed representation. Require Certificate Type before Certificate Value under section 2.1, Table 2. Do not perform local chain construction, date evaluation, or trust-anchor/policy validation. If Validity Date is omitted, leave it absent; the server assumes current time as specified. Successful response requires and exposes the open Validity Indicator enumeration.
+- Validate: accept one certificate chain represented by the repeated Certificate and/or Unique Identifier fields, optionally with Validity Date. Encode the Certificate list, Unique Identifier list and optional Validity Date in Table 340 description order (section 10.1.2, unnumbered Type table Structure row), preserving relative order within each list and allowing mixed representation. Require Certificate Type before Certificate Value under section 2.1, Table 2. Do not perform local chain construction, date evaluation, or trust-anchor/policy validation. If Validity Date is omitted, preserve its absence in request serialization; §6.1.57 states passively that current date and time SHALL be assumed, without identifying an actor, and evaluation is unverified. Successful response requires and exposes the open Validity Indicator enumeration.
 - Preserve common Success/Failure/Pending, result reason/message, unknown values, delivery evidence, generic response tree, and no-retry/no-Poll behavior.
 
 ### Catalog, traceability, and tests
 
-Map operation IDs, field/tag IDs, all six Validate requirement IDs, source tables, implementation paths, and named tests in traceability.md. Keep error result reasons server-produced and preserve them through common result parsing. No linked direct official Test Case exists for these operations; local vectors are source-derived only.
+Map operation IDs, field/tag IDs, the five actor-attributed Validate client requirement IDs plus §6.1.57-006 request-serialization evidence, source tables, implementation paths, and named tests in traceability.md. Keep error result reasons server-produced and preserve them through common result parsing. No linked direct official Test Case exists for these operations; local vectors are source-derived only.
 
 ### Test strategy
 
-Each operation receives protocol positive/negative table tests, wrong-operation/type and missing-required checks, optional/repeated-field preservation, unknown value round trips, redaction, and fake-transport tests proving one exchange, correct operation code, result/Pending/delivery preservation, and no retry. Validate tests cover all six stable requirement IDs, including both input sources, repeats, optional date, date omission, and one-chain boundary without imposing an unapproved local chain policy. Log tests use secret sentinels. No server/profile/interoperability claim is inferred.
+Each operation receives protocol positive/negative table tests, wrong-operation/type and missing-required checks, optional/repeated-field preservation, unknown value round trips, redaction, and fake-transport tests proving one exchange, correct operation code, result/Pending/delivery preservation, and no retry. Validate tests cover the five actor-attributed client requirement IDs and §6.1.57-006 request-serialization evidence, including both input sources, repeats, optional date, preserved omission, and one-chain boundary without imposing an unapproved local chain policy. Log tests use secret sentinels. No server/profile/interoperability claim is inferred.
 
 ## Project Structure
 

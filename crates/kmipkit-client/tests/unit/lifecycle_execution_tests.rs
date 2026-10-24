@@ -72,19 +72,27 @@ fn lifecycle_results_preserve_unknown_status_reason_and_accepted_extension_value
     let requests = [
         (
             0x0000_0012,
-            ClientRequest::Activate(ActivateRequest::new(None)),
+            ClientRequest::Activate(ActivateRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0015,
-            ClientRequest::Archive(ArchiveRequest::new(None)),
+            ClientRequest::Archive(ArchiveRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0014,
-            ClientRequest::Destroy(DestroyRequest::new(None)),
+            ClientRequest::Destroy(DestroyRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0016,
-            ClientRequest::Recover(RecoverRequest::new(None)),
+            ClientRequest::Recover(RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
     ];
 

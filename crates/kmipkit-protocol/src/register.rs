@@ -21,6 +21,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002c;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_VALUE: u32 = 0x0042_0045;
 const OPAQUE_OBJECT: u32 = 0x0042_005b;
 const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE: u32 = 0x0042_005a;
@@ -302,9 +303,12 @@ fn attributes_satisfy_register_requirements(
     }
 
     match object_type.raw() {
-        // Certificate Length is required for a Certificate. Table 293 does
-        // not apply the managed-cryptographic-object requirements to it.
-        1 => has_attribute(attributes, CERTIFICATE_LENGTH),
+        // Certificate has its own Certificate Length requirement and also
+        // follows Table 293's Managed Cryptographic Object attribute pairing.
+        1 => {
+            has_attribute(attributes, CERTIFICATE_LENGTH)
+                && cryptographic_algorithm_and_length_outer_pair_is_present(attributes)
+        }
         // Opaque Object has its own Table 4 Structure, independent of whether
         // the caller selects generic or managed-cryptographic context.
         8 => {
@@ -321,6 +325,8 @@ fn attributes_satisfy_register_requirements(
         2 | 3 | 4 | 5 | 7 | 9 => {
             managed_crypto_attributes_satisfy_register_requirements(object_type, attributes, object)
         }
+        // Certificate Request is a Managed Cryptographic Object under §2.2.
+        10 => cryptographic_algorithm_and_length_outer_pair_is_present(attributes),
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
         // not parse certificate bytes locally.
@@ -355,8 +361,11 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
     object: Option<&Item>,
 ) -> bool {
     let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
-    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
-    if has_algorithm != has_length {
+
+    // §6.1.43 Table 293 couples the outer Register Attributes. Key Block data
+    // can satisfy both omitted values, but cannot supply one side of an outer
+    // pair whose other side is present in Register Attributes.
+    if !cryptographic_algorithm_and_length_outer_pair_is_satisfied(attributes) {
         return false;
     }
 
@@ -365,6 +374,16 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
             key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
                 && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
         })
+}
+
+fn cryptographic_algorithm_and_length_outer_pair_is_satisfied(attributes: &AttributeSet) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
+        == has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
+}
+
+fn cryptographic_algorithm_and_length_outer_pair_is_present(attributes: &AttributeSet) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
+        && has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {
@@ -417,13 +436,47 @@ fn key_block_has(object: &Item, raw_tag: u32) -> bool {
         object.children().iter().any(|field| {
             field.tag().raw() == KEY_BLOCK
                 && field.with_value(|value| match value {
-                    ValueView::Structure(block) => block
-                        .children()
-                        .iter()
-                        .any(|entry| entry.tag().raw() == raw_tag),
+                    ValueView::Structure(block) => key_block_contains_attribute(&block, raw_tag),
                     _ => false,
                 })
         })
+    })
+}
+
+fn key_block_contains_attribute(block: &StructureView<'_>, raw_tag: u32) -> bool {
+    block.children().iter().any(|entry| {
+        if entry.tag().raw() == raw_tag {
+            return cryptographic_metadata_has_expected_type(entry, raw_tag);
+        }
+        entry.tag().raw() == KEY_VALUE && key_value_has_attribute(entry, raw_tag)
+    })
+}
+
+fn key_value_has_attribute(key_value: &Item, raw_tag: u32) -> bool {
+    key_value.with_value(|value| {
+        let ValueView::Structure(key_value) = value else {
+            return false;
+        };
+        key_value.children().iter().any(|field| {
+            field.tag().raw() == ATTRIBUTES
+                && field.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        attributes.children().iter().any(|attribute| {
+                            attribute.tag().raw() == raw_tag
+                                && cryptographic_metadata_has_expected_type(attribute, raw_tag)
+                        })
+                    }
+                    _ => false,
+                })
+        })
+    })
+}
+
+fn cryptographic_metadata_has_expected_type(attribute: &Item, raw_tag: u32) -> bool {
+    attribute.with_value(|value| match raw_tag {
+        CRYPTOGRAPHIC_ALGORITHM => matches!(value, ValueView::Enumeration(_)),
+        CRYPTOGRAPHIC_LENGTH => matches!(value, ValueView::Integer(_)),
+        _ => false,
     })
 }
 

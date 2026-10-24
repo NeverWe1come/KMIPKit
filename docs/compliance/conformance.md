@@ -58,14 +58,64 @@ For each KMIP 2.1 client profile, record:
 - Deviations and server prerequisites.
 - Date, KMIPKit version, and evidence for any public claim.
 
-Inventory records keep profile applicability, selected target, fixture
-availability, evidence completion, and public claim state separate. A profile
-record is not a conformance claim; current inventory claims remain
-`not_claimed` until all applicable clauses and official tests have evidence.
+Inventory records keep profile applicability, selected target, runtime
+validation availability, catalog evidence state, fixture availability, and
+public claims separate. Baseline Client is the selected 1.0 evidence target,
+but its catalog `claim_state` is `evidence_incomplete`. Its 16 mandatory
+official XML fixtures are pinned in the repository. T036 records 13 full
+deterministic client replays and 3 typed preflight blockers; replay evidence
+does not establish server interoperability or profile conformance. No profile
+conformance claim is published by KMIPKIT-0010.
+Other profile records retain their own catalog states; none of these fields is
+itself a public claim.
+
 The generated inventory report includes each profile's source clauses,
 requirements, elements, dependencies, linked official test IDs and status,
-transport, and encoding so reviewers can inspect that evidence without
-cross-referencing the JSON catalog manually.
+transport, encoding, runtime rule coverage, and blockers so reviewers can
+inspect that evidence without cross-referencing the JSON catalog manually.
+
+## Profile readiness workflow
+
+Use the following stages independently:
+
+1. **Applicability and target**: check the profile's scope and the fixed
+   `profile-targets.json` manifest. Baseline target membership records the
+   project plan; it does not enable runtime selection or assert conformance.
+2. **Runtime validation**: require an explicit typed rule mapping and
+   category-appropriate executable verification for every applicable
+   requirement. Missing, incomplete, or untested mappings keep profile
+   selection unavailable before network I/O. Catalog prose is not executable
+   behavior.
+3. **Evidence readiness**: inspect the deterministic
+   [coverage report](../../specification/catalog/coverage-report.md) for full
+   clause and requirement closure, implementation and verification links,
+   dependencies, deviations, mandatory tests, and fixture status. An
+   unavailable fixture is an evidence gap, not a failed or passing result.
+4. **Current verification**: only a same-run aggregate job with
+   `event_name=push`, `ref=refs/heads/release/1.0.0`, and
+   `ref_protected=true` can contribute verified CI evidence. It must bind the
+   checked-out commit, workflow, run and attempt to successful jobs with the
+   exact IDs `core`, `script-contracts`, `normative-inventory`, `coverage`,
+   `coverage-gate`, and `dependency-policy`. The job uses a short-lived
+   GitHub App token with Administration read permission to check current
+   branch protection; required reviews, stale-review dismissal, admin
+   enforcement, disabled force-push/deletion, and a present bypass-allowance
+   object with empty user, team, and app lists are required. Pull-request,
+   scheduled, local, unprotected, or mismatched runs are ineligible. The
+   ephemeral evidence manifest does not update the catalog or generated
+   report.
+5. **Release claim**: a passing readiness result does not publish a claim.
+   A catalog state advances only after its required human review, and any
+   public claim remains a separate reviewed release decision.
+
+Baseline remains ineligible while three mandatory cases are blocked before a
+full replay, its typed rules do not cover the complete applicable requirement
+and test set, and
+current protected-branch policy and app-token evidence have not been
+established. The registry includes a mapping for Wrapped Secret Data under
+KMIPKIT-REQ-SPEC-2.7-001. See the
+[KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for
+its exact scope and acceptance criteria.
 
 The same report lists each tag range separately, groups named tags by their
 OASIS allocation, and shows wire values and allocation states for unassigned

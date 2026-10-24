@@ -149,7 +149,7 @@ As a KMIPKit caller, I can send the §6.1.45 Re-certify request and inspect the 
 3. Given a Table 302 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: One certificate per request; support optional Offset, certificate request, attributes, masks, and the date/attribute rules in Tables 298–299. Under §6.1.45, the server SHALL create replacement/replaced links and update the public-key Certificate link.
+**Specific rules**: One certificate per request; support optional Offset, certificate request, attributes, masks, and the date/attribute rules in Tables 298–299. If Certificate Request is omitted, identify the public key for the generated Certificate by its Unique Identifier only. Under §6.1.45, the server SHALL create replacement/replaced links and update the public-key Certificate link.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.45, Tables 300–301):
 
@@ -270,6 +270,7 @@ As a KMIPKit caller, I can send the §6.1.43 Register request and inspect the ty
 2. Given a valid Table 292 success, when decoded, then every present field is inspectable and absent fields remain absent.
 3. Given a Table 294 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
+5. Given a plaintext Raw Key Value with associated Attributes, when the caller builds Register, then Key Material and each §4 attribute are preserved in their source-defined TTLV types and remain inside Key Value.
 
 **Specific rules**: Require type, attributes, and object; apply conditional algorithm, length, and signature-attribute rules from §6.1.43.
 
@@ -339,6 +340,8 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 
 | Requirement ID | OASIS Specification section | Keyword | Client obligation or capability |
 | --- | --- | --- | --- |
+| KMIPKIT-REQ-SPEC-3.2-001 | §3.2 | OPTIONAL | A client may include the optional Attributes Structure associated with key material in Key Value. |
+| KMIPKIT-REQ-SPEC-4.31-002 | §4.31 | MAY | A client may represent a Managed Object without Link values when its associated cryptographic material is unavailable; current evidence covers Register serialization of an X.509 Certificate only. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-001 | §6.1.35 | MAY | When Lease Time is zero, the client may use the object without a lease time limit. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-002 | §6.1.35 | SHALL NOT | After a lease expires, do not use the cryptographic object until a new lease is obtained. |
 | KMIPKIT-REQ-SPEC-6.1.35-002 | §6.1.35 | MAY | A client may compare Last Change Date with its prior value to decide whether cached attributes need refreshing. |
@@ -351,34 +354,30 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.43-010-001 | §6.1.43 | MAY | Cryptographic Length may be omitted only when encoded in Key Block; it does not apply to Secret Data. |
 | KMIPKIT-REQ-SPEC-6.1.43-010-002 | §6.1.43 | SHALL | If Cryptographic Length is present, also include Cryptographic Algorithm. |
 | KMIPKIT-REQ-SPEC-6.1.43-011 | §6.1.43 | MAY | Digital Signature Algorithm may be omitted only when encoded in the Certificate object. |
-| KMIPKIT-REQ-SPEC-6.1.44-001 | §6.1.44 | SHOULD | For key-compromise or CA-compromise revocation, the client should supply Compromise Occurrence Date. |
 | KMIPKIT-REQ-SPEC-6.1.44-003-001 | §6.1.44 | SHOULD | Specify Compromise Occurrence Date for key-compromise or CA-compromise reasons. |
 | KMIPKIT-REQ-SPEC-6.1.44-003-002 | §6.1.44 | SHALL NOT | Do not specify Compromise Occurrence Date for other revocation reasons. |
 | KMIPKIT-REQ-SPEC-6.1.45-001 | §6.1.45 | SHALL | A Re-certify request must renew only one certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-002-001 | §6.1.45 | MAY | A client may omit Certificate Request and identify the public key by Unique Identifier. |
-| KMIPKIT-REQ-SPEC-6.1.45-002-002 | §6.1.45 | SHALL | If request fields and Certificate Type in Attributes are omitted, use the existing certificate's type. |
+| KMIPKIT-REQ-SPEC-6.1.45-002-003 | §6.1.45 | SHALL | When omitting Certificate Request, the client identifies the public key only by Unique Identifier. |
 | KMIPKIT-REQ-SPEC-6.1.45-004 | §6.1.45 | SHOULD | A client should perform Re-certify no more than once on a given existing certificate. |
 | KMIPKIT-REQ-SPEC-6.1.45-006-001 | §6.1.45 | MAY | A client may set Offset to determine the date difference for the new certificate. |
-| KMIPKIT-REQ-SPEC-6.1.45-006-002 | §6.1.45 | SHALL | If Offset is omitted, retain the existing certificate's Activation Date and Deactivation Date. |
 | KMIPKIT-REQ-SPEC-6.1.45-008 | §6.1.45 | REQUIRED | Certificate Request Type is required when Certificate Request is present. |
 | KMIPKIT-REQ-SPEC-6.1.46-001 | §6.1.46 | SHOULD | A client should perform Re-key no more than once on a given key. |
 | KMIPKIT-REQ-SPEC-6.1.46-004-001 | §6.1.46 | MAY | A client may set Offset to determine the date difference for the replacement key. |
-| KMIPKIT-REQ-SPEC-6.1.46-004-002 | §6.1.46 | SHALL | If Offset is omitted, lifecycle dates are copied from the existing key. |
 | KMIPKIT-REQ-SPEC-6.1.47-001 | §6.1.47 | SHOULD | A client should perform Re-key Key Pair no more than once on a given key pair. |
 | KMIPKIT-REQ-SPEC-6.1.47-004-001 | §6.1.47 | MAY | A client may set Offset to determine the date difference for the replacement key pair. |
-| KMIPKIT-REQ-SPEC-6.1.47-004-002 | §6.1.47 | SHALL | If Offset is omitted, lifecycle dates are copied from the existing key pair. |
 | KMIPKIT-REQ-SPEC-6.1.48-001 | §6.1.48 | SHALL | A client requesting Re-Provision must provide a certificate signing request, a certificate, or no parameters for server-created credentials. |
-| KMIPKIT-REQ-SPEC-6.1.48-004 | §6.1.48 | MAY | A client may omit all parameters for server-created credentials, then retrieve the private key with Get. |
 | KMIPKIT-REQ-SPEC-6.1.48-006 | §6.1.48 | SHALL | A client that needs new credentials must call Re-Provision. |
 | KMIPKIT-REQ-SPEC-6.1.6-001 | §6.1.6 | SHALL | A Certify request must request no more than one certificate. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-001 | §6.1.6 | MAY | A client may omit the Certificate Request object. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-002 | §6.1.6 | SHALL | If Certificate Request is omitted, the request must identify the public key by Unique Identifier. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-003 | §6.1.6 | SHALL | If both Certificate Request Type and Certificate Request are omitted, specify Certificate Type in Attributes. |
-| KMIPKIT-REQ-SPEC-6.1.6-003 | §6.1.6 | MAY | A client may retrieve the generated certificate with Get in the same batch using the ID Placeholder. |
+| KMIPKIT-REQ-SPEC-6.1.6-003 | §6.1.6 | MAY | A client may retrieve the generated Certificate with a subsequent Get in the same batch using the ID Placeholder. |
 | KMIPKIT-REQ-SPEC-6.1.6-007 | §6.1.6 | REQUIRED | Certificate Request Type is required when Certificate Request is present. |
 | KMIPKIT-REQ-SPEC-6.1.7-001 | §6.1.7 | SHOULD | A client should use Check in a batch, generally after locating or creating an object and before Get. |
 | KMIPKIT-REQ-SPEC-6.1.7-002-001 | §6.1.7 | SHOULD | A client should set Batch Order Option to true in a batch containing Check. |
 | KMIPKIT-REQ-SPEC-6.1.7-002-002 | §6.1.7 | SHOULD | A client should use Stop or Undo as the Batch Error Continuation Option in a batch containing Check. |
+| KMIPKIT-REQ-SPEC-6.1.7-002-003 | §6.1.7 | MAY | A client may include in a Check request only the additional attributes listed for Check. |
 | KMIPKIT-REQ-SPEC-6.1.7-003 | §6.1.7 | MAY | A client may include the usage amount it considers necessary in Usage Limits Count. |
 | KMIPKIT-REQ-SPEC-6.1.7-004-001 | §6.1.7 | MAY | A client may specify intended cryptographic uses in Cryptographic Usage Mask. |
 | KMIPKIT-REQ-SPEC-6.1.7-004-002 | §6.1.7 | MAY | The Check mask may differ from the mask used in a preceding Locate. |

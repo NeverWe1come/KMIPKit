@@ -14,9 +14,11 @@ from typing import Any
 
 if __package__:
     from .attribute_policy_source import expected_attribute_policies
+    from .generate_profiles import ProfileGenerationError, compute_profile_closure
     from .safe_io import PathSecurityError, confined_path, safe_read_bytes
 else:
     from attribute_policy_source import expected_attribute_policies
+    from generate_profiles import ProfileGenerationError, compute_profile_closure
     from safe_io import PathSecurityError, confined_path, safe_read_bytes
 
 
@@ -31,6 +33,7 @@ TOP_LEVEL_FIELDS = {
     "schema_version",
     "sources",
     "source_clauses",
+    "normative_inclusions",
     "elements",
     "tag_ranges",
     "requirements",
@@ -58,6 +61,28 @@ KEYWORD_STRENGTH = {
     "MAY": "permission_or_optional",
     "OPTIONAL": "permission_or_optional",
 }
+SOURCE_REVIEWED_STRENGTH_OVERRIDES: dict[str, tuple[str, str]] = {
+    "KMIPKIT-REQ-SPEC-6.1.28-007": (
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        "permission_or_optional",
+    ),
+}
+TABLE_BODY_STRENGTH = {
+    "required_table_body_value": "mandatory",
+    "optional_table_body_value": "permission_or_optional",
+}
+
+
+def _expected_normative_strength(requirement: dict[str, Any]) -> str | None:
+    """Return keyword strength, honoring exact source-reviewed negation exceptions."""
+    override = SOURCE_REVIEWED_STRENGTH_OVERRIDES.get(requirement.get("requirement_id"))
+    if override is not None and requirement.get("source_clause_ids") == [override[0]]:
+        return override[1]
+    return KEYWORD_STRENGTH.get(requirement.get("source_keyword"))
+
+
+# §6.1's general Data rule conflicts with these multipart request-table rows.
+_SHARED_DATA_RULE_CONFLICT_TABLES = frozenset({235, 259, 334})
 SOURCE_AUTHORITY_RANK = {
     "informative": 0,
     "test_evidence": 1,
@@ -88,6 +113,7 @@ CLAUSE_SCOPES = {
 REQUIREMENT_ID_PATTERN = r"KMIPKIT-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"
 TOP_LEVEL_ID_FIELDS = {
     "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
+    "normative_inclusions": ("inclusion_id", r"KMIPKIT-INCLUSION-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
     "tag_ranges": ("range_id", r"KMIPKIT-RANGE-[0-9]{3}"),
     "requirements": ("requirement_id", REQUIREMENT_ID_PATTERN),
@@ -131,7 +157,7 @@ TEST_CASE_FIELDS = {
     "fixture_path", "fixture_availability", "mapping_confidence",
 }
 PROFILE_FIELDS = {
-    "profile_id", "name", "role", "source_refs", "source_clause_ids",
+    "profile_id", "name", "role", "source_refs", "direct_source_clause_ids", "source_clause_ids",
     "dependency_profile_ids", "transport_requirements", "encoding_requirements",
     "applicability", "claim_state", "requirement_ids", "element_ids", "test_case_ids",
 }
@@ -156,6 +182,30 @@ class CatalogValidationError(ValueError):
 
 def _fail(message: str) -> None:
     raise CatalogValidationError(message)
+
+
+def _fail_profile_closure_mismatch(
+    label: str,
+    actual_ids: list[str],
+    expected_ids: list[str],
+) -> None:
+    """Report stable IDs missing from or unexpected in a computed profile closure."""
+    actual = set(actual_ids)
+    expected = set(expected_ids)
+    missing = [identifier for identifier in expected_ids if identifier not in actual]
+    unexpected = [identifier for identifier in actual_ids if identifier not in expected]
+    if missing or unexpected:
+        details = []
+        if missing:
+            details.append(f"missing IDs {missing[:10]}")
+        if unexpected:
+            details.append(f"unexpected IDs {unexpected[:10]}")
+        _fail(f"{label} closure mismatch: " + "; ".join(details))
+
+    _fail(
+        f"{label} closure order mismatch: "
+        f"expected IDs beginning {expected_ids[:10]}; found IDs beginning {actual_ids[:10]}"
+    )
 
 
 def _enum(value: Any, choices: set[str], field: str) -> None:
@@ -623,6 +673,14 @@ def _linked_clause_scope(clause: dict[str, Any], requirements: dict[str, dict[st
     scopes = {requirements[item]["scope_state"] for item in clause["requirement_ids"]}
     if not scopes:
         return None
+    if (
+        scopes == {"client_1_0"}
+        and clause.get("scope_state") == "mixed"
+        and clause.get("disposition") == "source_discrepancy"
+    ):
+        # A source discrepancy can retain a mixed clause scope when only its
+        # client-facing atom has a normative client requirement record.
+        return "mixed"
     return next(iter(scopes)) if len(scopes) == 1 else "mixed"
 
 
@@ -884,6 +942,86 @@ def _check_clauses(catalog: dict[str, Any], sources: set[str]) -> set[str]:
     return clauses
 
 
+def _check_normative_inclusions(catalog: dict[str, Any], sources: set[str], clauses: set[str]) -> None:
+    """Validate source-backed normative inclusion edges and reject reachable cycles."""
+    clause_records = {record["clause_id"]: record for record in catalog["source_clauses"]}
+    included_edges: set[tuple[str, str, str | None]] = set()
+    for inclusion in catalog["normative_inclusions"]:
+        if not isinstance(inclusion, dict) or set(inclusion) != {
+            "inclusion_id", "source_clause_id", "included_source_id", "included_section"
+        }:
+            _fail("normative inclusion has missing or unknown fields")
+        source_clause_id = inclusion["source_clause_id"]
+        included_source_id = inclusion["included_source_id"]
+        included_section = inclusion["included_section"]
+        if source_clause_id not in clauses:
+            _fail("normative inclusion refers to an unresolved source clause")
+        if not isinstance(included_source_id, str) or included_source_id not in sources:
+            _fail("normative inclusion refers to an unresolved included source")
+        if included_section is not None and (
+            not isinstance(included_section, str)
+            or re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", included_section) is None
+        ):
+            _fail("normative inclusion has an invalid included section")
+        edge = (source_clause_id, included_source_id, included_section)
+        if edge in included_edges:
+            _fail("catalog contains a duplicate normative inclusion edge")
+        included_edges.add(edge)
+        matching_clauses = [
+            clause
+            for clause in catalog["source_clauses"]
+            if clause["source_id"] == included_source_id
+            and (
+                included_section is None
+                or clause["section"] == included_section
+                or clause["section"].startswith(f"{included_section}.")
+            )
+        ]
+        if not matching_clauses:
+            _fail("normative inclusion does not resolve to a catalogued source section")
+
+    if catalog["normative_inclusions"]:
+        try:
+            compute_profile_closure(
+                catalog,
+                [record["source_clause_id"] for record in catalog["normative_inclusions"]],
+                profile_id="KMIPKIT-INCLUSION-VALIDATION",
+            )
+        except ProfileGenerationError as error:
+            raise CatalogValidationError("normative inclusion closure is invalid") from error
+
+
+def _has_valid_table_body_source(requirement: dict[str, Any]) -> bool:
+    """Check that a table-derived requirement retains its exact source row."""
+    source_force = requirement.get("source_force")
+    locator = requirement.get("source_locator")
+    source_refs = requirement.get("source_refs", [])
+    if source_force not in TABLE_BODY_STRENGTH or not source_refs:
+        return False
+    line_range = locator.get("html_line_range") if isinstance(locator, dict) else None
+    return (
+        requirement.get("source_keyword") is None
+        and requirement.get("normative_strength") == TABLE_BODY_STRENGTH[source_force]
+        and requirement.get("source_clause_ids") == []
+        and isinstance(requirement.get("source_gap_id"), str)
+        and bool(requirement["source_gap_id"].strip())
+        and isinstance(locator, dict)
+        and locator.get("kind") == "table_body_row"
+        and isinstance(locator.get("section"), str)
+        and isinstance(locator.get("row_label"), str)
+        and bool(locator["row_label"].strip())
+        and isinstance(line_range, list)
+        and len(line_range) == 2
+        and all(isinstance(line, int) and not isinstance(line, bool) and line >= 1 for line in line_range)
+        and line_range[0] <= line_range[1]
+        and any(
+            reference.get("source_id") == source_refs[0].get("source_id")
+            and reference.get("section") == locator["section"]
+            for reference in source_refs
+        )
+    )
+
+
 def _check_semantics(
     catalog: dict[str, Any],
     sources: set[str],
@@ -899,23 +1037,30 @@ def _check_semantics(
     decisions = _records_by_id(catalog, "decisions", "decision_id")
     for requirement in catalog["requirements"]:
         _source_refs(requirement.get("source_refs"), sources, "requirement source_refs")
-        if not requirement.get("source_clause_ids") or any(item not in clauses for item in requirement["source_clause_ids"]):
-            _fail("requirement has missing or unresolved source clause references")
         keyword = requirement.get("source_keyword")
-        if (
-            not isinstance(keyword, str)
-            or keyword not in KEYWORD_STRENGTH
-            or requirement.get("normative_strength") != KEYWORD_STRENGTH.get(keyword)
-        ):
-            _fail("requirement keyword and normative strength disagree")
-        if any(
-            keyword not in source_clauses[clause_id]["source_keywords"]
-            for clause_id in requirement["source_clause_ids"]
-        ):
-            _fail("requirement keyword is not present in every linked source clause")
+        source_force = requirement.get("source_force")
+        source_clause_ids = requirement.get("source_clause_ids")
+        if source_force in TABLE_BODY_STRENGTH:
+            if not _has_valid_table_body_source(requirement):
+                _fail("table-row requirement must use typed force and exact gap/locator metadata without a formal keyword")
+        else:
+            if not source_clause_ids or any(item not in clauses for item in source_clause_ids):
+                _fail("requirement has missing or unresolved source clause references")
+            expected_strength = _expected_normative_strength(requirement)
+            if (
+                not isinstance(keyword, str)
+                or keyword not in KEYWORD_STRENGTH
+                or requirement.get("normative_strength") != expected_strength
+            ):
+                _fail("requirement keyword and normative strength disagree")
+            if any(
+                keyword not in source_clauses[clause_id]["source_keywords"]
+                for clause_id in source_clause_ids
+            ):
+                _fail("requirement keyword is not present in every linked source clause")
         _enum(
             requirement.get("scope_state"),
-            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope"},
+            {"client_1_0", "client_1_1", "profile_conditional", "server_only", "out_of_scope", "mixed", "unclear"},
             "requirement scope state",
         )
         if keyword in {"MUST NOT", "SHALL NOT"} and requirement.get("negative_verification_required") is not True:
@@ -930,8 +1075,12 @@ def _check_semantics(
             if requirement["requirement_id"] not in decision.get("requirement_ids", []):
                 _fail("decision does not name the deviated requirement")
     for clause in catalog["source_clauses"]:
-        if any(item not in requirements for item in clause["requirement_ids"]):
-            _fail("source clause has an unresolved requirement reference")
+        for requirement_id in clause["requirement_ids"]:
+            if requirement_id not in requirements:
+                _fail(
+                    f"source clause {clause['clause_id']} has an unresolved requirement reference: "
+                    f"{requirement_id}"
+                )
         expected_scope = _linked_clause_scope(clause, requirements)
         if expected_scope is not None and clause["scope_state"] != expected_scope:
             _fail("source clause scope does not match linked requirement scopes")
@@ -1056,8 +1205,12 @@ def _check_semantics(
             _fail("profile name is required")
         _enum(profile["role"], {"client", "server", "both"}, "profile role")
         _source_refs(profile["source_refs"], sources, "profile source_refs")
-        for field in ("source_clause_ids", "transport_requirements", "encoding_requirements"):
+        for field in (
+            "direct_source_clause_ids", "source_clause_ids", "transport_requirements", "encoding_requirements"
+        ):
             _string_values(profile, field, "profile")
+        if any(clause_id not in clauses for clause_id in profile["direct_source_clause_ids"]):
+            _fail("profile has unresolved direct source clause references")
         if any(clause_id not in clauses for clause_id in profile["source_clause_ids"]):
             _fail("profile has unresolved source clause references")
         for field, valid_ids in (
@@ -1086,8 +1239,102 @@ def _check_semantics(
             )
             if any(not linked_ids for linked_ids in evidence_links):
                 _fail("profile evidence is incomplete without clauses, requirements, elements, and tests")
-            if not any(test_cases[test_id]["source_id"] == "KMIPKIT-SRC-testcases" for test_id in profile["test_case_ids"]):
+            dependency_profiles: list[dict[str, Any]] = []
+            pending_profile_ids = [(profile["profile_id"], False)]
+            visited_profile_ids: set[str] = set()
+            active_profile_ids: set[str] = set()
+            while pending_profile_ids:
+                dependency_profile_id, exiting = pending_profile_ids.pop()
+                if exiting:
+                    active_profile_ids.remove(dependency_profile_id)
+                    continue
+                if dependency_profile_id in active_profile_ids:
+                    _fail("profile evidence is incomplete with a dependency cycle")
+                if dependency_profile_id in visited_profile_ids:
+                    continue
+                visited_profile_ids.add(dependency_profile_id)
+                dependency_profile = profiles.get(dependency_profile_id)
+                if dependency_profile is None:
+                    _fail("profile evidence is incomplete with an unresolved dependency profile")
+                active_profile_ids.add(dependency_profile_id)
+                dependency_profiles.append(dependency_profile)
+                pending_profile_ids.append((dependency_profile_id, True))
+                pending_profile_ids.extend(
+                    (nested_dependency_id, False)
+                    for nested_dependency_id in reversed(dependency_profile["dependency_profile_ids"])
+                )
+
+            dependency_requirement_ids = {
+                requirement_id
+                for dependency_profile in dependency_profiles
+                for requirement_id in dependency_profile["requirement_ids"]
+            }
+            if any(
+                dependency_profile["profile_id"] != profile["profile_id"]
+                and dependency_profile["claim_state"] != "evidence_complete"
+                for dependency_profile in dependency_profiles
+            ):
+                _fail("profile evidence is incomplete because dependency profile evidence is incomplete")
+
+            catalog_linked_test_ids = {
+                test_case["test_id"]
+                for test_case in catalog["test_cases"]
+                if profile["profile_id"] in test_case["profile_ids"]
+            }
+            if not catalog_linked_test_ids.issubset(profile["test_case_ids"]):
+                _fail("profile evidence is incomplete with missing catalog-linked test cases")
+            if not set(profile["test_case_ids"]).issubset(catalog_linked_test_ids):
+                _fail("profile evidence is incomplete with unlinked profile test cases")
+
+            linked_test_ids = {
+                test_id
+                for dependency_profile in dependency_profiles
+                for test_id in dependency_profile["test_case_ids"]
+            }
+            for requirement_id in dependency_requirement_ids:
+                linked_test_ids.update(requirements[requirement_id]["test_case_ids"])
+            profile_test_cases = [
+                test_cases[test_id]
+                for test_id in linked_test_ids
+                if test_id in test_cases
+            ]
+            if not any(test_case["source_id"] == "KMIPKIT-SRC-testcases" for test_case in profile_test_cases):
                 _fail("profile evidence is incomplete without an official KMIP Test Case")
+            if any(
+                test_case["mandatory_status"] == "mandatory"
+                and test_case["fixture_availability"] != "available"
+                for test_case in profile_test_cases
+            ):
+                _fail("profile evidence is incomplete with an unavailable mandatory fixture")
+            profile_requirements = [requirements[requirement_id] for requirement_id in dependency_requirement_ids]
+            if any(
+                not requirement["implementation_refs"] or not requirement["verification_refs"]
+                for requirement in profile_requirements
+            ):
+                _fail("profile evidence is incomplete without requirement implementation and verification assignments")
+        _string_values(profile, "direct_source_clause_ids", "profile", non_empty=True)
+        _string_values(profile, "source_clause_ids", "profile", non_empty=True)
+        if profile["role"] in {"client", "both"}:
+            try:
+                closure = compute_profile_closure(
+                    catalog,
+                    profile["direct_source_clause_ids"],
+                    profile_id=profile["profile_id"],
+                )
+            except ProfileGenerationError as error:
+                raise CatalogValidationError("profile normative closure is invalid") from error
+            if profile["source_clause_ids"] != list(closure.source_clause_ids):
+                _fail_profile_closure_mismatch(
+                    "profile clause",
+                    profile["source_clause_ids"],
+                    list(closure.source_clause_ids),
+                )
+            if profile["requirement_ids"] != list(closure.requirement_ids):
+                _fail_profile_closure_mismatch(
+                    "profile requirement",
+                    profile["requirement_ids"],
+                    list(closure.requirement_ids),
+                )
 
     for test_case in catalog["test_cases"]:
         if not isinstance(test_case, dict) or set(test_case) != TEST_CASE_FIELDS:
@@ -1514,6 +1761,7 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
     sources = _check_source_records(catalog, repo_root, tree)
     clauses = _check_clauses(catalog, sources)
     _check_identifiers(catalog)
+    _check_normative_inclusions(catalog, sources, clauses)
     _check_semantics(catalog, sources, clauses, tree, repo_root)
     if require_complete:
         _check_complete_inventory(catalog)
@@ -1528,6 +1776,358 @@ def load_validated_catalog(raw: bytes, repo_root: Path, *, require_complete: boo
             _fail(f"pinned source checksum mismatch for {source['source_id']}")
 
     return catalog
+
+
+def _profile_oracle_feature_spec_requirement_ids(root: Path, feature_spec_id: str) -> set[str] | None:
+    """Return declared FR IDs for the feature spec linked by an operation."""
+    specification_dir = root / "specs"
+    for specification_path in specification_dir.glob("*/spec.md"):
+        try:
+            specification = specification_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError):
+            continue
+        branch = re.search(
+            r"(?m)^\*\*Feature Branch\*\*:\s*`?feature/([^`\s]+)",
+            specification,
+        )
+        if branch is None or not branch.group(1).startswith(f"{feature_spec_id}-"):
+            continue
+        fr_id_pattern = r"FR-\d{3}"
+        declared_ids = set(re.findall(rf"(?m)^\s*-\s+\*\*({fr_id_pattern})\*\*:", specification))
+        qualified_ids = set(
+            re.findall(
+                rf"(?m)^\s*-\s+\*\*{re.escape(feature_spec_id)}-({fr_id_pattern})\*\*:",
+                specification,
+            )
+        )
+        return declared_ids | qualified_ids
+    return None
+
+
+def _profile_oracle_reference_issue(
+    root: Path,
+    reference: object,
+    *,
+    executable_test: bool,
+) -> str | None:
+    """Return a diagnostic when a profile-oracle path::symbol reference is unresolved."""
+    if not isinstance(reference, str) or "::" not in reference:
+        return "reference must use path::symbol form"
+    relative_path, symbol_path = reference.split("::", 1)
+    symbol = symbol_path.rsplit("::", 1)[-1]
+    if not relative_path or not symbol or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", symbol):
+        return "reference must name a source file and symbol"
+    if executable_test and "tests" not in Path(relative_path).parts:
+        return "verification reference must point into a tests directory"
+    try:
+        resolved = (root / relative_path).resolve(strict=True)
+        resolved.relative_to(root)
+        text = resolved.read_text(encoding="utf-8")
+    except (OSError, ValueError, UnicodeError):
+        return "reference path must resolve to a repository file"
+    if executable_test:
+        pattern = rf"#\[test\]\s*fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+    else:
+        pattern = rf"\b(?:pub\s+)?fn\s+{re.escape(symbol)}\b|\bdef\s+{re.escape(symbol)}\b"
+    if re.search(pattern, text) is None:
+        return "reference symbol is not defined in the cited file"
+    return None
+
+
+def _index_source_request_rows_by_gap(
+    source_reviews: object,
+    diagnostics: list[str],
+) -> dict[str, list[dict[str, Any]]]:
+    """Index reviewed request rows that have an explicit source-gap link."""
+    rows_by_gap: dict[str, list[dict[str, Any]]] = {}
+    if not isinstance(source_reviews, list):
+        diagnostics.append("source_requirement_reviews must be an array")
+        return rows_by_gap
+
+    for review_index, review in enumerate(source_reviews):
+        review_label = f"source_requirement_reviews[{review_index}]"
+        if not isinstance(review, dict):
+            diagnostics.append(f"{review_label} must be an object")
+            continue
+        request_rows = review.get("source_request_rows", [])
+        if not isinstance(request_rows, list):
+            diagnostics.append(f"{review_label}.source_request_rows must be an array")
+            continue
+        for row_index, row in enumerate(request_rows):
+            row_label = f"{review_label}.source_request_rows[{row_index}]"
+            if not isinstance(row, dict):
+                diagnostics.append(f"{row_label} must be an object")
+                continue
+            source_gap_id = row.get("source_gap_id")
+            if source_gap_id is None:
+                continue
+            if not isinstance(source_gap_id, str) or not source_gap_id.strip():
+                diagnostics.append(f"{row_label}.source_gap_id must be a non-empty stable ID")
+                continue
+            rows_by_gap.setdefault(source_gap_id, []).append(row)
+    return rows_by_gap
+
+
+def _validate_source_request_row_semantics(
+    contract: dict[str, Any],
+    label: str,
+    rows_by_gap: dict[str, list[dict[str, Any]]],
+    diagnostics: list[str],
+) -> None:
+    """Require each linked contract to agree with its reviewed row semantics."""
+    gap_id = contract.get("gap_id")
+    if not isinstance(gap_id, str) or not gap_id.strip():
+        return
+
+    reviewed_rows = rows_by_gap.get(gap_id, [])
+    if not reviewed_rows:
+        diagnostics.append(
+            f"{label}.requiredness and .actor must resolve a reviewed source_request_rows entry by source_gap_id"
+        )
+        return
+
+    row_semantics: list[tuple[str, str]] = []
+    malformed_semantics = False
+    for row in reviewed_rows:
+        requiredness = row.get("required")
+        actor = row.get("actor")
+        if (
+            not isinstance(requiredness, str)
+            or not requiredness.strip()
+            or not isinstance(actor, str)
+            or not actor.strip()
+        ):
+            malformed_semantics = True
+            continue
+        row_semantics.append((requiredness, actor))
+    if malformed_semantics or len(row_semantics) != len(reviewed_rows):
+        diagnostics.append(
+            f"{label}.requiredness and .actor cannot resolve malformed reviewed source_request_rows"
+        )
+    elif len(set(row_semantics)) != 1:
+        diagnostics.append(
+            f"{label}.requiredness and .actor are ambiguous across reviewed source_request_rows for {gap_id}"
+        )
+    else:
+        reviewed_requiredness, reviewed_actor = row_semantics[0]
+        if contract.get("requiredness") != reviewed_requiredness:
+            diagnostics.append(
+                f"{label}.requiredness must match reviewed source_request_rows.required"
+            )
+        if contract.get("actor") != reviewed_actor:
+            diagnostics.append(f"{label}.actor must match reviewed source_request_rows.actor")
+
+
+def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str]:
+    """Validate source-table contract evidence in the independent profile oracle.
+
+    This test-support validator keeps operation-table rows distinct from the
+    normative requirement catalog while requiring resolvable source, feature,
+    implementation, and executable-test references.
+    """
+    diagnostics: list[str] = []
+    if not isinstance(oracle, dict):
+        return ["profile closure oracle must be an object"]
+
+    contracts = oracle.get("source_table_contracts")
+    if not isinstance(contracts, list):
+        return ["source_table_contracts must be an array"]
+
+    gaps = oracle.get("source_only_requirement_gaps", [])
+    source_gap_ids = {
+        row.get("gap_id") for row in gaps if isinstance(row, dict)
+    } if isinstance(gaps, list) else set()
+    source_request_rows_by_gap = _index_source_request_rows_by_gap(
+        oracle.get("source_requirement_reviews", []),
+        diagnostics,
+    )
+    seen_ids: set[str] = set()
+    required_fields = (
+        "gap_id", "contract_kind", "source_id", "source_path", "source_section", "source_locator",
+        "source_locator_description", "html_line_range", "source_excerpt", "source_force",
+        "requiredness", "actor", "direction", "condition", "scope_disposition",
+        "table_number", "operation_element_id", "functional_requirement_ids",
+        "implementation_refs", "verification_refs", "evidence_disposition",
+    )
+
+    try:
+        root = repo_root.resolve(strict=True)
+    except OSError:
+        return ["repository root is unavailable"]
+
+    catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    try:
+        catalog_path.resolve(strict=True).relative_to(root)
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeError, json.JSONDecodeError):
+        return ["KMIP 2.1 catalog is unavailable for operation contract validation"]
+    elements = catalog.get("elements", []) if isinstance(catalog, dict) else []
+    operation_elements = {
+        element.get("element_id"): element
+        for element in elements
+        if isinstance(element, dict) and isinstance(element.get("element_id"), str)
+    }
+    feature_requirement_cache: dict[str, set[str] | None] = {}
+
+    for index, contract in enumerate(contracts):
+        label = f"source_table_contracts[{index}]"
+        if not isinstance(contract, dict):
+            diagnostics.append(f"{label} must be an object")
+            continue
+        for field in required_fields:
+            if field not in contract:
+                diagnostics.append(f"{label}.{field} is required")
+
+        gap_id = contract.get("gap_id")
+        if not isinstance(gap_id, str) or not gap_id.strip():
+            diagnostics.append(f"{label}.gap_id must be a non-empty stable ID")
+        else:
+            if gap_id in seen_ids:
+                diagnostics.append(f"{label}.gap_id must be unique")
+            seen_ids.add(gap_id)
+            if gap_id in source_gap_ids:
+                diagnostics.append(f"{label}.gap_id must not also be a source-only requirement gap")
+
+        for identifier_field in ("candidate_requirement_id", "proposed_requirement_id", "requirement_id"):
+            if identifier_field in contract:
+                diagnostics.append(f"{label}.{identifier_field} must not create a per-cell REQ mapping")
+
+        locator = contract.get("source_locator")
+        if not isinstance(locator, dict):
+            diagnostics.append(f"{label}.source_locator must identify the pinned table row")
+        elif (
+            locator.get("kind") != "table_body_row"
+            or locator.get("section") != contract.get("source_section")
+            or locator.get("table") != "request_payload"
+            or not isinstance(locator.get("row_label"), str)
+            or locator.get("html_line_range") != contract.get("html_line_range")
+        ):
+            diagnostics.append(f"{label}.source_locator must resolve the exact table body row")
+        table_number = contract.get("table_number")
+        if not isinstance(table_number, int) or isinstance(table_number, bool) or table_number < 1:
+            diagnostics.append(f"{label}.table_number must be a positive integer")
+
+        operation_id = contract.get("operation_element_id")
+        operation = operation_elements.get(operation_id) if isinstance(operation_id, str) else None
+        operation_tables = operation.get("payload_tables", []) if isinstance(operation, dict) else []
+        if (
+            not isinstance(operation, dict)
+            or operation.get("kind") != "operation"
+            or operation.get("direction") != "client_to_server"
+            or not isinstance(operation_tables, list)
+            or not any(
+                isinstance(table, dict)
+                and table.get("role") == "request"
+                and table.get("table_number") == table_number
+                for table in operation_tables
+            )
+        ):
+            diagnostics.append(
+                f"{label}.operation_element_id must reference a client-to-server operation with the request table"
+            )
+        if isinstance(operation, dict):
+            operation_scope = operation.get("scope_state")
+            contract_scope = contract.get("scope_disposition")
+            if not isinstance(operation_scope, str) or not operation_scope.strip():
+                diagnostics.append(
+                    f"{label}.scope_disposition cannot resolve the linked operation scope_state"
+                )
+            elif contract_scope == "profile_conditional":
+                if operation_scope not in {"client_1_0", "client_1_1"}:
+                    diagnostics.append(
+                        f"{label}.scope_disposition profile_conditional requires an in-scope linked client operation"
+                    )
+                condition = contract.get("condition")
+                if not isinstance(condition, str) or not condition.strip():
+                    diagnostics.append(
+                        f"{label}.scope_disposition profile_conditional requires an explicit condition"
+                    )
+            elif contract_scope != operation_scope:
+                diagnostics.append(
+                    f"{label}.scope_disposition must match linked operation scope_state"
+                )
+
+        source_path = contract.get("source_path")
+        if not isinstance(source_path, str):
+            diagnostics.append(f"{label}.source_path must name the pinned source file")
+        else:
+            try:
+                source_file = (root / source_path).resolve(strict=True)
+                source_file.relative_to(root)
+                if not source_file.is_file():
+                    raise OSError("not a file")
+            except (OSError, ValueError):
+                diagnostics.append(f"{label}.source_path must resolve inside the repository")
+
+        for field in ("source_id", "source_section", "source_locator_description", "source_excerpt", "source_force", "requiredness", "actor", "direction", "condition", "scope_disposition", "operation_element_id"):
+            if not isinstance(contract.get(field), str) or not contract[field].strip():
+                diagnostics.append(f"{label}.{field} must be a non-empty string")
+        _validate_source_request_row_semantics(
+            contract,
+            label,
+            source_request_rows_by_gap,
+            diagnostics,
+        )
+        if contract.get("contract_kind") != "operation_request_table_field":
+            diagnostics.append(f"{label}.contract_kind must identify an operation request table field")
+        functional_requirements = contract.get("functional_requirement_ids")
+        if (
+            not isinstance(functional_requirements, list)
+            or not functional_requirements
+            or any(
+                not isinstance(value, str) or re.fullmatch(r"FR-\d{3}", value) is None
+                for value in functional_requirements
+            )
+        ):
+            diagnostics.append(f"{label}.functional_requirement_ids must contain feature requirement IDs")
+        elif isinstance(operation, dict):
+            feature_spec_id = operation.get("feature_spec")
+            if not isinstance(feature_spec_id, str) or not feature_spec_id.strip():
+                diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the operation feature spec")
+            else:
+                if feature_spec_id not in feature_requirement_cache:
+                    feature_requirement_cache[feature_spec_id] = _profile_oracle_feature_spec_requirement_ids(
+                        root,
+                        feature_spec_id,
+                    )
+                approved_requirements = feature_requirement_cache[feature_spec_id]
+                if approved_requirements is None:
+                    diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the approved feature spec")
+                elif not set(functional_requirements).issubset(approved_requirements):
+                    diagnostics.append(f"{label}.functional_requirement_ids must reference declared feature requirements")
+
+        for field, executable_test in (("implementation_refs", False), ("verification_refs", True)):
+            references = contract.get(field)
+            if not isinstance(references, list) or not references:
+                diagnostics.append(f"{label}.{field} must contain a resolved path::symbol reference")
+                continue
+            for reference in references:
+                issue = _profile_oracle_reference_issue(
+                    root,
+                    reference,
+                    executable_test=executable_test,
+                )
+                if issue is not None:
+                    diagnostics.append(f"{label}.{field}: {issue}")
+
+        disposition = contract.get("evidence_disposition")
+        if not isinstance(disposition, dict) or not isinstance(disposition.get("status"), str):
+            diagnostics.append(f"{label}.evidence_disposition must record an explicit status")
+        elif locator and locator.get("row_label") == "Data" and table_number in _SHARED_DATA_RULE_CONFLICT_TABLES:
+            claim = disposition.get("claim")
+            normalized_claim = claim.casefold() if isinstance(claim, str) else ""
+            if (
+                disposition.get("status") != "resolved_by_project_interpretation"
+                or disposition.get("decision_id") != "KMIPKIT-DEC-015"
+                or disposition.get("conflict_source_gap_id") != "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"
+                or "operation-table data=yes controls single-part" not in normalized_claim
+                or "neither indicator is true" not in normalized_claim
+                or "permits omission when either is true" not in normalized_claim
+                or "no standalone paragraph-009 requirement id" not in normalized_claim
+            ):
+                diagnostics.append(f"{label}.evidence_disposition must cite DEC-015 and preserve its single-part and multipart Data matrix")
+
+    return diagnostics
 
 
 def validate_catalog(raw: bytes, repo_root: Path, *, require_complete: bool = False) -> dict[str, Any]:

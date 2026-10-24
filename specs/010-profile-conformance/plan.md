@@ -6,7 +6,7 @@
 
 ## Summary
 
-Implement explicit client profile validation and a deterministic profile evidence/readiness report from the reviewed KMIP 2.1 catalog. Record Baseline Client as the initial 1.0 target without making a claim. Keep conditional profiles gated, preserve all profile requirements and official test evidence links, and fail closed while the 16 Baseline mandatory fixtures remain unavailable.
+Implement explicit client profile validation and a deterministic profile evidence/readiness report from the reviewed KMIP 2.1 catalog. Record Baseline Client as the initial 1.0 target without making a claim. Keep conditional profiles gated, preserve all profile requirements and official test evidence links, and fail closed until every mandatory Baseline test has passing execution evidence.
 
 ## Technical Context
 
@@ -28,7 +28,7 @@ Implement explicit client profile validation and a deterministic profile evidenc
 
 Profile target input is fixed to `specification/catalog/profile-targets.json`, read through safe repository I/O with a 64 KiB bound and strict JSON/schema validation for generation/reporting only. Runtime selection uses explicit caller-selected profiles, independent of target membership. The source catalog is loaded through safe repository I/O and `load_validated_catalog`. Generated Rust literals use a dedicated Rust-compatible encoder. Readiness recomputes current evidence and fails closed on stale or contradictory catalog lifecycle state.
 
-**Scale/Scope**: 18 catalogued client profiles, 15 currently `client_1_0` or `conditional`; Baseline Client is the initial target, but a profile is runtime-selectable only when every applicable requirement has a typed rule mapping and executable test. Other profiles without complete mappings remain visible candidates. All 16 Baseline mandatory fixture records currently report unavailable.
+**Scale/Scope**: 18 catalogued client profiles, 15 currently `client_1_0` or `conditional`; Baseline Client is the initial target, but a profile is runtime-selectable only when every applicable requirement has a typed rule mapping and executable test. Other profiles without complete mappings remain visible candidates. All 16 Baseline mandatory fixtures are pinned; T036 records 13 full deterministic client replays and 3 typed preflight blockers. Replay evidence alone does not establish profile conformance.
 
 ## Constitution Check
 
@@ -37,7 +37,7 @@ Profile target input is fixed to `specification/catalog/profile-targets.json`, r
 - One Rust core and explicit language boundaries: PASS. Profile semantics live in Rust protocol/client core; bindings consume parity contracts later.
 - Secure, lossless defaults: PASS. No secret data in errors/reports, no hidden requests/retries, and cryptographic choices remain explicit.
 - Human-governed changes: PASS. This draft is not approved by being authored; the feature branch must receive review before implementation/merge as required by the repository workflow.
-- Release claims: PASS. This feature never publishes a claim; the missing Baseline fixtures keep release eligibility blocked.
+- Release claims: PASS. This feature never publishes a claim; the three typed preflight blockers and remaining evidence gates keep Baseline release eligibility blocked.
 
 ## Project Structure
 
@@ -101,7 +101,7 @@ Readiness may treat test results as verified only when a same-run aggregate job 
 3. **Phase 2 - Red tests**: add failing tests for inherited clause/subclause closure, per-call selection, selection conditions/dependencies, typed-rule completeness, no allowlist behavior, default preservation, no network side effects on invalid requests, missing-fixture blockers, Query/Discover non-inference, report determinism, and stale/forged/mismatched CI evidence.
 4. **Phase 3 - Green implementation**: generate Rust records from the catalog; implement explicit per-call profile selection, requirement/capability checks, redacted source-backed errors, strict protected-release-push same-run evidence-manifest generation/validation, and readiness aggregation.
 5. **Phase 4 - Refactor and generated outputs**: centralize repeated profile metadata/rules; regenerate report and Rust outputs; verify byte-identical generation and workspace lint.
-6. **Phase 5 - Conformance and review**: execute every available pinned profile fixture, mark absent official fixtures as blocked, verify every selected profile's full normative clause closure and catalog traceability, then run independent QA/security review and CI. Do not claim Baseline conformance while required fixtures are unavailable.
+6. **Phase 5 - Conformance and review**: execute every available pinned profile fixture, mark absent official fixtures as blocked, verify every selected profile's full normative clause closure and catalog traceability, then run independent QA/security review and CI. Do not claim Baseline conformance until every required fixture has passing execution evidence.
 
 ## Complexity Tracking
 

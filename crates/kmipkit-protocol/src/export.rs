@@ -50,6 +50,12 @@ impl ExportRequest {
         self
     }
 
+    /// Returns the optional Unique Identifier in its original KMIP wire form.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.selectors.unique_identifier()
+    }
+
     /// Sets the optional Key Format Type, including unknown future values.
     #[must_use]
     pub fn with_key_format_type(mut self, value: KeyFormatType) -> Self {

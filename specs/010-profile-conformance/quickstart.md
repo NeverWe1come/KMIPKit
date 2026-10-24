@@ -28,7 +28,7 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 
 1. Generate the profile readiness report from the checked-in catalog.
 2. Inspect `KMIPKIT-PROFILE-BASELINE-CLIENT` and its 16 mandatory tests.
-3. Confirm each unavailable fixture remains unavailable, the readiness state is incomplete, and no public conformance claim appears.
+3. Confirm all 16 mandatory fixtures are pinned, T036's 13 full replays and 3 typed preflight blockers are accurately represented, readiness remains incomplete, and no public conformance claim appears.
 
 ## Scenario 4: Fail a conditional profile closed
 

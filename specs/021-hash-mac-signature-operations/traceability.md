@@ -42,7 +42,9 @@ The following stable records are retained as server-only duties and are not assi
 
 Stable records `...32-004-001`, `...33-005-001`, `...55-005-001`, `...56-007-001`, and `...56-001-002` are retained with status `retired`: the earlier inventory treated descriptive table/paragraph wording as separate client normative statements. The corresponding source-backed table behavior remains covered by operation-field FRs; the actual server failure duty remains in each `...-002` record, and the actual client original-data MAY remains `...56-001-001`. IDs are not recycled.
 
-## Open source conflict
+## Open source conflicts
+
+`KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009` records a conflict between the general §6.1 Data statement and Tables 235, 259, and 334. The §6.1 single-part procedure permits both Init Indicator and Final Indicator to be true without a Correlation Value; paragraph 009 then permits Data omission. Tables 235 and 259 require Data for single-part Hash and MAC, and Table 334 requires Data for single-part Sign unless Digested Data is supplied. The source gap remains unresolved, so no conformance claim is made for this omitted-Data shape (for Sign, only when Digested Data is also absent). Whether §6.1 paragraph 009 also conflicts with Table 334 for a digest-only single-part request without either indicator is a separate open source question. The tables separately mark Data absent for multi-part requests. These table contracts do not create standalone REQ records.
 
 `KMIPKIT-DISC-048` records a conflict between the Validity Indicator rows in Tables 263 and 338, which say “Yes for single-part. No for multi-part,” and the prose in §§6.1.33 and 6.1.56, which requires the indicator for the final multipart response and forbids it on non-final responses. The sources agree that a non-final response omits the indicator but conflict for the final response. The typed client accepts either final-part form without making a conformance claim. The conflict remains open until a pinned OASIS erratum or approved project decision resolves it.
 

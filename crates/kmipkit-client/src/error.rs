@@ -5,7 +5,8 @@ use std::fmt;
 use std::sync::Arc;
 
 use kmipkit_protocol::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ResponseMessage, ResultStatus,
+    KmipOperationResult, ProfileValidationError, ProtocolCauseCategory, ProtocolError,
+    ResponseMessage, ResultStatus,
 };
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 use kmipkit_ttlv::StructureView;
@@ -127,6 +128,13 @@ pub enum ClientError {
         /// The complete generic response message for explicit inspection.
         response_ttlv: ClientErrorResponseTtlv,
     },
+    /// A profile-specific validation failure with stable source IDs and delivery evidence.
+    ProfileValidation {
+        /// The redacted profile, requirement, and source-clause failure.
+        error: ProfileValidationError,
+        /// The strongest available request delivery evidence.
+        delivery_state: RequestDeliveryState,
+    },
     /// A transport failure with sanitized cause and delivery evidence.
     Transport(TransportError),
     /// A complete server result, with no local delivery-failure state.
@@ -173,11 +181,37 @@ impl ClientError {
         }
     }
 
+    /// Wraps a source-backed profile failure without losing its stable IDs.
+    #[must_use]
+    pub const fn profile_validation(
+        error: ProfileValidationError,
+        delivery_state: RequestDeliveryState,
+    ) -> Self {
+        Self::ProfileValidation {
+            error,
+            delivery_state,
+        }
+    }
+
+    /// Returns the structured profile validation failure, when present.
+    #[must_use]
+    pub const fn profile_validation_error(&self) -> Option<&ProfileValidationError> {
+        match self {
+            Self::ProfileValidation { error, .. } => Some(error),
+            Self::Validation { .. }
+            | Self::Protocol { .. }
+            | Self::ProtocolResponse { .. }
+            | Self::Transport(_)
+            | Self::ServerResult(_) => None,
+        }
+    }
+
     /// Returns the complete generic response when response validation failed.
     ///
     /// This is `None` for failures that occur before a complete response is
     /// decoded and for validation or transport failures unrelated to response
-    /// processing. The retained response is not included in diagnostics.
+    /// processing. Profile validation failures intentionally do not retain the
+    /// raw response body. Any retained response is not included in diagnostics.
     #[must_use]
     pub const fn response_ttlv(&self) -> Option<&ClientErrorResponseTtlv> {
         match self {
@@ -185,6 +219,7 @@ impl ClientError {
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::Transport(_)
+            | Self::ProfileValidation { .. }
             | Self::ServerResult(_) => None,
         }
     }
@@ -205,7 +240,9 @@ impl ClientError {
     #[must_use]
     pub const fn category(&self) -> ClientErrorCategory {
         match self {
-            Self::Validation { .. } => ClientErrorCategory::Validation,
+            Self::Validation { .. } | Self::ProfileValidation { .. } => {
+                ClientErrorCategory::Validation
+            }
             Self::Protocol { .. } | Self::ProtocolResponse { .. } => ClientErrorCategory::Protocol,
             Self::Transport(_) => ClientErrorCategory::Transport,
             Self::ServerResult(_) => ClientErrorCategory::ServerResult,
@@ -217,6 +254,7 @@ impl ClientError {
     pub const fn cause_category(&self) -> Option<ClientCauseCategory> {
         match self {
             Self::Validation { cause, .. } => Some(*cause),
+            Self::ProfileValidation { .. } => Some(ClientCauseCategory::Other),
             Self::Protocol { error, .. } | Self::ProtocolResponse { error, .. } => {
                 Some(ClientCauseCategory::Protocol(error.cause_category()))
             }
@@ -231,7 +269,8 @@ impl ClientError {
         match self {
             Self::Validation { delivery_state, .. }
             | Self::Protocol { delivery_state, .. }
-            | Self::ProtocolResponse { delivery_state, .. } => Some(*delivery_state),
+            | Self::ProtocolResponse { delivery_state, .. }
+            | Self::ProfileValidation { delivery_state, .. } => Some(*delivery_state),
             Self::Transport(error) => Some(error.delivery_state()),
             Self::ServerResult(_) => None,
         }
@@ -245,6 +284,7 @@ impl ClientError {
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::ProtocolResponse { .. }
+            | Self::ProfileValidation { .. }
             | Self::Transport(_) => None,
         }
     }
@@ -257,6 +297,7 @@ impl ClientError {
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::ProtocolResponse { .. }
+            | Self::ProfileValidation { .. }
             | Self::Transport(_) => None,
         }
     }
@@ -272,6 +313,10 @@ impl fmt::Display for ClientError {
                 formatter,
                 "client validation failure ({cause}, {delivery_state:?})"
             ),
+            Self::ProfileValidation {
+                error,
+                delivery_state,
+            } => write!(formatter, "client {error} ({delivery_state:?})"),
             Self::Protocol {
                 error,
                 delivery_state,
@@ -294,6 +339,7 @@ impl Error for ClientError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Validation { cause, .. } => Some(cause),
+            Self::ProfileValidation { error, .. } => Some(error),
             Self::Protocol { error, .. } | Self::ProtocolResponse { error, .. } => Some(error),
             Self::Transport(error) => Some(error),
             Self::ServerResult(_) => None,

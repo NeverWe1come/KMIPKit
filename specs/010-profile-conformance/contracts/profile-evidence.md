@@ -8,11 +8,11 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Evidence rules
 
-- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` while its required fixtures are unavailable; no public claim is emitted.
+- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` until all required tests have passing execution evidence; fixture availability alone does not pass a test. No public claim is emitted.
 - Readiness reports expose target membership and runtime validation availability as separate booleans and one effective evidence/readiness lifecycle value; they do not create a duplicate readiness enum. The evaluator recomputes all required evidence before comparing it with catalog `claim_state`.
 - Every applicable normative client requirement has an implementation and verification assignment before a claim is eligible.
 - A verification assignment uses stable test IDs and current CI check IDs. An arbitrary result artifact path or a manually asserted `verified` value is not evidence.
-- MUST/SHALL statements must pass; MUST NOT/SHALL NOT statements have negative tests; deviations from SHOULD/SHOULD NOT/RECOMMENDED require an accepted decision; in-scope MAY/OPTIONAL capabilities remain represented and usable.
+- Verification is keyword-specific and must be executable: MUST/SHALL/REQUIRED mappings have positive required-behavior tests; MUST NOT/SHALL NOT mappings have negative tests; SHOULD/RECOMMENDED mappings have behavior tests or an accepted deviation; SHOULD NOT mappings have tests proving the discouraged behavior is absent or an accepted deviation; and each in-scope MAY/OPTIONAL capability is represented, usable, and positively tested. Every applicable requirement must have both an explicit typed Rust mapping and category-appropriate test evidence before runtime selection or `evidence_complete`.
 - Every project-required mandatory test passes before evidence is complete. A missing fixture is unavailable evidence, never a pass.
 - Catalog validation rejects `evidence_complete` when catalog-linked obligations, required tests, or required fixtures are missing or unavailable; the readiness report also checks current implementation and test results.
 - Current test results are accepted only from a strict manifest created by the final aggregate job in `.github/workflows/ci.yml` during the same `push` run on the protected `release/1.0.0` ref. It is generated from the current GitHub Actions `needs` context and records event name, ref, protection status, canonical repository, checked-out commit SHA, workflow reference, run ID/attempt, current branch-protection API result, and unique verification/job conclusions. The evaluator requires `event_name: push`, `ref: refs/heads/release/1.0.0`, `ref_protected: true`, matches the manifest to the current checkout and workflow context, and requires success for exact job IDs `core`, `script-contracts`, `normative-inventory`, `coverage`, `coverage-gate`, and `dependency-policy`. It does not download or accept user-supplied result artifacts.
@@ -26,7 +26,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Current Baseline state
 
-The pinned inventory links 16 mandatory test cases to Baseline Client, and all 16 currently have unavailable fixture status. The readiness report must show this as a blocker and must not state or imply Baseline Client conformance.
+The pinned inventory links 16 mandatory test cases to Baseline Client, and all 16 XML fixtures are available in the repository. T036 records 13 full deterministic client replays and 3 typed preflight blockers. Replay evidence does not establish server interoperability or profile conformance. The readiness report must keep those three blockers and all other evidence gaps visible, and must not state or imply Baseline Client conformance until every required test and evidence gate passes.
 
 ## Stable output
 

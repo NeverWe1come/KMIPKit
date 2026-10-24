@@ -52,6 +52,12 @@ impl CertifyRequest {
         self
     }
 
+    /// Returns the caller-supplied public key or certificate-request identifier.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
+    }
+
     /// Supplies the raw Certificate Request Type Enumeration value.
     #[must_use]
     pub const fn with_certificate_request_type(mut self, value: u32) -> Self {
@@ -91,7 +97,11 @@ impl CertifyRequest {
         if has_request_value && self.certificate_request_type.is_none() {
             return Err(invalid_request());
         }
-        if !has_request_value && self.unique_identifier.is_none() {
+        let has_explicit_public_key_identifier = self
+            .unique_identifier
+            .as_ref()
+            .is_some_and(|identifier| !matches!(identifier, UniqueIdentifier::Enumeration(1)));
+        if !has_request_value && !has_explicit_public_key_identifier {
             return Err(invalid_request());
         }
         if !has_request_value

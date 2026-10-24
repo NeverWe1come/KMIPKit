@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import csv
 import json
 import re
@@ -14,6 +15,11 @@ ROOT = Path(__file__).resolve().parents[3]
 MAX_TEST_SOURCE_BYTES = 1_048_576
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
+PROFILE_CONFORMANCE_FEATURE_SPEC = "KMIPKIT-0010"
+PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS = {
+    "KMIPKIT-REQ-SPEC-14.1-001",
+    "KMIPKIT-REQ-SPEC-14.1-002",
+}
 MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
 MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "specification/compliance/requirements/KMIPKIT-0006.csv"
 CLIENT_EXECUTION_FEATURE_SPEC = "KMIPKIT-0007"
@@ -151,12 +157,15 @@ def _requirements_by_id() -> dict[str, dict[str, str]]:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 
 
-def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
-    posix_path = PurePosixPath(test_path)
-    windows_path = PureWindowsPath(test_path)
+def _read_confined_source(
+    source_path: str,
+    allowed_suffixes: frozenset[str],
+) -> tuple[Path, str] | None:
+    posix_path = PurePosixPath(source_path)
+    windows_path = PureWindowsPath(source_path)
     if (
-        not test_path
-        or "\\" in test_path
+        not source_path
+        or "\\" in source_path
         or posix_path.is_absolute()
         or windows_path.is_absolute()
         or windows_path.drive
@@ -166,9 +175,9 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
 
     try:
         root = ROOT.resolve(strict=True)
-        path = (root / test_path).resolve(strict=True)
+        path = (root / source_path).resolve(strict=True)
         path.relative_to(root)
-        if not path.is_file() or path.suffix not in {".py", ".rs"}:
+        if not path.is_file() or path.suffix not in allowed_suffixes:
             return None
         with path.open("rb") as source_file:
             source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
@@ -178,6 +187,353 @@ def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
     except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
         return None
     return path, source
+
+
+def _read_confined_test_source(test_path: str) -> tuple[Path, str] | None:
+    return _read_confined_source(test_path, frozenset({".py", ".rs"}))
+
+
+def _read_confined_implementation_source(source_path: str) -> tuple[Path, str] | None:
+    return _read_confined_source(source_path, frozenset({".md", ".py", ".rs"}))
+
+
+def _blank_rust_source_region(source: str, start: int, end: int) -> str:
+    """Blank a Rust comment or literal while retaining its original line layout."""
+    return "".join(
+        "\n" if char == "\n" else "\r" if char == "\r" else " "
+        for char in source[start:end]
+    )
+
+
+def _rust_raw_string_start(source: str, index: int) -> tuple[int, int] | None:
+    """Return the quote index and hash count for a raw string starting here."""
+    raw_prefix = index
+    if source.startswith(("br", "cr"), index):
+        raw_prefix += 1
+    elif index >= len(source) or source[index] != "r":
+        return None
+
+    if raw_prefix >= len(source) or source[raw_prefix] != "r":
+        return None
+    quote_index = raw_prefix + 1
+    while quote_index < len(source) and source[quote_index] == "#":
+        quote_index += 1
+    if quote_index < len(source) and source[quote_index] == '"':
+        return quote_index, quote_index - raw_prefix - 1
+    return None
+
+
+def _strip_rust_comments_and_literals(source: str) -> str | None:
+    """Remove Rust comments/literals lexically so their text cannot mimic test items."""
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        if source.startswith("//", index):
+            end = source.find("\n", index)
+            if end < 0:
+                end = len(source)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        if source.startswith("/*", index):
+            depth = 1
+            end = index + 2
+            while end < len(source) and depth:
+                if source.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif source.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            if depth:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        raw_start = _rust_raw_string_start(source, index)
+        if raw_start is not None:
+            quote_index, hash_count = raw_start
+            terminator = '"' + ("#" * hash_count)
+            end_quote = source.find(terminator, quote_index + 1)
+            if end_quote < 0:
+                return None
+            end = end_quote + len(terminator)
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        quote_index = index
+        if source.startswith(("b\"", "c\""), index):
+            quote_index += 1
+        if quote_index < len(source) and source[quote_index] == '"':
+            end = quote_index + 1
+            while end < len(source):
+                if source[end] == "\\":
+                    end += 2
+                elif source[end] == '"':
+                    end += 1
+                    break
+                else:
+                    end += 1
+            else:
+                return None
+            characters[index:end] = _blank_rust_source_region(source, index, end)
+            index = end
+            continue
+
+        index += 1
+    return "".join(characters)
+
+
+def _rust_cfg_condition_is_enabled(expression: str) -> bool | None:
+    """Evaluate cfg logic known in a Rust test build; None means unknown."""
+    tokens = re.findall(
+        r'"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z0-9_]*|[(),=]|\S', expression
+    )
+    cursor = 0
+
+    def parse_predicate() -> bool | None:
+        nonlocal cursor
+        if cursor >= len(tokens) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[cursor]):
+            return None
+        name = tokens[cursor]
+        cursor += 1
+        if name not in {"any", "all", "not"}:
+            if cursor < len(tokens) and tokens[cursor] == "=":
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] not in {",", ")"}:
+                    cursor += 1
+                return None
+            return True if name == "test" else None
+        if cursor >= len(tokens) or tokens[cursor] != "(":
+            return None
+        cursor += 1
+        values: list[bool | None] = []
+        if cursor < len(tokens) and tokens[cursor] != ")":
+            while True:
+                values.append(parse_predicate())
+                if cursor >= len(tokens):
+                    return None
+                if tokens[cursor] == ")":
+                    break
+                if tokens[cursor] != ",":
+                    return None
+                cursor += 1
+                if cursor < len(tokens) and tokens[cursor] == ")":
+                    break
+        if cursor >= len(tokens) or tokens[cursor] != ")":
+            return None
+        cursor += 1
+        if name == "not":
+            if len(values) != 1 or values[0] is None:
+                return None
+            return not values[0]
+        if name == "all":
+            if any(value is False for value in values):
+                return False
+            if all(value is True for value in values):
+                return True
+            return None
+        if any(value is True for value in values):
+            return True
+        if all(value is False for value in values):
+            return False
+        return None
+
+    result = parse_predicate()
+    return result if cursor == len(tokens) else None
+
+
+def _rust_item_is_top_level(source: str, item_start: int) -> bool:
+    """Return whether a Rust item starts outside an inline module or body."""
+    depth = 0
+    for character in source[:item_start]:
+        if character == "{":
+            depth += 1
+        elif character == "}":
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
+
+
+def _rust_inner_module_cfgs_are_active(source: str, opening_brace: int, item_start: int) -> bool:
+    """Reject inactive or unknown inner cfg attributes at an inline module's start."""
+    cursor = opening_brace + 1
+    while cursor < item_start:
+        while cursor < item_start and source[cursor].isspace():
+            cursor += 1
+        if not source.startswith("#!", cursor):
+            return True
+        bracket_start = source.find("[", cursor + 2, item_start)
+        if bracket_start < 0:
+            return False
+        depth = 1
+        end = bracket_start + 1
+        while end < item_start and depth:
+            if source[end] == "[":
+                depth += 1
+            elif source[end] == "]":
+                depth -= 1
+            end += 1
+        if depth:
+            return False
+        attribute = source[bracket_start + 1:end - 1].strip()
+        if re.match(r"cfg_attr\s*\(", attribute):
+            return False
+        if re.match(r"cfg\s*\(", attribute) and not re.fullmatch(
+            r"cfg\s*\(\s*test\s*\)", attribute
+        ):
+            return False
+        cursor = end
+    return True
+
+
+def _rust_test_item_has_active_module_context(source: str, item_start: int) -> bool:
+    """Accept root or active inline-module test items, but reject nested local items."""
+    module_stack: list[tuple[bool, int | None]] = []
+    statement_start = 0
+    for index, character in enumerate(source[:item_start]):
+        if character == "{":
+            statement = source[statement_start:index].strip()
+            module_match = re.search(r"\bmod\s+[A-Za-z_][A-Za-z0-9_]*\s*$", statement)
+            if module_match is None:
+                module_stack.append((False, None))
+            else:
+                module_attributes = statement[:module_match.start()]
+                if re.search(r"#\s*\[\s*cfg_attr\s*\(", module_attributes):
+                    return False
+                active_attributes = re.sub(
+                    r"#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]", "", module_attributes
+                )
+                active = not re.search(r"#\s*\[\s*cfg\s*\(", active_attributes)
+                module_stack.append((active, index))
+            statement_start = index + 1
+        elif character == "}":
+            if not module_stack:
+                return False
+            module_stack.pop()
+            statement_start = index + 1
+        elif character == ";":
+            statement_start = index + 1
+    return all(
+        active
+        and opening_brace is not None
+        and _rust_inner_module_cfgs_are_active(source, opening_brace, item_start)
+        for active, opening_brace in module_stack
+    )
+
+
+def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
+    """Fail closed on unresolved crate cfg; target-item cfg is checked separately."""
+    marker = re.compile(r"#\s*!\s*\[\s*cfg(?P<attribute>_attr)?\s*\(")
+    cursor = 0
+    while match := marker.search(source, cursor):
+        if not _rust_item_is_top_level(source, match.start()):
+            cursor = match.end()
+            continue
+        depth = 1
+        end = match.end()
+        while end < len(source) and depth:
+            if source[end] == "(":
+                depth += 1
+            elif source[end] == ")":
+                depth -= 1
+            end += 1
+        if depth or match.group("attribute") is not None:
+            return False
+        expression = source[match.end():end - 1]
+        if _rust_cfg_condition_is_enabled(expression) is not True:
+            return False
+        cursor = end
+    return True
+
+
+def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
+    """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
+    if path.suffix == ".rs":
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name):
+            return False
+        source = _strip_rust_comments_and_literals(source)
+        if source is None or not _rust_source_has_only_unconditionally_enabled_cfg(source):
+            return False
+        declaration = re.compile(
+            rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE
+        )
+        test_attribute = re.compile(
+            r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
+        )
+        cfg_attribute = re.compile(r"^\s*#\[\s*cfg\((?P<condition>.*)\)\s*\]\s*$")
+        cfg_attr_marker = re.compile(r"^\s*#\[\s*cfg_attr\s*\(")
+        lines = source.splitlines()
+        line_offsets: list[int] = []
+        offset = 0
+        for raw_line in source.splitlines(keepends=True):
+            line_offsets.append(offset)
+            offset += len(raw_line)
+        for index, line in enumerate(lines):
+            if (
+                not declaration.match(line)
+                or not _rust_test_item_has_active_module_context(source, line_offsets[index])
+            ):
+                continue
+            cursor = index - 1
+            is_test = False
+            while cursor >= 0:
+                preceding_line = lines[cursor].strip()
+                if not preceding_line or preceding_line.startswith("//"):
+                    cursor -= 1
+                    continue
+                if preceding_line.startswith("#["):
+                    if test_attribute.fullmatch(preceding_line):
+                        is_test = True
+                    elif cfg_attr_marker.match(preceding_line):
+                        return False
+                    elif cfg_match := cfg_attribute.fullmatch(preceding_line):
+                        if _rust_cfg_condition_is_enabled(cfg_match.group("condition")) is not True:
+                            return False
+                    cursor -= 1
+                    continue
+                break
+            if is_test:
+                return True
+        return False
+
+    if path.suffix == ".py":
+        try:
+            module = ast.parse(source)
+        except SyntaxError:
+            return False
+        class_name, separator, function_name = test_name.rpartition(".")
+        if separator:
+            if not function_name.startswith("test_"):
+                return False
+            for node in module.body:
+                if not isinstance(node, ast.ClassDef) or node.name != class_name:
+                    continue
+                is_pytest_class = class_name.startswith("Test")
+                is_unittest_class = any(
+                    isinstance(base, ast.Name) and base.id == "TestCase"
+                    or isinstance(base, ast.Attribute) and base.attr == "TestCase"
+                    for base in node.bases
+                )
+                return (is_pytest_class or is_unittest_class) and any(
+                    isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and method.name == function_name
+                    for method in node.body
+                )
+            return False
+        return test_name.startswith("test_") and any(
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == test_name
+            for node in module.body
+        )
+
+    return False
 
 
 def _markdown_table_rows(document: str) -> list[list[str]]:
@@ -200,6 +556,14 @@ def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_confined_implementation_reader_accepts_docs_but_test_reader_does_not(self) -> None:
+        documentation_path = "docs/user-guide/en/object-retrieval.md"
+        implementation = _read_confined_implementation_source(documentation_path)
+        self.assertIsNotNone(implementation)
+        self.assertIn("Key Format Type", implementation[1] if implementation else "")
+        self.assertIsNone(_read_confined_test_source(documentation_path))
+        self.assertIsNone(_read_confined_implementation_source("../AGENTS.md"))
+
     def test_lifecycle_traceability_covers_catalog_sources_and_planned_modules(self) -> None:
         traceability = LIFECYCLE_TRACEABILITY_PATH.read_text(encoding="utf-8")
         specification = LIFECYCLE_SPEC_PATH.read_text(encoding="utf-8")
@@ -464,18 +828,18 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     test_path = reference.split("::", 1)[0]
                     self.assertTrue((ROOT / test_path).is_file(), reference)
 
-    def test_result_response_clauses_and_elements_use_server_to_client_direction(self) -> None:
+    def test_result_response_clause_directions_preserve_source_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-        response_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001",
-            "KMIPKIT-CLAUSE-SPEC-9.18-001",
-            "KMIPKIT-CLAUSE-SPEC-9.19-001",
+        expected_clause_directions = {
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
         clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
-        self.assertTrue(response_clause_ids.issubset(clauses_by_id))
-        for clause_id in sorted(response_clause_ids):
+        self.assertTrue(set(expected_clause_directions).issubset(clauses_by_id))
+        for clause_id, expected_direction in sorted(expected_clause_directions.items()):
             with self.subTest(clause_id=clause_id):
-                self.assertEqual(clauses_by_id[clause_id]["direction"], "server_to_client")
+                self.assertEqual(clauses_by_id[clause_id]["direction"], expected_direction)
 
         result_element_ids = _result_element_ids(catalog["elements"])
         elements_by_id = {element["element_id"]: element for element in catalog["elements"]}
@@ -519,6 +883,112 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(reference=reference):
                 self.assertFalse(self._is_executable_test_ref(reference))
 
+    def test_rust_executable_test_refs_require_an_active_test_declaration(self) -> None:
+        test_name = "request_capability_is_available"
+        source_by_case = {
+            "block comment": (
+                "/*\n#[test]\nfn request_capability_is_available() { assert!(true); }\n*/\n",
+                False,
+            ),
+            "nested block comment": (
+                "/* outer /* nested */\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n*/\n",
+                False,
+            ),
+            "line comments": (
+                "// #[test]\n// fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "raw string": (
+                'const DECOY: &str = r###"\n#[test]\n'
+                "fn request_capability_is_available() { assert!(true); }\n"
+                '"###;\n',
+                False,
+            ),
+            "disabled cfg": (
+                "#[cfg(any())]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "disabled crate cfg": (
+                "#![cfg(any())]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "unknown crate cfg is not accepted as active": (
+                "#![cfg(feature = \"optional-tests\")]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "unknown crate cfg_attr is not accepted as active": (
+                "#![cfg_attr(feature = \"optional-tests\", cfg(any()))]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "disabled cfg on parent module": (
+                "#[cfg(any())]\nmod inactive {\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n}\n",
+                False,
+            ),
+            "unknown cfg is not accepted as active": (
+                "#[cfg(feature = \"optional-tests\")]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "unrelated conditional test does not disable active test reference": (
+                "#[cfg(target_pointer_width = \"32\")]\n#[test]\n"
+                "fn unrelated_32_bit_test() { assert!(true); }\n"
+                "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+            "missing test attribute": (
+                "fn request_capability_is_available() { assert!(true); }\n",
+                False,
+            ),
+            "active test": (
+                "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+            "active test inside an inline test module": (
+                "mod tests {\n    #[test]\n    fn request_capability_is_available() { assert!(true); }\n}\n",
+                True,
+            ),
+            "disabled cfg on inline test module": (
+                "#[cfg(any())]\nmod tests {\n    #[test]\n"
+                "    fn request_capability_is_available() { assert!(true); }\n}\n",
+                False,
+            ),
+            "disabled inner cfg on inline test module": (
+                "mod tests {\n    #![cfg(any())]\n    #[test]\n"
+                "    fn request_capability_is_available() { assert!(true); }\n}\n",
+                False,
+            ),
+            "active inner test cfg on inline module": (
+                "mod tests {\n    #![cfg(test)]\n    #[test]\n"
+                "    fn request_capability_is_available() { assert!(true); }\n}\n",
+                True,
+            ),
+            "test cfg is enabled in a test build": (
+                "#[cfg(test)]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+            "crate test cfg is enabled in a test build": (
+                "#![cfg(test)]\n#[test]\n"
+                "fn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
+        }
+
+        with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
+            test_file = Path(repo_temporary) / "evidence_fixture.rs"
+            reference_path = test_file.relative_to(ROOT).as_posix()
+            for label, (source, expected) in source_by_case.items():
+                with self.subTest(label):
+                    test_file.write_text(source, encoding="utf-8")
+                    reference = f"{reference_path}::{test_name}"
+                    self.assertEqual(expected, self._is_executable_test_ref(reference))
+
     def test_executable_test_refs_reject_symlinks_outside_repository(self) -> None:
         test_name = "Outside.test_referenced_test"
         with tempfile.TemporaryDirectory(dir=ROOT) as repo_temporary:
@@ -550,6 +1020,238 @@ class FeatureTraceabilityTests(unittest.TestCase):
 
             self.assertFalse(self._is_executable_test_ref(reference))
 
+    def test_profile_requirements_are_owned_by_profile_conformance(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        in_scope_client_profiles = {
+            row["profile_id"]
+            for row in catalog["profiles"]
+            if row.get("role") == "client"
+            and row.get("applicability") in {"client_1_0", "conditional"}
+        }
+        in_scope_requirement_ids = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile.get("profile_id") in in_scope_client_profiles
+            for requirement_id in profile.get("requirement_ids", [])
+        }
+        requirements = {
+            row["requirement_id"]: row
+            for row in catalog["requirements"]
+        }
+        profile_requirement_ids = {
+            requirement_id
+            for requirement_id in in_scope_requirement_ids
+            if requirement_id.startswith("KMIPKIT-REQ-PROF-")
+        }
+
+        self.assertEqual(162, len(profile_requirement_ids))
+        incorrectly_owned_profile_requirements = [
+            (requirement_id, requirements[requirement_id].get("feature_spec"))
+            for requirement_id in profile_requirement_ids
+            if requirements[requirement_id].get("feature_spec") != "KMIPKIT-0010"
+        ]
+        self.assertEqual([], incorrectly_owned_profile_requirements)
+
+        incorrectly_owned_base_requirements = sorted(
+            requirement_id
+            for requirement_id in in_scope_requirement_ids
+            if requirement_id.startswith("KMIPKIT-REQ-SPEC-")
+            and requirements[requirement_id].get("feature_spec")
+            == PROFILE_CONFORMANCE_FEATURE_SPEC
+            and requirement_id not in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS
+        )
+        self.assertEqual([], incorrectly_owned_base_requirements)
+        for requirement_id in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS:
+            self.assertIn(requirement_id, requirements)
+            self.assertEqual(
+                requirements[requirement_id].get("feature_spec"),
+                PROFILE_CONFORMANCE_FEATURE_SPEC,
+            )
+
+    def test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests(self) -> None:
+        from tools.normative_catalog.generate_profiles import _verification_category
+        from tools.normative_catalog.report import (
+            _RULE_TEST_KIND_BY_CATEGORY,
+            load_typed_rule_mappings,
+        )
+
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            row["requirement_id"]: row for row in catalog["requirements"]
+        }
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        oracle_path = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        oracle_profiles = {row["profile_id"]: row for row in oracle["profiles"]}
+        in_scope_client_requirement_ids = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile.get("role") == "client"
+            and profile.get("applicability") in {"client_1_0", "conditional"}
+            for requirement_id in profile.get("requirement_ids", [])
+        }
+        source_clause_ids = {row["clause_id"] for row in catalog["source_clauses"]}
+        for profile in catalog["profiles"]:
+            if profile.get("role") != "client" or profile.get("applicability") not in {
+                "client_1_0",
+                "conditional",
+            }:
+                continue
+            with self.subTest(profile_id=profile["profile_id"]):
+                self.assertTrue(profile.get("source_clause_ids"))
+                self.assertTrue(profile.get("requirement_ids"))
+                self.assertIn(profile["profile_id"], oracle_profiles)
+                expected = oracle_profiles[profile["profile_id"]]
+                self.assertEqual(
+                    set(profile["source_clause_ids"]), set(expected["source_clause_ids"])
+                )
+                self.assertEqual(
+                    set(profile["requirement_ids"]), set(expected["requirement_ids"])
+                )
+                self.assertTrue(set(profile["source_clause_ids"]).issubset(source_clause_ids))
+                self.assertTrue(
+                    set(profile["requirement_ids"]).issubset(requirements),
+                    profile["profile_id"],
+                )
+
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile.get("profile_id") == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        for inherited_requirement_id in (
+            "KMIPKIT-REQ-PROF-3.1.1-002",
+            "KMIPKIT-REQ-PROF-3.1.1-005",
+            "KMIPKIT-REQ-PROF-3.1.2-002",
+            "KMIPKIT-REQ-PROF-3.1.2-005",
+        ):
+            self.assertIn(inherited_requirement_id, baseline["requirement_ids"])
+
+        mappings = load_typed_rule_mappings(ROOT)
+        self.assertTrue(mappings)
+        required_test_kinds: dict[str, str] = {}
+        observed_test_kinds: dict[str, set[str]] = {}
+
+        for mapping in mappings:
+            requirement_id = mapping["requirement_id"]
+            with self.subTest(requirement_id=requirement_id, test_id=mapping["test_id"]):
+                self.assertIn(requirement_id, requirements)
+                self.assertIn(requirement_id, in_scope_client_requirement_ids)
+                requirement = requirements[requirement_id]
+                if requirement_id.startswith("KMIPKIT-REQ-PROF-"):
+                    self.assertEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
+                elif requirement_id in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS:
+                    self.assertEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
+                else:
+                    self.assertNotEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
+
+                source_clause_id = mapping["source_clause_id"]
+                if source_clause_id is None:
+                    source_gap_id = mapping["source_gap_id"]
+                    self.assertIsNotNone(source_gap_id)
+                    self.assertEqual(source_gap_id, requirement.get("source_gap_id"))
+                    source_locator = requirement.get("source_locator")
+                    self.assertIsInstance(source_locator, dict)
+                    self.assertEqual(source_locator.get("kind"), "table_body_row")
+                    self.assertTrue(source_locator.get("row_label"))
+                    self.assertTrue(source_locator.get("html_line_range"))
+                    self.assertIn(
+                        source_locator.get("section"),
+                        [
+                            source_ref.get("section")
+                            for source_ref in requirement.get("source_refs", [])
+                            if source_ref.get("source_id") == "KMIPKIT-SRC-spec"
+                        ],
+                    )
+                else:
+                    self.assertIn(source_clause_id, clauses)
+                    self.assertIn(source_clause_id, requirement.get("source_clause_ids", []))
+                keyword = requirement.get("source_keyword") or requirement.get("source_force")
+                category = _verification_category(keyword)
+                self.assertEqual(mapping["verification_category"], category)
+                expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY[category]
+                required_test_kinds[requirement_id] = expected_test_kind
+                observed_test_kinds.setdefault(requirement_id, set()).add(mapping["test_kind"])
+                if category == "ProhibitedBehavior" and mapping["test_kind"] == "PositiveBehavior":
+                    self.assertTrue(
+                        mapping["test_id"].startswith(
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                        ),
+                        "positive evidence for a prohibition is limited to a profile configuration check",
+                    )
+                elif category == "RequiredBehavior" and mapping["test_kind"] == "NegativeBehavior":
+                    # Negative checks may supplement a required rule; the positive kind is asserted below.
+                    self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
+                else:
+                    self.assertEqual(mapping["test_kind"], expected_test_kind)
+                self.assertIsNotNone(mapping["test_id"])
+                if mapping["test_id"] not in requirement.get("verification_refs", []):
+                    self.assertIn(
+                        requirement_id,
+                        {
+                            "KMIPKIT-REQ-SPEC-9.6-001-002",
+                            "KMIPKIT-REQ-SPEC-9.12-001-003",
+                            "KMIPKIT-REQ-SPEC-6.1.43-001",
+                            "KMIPKIT-REQ-SPEC-6.1.43-007",
+                            "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+                            "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+                            "KMIPKIT-REQ-SPEC-6.1.43-011",
+                            "KMIPKIT-REQ-SPEC-6.1.5-001",
+                            "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+                            "KMIPKIT-REQ-SPEC-9.1-001",
+                            "KMIPKIT-REQ-SPEC-9.19-002",
+                            "KMIPKIT-REQ-SPEC-6.1.19-002",
+                            "KMIPKIT-REQ-SPEC-6.1.19-003",
+                            "KMIPKIT-REQ-SPEC-6.1.19-004",
+                            "KMIPKIT-REQ-SPEC-6.1.19-005",
+                            "KMIPKIT-REQ-SPEC-6.1.19-006",
+                            "KMIPKIT-REQ-SPEC-6.1.13-006",
+                            "KMIPKIT-REQ-SPEC-3.3-001-001",
+                            "KMIPKIT-REQ-SPEC-3.3-001-002",
+                            "KMIPKIT-REQ-SPEC-7.18-006",
+                        },
+                        "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
+                    )
+                self.assertTrue(
+                    self._is_executable_test_ref(mapping["test_id"]),
+                    mapping["test_id"],
+                )
+
+                for reference in requirement.get("implementation_refs", []):
+                    path, separator, symbol = reference.partition("::")
+                    source_file = _read_confined_implementation_source(path)
+                    self.assertIsNotNone(source_file, reference)
+                    if separator:
+                        _, source = source_file or (None, "")
+                        source_without_comments = _strip_rust_comments_and_literals(source)
+                        self.assertIsNotNone(source_without_comments, reference)
+                        self.assertIsNotNone(
+                            re.search(
+                                rf"\b(?:fn|struct|enum|trait|type|const|static)\s+{re.escape(symbol.split('::')[-1])}\b",
+                                source_without_comments or "",
+                            ),
+                            reference,
+                        )
+
+                for reference in requirement.get("verification_refs", []):
+                    path, separator, _ = reference.partition("::")
+                    self.assertIsNotNone(_read_confined_test_source(path), reference)
+                    if separator:
+                        self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+        for requirement_id, required_test_kind in required_test_kinds.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertIn(required_test_kind, observed_test_kinds[requirement_id])
+
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
         test_path, separator, test_name = test_ref.partition("::")
@@ -561,15 +1263,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
             return False
         path, source = source_file
 
-        if path.suffix == ".rs":
-            return f"fn {test_name}(" in source
-        if path.suffix == ".py":
-            class_name, separator, function_name = test_name.rpartition(".")
-            if not separator:
-                return False
-            class_exists = re.search(rf"^class {re.escape(class_name)}(?:\(|:)", source, re.MULTILINE)
-            return class_exists is not None and f"def {function_name}(" in source
-        return False
+        return _is_discoverable_positive_test(path, test_name, source)
 
 
 class MessageModelTraceabilityTests(unittest.TestCase):
@@ -630,8 +1324,16 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             for record in catalog["requirements"]
             if record["requirement_id"] == field_order_id
         )
-        self.assertEqual(global_field_order["status"], "unassigned")
-        self.assertIsNone(global_field_order["feature_spec"])
+        self.assertEqual(global_field_order["status"], "scoped_verified")
+        self.assertEqual(global_field_order["feature_spec"], "KMIPKIT-0005")
+        self.assertEqual(
+            global_field_order["implementation_refs"],
+            ["crates/kmipkit-client/src/wire_encoder.rs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding",
+            global_field_order["verification_refs"],
+        )
 
         coverage_row = by_id["KMIPKIT-0006-SC-007"]
         self.assertEqual(coverage_row["status"], "verified")
@@ -653,6 +1355,10 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 for reference in record["source_refs"]
             )
         }
+        retired_false_client_claim = by_id["KMIPKIT-REQ-SPEC-9.8-001-001"]
+        self.assertEqual(retired_false_client_claim["status"], "retired")
+        self.assertEqual(retired_false_client_claim["scope"], "out_of_scope")
+        self.assertIn("client candidate", retired_false_client_claim["statement"].lower())
         self.assertTrue(source_requirements.issubset(by_id))
         self.assertEqual(
             by_id["KMIPKIT-REQ-SPEC-8-003-002"]["status"],
@@ -661,6 +1367,15 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         self.assertIn(
             "one_response_batch_can_mix_completed_and_pending_results",
             by_id["KMIPKIT-REQ-SPEC-8-003-002"]["test_ids"],
+        )
+        result_message_requirement = by_id["KMIPKIT-REQ-SPEC-9.17-001-002"]
+        self.assertEqual(result_message_requirement["status"], "scoped_verified")
+        self.assertEqual(result_message_requirement["scope"], "client_1_0; owner=KMIPKIT-0006")
+        self.assertIn("caller-controlled", result_message_requirement["statement"])
+        self.assertIn("does not automatically log", result_message_requirement["statement"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
+            result_message_requirement["test_ids"],
         )
         for requirement_id in (
             "KMIPKIT-REQ-SPEC-9.8-001-002",
@@ -710,6 +1425,10 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             elif row["status"] == "server_only":
                 self.assertEqual(record["scope_state"], "server_only")
                 self.assertIn(record["feature_spec"], {None, MESSAGE_MODEL_FEATURE_SPEC})
+            elif row["status"] == "retired":
+                self.assertEqual(record["role"], "not_applicable")
+                self.assertEqual(record["scope_state"], "out_of_scope")
+                self.assertEqual(record["status"], "retired")
             else:
                 self.assertEqual(record["feature_spec"], row["scope"].split("; owner=")[1])
             for reference in record["verification_refs"]:
@@ -717,6 +1436,17 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 self.assertTrue((ROOT / test_path).is_file(), reference)
                 if "::" in reference:
                     self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+    def test_multi_item_identifier_requirement_cites_exact_oasis_table(self) -> None:
+        with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+        requirement = next(
+            row
+            for row in rows
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-8.3-003"
+        )
+
+        self.assertEqual(requirement["source_section"], "§8.3, Table 396")
 
     def test_message_extension_private_test_uses_excluded_test_path(self) -> None:
         with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:

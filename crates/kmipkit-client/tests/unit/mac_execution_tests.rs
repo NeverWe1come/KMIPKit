@@ -8,7 +8,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{MacRequest, OperationData, SecretBytes};
+use kmipkit_protocol::{MacRequest, OperationData, SecretBytes, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
@@ -87,9 +87,11 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 
 fn request() -> ClientRequest {
     ClientRequest::mac(
-        MacRequest::new().with_data(OperationData::ByteString(SecretBytes::new(
-            b"input-to-mac".to_vec(),
-        ))),
+        MacRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("mac-test-key".to_owned()))
+            .with_data(OperationData::ByteString(SecretBytes::new(
+                b"input-to-mac".to_vec(),
+            ))),
     )
 }
 
