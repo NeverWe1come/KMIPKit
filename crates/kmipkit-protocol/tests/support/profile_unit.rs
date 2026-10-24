@@ -2056,6 +2056,91 @@ fn profile_maps_required_derive_key_parameters() {
 }
 
 #[test]
+fn profile_maps_required_derive_key_attributes() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 marks Attributes required.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-007-001";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("required Derive Key Attributes have an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key Attributes resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the table-row mapping preserves its source gap and evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_empty_attributes = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(Structure::new()),
+        )]),
+    );
+    result
+        .validate_request(&valid_empty_attributes)
+        .expect("the required outer Attributes Structure may be empty");
+
+    for malformed in [
+        Structure::new(),
+        structure([tagged(ATTRIBUTES_TAG, Value::integer(1))]),
+        structure([
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    ] {
+        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Derive Key requires exactly one Attributes Structure");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), None);
+        assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+    }
+
+    let batch_with_missing_attributes = request_message_with_batch_operations([
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(Structure::new()),
+            )]),
+        ),
+        (DERIVE_KEY_OPERATION, Structure::new()),
+    ]);
+    let error = result
+        .validate_request(&batch_with_missing_attributes)
+        .expect_err("a valid Derive Key item does not hide missing Attributes in another item");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+
+    let unrelated_operation = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(ATTRIBUTES_TAG, Value::integer(1))]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derive Key Attributes requirement does not inspect other operations");
+}
+
+#[test]
 fn profile_maps_client_optional_derive_key_secret_data_total_length() {
     // KMIP Specification v2.1 §6.1.14 permits deriving multiple keys and IVs
     // through a Secret Data result whose Cryptographic Length is the total.
