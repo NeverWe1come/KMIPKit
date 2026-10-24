@@ -4736,6 +4736,87 @@ fn profile_maps_rekey_offset_as_optional_interval() {
         .expect("a Re-key-only rule does not constrain Locate requests");
 }
 
+#[test]
+fn profile_maps_rekey_key_pair_offset_as_optional_interval() {
+    // KMIP Specification v2.1 §6.1.47 Table 310 marks Offset optional and types it as Interval.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.47-004-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.47-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REKEY_KEY_PAIR_OPERATION_TAG: u32 = 0x0000_001D;
+    const OFFSET_TAG: u32 = 0x0042_0058;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Re-key Key Pair Offset has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("optional Re-key Key Pair Offset has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional Re-key Key Pair Offset has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional Re-key Key Pair Offset has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        crate::RekeyKeyPairRequest::new()
+            .into_ttlv_payload()
+            .expect("Table 310 permits Offset to be omitted"),
+        crate::RekeyKeyPairRequest::new()
+            .with_offset(86_400)
+            .into_ttlv_payload()
+            .expect("Table 310 Offset is represented as an Interval"),
+    ];
+    for payload in requests {
+        let request = request_message_with_operation_payload(REKEY_KEY_PAIR_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted and Interval Offset satisfy Table 310");
+    }
+
+    for payload in [
+        structure([tagged(
+            OFFSET_TAG,
+            Value::text_string("not-an-Interval".to_owned()),
+        )]),
+        structure([
+            tagged(OFFSET_TAG, Value::interval(60)),
+            tagged(OFFSET_TAG, Value::interval(120)),
+        ]),
+    ] {
+        let malformed =
+            request_message_with_operation_payload(REKEY_KEY_PAIR_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("Offset may occur once and must use Interval");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Re-key Key Pair-only rule does not constrain Locate requests");
+}
+
 fn reprovision_malformed_request_payloads() -> [Structure; 7] {
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
     const CERTIFICATE_REQUEST_TAG: u32 = 0x0042_0018;
