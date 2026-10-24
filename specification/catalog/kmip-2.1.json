@@ -89910,6 +89910,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.34"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.32"
         }
       ],
       "source_keyword": "MAY",
@@ -89928,16 +89936,18 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/register.rs",
         "crates/kmipkit-protocol/src/attribute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_register_nist_key_type_capability",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_nist_symmetric_data_encryption_key_type"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.34 Tables 97–98 and §§11.32, 11.56 permit NIST Key Type Enumeration 6 for a symmetric data-encryption key. The Register request test includes the Table 293 Cryptographic Algorithm and Cryptographic Length prerequisites. Evidence covers request serialization only, not server acceptance or use-policy enforcement. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "review_note": "Pinned OASIS KMIP v2.1 §4.34 paragraph 1 and Table 97 permit NIST Key Type for Key or Secret Data objects and define Enumeration encoding; §11.32 defines value 6 for a Symmetric data encryption key and the 8XXXXXXX extension range. The typed optional-capability mapping checks Register request representation only: omission and extension enumerations are accepted, while duplicate or non-Enumeration values are rejected. The existing Register model test includes the Table 293 Cryptographic Algorithm and Cryptographic Length prerequisites. No server acceptance, Create behavior, use-policy enforcement, or modification/deletion behavior is claimed. The pinned OASIS Test Cases inventory links no requirement-specific official Test Case ID; test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.34-001-002",
