@@ -7457,9 +7457,9 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
     assert!(!algorithm_mapping
         .evaluator
         .expect("the rule has an evaluator")(
-            Some(&duplicate_algorithm),
-            None
-        ));
+        Some(&duplicate_algorithm),
+        None
+    ));
 
     let invalid_certificate_value = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,

@@ -95692,6 +95692,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
@@ -95787,6 +95788,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
@@ -95878,7 +95880,8 @@
       "verification_refs": [
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
     "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers"
       ],
       "negative_verification_required": false,
       "decision_id": null,
