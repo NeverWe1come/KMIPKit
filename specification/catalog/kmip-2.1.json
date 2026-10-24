@@ -93219,15 +93219,17 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_attributes"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned Specification v2.1 Table 205 marks the Attributes request member Required=Yes. This is table-field requiredness, not a formal SHALL; the local request-construction test verifies encoding. No requirement-specific official test case execution is claimed.",
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.14 Table 205, request payload row Attributes (HTML lines 25980-26001), marks the field Required=Yes. §5.1 defines the Attributes data structure. This is table-field requiredness, not a formal SHALL. The typed profile mapping requires one outer Attributes Structure for each Derive Key batch item and permits an empty Structure; it does not enforce nested attributes or the separate symmetric-key length/algorithm rule mapped by 6.1.14-007-002. The linked local request-construction and profile tests verify representation. No requirement-specific official Test Case execution or server behavior is claimed.",
       "source_force": "required_table_body_value",
       "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",
       "source_locator": {

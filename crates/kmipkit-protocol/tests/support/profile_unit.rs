@@ -2057,7 +2057,7 @@ fn profile_maps_required_derive_key_parameters() {
 
 #[test]
 fn profile_maps_required_derive_key_attributes() {
-    // KMIP Specification v2.1 §6.1.14 Table 205 marks Attributes required.
+    // KMIP Specification v2.1 §6.1.14 Table 205 requires Attributes; §5.1 defines its Structure.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-007-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -2085,10 +2085,7 @@ fn profile_maps_required_derive_key_attributes() {
     };
     let valid_empty_attributes = request_message_with_operation_payload(
         DERIVE_KEY_OPERATION,
-        structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(Structure::new()),
-        )]),
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
     );
     result
         .validate_request(&valid_empty_attributes)
@@ -2118,10 +2115,7 @@ fn profile_maps_required_derive_key_attributes() {
     let batch_with_missing_attributes = request_message_with_batch_operations([
         (
             DERIVE_KEY_OPERATION,
-            structure([tagged(
-                ATTRIBUTES_TAG,
-                Value::structure(Structure::new()),
-            )]),
+            structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
         ),
         (DERIVE_KEY_OPERATION, Structure::new()),
     ]);
