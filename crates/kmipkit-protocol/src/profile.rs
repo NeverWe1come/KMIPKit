@@ -1911,6 +1911,36 @@ fn derive_key_specifies_explicit_source_identifiers(
     })
 }
 
+fn derive_key_repeated_unique_identifiers_are_usable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+                    .all(|field| {
+                        field.with_value(|value| matches!(value, ValueView::TextString(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn derive_key_output_object_type(payload: &StructureView<'_>) -> Option<u32> {
     let FieldPresence::Unique(object_type) = field_presence(payload, DERIVE_KEY_OBJECT_TYPE) else {
         return None;
@@ -5149,6 +5179,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_secret_data_uses_total_cryptographic_length),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(derive_key_repeated_unique_identifiers_are_usable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
