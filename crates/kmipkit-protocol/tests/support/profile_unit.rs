@@ -7255,7 +7255,10 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned(), ATTRIBUTE_REQUIREMENT_ID.to_owned()],
+        requirement_ids: vec![
+            REQUIREMENT_ID.to_owned(),
+            ATTRIBUTE_REQUIREMENT_ID.to_owned(),
+        ],
     };
     let valid = request_message_with_operation_payload(
         REGISTER_OPERATION,
