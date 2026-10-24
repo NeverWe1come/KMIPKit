@@ -2592,6 +2592,72 @@ fn profile_maps_optional_client_correlation_value_capability() {
 }
 
 #[test]
+fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
+    const REQUIREMENTS: [(&str, &str); 4] = [
+        (
+            "KMIPKIT-REQ-SPEC-6.1.5-001",
+            "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+            "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+        ),
+        ("KMIPKIT-REQ-SPEC-9.1-001", "KMIPKIT-CLAUSE-SPEC-9.1-001"),
+        ("KMIPKIT-REQ-SPEC-9.19-002", "KMIPKIT-CLAUSE-SPEC-9.19-002"),
+    ];
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements";
+    const ASYNC_CORRELATION_VALUE_TAG: u32 = 0x0042_0006;
+    const POLL_OPERATION: u32 = 0x0000_001A;
+    const CANCEL_OPERATION: u32 = 0x0000_0019;
+    const OTHER_OPERATION: u32 = 0x0000_001E;
+
+    let correlation = b"server-issued\x00correlation\xff";
+    let poll = request_message_with_operation_payload(
+        POLL_OPERATION,
+        structure([tagged(
+            ASYNC_CORRELATION_VALUE_TAG,
+            Value::byte_string(correlation.to_vec()),
+        )]),
+    );
+    let cancel = request_message_with_operation_payload(
+        CANCEL_OPERATION,
+        structure([tagged(
+            ASYNC_CORRELATION_VALUE_TAG,
+            Value::byte_string(correlation.to_vec()),
+        )]),
+    );
+    let other_operation = request_message_with_operation_payload(OTHER_OPERATION, Structure::new());
+
+    for (requirement_id, source_clause_id) in REQUIREMENTS {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the asynchronous correlation requirement has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the asynchronous correlation requirement has generated metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+            .expect("the mandatory correlation rule has executable evidence");
+        let evaluate = mapping
+            .evaluator
+            .expect("the mandatory correlation rule has a typed evaluator");
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+        }));
+        assert!(!evaluate(None, None));
+        assert!(evaluate(Some(&poll), None));
+        assert!(evaluate(Some(&cancel), None));
+        assert!(evaluate(Some(&other_operation), None));
+    }
+}
+
+#[test]
 fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
     // KMIP Specification v2.1 §9.21 makes the ID optional in a client request.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.21-001-001";
