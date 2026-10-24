@@ -95,6 +95,7 @@ const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
+const DERIVE_KEY_DERIVATION_METHOD_TAG: u32 = 0x0042_0031;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
@@ -1855,6 +1856,76 @@ fn profile_maps_required_derive_key_object_type() {
         .expect_err("each Derive Key item in the batch requires Object Type");
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+}
+
+#[test]
+fn profile_maps_required_derive_key_derivation_method() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 marks Derivation Method required.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-011";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("required Derive Key Derivation Method has an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derivation Method resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the table-row mapping preserves its source gap and evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for method in [1, 2, 0xF123_4567] {
+        let request = request_message_with_operation_payload(
+            DERIVE_KEY_OPERATION,
+            structure([tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(method),
+            )]),
+        );
+        result
+            .validate_request(&request)
+            .expect("standard and future Derivation Method Enumeration values remain usable");
+    }
+
+    for malformed in [
+        Structure::new(),
+        structure([tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::integer(1))]),
+        structure([
+            tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::enumeration(1)),
+            tagged(DERIVE_KEY_DERIVATION_METHOD_TAG, Value::enumeration(2)),
+        ]),
+    ] {
+        let request = request_message_with_operation_payload(DERIVE_KEY_OPERATION, malformed);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Derive Key requires one Derivation Method Enumeration");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), None);
+        assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            DERIVE_KEY_DERIVATION_METHOD_TAG,
+            Value::text_string("not a method".to_owned()),
+        )]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derive Key method requirement does not inspect other operations");
 }
 
 #[test]
