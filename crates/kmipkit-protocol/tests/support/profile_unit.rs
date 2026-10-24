@@ -90,6 +90,7 @@ const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-
 const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
 const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-001";
+const DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-010";
 const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
 const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
@@ -238,6 +239,13 @@ fn derive_key_repeated_identifiers_mapping() -> &'static TypedRuleMapping {
         .iter()
         .find(|mapping| mapping.requirement_id == DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID)
         .expect("Derive Key repeated Unique Identifier capability has a typed profile mapping")
+}
+
+fn derive_key_required_identifier_mapping() -> &'static TypedRuleMapping {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID)
+        .expect("required Derive Key Unique Identifier has a typed profile mapping")
 }
 
 fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
@@ -1448,6 +1456,92 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     result
         .validate_request(&unrelated_operation)
         .expect("the Derive Key prohibition does not constrain other operations");
+}
+
+#[test]
+fn profile_maps_required_derive_key_unique_identifier() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 requires a Unique Identifier;
+    // the separate 6.1.14-006-001 mapping covers repeatability.
+    let mapping = derive_key_required_identifier_mapping();
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("required Derive Key Unique Identifier resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(
+        mapping.source_gap_id,
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED")
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID, requirement, mapping)
+        .expect("the required source identifier has category-matched evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_unique_identifier"
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
+        requirement_ids: vec![DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID.to_owned()],
+    };
+    let missing_identifier =
+        request_message_with_operation_payload(DERIVE_KEY_OPERATION, Structure::new());
+    let error = result
+        .validate_request(&missing_identifier)
+        .expect_err("every Derive Key item needs an explicit Unique Identifier");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID)
+    );
+    assert_eq!(error.source_clause_id(), None);
+    assert_eq!(
+        error.source_gap_id(),
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED")
+    );
+
+    let explicit_identifier = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("source-key-1".to_owned()),
+        )]),
+    );
+    result
+        .validate_request(&explicit_identifier)
+        .expect("one explicit source identifier satisfies the required table field");
+
+    let mixed_batch = request_message_with_batch_operations([
+        (
+            DERIVE_KEY_OPERATION,
+            structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key-1".to_owned()),
+            )]),
+        ),
+        (DERIVE_KEY_OPERATION, Structure::new()),
+    ]);
+    let error = result
+        .validate_request(&mixed_batch)
+        .expect_err("each Derive Key item in a batch requires its own source identifier");
+    assert_eq!(
+        error.requirement_id(),
+        Some(DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID)
+    );
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_000A, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derive Key required field does not constrain other operations");
 }
 
 #[test]
