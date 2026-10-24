@@ -291,6 +291,63 @@ class CoverageReportTests(unittest.TestCase):
                 load_typed_rule_mappings(repository),
             )
 
+    def test_typed_rule_registry_reader_parses_client_profile_gate_mappings(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-14.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_closure",
+            value: "all_normative_statements",
+        }],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+            test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
+            test_path.parent.mkdir(parents=True)
+            test_path.write_text(
+                "#[test]\n"
+                "fn selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure() {}\n",
+                encoding="utf-8",
+            )
+            self._write_profile_module_tree(repository, include_test_file=True)
+
+            self.assertEqual(
+                [
+                    {
+                        "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
+                        "source_clause_id": "KMIPKIT-CLAUSE-SPEC-14.1-002",
+                        "source_gap_id": None,
+                        "verification_category": "RequiredBehavior",
+                        "evaluator_present": False,
+                        "transport_only": False,
+                        "configuration_only": True,
+                        "test_kind": "PositiveBehavior",
+                        "test_id": (
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                            "selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure"
+                        ),
+                    }
+                ],
+                load_typed_rule_mappings(repository),
+            )
+
     def test_typed_rule_registry_rejects_unresolvable_test_evidence(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
@@ -1312,6 +1369,42 @@ mod unrelated {
         self.assertIn("Typed rule mapping: present", report)
         self.assertIn("Category test reference: present", report)
         self.assertIn(r"profile\_validation::configured\_tls\_transport\_satisfies\_rule", report)
+
+    def test_profile_requirement_coverage_accepts_configuration_only_mapping(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": False,
+            "transport_only": False,
+            "configuration_only": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::complete_profile_closure_is_required",
+        }
+
+        report = render_report(catalog, typed_rule_mappings=[mapping])
+
+        self.assertIn("Typed rule mapping: present", report)
+        self.assertIn("Category test reference: present", report)
+        self.assertIn(r"profile\_validation::complete\_profile\_closure\_is\_required", report)
 
     def test_profile_requirement_coverage_accepts_approved_recommended_deviation(self) -> None:
         from tools.normative_catalog import report as report_module
