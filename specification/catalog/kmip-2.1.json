@@ -97868,15 +97868,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create_key_pair.rs"
+          "crates/kmipkit-protocol/src/create_key_pair.rs",
+          "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+          "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+        "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator confirms the client can encode Common Attributes and leaves the optional group absent when omitted; it makes no claim about server assignment or outcome. No requirement-specific official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-002",
@@ -97904,15 +97907,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create_key_pair.rs"
+          "crates/kmipkit-protocol/src/create_key_pair.rs",
+          "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices"
+          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+          "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+          "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+        "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator checks both optional Private Key Attributes and Public Key Attributes groups, while the request-construction tests use distinct values and preserve omission. It makes no claim about server-side attribute semantics or outcome. No requirement-specific official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-006",

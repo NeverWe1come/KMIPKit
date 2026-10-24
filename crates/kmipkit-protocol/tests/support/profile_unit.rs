@@ -5685,11 +5685,13 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
             vec![
                 tagged(
                     PRIVATE_KEY_ATTRIBUTES,
-                    Value::structure(repeated_context_attributes()),
+                    Value::structure(structure([opaque_context_vendor_attribute(
+                        b"private-only",
+                    )])),
                 ),
                 tagged(
                     PUBLIC_KEY_ATTRIBUTES,
-                    Value::structure(repeated_context_attributes()),
+                    Value::structure(structure([opaque_context_vendor_attribute(b"public-only")])),
                 ),
             ],
         ),
@@ -5698,17 +5700,13 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
             profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
             requirement_ids: vec![requirement_id.to_owned()],
         };
-        let request = request_message_with_operation_payload(
-            CREATE_KEY_PAIR_OPERATION,
-            structure(fields),
-        );
+        let request =
+            request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, structure(fields));
         result
             .validate_request(&request)
             .expect("the client can represent each §6.1.9 attribute assignment group");
-        let omitted = request_message_with_operation_payload(
-            CREATE_KEY_PAIR_OPERATION,
-            Structure::new(),
-        );
+        let omitted =
+            request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, Structure::new());
         result
             .validate_request(&omitted)
             .expect("the §6.1.9 MAY capability does not require supplying the group");
@@ -5734,10 +5732,8 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
             ),
         ],
     ] {
-        let malformed = request_message_with_operation_payload(
-            CREATE_KEY_PAIR_OPERATION,
-            structure(fields),
-        );
+        let malformed =
+            request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, structure(fields));
         let error = separate_groups_result
             .validate_request(&malformed)
             .expect_err("both separate attribute groups must retain Structure form");

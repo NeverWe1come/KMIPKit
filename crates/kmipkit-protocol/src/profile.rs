@@ -2158,6 +2158,19 @@ fn client_create_key_pair_public_key_attributes_are_representable(
     )
 }
 
+fn client_create_key_pair_differing_attributes_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_create_key_pair_attribute_group_is_representable(
+        request,
+        CREATE_KEY_PAIR_PRIVATE_KEY_ATTRIBUTES,
+    ) && client_create_key_pair_attribute_group_is_representable(
+        request,
+        CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES,
+    )
+}
+
 fn attribute_group_is_representable(payload: &StructureView<'_>, group_tag: u32) -> bool {
     match field_presence(payload, group_tag) {
         FieldPresence::Missing => true,
@@ -4799,6 +4812,50 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_common_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_differing_attributes_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
