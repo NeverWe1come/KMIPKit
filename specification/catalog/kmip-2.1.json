@@ -91711,7 +91711,8 @@
         "crates/kmipkit-protocol/src/delete_attribute.rs",
         "crates/kmipkit-protocol/src/get_attributes.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
-        "crates/kmipkit-protocol/src/set_attribute.rs"
+        "crates/kmipkit-protocol/src/set_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
@@ -91720,6 +91721,7 @@
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_attributes_for_client_requests_and_responses",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
@@ -91728,7 +91730,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §5.1 permits repeated §4 Object Attributes in the general Attributes structure. The local positive property test verifies ordered repeated direct attribute items survive TTLV round trips. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
+      "review_note": "Pinned KMIP Specification v2.1 §5.1, Table 157 permits repeated §4 Object Attributes. The profile rule and tests cover repeated direct attributes in a client Register request and a successful Get Attributes response; the generic AttributeSet property test also verifies ordered TTLV round trips. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local evidence does not claim formal conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.2-001",
@@ -91776,7 +91778,7 @@
       "subject": "Attributes from §4 Object Attributes",
       "summary": "The client may represent repeated §4 attributes in the Common Attributes structure.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [],
@@ -91784,15 +91786,17 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create_key_pair.rs"
+        "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Specification v2.1 §5.2 permits repetition of §4 Object Attributes. The linked test demonstrates repeated §4 attributes specifically in the Common Attributes structure of a Create Key Pair request; it does not establish repeated attributes in every other attribute group. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "review_note": "Pinned KMIP Specification v2.1 §5.2, Table 158 permits repeated §4 Object Attributes. KMIP Specification v2.1 §6.1.9, Table 189 places Common Attributes in the Create Key Pair request; evidence is scoped to the client's outbound representation of two repeated items in that group and makes no claim about other groups or server processing. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; local tests are not formal profile conformance evidence."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.3-001",
@@ -91850,15 +91854,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create_key_pair.rs"
+        "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §5.3, Table 159 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Private Key Attributes request group. It does not establish server-side union or processing. No official test case is claimed or passed."
+      "review_note": "Pinned KMIP Specification v2.1 §5.3, Table 159 permits repeated §4 attributes. KMIP Specification v2.1 §6.1.9, Table 189 places Private Key Attributes in the Create Key Pair request; evidence is scoped to the client's outbound representation of two repeated items in that group and makes no claim about server-side union or processing. No official test case is claimed or passed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.4-001",
@@ -91916,15 +91922,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0014",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create_key_pair.rs"
+        "crates/kmipkit-protocol/src/create_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
+        "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §5.4, Table 160 permits repeated §4 attributes. Scoped evidence covers two such items retained in the client Create Key Pair Public Key Attributes request group. It does not establish server-side union or processing. No official test case is claimed or passed."
+      "review_note": "Pinned KMIP Specification v2.1 §5.4, Table 160 permits repeated §4 attributes. KMIP Specification v2.1 §6.1.9, Table 189 places Public Key Attributes in the Create Key Pair request; evidence is scoped to the client's outbound representation of two repeated items in that group and makes no claim about server-side union or processing. No official test case is claimed or passed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-001",

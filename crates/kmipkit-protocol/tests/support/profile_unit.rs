@@ -793,6 +793,13 @@ fn opaque_context_vendor_attribute(value: &[u8]) -> Item {
     )
 }
 
+fn repeated_context_attributes() -> Structure {
+    structure([
+        opaque_context_vendor_attribute(b"first"),
+        opaque_context_vendor_attribute(b"second"),
+    ])
+}
+
 fn opaque_object_register_payload(include_context: bool) -> Structure {
     let mut attributes = crate::AttributeSet::new();
     if include_context {
@@ -5473,17 +5480,11 @@ fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let repeated_attributes = || {
-        structure([
-            opaque_context_vendor_attribute(b"first"),
-            opaque_context_vendor_attribute(b"second"),
-        ])
-    };
     let register_request = request_message_with_operation_payload(
         REGISTER_OPERATION,
         structure([tagged(
             ATTRIBUTES_TAG,
-            Value::structure(repeated_attributes()),
+            Value::structure(repeated_context_attributes()),
         )]),
     );
     result
@@ -5504,10 +5505,7 @@ fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
         tagged(
             BATCH_ITEM_TAG,
             Value::structure(structure([
-                tagged(
-                    OPERATION_TAG,
-                    Value::enumeration(GET_ATTRIBUTES_OPERATION),
-                ),
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
                 tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
                 tagged(
                     RESPONSE_PAYLOAD_TAG,
@@ -5518,7 +5516,7 @@ fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
                         ),
                         tagged(
                             ATTRIBUTES_TAG,
-                            Value::structure(repeated_attributes()),
+                            Value::structure(repeated_context_attributes()),
                         ),
                     ])),
                 ),
@@ -5554,10 +5552,7 @@ fn profile_maps_repeated_create_key_pair_attribute_groups() {
             CREATE_KEY_PAIR_OPERATION,
             structure([tagged(
                 group_tag,
-                Value::structure(structure([
-                    opaque_context_vendor_attribute(b"first"),
-                    opaque_context_vendor_attribute(b"second"),
-                ])),
+                Value::structure(repeated_context_attributes()),
             )]),
         );
         result
