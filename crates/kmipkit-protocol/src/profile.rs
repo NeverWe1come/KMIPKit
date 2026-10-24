@@ -743,8 +743,7 @@ const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const USAGE_LIMITS_ATTRIBUTE: u32 = 0x0042_0095;
 const LEASE_TIME: u32 = 0x0042_0049;
 const TICKET: u32 = 0x0042_0149;
-const RECERTIFY_OFFSET: u32 = 0x0042_0058;
-const REKEY_OFFSET: u32 = 0x0042_0058;
+const OFFSET: u32 = 0x0042_0058;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1548,7 +1547,7 @@ fn client_recertify_offset_is_optional_interval(
     client_operation_field_is_well_formed(
         request,
         RECERTIFY_OPERATION,
-        RECERTIFY_OFFSET,
+        OFFSET,
         OperationFieldType::Interval,
         false,
     )
@@ -1561,7 +1560,7 @@ fn client_rekey_offset_is_optional_interval(
     client_operation_field_is_well_formed(
         request,
         REKEY_OPERATION,
-        REKEY_OFFSET,
+        OFFSET,
         OperationFieldType::Interval,
         false,
     )
