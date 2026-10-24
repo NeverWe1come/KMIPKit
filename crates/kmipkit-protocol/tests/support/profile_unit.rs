@@ -4372,6 +4372,83 @@ fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
 }
 
 #[test]
+fn profile_maps_client_logout_required_ticket_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.31-001";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOGOUT_OPERATION_TAG: u32 = 0x0000_002E;
+    const TICKET_TAG: u32 = 0x0042_0149;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("required Logout Ticket has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("required Logout Ticket resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("required Logout Ticket has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("required Logout Ticket has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let supplied = request_message_with_operation_payload(
+        LOGOUT_OPERATION_TAG,
+        crate::LogoutRequest::new(
+            crate::Ticket::new(
+                crate::TicketType::LOGIN,
+                crate::SecretBytes::new(b"logout-ticket-profile-test".to_vec()),
+            )
+            .expect("the explicit Logout Ticket is representable"),
+        )
+        .into_ttlv_payload()
+        .expect("Logout request with Ticket is representable"),
+    );
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("a Logout request with Ticket satisfies Table 256");
+
+    for payload in [
+        Structure::new(),
+        structure([tagged(
+            TICKET_TAG,
+            Value::text_string("not-a-Ticket-Structure".to_owned()),
+        )]),
+    ] {
+        let malformed = request_message_with_operation_payload(LOGOUT_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("a Logout request requires one Ticket Structure");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Logout-only rule does not constrain Locate requests");
+}
+
+#[test]
 fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
     // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Request Count.
     let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-006");
