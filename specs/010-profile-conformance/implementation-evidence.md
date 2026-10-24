@@ -5461,3 +5461,11 @@ Added a Baseline Client typed `RequiredBehavior` rule for the `Asynchronous Corr
 | Hosted CI on prior published head `fc5f9380` | Run `40053836627` | The previous head's selected-scope gate failed at 3,475/3,660 changed Rust lines (94.95%); its primary cross-platform build, coverage producers, and adapter jobs passed. This local increment is not part of that run and awaits exact-head CI after publication. |
 
 This increment raises Baseline Client to 98 valid executable typed mappings out of 265 assigned requirements, leaving 167 unmapped. T040 remains open; the three blocked mandatory fixtures and 77 unavailable profile cases also prevent readiness. No profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Repeated Get wrapping Attribute Names
+
+KMIP Specification v2.1 §7.18 Table 370 permits repeated `Attribute Name` Text Strings in a Key Wrapping Specification, which Get carries under §6.1.19 Table 220. The existing Get model test verifies that two distinct names survive in order. The profile-level regression will link this optional capability to the Baseline rule registry and verify that profile validation accepts a Get carrying those repeated names while leaving wrapping optional.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red | `cargo test -p kmipkit-protocol --lib profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability` | Expected failure: no typed rule exists yet for `KMIPKIT-REQ-SPEC-7.18-006`; the test stops at the missing mapping assertion. |

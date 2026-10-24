@@ -54,7 +54,11 @@ const TIME_STAMP_TAG: u32 = 0x0042_0092;
 const CLIENT_CORRELATION_VALUE_TAG: u32 = 0x0042_0105;
 const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const GET_OPERATION: u32 = 0x0000_000A;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+const KEY_WRAPPING_SPECIFICATION_TAG: u32 = 0x0042_0047;
+const ENCRYPTION_KEY_INFORMATION_TAG: u32 = 0x0042_0036;
+const WRAPPING_METHOD_TAG: u32 = 0x0042_009E;
 const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
@@ -1876,6 +1880,88 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
     result
         .validate_request(&repeated_items_request)
         .expect("a client can represent a request with repeated Batch Items");
+}
+
+#[test]
+fn profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability() {
+    // KMIP Specification v2.1 §7.18 Table 370 permits repeated Attribute Name
+    // Text Strings in a Key Wrapping Specification carried by Get (§6.1.19).
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-006";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_wrapping_attribute_names_as_optional_capability";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated Get wrapping Attribute Names have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional wrapping Attribute Name capability resolves to metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    assert_eq!(mapping.verification_category, requirement.verification_category);
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapping_specification = structure([
+        tagged(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+        tagged(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Algorithm".to_owned()),
+        ),
+        tagged(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Length".to_owned()),
+        ),
+    ]);
+    let repeated_names_request = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("wrapped-object".to_owned()),
+            ),
+            tagged(
+                KEY_WRAPPING_SPECIFICATION_TAG,
+                Value::structure(wrapping_specification),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&repeated_names_request), None));
+    result
+        .validate_request(&repeated_names_request)
+        .expect("a client can send repeated wrapping Attribute Names");
+
+    let request_without_wrapping_specification =
+        request_message_with_operation_payload(GET_OPERATION, structure([]));
+    result
+        .validate_request(&request_without_wrapping_specification)
+        .expect("the optional capability does not require wrapping on every Get");
 }
 
 #[test]
