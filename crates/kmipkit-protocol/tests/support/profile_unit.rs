@@ -7197,9 +7197,12 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 
 #[test]
 fn profile_maps_register_object_type_and_attributes_as_required() {
-    // KMIP Specification v2.1 §6.1.43 Table 291 requires both request fields.
+    // KMIP Specification v2.1 §6.1.43 Table 291 and the Register text require
+    // Object Type and the Attributes object for each applicable request.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-001";
+    const ATTRIBUTE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-007";
+    const ATTRIBUTE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -7221,14 +7224,38 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the required fields have positive executable evidence");
 
+    let attributes_mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == ATTRIBUTE_REQUIREMENT_ID)
+        .expect("Register cryptographic objects have a typed Attributes rule");
+    let attributes_requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == ATTRIBUTE_REQUIREMENT_ID)
+        .expect("the required Register Attributes rule resolves to generated metadata");
+    assert_eq!(
+        attributes_mapping.source_clause_id,
+        ATTRIBUTE_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        attributes_mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(
+        BASELINE_PROFILE_ID,
+        attributes_requirement,
+        attributes_mapping,
+    )
+    .expect("the required Attributes object has positive executable evidence");
+
     let evaluate = mapping
         .evaluator
         .expect("the required Register fields have a typed evaluator");
+    assert!(attributes_mapping.evaluator.is_some());
     assert!(!evaluate(None, None));
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned(), ATTRIBUTE_REQUIREMENT_ID.to_owned()],
     };
     let valid = request_message_with_operation_payload(
         REGISTER_OPERATION,
