@@ -779,6 +779,7 @@ const GCM_MODE: u32 = 9;
 const IMPORT_OPERATION: u32 = 0x0000_002A;
 const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
 const DERIVE_KEY_OBJECT_TYPE: u32 = 0x0042_0057;
+const DERIVE_KEY_DERIVATION_METHOD: u32 = 0x0042_0031;
 const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const PGP_KEY_OBJECT_TYPE: u32 = 9;
 const SECRET_DATA_OBJECT_TYPE: u32 = 7;
@@ -3358,6 +3359,35 @@ fn derive_key_includes_required_object_type(
 
         batch_item
             .with_request_payload(|payload| derive_key_output_object_type(&payload).is_some())
+            .unwrap_or(false)
+    })
+}
+
+fn derive_key_includes_required_derivation_method(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(method) =
+                    field_presence(&payload, DERIVE_KEY_DERIVATION_METHOD)
+                else {
+                    return false;
+                };
+                method.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+            })
             .unwrap_or(false)
     })
 }
@@ -8380,6 +8410,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_includes_required_object_type),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_object_type",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-011",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_includes_required_derivation_method),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_derivation_method",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
