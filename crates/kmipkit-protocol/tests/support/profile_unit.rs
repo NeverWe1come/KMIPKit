@@ -8005,6 +8005,66 @@ fn profile_rejects_malformed_register_key_value_attributes_container() {
     );
     assert!(!evaluate(Some(&malformed), None));
     assert!(result.validate_request(&malformed).is_err());
+
+    let key_value_with_duplicate_attributes = tagged(
+        TABLE12_KEY_VALUE,
+        Value::structure(structure([
+            tagged(
+                TABLE12_KEY_MATERIAL,
+                Value::byte_string(b"synthetic-key-material".to_vec()),
+            ),
+            tagged(TABLE12_ATTRIBUTES, Value::structure(structure([]))),
+            tagged(TABLE12_ATTRIBUTES, Value::structure(structure([]))),
+        ])),
+    );
+    let duplicate_key_value_attributes = tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([key_value_with_duplicate_attributes])),
+        )])),
+    );
+    let malformed_objects = [
+        tagged(TABLE12_SYMMETRIC_KEY, Value::integer(2)),
+        tagged(
+            TABLE12_SYMMETRIC_KEY,
+            Value::structure(structure([tagged(TABLE12_KEY_BLOCK, Value::integer(1))])),
+        ),
+        tagged(
+            TABLE12_SYMMETRIC_KEY,
+            Value::structure(structure([
+                tagged(TABLE12_KEY_BLOCK, Value::structure(structure([]))),
+                tagged(TABLE12_KEY_BLOCK, Value::structure(structure([]))),
+            ])),
+        ),
+        tagged(
+            TABLE12_SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                TABLE12_KEY_BLOCK,
+                Value::structure(structure([tagged(TABLE12_KEY_VALUE, Value::integer(1))])),
+            )])),
+        ),
+        tagged(
+            TABLE12_SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                TABLE12_KEY_BLOCK,
+                Value::structure(structure([
+                    tagged(TABLE12_KEY_VALUE, Value::structure(structure([]))),
+                    tagged(TABLE12_KEY_VALUE, Value::structure(structure([]))),
+                ])),
+            )])),
+        ),
+        duplicate_key_value_attributes,
+    ];
+
+    for object in malformed_objects {
+        let malformed = request_message_with_operation_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(TABLE12_REGISTER_OPERATION, object, []),
+        );
+        assert!(!evaluate(Some(&malformed), None));
+        assert!(result.validate_request(&malformed).is_err());
+    }
 }
 
 #[test]
