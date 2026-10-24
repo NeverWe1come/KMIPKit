@@ -5661,3 +5661,20 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.9-001-001` and `KMIPKIT-REQ-SPEC-6.1.9-001-002` fro
 | Hosted CI | Exact-head run after the coherent batch is pushed | Pending. |
 
 Baseline Client now has 120 valid executable typed mappings of 265 assigned requirements; 145 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Check usage fields (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.7-003` and `KMIPKIT-REQ-SPEC-6.1.7-004-002` from KMIP Specification v2.1 §6.1.7 Tables 182–183. The Baseline Client evaluator accepts optional `Usage Limits Count` as a KMIP Long Integer and optional `Cryptographic Usage Mask` as an Integer in Check requests; omission remains valid, while malformed types and duplicate fields are rejected. A fake-transport regression demonstrates a preceding Locate mask of Encrypt plus Decrypt (`0x0C`) followed by a distinct Check mask of Encrypt (`0x04`). The evidence concerns caller request representation only: it does not assert server allocation, matching, authorization, or acceptance. The pinned OASIS source links no requirement-specific official Test Case.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `f4e568eb`; `cargo test -p kmipkit-protocol --lib profile_maps_client_check_optional_usage_fields --all-features --locked` | Expected failure before mapping: no typed profile rule existed for the optional Check fields. |
+| Green | DCO commit `a8cf6e0e`; added separate optional-capability mappings and type/cardinality evaluators | PASS: both fields validate in their KMIP wire types; omission, malformed types, duplicate values, and the distinct Locate/Check mask case are covered. |
+| Refactor | DCO commit `28a7c396`; split the combined regression into per-field tests, updated catalog evidence, regenerated the coverage report, and refreshed the report snapshot | PASS: both mappings resolve to category-matched test evidence and the full-profile report snapshot passes. |
+| Rust checks | `cargo test -p kmipkit-protocol --lib profile_maps_client_check_ --all-features --locked`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 2 focused profile tests, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `validate.py --repo-root .`; `generate_profiles.py --check --repo-root .`; `report.py --check --repo-root .`; full-profile report snapshot | PASS: 4 sources, 1,411 clauses, and 4,123 catalog records; generated profile metadata/report and snapshot are current. |
+| Traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS: both requirements resolve to the Baseline Client closure, implementation, category-appropriate tests, and exact source clauses. |
+| Hosted CI | Exact-head run after this coherent batch is pushed | Pending. |
+
+Baseline Client now has 122 valid executable typed mappings of 265 assigned requirements; 143 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
