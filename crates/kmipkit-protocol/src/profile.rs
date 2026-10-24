@@ -736,6 +736,8 @@ const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const LEASE_TIME: u32 = 0x0042_0049;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1536,7 +1538,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
     client_delegated_login_field_is_well_formed(
         request,
         DELEGATED_LOGIN_USAGE_LIMITS,
-        DelegatedLoginFieldType::Structure,
+        DelegatedLoginFieldType::UsageLimitsStructure,
         false,
     )
 }
@@ -1546,6 +1548,7 @@ enum DelegatedLoginFieldType {
     Integer,
     LeaseTime,
     Structure,
+    UsageLimitsStructure,
 }
 
 fn client_delegated_login_field_is_well_formed(
@@ -1579,19 +1582,64 @@ fn client_delegated_login_field_is_well_formed(
                                 DelegatedLoginFieldType::Integer => {
                                     matches!(value, ValueView::Integer(_))
                                 }
-                                DelegatedLoginFieldType::LeaseTime => matches!(
-                                    value,
-                                    ValueView::Interval(_) | ValueView::DateTime(_)
-                                ),
+                                DelegatedLoginFieldType::LeaseTime => {
+                                    matches!(value, ValueView::Interval(_) | ValueView::DateTime(_))
+                                }
                                 DelegatedLoginFieldType::Structure => {
                                     matches!(value, ValueView::Structure(_))
                                 }
+                                DelegatedLoginFieldType::UsageLimitsStructure => match value {
+                                    ValueView::Structure(value) => {
+                                        delegated_login_usage_limits_are_well_formed(value)
+                                    }
+                                    _ => false,
+                                },
                             })
                     });
                 well_formed && (!required || field_seen)
             })
             .unwrap_or(false)
     })
+}
+
+fn delegated_login_usage_limits_are_well_formed(
+    structure: kmipkit_ttlv::StructureView<'_>,
+) -> bool {
+    let mut total_seen = false;
+    let mut count_seen = false;
+    let mut unit_seen = false;
+
+    for field in structure.children() {
+        match field.tag().raw() {
+            USAGE_LIMITS_TOTAL => {
+                if total_seen
+                    || !field.with_value(|value| matches!(value, ValueView::LongInteger(_)))
+                {
+                    return false;
+                }
+                total_seen = true;
+            }
+            USAGE_LIMITS_COUNT => {
+                if count_seen
+                    || !field.with_value(|value| matches!(value, ValueView::LongInteger(_)))
+                {
+                    return false;
+                }
+                count_seen = true;
+            }
+            USAGE_LIMITS_UNIT => {
+                if unit_seen
+                    || !field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                {
+                    return false;
+                }
+                unit_seen = true;
+            }
+            _ => {}
+        }
+    }
+
+    total_seen && count_seen && unit_seen
 }
 
 #[derive(Clone, Copy)]
