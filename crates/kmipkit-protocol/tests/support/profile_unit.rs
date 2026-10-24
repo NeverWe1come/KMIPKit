@@ -3858,6 +3858,80 @@ fn profile_maps_delete_attribute_current_attribute_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_modify_attribute_current_attribute_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.34 paragraph 1 and Table 265 make
+    // Current Attribute optional; omission leaves instance selection to the
+    // server and is valid when the attribute has one instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.34-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.34-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const COMMENT_ATTRIBUTE_TAG: u32 = 0x0042_00FD;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Modify Attribute Current Attribute has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional selector resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional selector has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for include_current_attribute in [false, true] {
+        let current_attribute = include_current_attribute.then(|| {
+            crate::CurrentAttribute::new(tagged(
+                COMMENT_ATTRIBUTE_TAG,
+                Value::text_string("existing value".to_owned()),
+            ))
+        });
+        let request = crate::ModifyAttributeRequest::new(
+            Some("object-1".to_owned()),
+            current_attribute,
+            crate::NewAttribute::new(tagged(
+                COMMENT_ATTRIBUTE_TAG,
+                Value::text_string("updated value".to_owned()),
+            )),
+        );
+        let payload = request
+            .to_ttlv_payload()
+            .expect("the Modify Attribute request has valid attribute values");
+        assert_eq!(
+            payload
+                .view()
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == CURRENT_ATTRIBUTE_TAG),
+            include_current_attribute
+        );
+
+        let request = request_message_with_operation_payload(
+            MODIFY_ATTRIBUTE_OPERATION,
+            payload,
+        );
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("the client can include or omit Current Attribute");
+    }
+}
+
+#[test]
 fn profile_maps_client_get_attributes_optional_attribute_references() {
     // KMIP Specification v2.1 §6.1.20 Table 223 permits repeated references.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
