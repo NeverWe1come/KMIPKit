@@ -378,7 +378,7 @@ fn unique_attribute(
     Ok(value)
 }
 
-fn values_equal(left: &Item, right: &Item) -> bool {
+pub(crate) fn values_equal(left: &Item, right: &Item) -> bool {
     left.with_value(|left_value| {
         right.with_value(|right_value| value_views_equal(left_value, right_value))
     })

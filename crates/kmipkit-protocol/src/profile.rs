@@ -859,6 +859,12 @@ const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x
 const CREATE_KEY_PAIR_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
 const CREATE_KEY_PAIR_PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
 const CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+const CREATE_KEY_PAIR_TABLE_191_ATTRIBUTES: [u32; 4] = [
+    0x0042_0028, // Cryptographic Algorithm
+    0x0042_002a, // Cryptographic Length
+    0x0042_0029, // Cryptographic Domain Parameters
+    0x0042_002b, // Cryptographic Parameters
+];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
 const REGISTER_OPERATION: u32 = 0x0000_0003;
@@ -3597,6 +3603,104 @@ fn client_create_key_pair_differing_attributes_are_representable(
         request,
         CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES,
     )
+}
+
+fn client_create_key_pair_table_191_values_match(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|request_item| {
+        let Some(operation) = request_item.operation() else {
+            return false;
+        };
+        if operation != CREATE_KEY_PAIR_OPERATION {
+            return true;
+        }
+
+        request_item
+            .with_request_payload(|payload| {
+                create_key_pair_table_191_payload_is_consistent(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn create_key_pair_table_191_payload_is_consistent(payload: &StructureView<'_>) -> bool {
+    let mut groups = [None; 3];
+    for (group, tag) in groups.iter_mut().zip(CREATE_KEY_PAIR_ATTRIBUTE_GROUPS) {
+        *group = match field_presence(payload, tag) {
+            FieldPresence::Missing => None,
+            FieldPresence::Unique(group) if group.item_type() == ItemType::Structure => Some(group),
+            FieldPresence::Unique(_) | FieldPresence::Duplicate => return false,
+        };
+    }
+    let common = groups[0];
+    let private = groups[1];
+    let public = groups[2];
+
+    CREATE_KEY_PAIR_TABLE_191_ATTRIBUTES.into_iter().all(|tag| {
+        with_create_key_pair_attribute_group(common, |common| {
+            with_create_key_pair_attribute_group(private, |private| {
+                with_create_key_pair_attribute_group(public, |public| {
+                    match (
+                        effective_table_191_attribute(common.as_ref(), private.as_ref(), tag),
+                        effective_table_191_attribute(common.as_ref(), public.as_ref(), tag),
+                    ) {
+                        (FieldPresence::Missing, FieldPresence::Missing) => true,
+                        (FieldPresence::Unique(private), FieldPresence::Unique(public)) => {
+                            crate::create_key_pair::values_equal(private, public)
+                        }
+                        _ => false,
+                    }
+                })
+            })
+        })
+    })
+}
+
+fn with_create_key_pair_attribute_group(
+    group: Option<&Item>,
+    callback: impl for<'a> FnOnce(Option<StructureView<'a>>) -> bool,
+) -> bool {
+    match group {
+        None => callback(None),
+        Some(group) => group.with_value(|value| match value {
+            ValueView::Structure(attributes) => callback(Some(attributes)),
+            _ => false,
+        }),
+    }
+}
+
+fn effective_table_191_attribute<'a>(
+    common: Option<&'a StructureView<'_>>,
+    specific: Option<&'a StructureView<'_>>,
+    tag: u32,
+) -> FieldPresence<'a> {
+    match (
+        table_191_attribute_in_group(specific, tag),
+        table_191_attribute_in_group(common, tag),
+    ) {
+        (FieldPresence::Duplicate, _) | (_, FieldPresence::Duplicate) => FieldPresence::Duplicate,
+        (FieldPresence::Unique(attribute), _) => FieldPresence::Unique(attribute),
+        (FieldPresence::Missing, FieldPresence::Unique(attribute)) => {
+            FieldPresence::Unique(attribute)
+        }
+        (FieldPresence::Missing, FieldPresence::Missing) => FieldPresence::Missing,
+    }
+}
+
+fn table_191_attribute_in_group<'a>(
+    group: Option<&'a StructureView<'_>>,
+    tag: u32,
+) -> FieldPresence<'a> {
+    let Some(group) = group else {
+        return FieldPresence::Missing;
+    };
+    field_presence(group, tag)
 }
 
 fn attribute_group_is_representable(payload: &StructureView<'_>, group_tag: u32) -> bool {
@@ -7175,6 +7279,58 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_create_key_pair_table_191_values_match),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-007",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-007",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_create_key_pair_table_191_values_match),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
