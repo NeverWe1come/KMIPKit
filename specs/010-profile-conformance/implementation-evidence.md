@@ -6605,3 +6605,17 @@ Mapped the three client MAY requirements in KMIP Specification v2.1 §§6.1.32�
 | Upstream and whitespace integrity | `check_immutable_sources.py --base-sha 53821ba7865341e25e3febab084e4f77bcf3eb95 --repo-root .`; `git diff --check` | PASS: pinned OASIS sources match the base; no whitespace errors. |
 
 This slice updates only T040's MAC/MAC Verify evidence; T040 remains open. Three mandatory fixtures remain blocked, 77 profile cases remain unavailable, and no official OASIS Test Case pass, server acceptance, profile readiness, or conformance claim is made.
+
+### KMIPKIT-0010 T040 — Optional Re-certify Certificate Request (2026-10-25)
+
+KMIP Profiles v2.1 §5.1.1 item 7 says Baseline Client optionally supports any KMIP Specification clause not listed above. Re-certify (§6.1.45) is outside the four explicitly listed Baseline Client operations and is therefore an optional capability in the Baseline closure, not an excluded operation. KMIP Specification v2.1 §6.1.45 paragraph 2 permits omitting Certificate Request when the public key is identified by Unique Identifier. This mapping reuses the request-local evaluator for the separate conditional Unique Identifier requirement and remains distinct from the paragraph-specific condition tracked by `KMIPKIT-REQ-SPEC-6.1.45-002-003` / `KMIPKIT-DEC-019`. It proves only that KMIPKit can represent the client request shape; it does not infer server acceptance or certificate generation. The pinned OASIS sources do not link a requirement-specific official Test Case ID.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO-signed commit `b630c7b1`; `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_recertify_optional_certificate_request_as_optional_capability` | Expected failure: the new regression found no typed mapping for `KMIPKIT-REQ-SPEC-6.1.45-002-001`. |
+| Green | DCO-signed commit `89a28687`; typed mapping and `OptionalCapability` category | PASS: one request with explicit Unique Identifier and Certificate Request fields omitted passes; the mapping validates its source clause, generated category, positive profile test, and fake-transport evidence. |
+| Refactor, catalog, traceability, and generated report | DCO-signed Refactor commit in this tranche | Adds exact source, implementation, and test links; refreshes the object-lifecycle traceability row and regenerates catalog artifacts with the pinned tools. The report snapshot expectation now includes both test-evidence rows for the optional mapping. |
+| Verification | `cargo test -p kmipkit-protocol --all-features --locked recertify`; `cargo test -p kmipkit-client --all-features --locked recertify_sends_explicit_unique_identifier_without_certificate_request_fields`; `cargo fmt --all --check`; protocol Clippy; catalog, generated profile/report, report snapshot, and traceability checks; immutable-source check; `git diff --check` | PASS: 28 Re-certify protocol tests and the client fake-transport test pass; format and Clippy pass; the focused report snapshot passes; feature traceability passes 21 tests; catalog valid (`sources=4 clauses=1411 records=4125`), generated profile/report checks pass, and pinned OASIS sources match the scope base. |
+| Independent QA and security | Read-only T048 reviews | PASS: no normative, behavior, or security findings. |
+
+The Baseline Client profile advances to 202/265 typed requirement mappings (63 unmapped) and remains `evidence_incomplete`. No official Test Case execution, server acceptance, certificate generation, or conformance claim is made.

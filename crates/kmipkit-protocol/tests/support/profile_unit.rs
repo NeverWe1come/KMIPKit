@@ -18112,6 +18112,9 @@ fn profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_b
 }
 
 #[test]
+// Profiles v2.1 §5.1.1 item 7 makes unlisted Specification clauses optional;
+// KMIP Specification v2.1 §6.1.45 paragraph 2 permits omitting Certificate
+// Request when the public key is identified by Unique Identifier.
 fn profile_maps_recertify_optional_certificate_request_as_optional_capability() {
     let mapping = TYPED_RULE_MAPPINGS
         .iter()

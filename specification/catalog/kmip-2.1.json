@@ -96333,17 +96333,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/recertify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
-        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields"
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "status": "scoped_verified",
+      "review_note": "KMIP Profiles v2.1 §5.1.1 item 7 makes support for unlisted Specification clauses optional in Baseline Client; KMIP Specification v2.1 §6.1.45 paragraph 2 permits omitting Certificate Request when the public key is identified by Unique Identifier. The typed profile rule checks only the represented outbound request shape and reuses the separate DEC-019 identifier condition when Certificate Request Value is omitted. Fake-transport evidence confirms the caller can send an explicit Unique Identifier without Certificate Request fields. This does not claim server acceptance, certificate generation, an official Test Case pass, or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-002",

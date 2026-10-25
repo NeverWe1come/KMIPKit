@@ -1,12 +1,11 @@
 # SDD ledger — plan: specs/010-profile-conformance/plan.md
 
 ## Current authoritative state (refreshed 2026-10-25)
-- Worktree: `C:\Users\ramp1953\.codex\worktrees\0010-t040-profile-evidence\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`; local head `c30fe9be668e6f5ec86cb681871ba2b6ff854ea0`, nine commits ahead of origin.
-- PR #90 remains open/draft at remote head `0c70e7fadadf262cef45be3b7ed5ed6dc4541a06`, base `release/1.0.0`; T046 and T047 are local and not yet pushed.
-- Exact-head CI run [40214587778](https://github.com/NeverWe1come/KMIPKit/actions/runs/40214587778) failed on old head `0c70e7fa`: Ubuntu, macOS, and Windows each had the same three stale Python contract assertions. T047 corrected them; focused local contracts pass, and the scoped Codex Security review found no plausible candidates. Hosted CI has not run on the updated head; do not claim the PR is green.
-- T040 remains open. Baseline has 201/265 typed requirement mappings (64 unmapped); readiness remains `evidence_incomplete`. Three pinned mandatory fixtures remain blocked by typed preflight gaps and must be revisited in T045 after T040 closes.
-- T046 is complete after QA and scoped DCO re-review: MAC/MAC Verify optional request capabilities from KMIP Specification v2.1 §§6.1.32–6.1.33. Red `360f608a7`, Green `bef11120a`, Refactor `adacec9ba`, and evidence fix `e12ad617` are DCO-signed. Baseline has 201/265 typed mappings (64 unmapped); readiness remains `evidence_incomplete`.
-- PR #104 (#0043 client mapping/parity) is open/draft at `ab81508877f45284b95009028b9683509d891c6d`, base `release/1.0.0`. Its subagent remains paused as requested; keep implementation work on #90 unless the user resumes #104.
+- Worktree: `C:\Users\ramp1953\.codex\worktrees\0010-t040-profile-evidence\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`. Published PR head is `9a8ff4c4efdbed701713db20b7461ab45b960563`; local Red/Green commits `b630c7b1` / `89a28687` and the T048 Refactor changes are not yet pushed.
+- PR #90 remains open/draft, base `release/1.0.0`. The latest exact-remote-head CI run is [40221938721](https://github.com/NeverWe1come/KMIPKit/actions/runs/40221938721) on `9a8ff4c4`; all reported jobs pass except Script Contracts on macOS and Windows, which were pending at the latest query. Scheduled-only checks are skipped. This run does not validate local T048.
+- T040 remains open. The local Baseline Client count is 202/265 typed requirement mappings (63 unmapped); the published PR head remains at 201/265 until T048 is pushed. Readiness remains `evidence_incomplete`. Three pinned mandatory fixtures remain blocked by typed preflight gaps and must be revisited in T045 after T040 closes.
+- T046 and T047 are complete and published. T048 maps optional Re-certify Certificate Request omission; local Red/Green, Refactor checks, report snapshot, traceability suite, and independent QA/security reviews pass. Local changes are awaiting the DCO-signed Refactor commit and publication to PR #90.
+- PR #104 (#0043 client mapping/parity) remains open/draft and paused at the user's request; continue on #90 without touching #104.
 ## Scoped pre-flight conflict scan
 | Tasks | Shared artifact or interface | Producer/consumer relationship | Finding and ruling |
 |---|---|---|---|
@@ -15,7 +14,7 @@
 | T009 / T010 / T013 | profile.rs, client execute/preflight API and tests | T009 specifies protocol validation; T010/T013 integrate preflight and delivery-state behavior | Keep protocol rule contracts authoritative; preserve `NotSent` and response-started semantics. Existing tasks explicitly separate test, implementation, and refactor stages. |
 
 ## Current task
-Task T040 remains open. T046 and T047 are complete locally; T047 repairs CI contracts that became stale after §7.8 evidence was mapped and Decrypt review-note wording changed. The T046/T047 diff security review completed with no plausible candidates. Keep the source evidence exact, preserve the existing mappings and `evidence_incomplete` state, and make no profile-conformance claim. T045's three fixture blockers remain explicit.
+Task T040 remains open. T046 and T047 are complete and published. T048 is complete locally but unpushed; it adds one optional Baseline capability, raising the local mapping count to 202/265 while preserving `evidence_incomplete`. T045's three fixture blockers remain explicit. Keep source evidence exact and make no profile-conformance claim.
 
 ## Independent source audit — Baseline mandatory case inheritance (2026-10-15)
 - Profiles v2.1 §6.1 item 4 (pinned HTML lines 10483–10489) refers to both Baseline Mandatory Test Cases in §5.1.3 and Symmetric Key Lifecycle Mandatory Test Cases in §5.6.3. The resulting Baseline candidate set is BL-M-1–13-21 plus SKLC-M-1–3-21; “one or more” does not make each case individually mandatory.
