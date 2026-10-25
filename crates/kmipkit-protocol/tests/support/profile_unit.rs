@@ -2887,6 +2887,90 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_multiple_client_operations_in_one_batch_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1 permits multiple operations in one batch.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const FIRST_OPERATION: u32 = REGISTER_OPERATION_TAG;
+    const SECOND_OPERATION: u32 = GET_OPERATION;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("multiple client operations per batch have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the multiple-operation capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&request_message())
+        .expect("a single operation remains valid when the optional capability is unused");
+
+    let request = crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(2)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(FIRST_OPERATION)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(b"register-item".to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(SECOND_OPERATION)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(b"get-item".to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("two different client operations form a structurally valid request batch");
+
+    assert_eq!(request.header().batch_count(), 2);
+    assert_eq!(
+        request
+            .batch_items()
+            .map(|item| item.operation().expect("each batch item has an operation"))
+            .collect::<Vec<_>>(),
+        [FIRST_OPERATION, SECOND_OPERATION]
+    );
+    assert!(evaluate(Some(&request), None));
+    result
+        .validate_request(&request)
+        .expect("the client may combine different operations in one batch");
+}
+
+#[test]
 fn profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability() {
     // KMIP Specification v2.1 §7.18 Table 370 permits repeated Attribute Name
     // Text Strings in Get (§6.1.19) and Export (§6.1.18) wrapping requests.
