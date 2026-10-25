@@ -95609,15 +95609,17 @@
       "feature_spec": "KMIPKIT-0018",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/archive.rs"
+        "crates/kmipkit-protocol/src/archive.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_archive_request_capability",
         "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named client test verifies an Archive request and returns the scripted server result. Section 6.1.4 makes archival timing, location, and hierarchy a key-management-system policy matter; the evidence makes no archival-completion claim. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
+      "review_note": "The profile evaluator and named client test verify that KMIPKit can issue Archive with an optional Unique Identifier and preserve the scripted server result. KMIP Specification v2.1 §6.1.4 and Table 173 make archival timing, location, and hierarchy a key-management-system policy matter; the evidence makes no archival-completion claim. Table 173 permits omission of Unique Identifier for the ID Placeholder, and §4.58 Table 145 defines its permitted wire types. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.40-014",

@@ -6633,3 +6633,16 @@ KMIP Profiles v2.1 §5.1.1 item 7 makes clauses not explicitly listed in Baselin
 | Independent QA and security review | Read-only reviews of Red `2cdd652c4`, Green `3913ac616`, and Refactor `e72fa4624` | PASS: QA confirms the scope clarification resolves the overclaim and the Refactor/DCO evidence is complete; security found no actionable findings. Neither review claims a formal audit or replaces CI. |
 
 T040 remains open. This slice proves only caller-supplied wrapped Key Value with outer Attributes as a direct Structure; it makes no claim for separately wrapped outer Attributes, server acceptance, or Baseline conformance.
+
+## T050 — Baseline optional Archive request
+
+`KMIPKIT-REQ-SPEC-6.1.4-001` is mapped to an `OptionalCapability` for issuing Archive. KMIP Specification v2.1 §6.1.4 and Tables 173–174 define Archive as a client indication of preference; Table 173 permits omitting Unique Identifier to use the ID Placeholder. §4.58 Table 145 defines the permitted Unique Identifier wire types. The evaluator accepts a missing identifier or one supported identifier value, rejects duplicate or malformed fields, and leaves other operations unconstrained. Evidence does not claim the server archived an object, server acceptance, official Test Case execution, or Baseline conformance; official Test Case IDs remain empty.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO-signed commit `1d34419ee2ebea1b83348f967e6521c0b015f229`; `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_optional_archive_request_capability` | Expected failure: `MissingRuleMapping` for `KMIPKIT-REQ-SPEC-6.1.4-001`. |
+| Green | DCO-signed commit `affe149930e365dfffd3046650fd01e81c79942d`; same focused profile test | PASS. The mapping accepts Archive with a Unique Identifier or ID Placeholder omission, while unrelated operations remain valid. |
+| Refactor and traceability | Catalog, KMIPKIT-0018 traceability, task ledger, generated coverage report, and the additional invalid-type regression | Updated together. Catalog retains `scoped_verified`, the generated Baseline report records 204/265 typed mappings, and readiness remains `evidence_incomplete`. |
+| Verification | Full workspace tests; protocol test package; Archive client tests; workspace Clippy; focused profile test; lifecycle traceability tests; catalog validation; profile generation and report checks; format; immutable OASIS check against PR base `d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`; `git diff --check` | PASS. Archive client tests: 5 passed; lifecycle traceability: 3 passed. |
+| Independent review | QA recheck and security diff review of `4c460e09..affe1499`, plus manual review of the later test and documentation delta | PASS with no actionable findings. Codex Security scan reported 0 findings. This is a change review, not a full repository audit or human security certification. |
+| Hosted CI | Exact updated PR head | Pending push. |

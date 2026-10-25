@@ -12692,7 +12692,8 @@ fn profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capab
 #[test]
 fn profile_maps_optional_archive_request_capability() {
     // KMIP Specification v2.1 §6.1.4 and Table 173 define Archive as a client
-    // preference; omission of Unique Identifier selects the ID Placeholder.
+    // preference; §4.58 Table 145 defines Unique Identifier's permitted types.
+    // Omission of Unique Identifier selects the ID Placeholder.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ARCHIVE_OPERATION: u32 = 0x0000_0015;
@@ -12753,6 +12754,22 @@ fn profile_maps_optional_archive_request_capability() {
     let error = result
         .validate_request(&duplicate_identifier)
         .expect_err("Archive cannot contain duplicate Unique Identifier fields");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    let malformed_identifier = request_message_with_operation_payload(
+        ARCHIVE_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::structure(Structure::new()),
+        )]),
+    );
+    let error = result
+        .validate_request(&malformed_identifier)
+        .expect_err("Archive rejects a Unique Identifier with a nonstandard type");
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
