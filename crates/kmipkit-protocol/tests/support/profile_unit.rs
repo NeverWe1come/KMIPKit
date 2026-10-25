@@ -5256,6 +5256,9 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+    const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
     const VENDOR_EXTENSION_VALUE_TAG: u32 = 0x0054_0001;
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -5299,7 +5302,7 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
         .validate_request(&lowercase_register)
         .expect("a lowercase Register value follows the recommendation");
 
-    let uppercase_modify = request_message_with_operation_payload(
+    let uppercase_add = request_message_with_operation_payload(
         ADD_ATTRIBUTE_OPERATION,
         structure([tagged(
             NEW_ATTRIBUTE_TAG,
@@ -5309,9 +5312,9 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
             )])),
         )]),
     );
-    assert!(!evaluate(Some(&uppercase_modify), None));
+    assert!(!evaluate(Some(&uppercase_add), None));
     let error = result
-        .validate_request(&uppercase_modify)
+        .validate_request(&uppercase_add)
         .expect_err("a non-lowercase Add Attribute value deviates from the recommendation");
     assert_eq!(
         error.code(),
@@ -5320,8 +5323,41 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 
-    let opaque_extension = request_message_with_operation_payload(
+    // §4.60 Table 150 Vendor Attribute name/value data is vendor-defined,
+    // even when its opaque TTLV happens to contain this standard tag.
+    let vendor_attribute_request = request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                VENDOR_ATTRIBUTE_TAG,
+                Value::structure(structure([
+                    tagged(
+                        VENDOR_IDENTIFICATION_TAG,
+                        Value::text_string("example.com".to_owned()),
+                    ),
+                    tagged(
+                        ATTRIBUTE_NAME_TAG,
+                        Value::text_string("opaque-friendly-name".to_owned()),
+                    ),
+                    tagged(
+                        ATTRIBUTE_VALUE_TAG,
+                        Value::structure(structure([tagged(
+                            FRIENDLY_NAME_ATTRIBUTE,
+                            Value::text_string("Client Alias".to_owned()),
+                        )])),
+                    ),
+                ])),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&vendor_attribute_request), None));
+
+    // KMIP Specification v2.1 §9.13 Table 418 puts opaque vendor data on the
+    // Batch Item; its nested contents are outside this standard-attribute rule.
+    let opaque_extension = request_message_with_operation_payload_and_vendor_extension(
+        REGISTER_OPERATION_TAG,
+        Structure::new(),
         structure([tagged(
             VENDOR_EXTENSION_VALUE_TAG,
             Value::structure(structure([tagged(
