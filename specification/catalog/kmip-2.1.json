@@ -92685,7 +92685,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional Cryptographic Parameters wire shape. It does not inspect remote object attributes or predict server acceptance. No requirement-specific official Test Case ID is linked by the pinned sources, and no official test execution or profile-conformance claim is made."
+      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional Cryptographic Parameters wire shape. It does not inspect remote object attributes or predict server acceptance. The pinned official Test Cases inventory contains no requirement-specific Test Case ID for this requirement; no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-001-002",
@@ -92721,7 +92721,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional IV/Counter/Nonce wire shape. The algorithm's need for an IV is caller-supplied context and is not inferred; server acceptance is not predicted. No requirement-specific official Test Case ID is linked by the pinned sources, and no official test execution or profile-conformance claim is made."
+      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional IV/Counter/Nonce wire shape. The algorithm's need for an IV is caller-supplied context and is not inferred; server acceptance is not predicted. The pinned official Test Cases inventory contains no requirement-specific Test Case ID for this requirement; no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-003",
