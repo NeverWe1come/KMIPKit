@@ -21124,3 +21124,200 @@ fn profile_maps_mac_verify_original_data_as_optional_capability() {
         .validate_request(&unrelated)
         .expect("a MAC Verify Data rule does not constrain Locate requests");
 }
+
+const T052_RSA_PRIVATE_KEY_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.7-002";
+const T052_RSA_PRIVATE_KEY_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-3.7-002";
+
+fn t052_transparent_rsa_private_key_request(
+    operation: u32,
+    key_format_type: u32,
+    key_value: Value,
+    wrapping_data: Option<Value>,
+) -> crate::RequestMessage {
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const PRIVATE_KEY: u32 = 0x0042_0064;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let mut payload = Vec::new();
+    if operation == IMPORT_OPERATION {
+        payload.push(tagged(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("t052-rsa-private-key".to_owned()),
+        ));
+    }
+    let mut key_block = vec![
+        tagged(KEY_FORMAT_TYPE, Value::enumeration(key_format_type)),
+        tagged(KEY_VALUE, key_value),
+    ];
+    if let Some(wrapping_data) = wrapping_data {
+        key_block.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
+    }
+    payload.extend([
+        tagged(OBJECT_TYPE, Value::enumeration(4)),
+        tagged(ATTRIBUTES, Value::structure(Structure::new())),
+        tagged(
+            PRIVATE_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::structure(structure(key_block)),
+            )])),
+        ),
+    ]);
+    request_message_with_operation_payload(operation, structure(payload))
+}
+
+fn t052_rsa_private_key_value(alternative: Option<&str>) -> Value {
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+    const MODULUS: u32 = 0x0042_0052;
+    const PRIVATE_EXPONENT: u32 = 0x0042_0063;
+    const PRIME_P: u32 = 0x0042_005E;
+    const PRIME_Q: u32 = 0x0042_0071;
+    const PRIME_EXPONENT_P: u32 = 0x0042_0060;
+    const PRIME_EXPONENT_Q: u32 = 0x0042_0061;
+
+    let mut material = vec![tagged(MODULUS, Value::big_integer(vec![0x01]))];
+    match alternative {
+        Some("private_exponent") => {
+            material.push(tagged(PRIVATE_EXPONENT, Value::big_integer(vec![0x03])));
+        }
+        Some("p_and_q") => material.extend([
+            tagged(PRIME_P, Value::big_integer(vec![0x05])),
+            tagged(PRIME_Q, Value::big_integer(vec![0x07])),
+        ]),
+        Some("prime_exponents") => material.extend([
+            tagged(PRIME_EXPONENT_P, Value::big_integer(vec![0x0B])),
+            tagged(PRIME_EXPONENT_Q, Value::big_integer(vec![0x0D])),
+        ]),
+        None => {}
+        Some("only_p") => material.push(tagged(PRIME_P, Value::big_integer(vec![0x05]))),
+        Some("only_prime_exponent_p") => {
+            material.push(tagged(PRIME_EXPONENT_P, Value::big_integer(vec![0x0B])));
+        }
+        Some(_) => unreachable!("T052 test uses a known RSA private-key alternative"),
+    }
+    Value::structure(structure([tagged(
+        KEY_MATERIAL,
+        Value::structure(structure(material)),
+    )]))
+}
+
+fn t052_validate_rsa_private_key_material(
+    operation: u32,
+    key_format_type: u32,
+    key_value: Value,
+    wrapping_data: Option<Value>,
+) -> Result<(), ProfileValidationError> {
+    table12_profile_result(&[T052_RSA_PRIVATE_KEY_REQUIREMENT_ID]).validate_request(
+        &t052_transparent_rsa_private_key_request(
+            operation,
+            key_format_type,
+            key_value,
+            wrapping_data,
+        ),
+    )
+}
+
+#[test]
+fn profile_rejects_transparent_rsa_private_key_without_any_complete_material_alternative() {
+    // KMIP Specification v2.1 §3.7, Table 21 and the paragraph following it.
+    for operation in [REGISTER_OPERATION_TAG, 0x0000_002A] {
+        let error = t052_validate_rsa_private_key_material(
+            operation,
+            10,
+            t052_rsa_private_key_value(None),
+            None,
+        )
+        .expect_err("Transparent RSA Private Key material needs one complete alternative");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(
+            error.requirement_id(),
+            Some(T052_RSA_PRIVATE_KEY_REQUIREMENT_ID)
+        );
+        assert_eq!(
+            error.source_clause_id(),
+            Some(T052_RSA_PRIVATE_KEY_SOURCE_CLAUSE_ID)
+        );
+    }
+}
+
+#[test]
+fn profile_accepts_each_complete_transparent_rsa_private_key_material_alternative() {
+    // KMIP Specification v2.1 §3.7, Table 21 and the paragraph following it.
+    for operation in [REGISTER_OPERATION_TAG, 0x0000_002A] {
+        for alternative in ["private_exponent", "p_and_q", "prime_exponents"] {
+            t052_validate_rsa_private_key_material(
+                operation,
+                10,
+                t052_rsa_private_key_value(Some(alternative)),
+                None,
+            )
+            .expect("each complete source-listed alternative is usable");
+        }
+    }
+}
+
+#[test]
+fn profile_rejects_incomplete_transparent_rsa_private_key_component_pairs() {
+    // KMIP Specification v2.1 §3.7 requires both members of either pair.
+    for operation in [REGISTER_OPERATION_TAG, 0x0000_002A] {
+        for partial in ["only_p", "only_prime_exponent_p"] {
+            let error = t052_validate_rsa_private_key_material(
+                operation,
+                10,
+                t052_rsa_private_key_value(Some(partial)),
+                None,
+            )
+            .expect_err("one member of a paired alternative is insufficient");
+            assert_eq!(
+                error.code(),
+                ProfileValidationErrorCode::RequestRuleRejected
+            );
+            assert_eq!(
+                error.requirement_id(),
+                Some(T052_RSA_PRIVATE_KEY_REQUIREMENT_ID)
+            );
+        }
+    }
+}
+
+#[test]
+fn profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alternatives() {
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let wrapping_data = Value::structure(structure([
+        tagged(WRAPPING_METHOD, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]));
+    t052_validate_rsa_private_key_material(
+        REGISTER_OPERATION_TAG,
+        10,
+        Value::byte_string(vec![0xAA, 0x55]),
+        Some(wrapping_data),
+    )
+    .expect("wrapped Key Value bytes are opaque to this plaintext-only rule");
+
+    t052_validate_rsa_private_key_material(
+        REGISTER_OPERATION_TAG,
+        9,
+        t052_rsa_private_key_value(None),
+        None,
+    )
+    .expect("a different Key Format Type is outside the RSA private-key rule");
+}
