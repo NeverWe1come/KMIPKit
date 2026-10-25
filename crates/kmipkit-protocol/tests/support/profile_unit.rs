@@ -12690,6 +12690,36 @@ fn profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capab
 }
 
 #[test]
+fn profile_maps_optional_archive_request_capability() {
+    // KMIP Specification v2.1 §6.1.4 and Table 173 define Archive as a client
+    // preference; omission of Unique Identifier selects the ID Placeholder.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ARCHIVE_OPERATION: u32 = 0x0000_0015;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let with_identifier = request_message_with_operation_payload(
+        ARCHIVE_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("archive-target".to_owned()),
+        )]),
+    );
+    result
+        .validate_request(&with_identifier)
+        .expect("the selected profile exposes the optional Archive capability");
+
+    let with_id_placeholder =
+        request_message_with_operation_payload(ARCHIVE_OPERATION, Structure::new());
+    result
+        .validate_request(&with_id_placeholder)
+        .expect("Archive may use the ID Placeholder when Unique Identifier is omitted");
+}
+
+#[test]
 fn typed_rule_evaluators_tolerate_missing_context() {
     for mapping in TYPED_RULE_MAPPINGS {
         if let Some(evaluator) = mapping.evaluator {
