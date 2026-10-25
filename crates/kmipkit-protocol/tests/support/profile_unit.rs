@@ -5253,13 +5253,6 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.39-002-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.39-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
-    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
-    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
-    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
-    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
-    const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
-    const VENDOR_EXTENSION_VALUE_TAG: u32 = 0x0054_0001;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -5287,31 +5280,13 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
 
-    let lowercase_register = request_message_with_operation_payload(
-        REGISTER_OPERATION_TAG,
-        structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(structure([tagged(
-                FRIENDLY_NAME_ATTRIBUTE,
-                Value::text_string("client alias".to_owned()),
-            )])),
-        )]),
-    );
+    let lowercase_register = pkcs12_friendly_name_register_request(Some("client alias"));
     assert!(evaluate(Some(&lowercase_register), None));
     result
         .validate_request(&lowercase_register)
         .expect("a lowercase Register value follows the recommendation");
 
-    let uppercase_add = request_message_with_operation_payload(
-        ADD_ATTRIBUTE_OPERATION,
-        structure([tagged(
-            NEW_ATTRIBUTE_TAG,
-            Value::structure(structure([tagged(
-                FRIENDLY_NAME_ATTRIBUTE,
-                Value::text_string("Client Alias".to_owned()),
-            )])),
-        )]),
-    );
+    let uppercase_add = pkcs12_friendly_name_add_request("Client Alias");
     assert!(!evaluate(Some(&uppercase_add), None));
     let error = result
         .validate_request(&uppercase_add)
@@ -5323,9 +5298,67 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 
-    // §4.60 Table 150 Vendor Attribute name/value data is vendor-defined,
-    // even when its opaque TTLV happens to contain this standard tag.
-    let vendor_attribute_request = request_message_with_operation_payload(
+    assert!(evaluate(
+        Some(&pkcs12_friendly_name_vendor_attribute_request()),
+        None
+    ));
+    assert!(evaluate(
+        Some(&pkcs12_friendly_name_vendor_extension_request()),
+        None
+    ));
+
+    let lowercase_unicode = pkcs12_friendly_name_register_request(Some("école"));
+    assert!(evaluate(Some(&lowercase_unicode), None));
+    result
+        .validate_request(&lowercase_unicode)
+        .expect("Unicode lowercase text follows the selected interpretation");
+
+    let uppercase_unicode = pkcs12_friendly_name_register_request(Some("École"));
+    assert!(!evaluate(Some(&uppercase_unicode), None));
+
+    let omitted = pkcs12_friendly_name_register_request(None);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the optional Friendly Name may be omitted");
+}
+
+fn pkcs12_friendly_name_register_request(value: Option<&str>) -> crate::RequestMessage {
+    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+    let attributes = value.map_or_else(Structure::new, |value| {
+        structure([tagged(
+            FRIENDLY_NAME_ATTRIBUTE,
+            Value::text_string(value.to_owned()),
+        )])
+    });
+    request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(attributes))]),
+    )
+}
+
+fn pkcs12_friendly_name_add_request(value: &str) -> crate::RequestMessage {
+    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    request_message_with_operation_payload(
+        ADD_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                FRIENDLY_NAME_ATTRIBUTE,
+                Value::text_string(value.to_owned()),
+            )])),
+        )]),
+    )
+}
+
+fn pkcs12_friendly_name_vendor_attribute_request() -> crate::RequestMessage {
+    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+    const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+    request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
         structure([tagged(
             ATTRIBUTES_TAG,
@@ -5350,12 +5383,15 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
                 ])),
             )])),
         )]),
-    );
-    assert!(evaluate(Some(&vendor_attribute_request), None));
+    )
+}
 
-    // KMIP Specification v2.1 §9.13 Table 418 puts opaque vendor data on the
-    // Batch Item; its nested contents are outside this standard-attribute rule.
-    let opaque_extension = request_message_with_operation_payload_and_vendor_extension(
+fn pkcs12_friendly_name_vendor_extension_request() -> crate::RequestMessage {
+    // KMIP Specification v2.1 §9.13 Table 418 places opaque vendor data on the
+    // Batch Item; nested contents are outside the standard attribute rule.
+    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+    const VENDOR_EXTENSION_VALUE_TAG: u32 = 0x0054_0001;
+    request_message_with_operation_payload_and_vendor_extension(
         REGISTER_OPERATION_TAG,
         Structure::new(),
         structure([tagged(
@@ -5365,26 +5401,7 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
                 Value::text_string("Client Alias".to_owned()),
             )])),
         )]),
-    );
-    assert!(evaluate(Some(&opaque_extension), None));
-
-    let lowercase_unicode = request_message_with_operation_payload(
-        REGISTER_OPERATION_TAG,
-        structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(structure([tagged(
-                FRIENDLY_NAME_ATTRIBUTE,
-                Value::text_string("école".to_owned()),
-            )])),
-        )]),
-    );
-    assert!(evaluate(Some(&lowercase_unicode), None));
-
-    let omitted = request_message_with_operation_payload(
-        REGISTER_OPERATION_TAG,
-        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
-    );
-    assert!(evaluate(Some(&omitted), None));
+    )
 }
 
 fn assert_check_payload_accepts_omission_and_listed_members(

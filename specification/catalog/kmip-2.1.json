@@ -100800,6 +100800,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.39"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "SHOULD",
@@ -100813,15 +100817,21 @@
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME"
       ],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0016",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_pkcs12_friendly_name_uses_lowercase_text"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_lowercase_pkcs12_friendly_name_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The pinned client-side SHOULD is separate from the server alias default and response-encoding duties. Implementation, positive verification, and applicable official test cases remain unassigned."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.39, paragraph at pinned lines 17251–17256, says clients and servers SHOULD utilize lowercase text because the PKCS#12 Friendly Name equality matching rule is caseIgnoreMatch. Table 107 defines the attribute encoding as Text String; §11.56 maps its standard tag 0x4200FB. The adjacent alias default and Get-response encoding clauses are server behavior and are outside this client mapping. The Baseline Client evaluator checks outgoing request TTLV only, applies Rust Unicode default lowercase mapping without mutating caller text, skips Vendor Attribute and vendor/extension subtrees, and does not inspect responses. OASIS does not specify a locale or lowercase algorithm; Unicode default lowercasing is the project interpretation. No requirement-specific official Test Case ID is linked by the pinned OASIS sources; local tests are not an official test-case pass or a server-conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-004",
