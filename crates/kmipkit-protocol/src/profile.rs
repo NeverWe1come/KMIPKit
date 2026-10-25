@@ -7703,16 +7703,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_key_block_algorithm_may_be_omitted_if_value_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_algorithm_missing_from_key_value",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
@@ -7721,16 +7715,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_key_block_length_may_be_omitted_if_value_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_length_missing_from_key_value",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
