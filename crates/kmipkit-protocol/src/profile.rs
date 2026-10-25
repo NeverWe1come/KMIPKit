@@ -11,7 +11,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, RawTag, StructureView, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, StructureView, ValueView};
 
 use crate::attribute::{ClientAttributeMutation, client_attribute_mutation_is_prohibited};
 use crate::profiles_generated::{
@@ -3383,6 +3383,39 @@ fn client_repeated_attributes_are_representable(
 
         request_item
             .with_request_payload(|payload| attribute_group_is_representable(&payload, ATTRIBUTES))
+            .unwrap_or(false)
+    })
+}
+
+fn client_create_object_group_instances_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    const OBJECT_GROUP_ATTRIBUTE_TAG: u32 = 0x0042_0056;
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(CREATE_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, ATTRIBUTES) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        attributes.children().iter().all(|attribute| {
+                            attribute.tag().raw() != OBJECT_GROUP_ATTRIBUTE_TAG
+                                || attribute.item_type() == ItemType::TextString
+                        })
+                    }
+                    _ => false,
+                }),
+            })
             .unwrap_or(false)
     })
 }
@@ -7281,6 +7314,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_object_group_instances_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_object_group_membership_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
