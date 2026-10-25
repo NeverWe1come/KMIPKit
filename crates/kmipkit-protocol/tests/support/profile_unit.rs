@@ -9953,6 +9953,71 @@ fn profile_validates_nested_register_gcm_tag_length() {
 }
 
 #[test]
+fn profile_maps_single_object_group_membership_as_optional_capability() {
+    // KMIP Specification v2.1 §4.35 permits a client to associate an object
+    // with a group; Table 99 defines its Text String encoding.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("single Object Group membership has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("single Object Group membership resolves to catalog metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("single Object Group membership has positive capability evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("single Object Group membership has a request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let one_group = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    OBJECT_GROUP_TAG,
+                    Value::text_string("team-alpha".to_owned()),
+                )])),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&one_group), None));
+    result
+        .validate_request(&one_group)
+        .expect("the client may associate a Create object with one group");
+
+    let omitted = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("single-group association remains optional");
+}
+
+#[test]
 fn profile_maps_multiple_object_group_membership_as_optional_capability() {
     // KMIP Specification v2.1 §4.35 permits multiple Object Group values;
     // Table 99 defines Text String and §6.1.8 Table 186 carries Attributes.
