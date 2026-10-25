@@ -10086,7 +10086,9 @@ fn profile_maps_multiple_object_group_membership_as_optional_capability() {
 #[test]
 fn profile_recommends_object_group_name_attribute_when_assigning_group() {
     // KMIP Specification v2.1 §4.35 recommends setting the group name into
-    // Object Group; Table 99 defines Text String and §11.56 assigns its tag.
+    // Object Group; Table 99 defines Text String, Table 100 permits client
+    // assignment, §6.1.8 Table 186 carries Create Attributes, and §11.56
+    // assigns the Object Group tag.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -10134,6 +10136,67 @@ fn profile_recommends_object_group_name_attribute_when_assigning_group() {
     result
         .validate_request(&assigning_group)
         .expect("the client sets the group name in the Object Group attribute");
+}
+
+#[test]
+fn profile_checks_object_group_names_on_every_client_assignment_route() {
+    // KMIP Specification v2.1 §4.35 and Table 100 cover implicit assignment
+    // by all eight listed operations and client modification; Table 99
+    // requires Text String. Operation payload layouts are from §6.1 Tables
+    // 167, 179, 189, 205, 300, 291, 304, 308, 265, and 322.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let routes = [
+        (0x0000_0001, ATTRIBUTES_TAG), // Create
+        (0x0000_0002, COMMON_ATTRIBUTES_TAG), // Create Key Pair
+        (0x0000_0003, ATTRIBUTES_TAG), // Register
+        (0x0000_0005, ATTRIBUTES_TAG), // Derive Key
+        (0x0000_0006, ATTRIBUTES_TAG), // Certify
+        (0x0000_0007, ATTRIBUTES_TAG), // Re-certify
+        (0x0000_0004, ATTRIBUTES_TAG), // Re-key
+        (0x0000_001D, ATTRIBUTES_TAG), // Re-key Key Pair
+        (0x0000_000D, NEW_ATTRIBUTE_TAG), // Add Attribute
+        (0x0000_000E, CURRENT_ATTRIBUTE_TAG), // Modify Attribute selector
+        (0x0000_000E, NEW_ATTRIBUTE_TAG), // Modify Attribute replacement
+        (0x0000_0031, NEW_ATTRIBUTE_TAG), // Set Attribute
+    ];
+
+    for (operation, attribute_container_tag) in routes {
+        let request_for = |attribute_value| {
+            request_message_with_operation_payload(
+                operation,
+                structure([tagged(
+                    attribute_container_tag,
+                    Value::structure(structure([tagged(
+                        OBJECT_GROUP_TAG,
+                        attribute_value,
+                    )])),
+                )]),
+            )
+        };
+
+        let valid_name = request_for(Value::text_string("team-alpha".to_owned()));
+        result
+            .validate_request(&valid_name)
+            .expect("Object Group names use the Table 99 Text String encoding");
+
+        let invalid_name = request_for(Value::integer(1));
+        let error = result
+            .validate_request(&invalid_name)
+            .expect_err("every supported assignment route rejects a non-Text-String name");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
 }
 
 #[test]
