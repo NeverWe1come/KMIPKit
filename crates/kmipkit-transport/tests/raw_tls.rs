@@ -1501,7 +1501,8 @@ fn spawn_tls12_only_peer(listener: TcpListener) -> thread::JoinHandle<Tls12PeerO
         let Ok((mut stream, _)) = accept_before_deadline(&listener) else {
             return Tls12PeerObservation::default();
         };
-        if stream
+        if stream.set_nonblocking(false).is_err()
+            || stream
             .set_read_timeout(Some(Duration::from_secs(2)))
             .is_err()
             || stream
