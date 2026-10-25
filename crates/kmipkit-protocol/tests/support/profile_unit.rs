@@ -12690,6 +12690,41 @@ fn profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capab
 }
 
 #[test]
+fn baseline_profile_and_shared_batch_requirements_have_typed_mappings() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REQUIREMENT_IDS: [&str; 11] = [
+        "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-6-001",
+        "KMIPKIT-REQ-PROF-6.1-001",
+        "KMIPKIT-REQ-PROF-6.1-002",
+        "KMIPKIT-REQ-PROF-6.1-003",
+        "KMIPKIT-REQ-PROF-6.1-004",
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIPKIT-REQ-SPEC-6.1-001-002",
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIPKIT-REQ-SPEC-6.1-004",
+        "KMIPKIT-REQ-SPEC-6.1-005",
+    ];
+
+    for requirement_id in REQUIREMENT_IDS {
+        let Some(mapping) = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+        else {
+            panic!("{requirement_id} must have an explicit typed profile mapping");
+        };
+        let Some(requirement) = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+        else {
+            panic!("{requirement_id} must resolve to generated requirement metadata");
+        };
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .unwrap_or_else(|error| panic!("{requirement_id} mapping is invalid: {error}"));
+    }
+}
+
+#[test]
 fn profile_maps_optional_archive_request_capability() {
     // KMIP Specification v2.1 §6.1.4 and Table 173 define Archive as a client
     // preference; §4.58 Table 145 defines Unique Identifier's permitted types.
