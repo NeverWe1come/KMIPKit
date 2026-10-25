@@ -5016,6 +5016,74 @@ fn client_key_block_length_requires_algorithm(
     )
 }
 
+fn client_key_block_algorithm_may_be_omitted_if_value_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_block_value_is_direct_or_in_plaintext_key_value(request, CRYPTOGRAPHIC_ALGORITHM)
+}
+
+fn client_key_block_length_may_be_omitted_if_value_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_block_value_is_direct_or_in_plaintext_key_value(request, CRYPTOGRAPHIC_LENGTH)
+}
+
+fn client_key_block_value_is_direct_or_in_plaintext_key_value(
+    request: Option<&RequestMessage>,
+    attribute_tag: u32,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+                if matches!(object_type, SECRET_DATA_OBJECT_TYPE | OPAQUE_OBJECT_TYPE) {
+                    return true;
+                }
+                let Some(object_tag) = key_block_object_tag(object_type) else {
+                    // Preserve future Object Type values without applying a known-object rule.
+                    return true;
+                };
+                let FieldPresence::Unique(object) = field_presence(&payload, object_tag) else {
+                    return false;
+                };
+                object.with_value(|value| match value {
+                    ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+                        FieldPresence::Unique(key_block) => key_block.with_value(|value| {
+                            matches!(value, ValueView::Structure(key_block)
+                                if register_key_block_has_table293_attribute(&key_block, attribute_tag))
+                        }),
+                        FieldPresence::Missing | FieldPresence::Duplicate => false,
+                    },
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_key_block_direct_field_requires_companion(
     request: Option<&RequestMessage>,
     field_tag: u32,
@@ -7624,6 +7692,42 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_key_block_algorithm_may_be_omitted_if_value_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_algorithm_missing_from_key_value",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_key_block_length_may_be_omitted_if_value_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_length_missing_from_key_value",
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],

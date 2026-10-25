@@ -14336,16 +14336,12 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
 
 #[test]
 fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
-    // KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit each
-    // Key Block value to be omitted only when that value is available in Key Value.
     const REQUIREMENT_IDS: [&str; 2] = [
         "KMIPKIT-REQ-SPEC-3.1-004-001",
         "KMIPKIT-REQ-SPEC-3.1-005-001",
     ];
-    const SOURCE_CLAUSES: [&str; 2] = [
-        "KMIPKIT-CLAUSE-SPEC-3.1-004",
-        "KMIPKIT-CLAUSE-SPEC-3.1-005",
-    ];
+    const SOURCE_CLAUSES: [&str; 2] =
+        ["KMIPKIT-CLAUSE-SPEC-3.1-004", "KMIPKIT-CLAUSE-SPEC-3.1-005"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     for (requirement_id, source_clause_id) in REQUIREMENT_IDS.iter().zip(SOURCE_CLAUSES) {
@@ -14366,61 +14362,72 @@ fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
             .expect("the optional Key Block omission is mapped and positively tested");
     }
 
-    let key_value_attributes = tagged(
-        TABLE12_ATTRIBUTES,
-        Value::structure(structure([
-            tagged(
-                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
-                Value::enumeration(3),
-            ),
-            tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
-        ])),
+    assert_table12_key_block_omission_accepted(
+        REQUIREMENT_IDS[0],
+        tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
     );
-    let key_value = tagged(
-        TABLE12_KEY_VALUE,
-        Value::structure(structure([
-            tagged(
-                TABLE12_KEY_MATERIAL,
-                Value::byte_string(b"synthetic-key-material".to_vec()),
-            ),
-            key_value_attributes,
-        ])),
+    assert_table12_key_block_omission_accepted(
+        REQUIREMENT_IDS[1],
+        tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
     );
-    let key_block = tagged(
-        TABLE12_KEY_BLOCK,
-        Value::structure(structure([
-            tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
-            key_value,
-        ])),
+}
+
+#[test]
+fn profile_rejects_omitted_key_block_algorithm_missing_from_key_value() {
+    let request = table12_key_block_omission_request(tagged(
+        TABLE12_CRYPTOGRAPHIC_LENGTH,
+        Value::integer(256),
+    ));
+    assert_table12_key_block_omission_rejected(
+        &request,
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
     );
-    let object = tagged(
+}
+
+#[test]
+fn profile_rejects_omitted_key_block_length_missing_from_key_value() {
+    let request = table12_key_block_omission_request(tagged(
+        TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+        Value::enumeration(3),
+    ));
+    assert_table12_key_block_omission_rejected(
+        &request,
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-005",
+    );
+}
+
+fn table12_key_block_omission_request(key_value_attribute: Item) -> crate::RequestMessage {
+    let object = table12_key_block_object(
         TABLE12_SYMMETRIC_KEY,
-        Value::structure(structure([key_block])),
+        false,
+        false,
+        Some(key_value_attribute),
     );
-    let valid_request = request_message_with_operation_payload(
+    request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(TABLE12_REGISTER_OPERATION, object, []),
-    );
-    let result = table12_profile_result(&REQUIREMENT_IDS);
-    result
-        .validate_request(&valid_request)
-        .expect("both omitted Key Block values are available from plaintext Key Value Attributes");
+    )
+}
 
-    let incomplete_value = table12_key_block_object(
-        TABLE12_SYMMETRIC_KEY,
-        false,
-        false,
-        Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
-    );
-    let incomplete_request = request_message_with_operation_payload(
-        TABLE12_REGISTER_OPERATION,
-        table12_request_payload(TABLE12_REGISTER_OPERATION, incomplete_value, []),
-    );
-    let error = result
-        .validate_request(&incomplete_request)
-        .expect_err("an omitted algorithm is not backed by a Key Value Algorithm");
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_IDS[0]));
-    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSES[0]));
+fn assert_table12_key_block_omission_accepted(requirement_id: &str, attribute: Item) {
+    let request = table12_key_block_omission_request(attribute);
+    table12_profile_result(&[requirement_id])
+        .validate_request(&request)
+        .expect("omission is permitted when the value is in plaintext Key Value Attributes");
+}
+
+fn assert_table12_key_block_omission_rejected(
+    request: &crate::RequestMessage,
+    requirement_id: &str,
+    source_clause_id: &str,
+) {
+    let error = table12_profile_result(&[requirement_id])
+        .validate_request(request)
+        .expect_err("omission is not permitted when the Key Value lacks the value");
+    assert_eq!(error.requirement_id(), Some(requirement_id));
+    assert_eq!(error.source_clause_id(), Some(source_clause_id));
 }
 
 #[test]
