@@ -8720,16 +8720,11 @@ fn profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability() {
                 vec![0x41, 0x42],
             ))),
         )
-        .with_cryptographic_parameters(structure([tagged(
-            RANDOM_IV_TAG,
-            Value::boolean(true),
-        )]))
+        .with_cryptographic_parameters(structure([tagged(RANDOM_IV_TAG, Value::boolean(true))]))
         .to_ttlv_payload()
         .expect("random-IV Encrypt parameters have a valid local structure"),
         crate::EncryptRequest::new(
-            Some(crate::UniqueIdentifier::TextString(
-                "rsa-key-id".to_owned(),
-            )),
+            Some(crate::UniqueIdentifier::TextString("rsa-key-id".to_owned())),
             Some(crate::OperationData::ByteString(crate::SecretBytes::new(
                 vec![0x43, 0x44],
             ))),
@@ -8763,7 +8758,10 @@ fn profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability() {
             })
             .expect("the test request contains a Request Payload");
         assert!(has_parameters);
-        assert!(!has_iv, "the caller's omitted IV must not be generated locally");
+        assert!(
+            !has_iv,
+            "the caller's omitted IV must not be generated locally"
+        );
         result
             .validate_request(&request)
             .expect("profile preflight permits the applicable IV omission");

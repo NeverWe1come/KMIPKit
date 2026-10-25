@@ -758,6 +758,7 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const IV_COUNTER_NONCE: u32 = 0x0042_003D;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
@@ -1621,6 +1622,23 @@ fn client_encrypt_cryptographic_parameters_are_optional_structure(
         ENCRYPT_OPERATION,
         CRYPTOGRAPHIC_PARAMETERS,
         OperationFieldType::Structure,
+        false,
+    )
+}
+
+fn client_encrypt_iv_counter_nonce_is_optional_byte_string(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.17 permits omission under the caller-supplied parameters or when
+    // the selected algorithm does not need an IV. Preflight checks only the
+    // optional outbound field shape; it neither creates an IV nor predicts
+    // remote-object attributes or server behavior.
+    client_operation_field_is_well_formed(
+        request,
+        ENCRYPT_OPERATION,
+        IV_COUNTER_NONCE,
+        OperationFieldType::ByteString,
         false,
     )
 }
@@ -7889,6 +7907,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_encrypt_cryptographic_parameters_are_optional_structure),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_encrypt_iv_counter_nonce_is_optional_byte_string),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
