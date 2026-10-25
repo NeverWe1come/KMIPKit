@@ -82,6 +82,25 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("encoding", "ttlv"),
     ("client_profile_selection", "at_least_one"),
     ("client_profile_closure", "all_normative_statements"),
+    ("client_profile_conformance_evidence", "profiles_4_1_2_test_variations"),
+    (
+        "client_profile_conformance_evidence",
+        "all_applicable_profile_normative_statements",
+    ),
+    ("client_profile_conformance_evidence", "kmip_specification_v2_1"),
+    (
+        "client_profile_conformance_evidence",
+        "profiles_3_1_basic_authentication_suite",
+    ),
+    ("client_profile_conformance_evidence", "baseline_client_conditions_5_1_1"),
+    (
+        "client_profile_conformance_evidence",
+        "one_or_more_baseline_mandatory_tests_5_1_3_or_5_6_3",
+    ),
+    ("client_profile_capability", "implemented_operations"),
+    ("client_profile_capability", "id_placeholder"),
+    ("client_profile_capability", "zero_or_more_create_attributes"),
+    ("client_profile_capability", "recover_before_use_caller_controlled"),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),
