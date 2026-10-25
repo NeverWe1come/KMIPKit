@@ -6350,9 +6350,9 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.30-002` from KMIP Specification v2.1 §6.1.30 Table
 
 | Stage | Commit | Evidence |
 |---|---|---|
-| Red | DCO commit `2067ea76` | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_login_optional_request_count_as_integer -- --nocapture` failed because the requirement had no typed profile mapping. |
-| Green | DCO commit `eb298cfb` | Added an operation-scoped optional Integer rule for Login Request Count. The focused profile test accepts omission and one Integer, rejects duplicate and wrong-type fields with stable requirement context, and leaves Locate unaffected. |
-| Refactor, catalog, and generated report | DCO commit `7d320c13` | Linked the profile evaluator and both request/profile tests in the catalog, clarified the source-gap note, regenerated profile evidence, report, and updated the report snapshot expectation. |
+| Red | DCO commit `1f86df1c` | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_login_optional_request_count_as_integer -- --nocapture` failed because the requirement had no typed profile mapping. |
+| Green | DCO commit `42ba85b3` | Added an operation-scoped optional Integer rule for Login Request Count. The focused profile test accepts omission and one Integer, rejects duplicate and wrong-type fields with stable requirement context, and leaves Locate unaffected. |
+| Refactor, catalog, and generated report | DCO commit `a6a03917` | Linked the profile evaluator and both request/profile tests in the catalog, clarified the source-gap note, regenerated profile evidence, report, and updated the report snapshot expectation. |
 | Local verification | Protocol tests; Clippy; format/diff; catalog/profile/report; report snapshot; typed profile traceability; bidirectional evidence | PASS: 1,022 protocol unit tests plus integration/doctest targets; protocol Clippy with `-D warnings`; formatting and whitespace checks; catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and report current; report snapshot and bidirectional requirement-evidence test pass; typed profile traceability passes (194.034s on Windows). Coverage thresholds remain temporarily waived for unfinished PRs #90 and #104 while collection stays enabled. |
 | Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Pending sequential reviews and CI for the next published head. |
 
