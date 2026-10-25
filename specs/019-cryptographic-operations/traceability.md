@@ -40,6 +40,8 @@ ID Placeholder scope is limited to client-side request eligibility; server state
 
 Shared ordering/batch mechanics, effective Batch Order Option default, per-item result association, transport delivery state, asynchronous processing, and Pending correlation storage remain owned by KMIPKIT-0006/0007/0009. T031 tests this feature's omission gate and typed Pending integration; this traceability does not redefine batch order or classify a producer as successful from local request data.
 
+The KMIPKIT-0010 Baseline Client closure also maps the optional MAC and MAC Verify request capabilities from Specification §§6.1.32–6.1.33. Their feature ownership remains KMIPKIT-0021; see `specs/021-hash-mac-signature-operations/traceability.md` for operation traceability. T040 checks represented request-field shapes only and does not infer remote object attributes, algorithm-specific original-Data requirements, or server acceptance.
+
 ## Operation and shared-field elements
 
 | Catalog element | OASIS source | Feature use | Verification target |

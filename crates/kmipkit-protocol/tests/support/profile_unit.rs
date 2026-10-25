@@ -20221,11 +20221,7 @@ fn mac_verify_profile_test_payload(
             .into_iter()
             .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
     );
-    fields.extend(
-        original_data
-            .into_iter()
-            .map(|data| tagged(DATA_TAG, data)),
-    );
+    fields.extend(original_data.into_iter().map(|data| tagged(DATA_TAG, data)));
     fields.push(tagged(
         MAC_DATA_TAG,
         Value::byte_string(b"mac value".to_vec()),
@@ -20235,6 +20231,7 @@ fn mac_verify_profile_test_payload(
 
 #[test]
 fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
+    // OASIS KMIP Specification v2.1 §6.1.32, opening operation description.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.32-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -20290,17 +20287,17 @@ fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
 
     for malformed_payload in [
         mac_profile_test_payload([Value::text_string("wrong type".to_owned())]),
-        mac_profile_test_payload([
-            mac_profile_test_parameters(),
-            mac_profile_test_parameters(),
-        ]),
+        mac_profile_test_payload([mac_profile_test_parameters(), mac_profile_test_parameters()]),
     ] {
         let malformed = request_message_with_operation_payload(MAC_OPERATION, malformed_payload);
         assert!(!evaluate(Some(&malformed), None));
         let error = result
             .validate_request(&malformed)
             .expect_err("MAC parameters reject duplicate or wrongly typed fields");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 
@@ -20312,6 +20309,7 @@ fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
 
 #[test]
 fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability() {
+    // OASIS KMIP Specification v2.1 §6.1.33, opening operation description.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -20366,10 +20364,7 @@ fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capabil
     for malformed_payload in [
         mac_verify_profile_test_payload([Value::text_string("wrong type".to_owned())], []),
         mac_verify_profile_test_payload(
-            [
-                mac_profile_test_parameters(),
-                mac_profile_test_parameters(),
-            ],
+            [mac_profile_test_parameters(), mac_profile_test_parameters()],
             [],
         ),
     ] {
@@ -20379,7 +20374,10 @@ fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capabil
         let error = result
             .validate_request(&malformed)
             .expect_err("MAC Verify parameters reject duplicate or wrongly typed fields");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 
@@ -20391,6 +20389,7 @@ fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capabil
 
 #[test]
 fn profile_maps_mac_verify_original_data_as_optional_capability() {
+    // OASIS KMIP Specification v2.1 §6.1.33, opening operation description.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -20467,7 +20466,10 @@ fn profile_maps_mac_verify_original_data_as_optional_capability() {
         let error = result
             .validate_request(&malformed)
             .expect_err("original Data rejects duplicate or wrongly typed fields");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 

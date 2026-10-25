@@ -94912,10 +94912,12 @@
       "feature_spec": "KMIPKIT-0021",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/mac.rs"
+        "crates/kmipkit-protocol/src/mac.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_cryptographic_parameters_omission_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted"
       ],
       "negative_verification_required": false,
@@ -95040,9 +95042,11 @@
       "feature_spec": "KMIPKIT-0021",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/mac_verify.rs"
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_original_data_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order"
       ],
@@ -95078,9 +95082,11 @@
       "feature_spec": "KMIPKIT-0021",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/mac_verify.rs"
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted"
       ],
       "negative_verification_required": false,
