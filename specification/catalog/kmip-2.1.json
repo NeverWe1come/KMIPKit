@@ -88256,12 +88256,20 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Transparent RSA Private Key material",
-      "summary": "The client must include at least one alternative RSA private-key material component enumerated immediately after this clause.",
+      "summary": "If a client supplies Transparent RSA Private Key material, at least one of these SHALL be present: Private Exponent; P and Q; or Prime Exponent P and Prime Exponent Q.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Transparent RSA Private Key.",
+      "direction": "client_to_server",
+      "condition": "A client supplies plaintext Transparent RSA Private Key Key Material in a Register or Import request. Wrapped Key Value bytes are opaque to this request-side check.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-TRANSPARENT-RSA-PRIVATE-KEY-0000000A",
+        "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-P",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-P",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-Q",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIVATE-EXPONENT",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-Q"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -88284,12 +88292,22 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_transparent_rsa_private_key_has_material_alternative",
+        "crates/kmipkit-protocol/src/profile.rs::transparent_rsa_key_block_has_material_alternative",
+        "crates/kmipkit-protocol/src/profile.rs::transparent_rsa_private_key_material_has_alternative",
+        "crates/kmipkit-protocol/src/profile.rs::has_unique_big_integer"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_each_complete_transparent_rsa_private_key_material_alternative",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_transparent_rsa_private_key_without_any_complete_material_alternative",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_transparent_rsa_private_key_component_pairs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alternatives"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §3.7, Table 21, and the following paragraph require a Transparent RSA Private Key material structure to contain a Private Exponent, both P and Q, or both Prime Exponent P and Prime Exponent Q. The typed client profile enforces this on plaintext caller-supplied Register and Import requests. Wrapped Key Value bytes remain opaque, and the separate Table 21 Modulus requirement is not attributed to this clause. No server-generated response behavior, official Test Case, server acceptance, or profile-conformance claim is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.8-001",
