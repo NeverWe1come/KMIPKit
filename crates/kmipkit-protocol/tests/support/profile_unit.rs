@@ -4479,15 +4479,17 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CORRELATION_VALUE: u32 = 0x0042_00D6;
     const INITIAL_INDICATOR: u32 = 0x0042_00D7;
+    const FINAL_INDICATOR: u32 = 0x0042_00D8;
     const CRYPTOGRAPHIC_OPERATIONS: [u32; 7] = [
-        0x0000_0013, // Hash
-        0x0000_0014, // MAC
-        0x0000_0015, // MAC Verify
+        0x0000_0027, // Hash
+        0x0000_0023, // MAC
+        0x0000_0024, // MAC Verify
         0x0000_001F, // Encrypt
         0x0000_0020, // Decrypt
         0x0000_0021, // Sign
         0x0000_0022, // Signature Verify
     ];
+    const DESTROY_OPERATION: u32 = 0x0000_0013;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -4550,7 +4552,34 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
                 .code(),
             ProfileValidationErrorCode::RequestRuleRejected
         );
+
+        let missing_final_correlation = request_message_with_operation_payload(
+            operation,
+            structure([tagged(FINAL_INDICATOR, Value::boolean(true))]),
+        );
+        assert!(!evaluate(Some(&missing_final_correlation), None));
+        result
+            .validate_request(&missing_final_correlation)
+            .expect_err("a final continuation carries the server Correlation Value");
+
+        let single_part_with_indicators = request_message_with_operation_payload(
+            operation,
+            structure([
+                tagged(INITIAL_INDICATOR, Value::boolean(true)),
+                tagged(FINAL_INDICATOR, Value::boolean(true)),
+            ]),
+        );
+        assert!(evaluate(Some(&single_part_with_indicators), None));
+        result
+            .validate_request(&single_part_with_indicators)
+            .expect("single-part operations may set both indicators without correlation");
     }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        DESTROY_OPERATION,
+        structure([tagged(INITIAL_INDICATOR, Value::boolean(false))]),
+    );
+    assert!(evaluate(Some(&unrelated_operation), None));
 }
 
 #[test]
