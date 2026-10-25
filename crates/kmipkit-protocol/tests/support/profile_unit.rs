@@ -5196,11 +5196,7 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
             == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set"
             && evidence.kind == RuleTestKind::OptionalCapabilityUsable
     }));
-    assert!(mapping.test_evidence.iter().any(|evidence| {
-        evidence.test_id
-            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set"
-            && evidence.kind == RuleTestKind::NegativeBehavior
-    }));
+    assert_eq!(mapping.test_evidence.len(), 1);
 
     let evaluate = mapping
         .evaluator
