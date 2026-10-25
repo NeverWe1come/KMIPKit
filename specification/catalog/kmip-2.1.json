@@ -93409,15 +93409,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/encrypt.rs"
+        "crates/kmipkit-protocol/src/encrypt.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them"
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.17 explains that the client MAY omit Encrypt Cryptographic Parameters when they are attributes of the Managed Cryptographic Object; Table 214 marks the request field Required=No. The typed Baseline Client rule permits an Encrypt request with caller omission and validates representation only. It cannot inspect remote object attributes or predict the server's result if required parameters are unavailable. No official OASIS test execution is claimed. The pinned Test Cases inventory has no requirement-specific test ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-001-002",
