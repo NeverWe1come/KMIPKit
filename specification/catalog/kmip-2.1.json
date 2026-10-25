@@ -93445,15 +93445,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/encrypt.rs"
+        "crates/kmipkit-protocol/src/encrypt.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them"
+        "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.17 permits omission when the supplied Cryptographic Parameters direct server Random IV generation or the selected algorithm does not require an IV. The typed Baseline Client rule validates only the optional outbound Byte String representation; focused tests preserve omission in both a Random IV request and RSA (Cryptographic Algorithm value 4, §11.12 Table 443). KMIPKit does not generate an IV, inspect remote object attributes, or predict server acceptance. No official OASIS test execution is claimed. The pinned Test Cases inventory has no requirement-specific test ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-004",
