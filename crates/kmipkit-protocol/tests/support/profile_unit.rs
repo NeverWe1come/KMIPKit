@@ -629,6 +629,48 @@ fn request_message_with_batch_operations_and_order(
         .expect("test multi-item Request Message has valid batch item identifiers")
 }
 
+fn request_message_with_batch_operations_and_continuation(
+    operations: impl IntoIterator<Item = (u32, Structure)>,
+    batch_error_continuation_option: Option<u32>,
+) -> crate::RequestMessage {
+    let operations: Vec<_> = operations.into_iter().collect();
+    let batch_count = i32::try_from(operations.len()).expect("test batch count fits in an Integer");
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(value) = batch_error_continuation_option {
+        header_items.push(tagged(
+            BATCH_ERROR_CONTINUATION_OPTION_TAG,
+            Value::enumeration(value),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(batch_count)));
+    let mut root_items = vec![tagged(
+        REQUEST_HEADER_TAG,
+        Value::structure(structure(header_items)),
+    )];
+
+    root_items.extend(
+        operations
+            .into_iter()
+            .enumerate()
+            .map(|(index, (operation, payload))| {
+                tagged(
+                    BATCH_ITEM_TAG,
+                    Value::structure(structure([
+                        tagged(OPERATION_TAG, Value::enumeration(operation)),
+                        tagged(
+                            UNIQUE_BATCH_ITEM_ID_TAG,
+                            Value::byte_string(index.to_be_bytes().to_vec()),
+                        ),
+                        tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
+                    ])),
+                )
+            }),
+    );
+
+    crate::RequestMessage::try_from_ttlv(structure(root_items))
+        .expect("test multi-item Request Message has valid continuation option shape")
+}
+
 fn register_key_value_location_request(
     include_location: bool,
     include_key_value: bool,
@@ -5177,6 +5219,97 @@ fn profile_maps_client_check_usage_limits_count() {
         ]),
     );
     assert!(result.validate_request(&duplicate).is_err());
+}
+
+#[test]
+fn profile_recommends_stop_or_undo_when_check_is_present() {
+    // KMIP Specification v2.1 §6.1.7 recommends Stop or Undo for a batch
+    // containing Check; §9.6 defaults omission to Stop and §11.5 Table 435
+    // assigns Continue=1, Stop=2, and Undo=3.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CONTINUE: u32 = 1;
+    const STOP: u32 = 2;
+    const UNDO: u32 = 3;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Check batches have a typed Batch Error Continuation recommendation");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Check continuation recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHOULD mapping has recommended-behavior evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Check batches have a typed continuation-option evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for option in [None, Some(STOP), Some(UNDO)] {
+        let request = request_message_with_batch_operations_and_continuation(
+            [
+                (CHECK_OPERATION_TAG, Structure::new()),
+                (LOCATE_OPERATION_TAG, Structure::new()),
+            ],
+            option,
+        );
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omission, Stop, or Undo follows the Check recommendation");
+    }
+
+    let check_with_continue = request_message_with_batch_operations_and_continuation(
+        [
+            (CHECK_OPERATION_TAG, Structure::new()),
+            (LOCATE_OPERATION_TAG, Structure::new()),
+        ],
+        Some(CONTINUE),
+    );
+    assert!(!evaluate(Some(&check_with_continue), None));
+    let error = result
+        .validate_request(&check_with_continue)
+        .expect_err("Continue is not recommended in a batch containing Check");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    let check_second_with_continue = request_message_with_batch_operations_and_continuation(
+        [
+            (LOCATE_OPERATION_TAG, Structure::new()),
+            (CHECK_OPERATION_TAG, Structure::new()),
+        ],
+        Some(CONTINUE),
+    );
+    assert!(!evaluate(Some(&check_second_with_continue), None));
+
+    let unrelated_continue = request_message_with_batch_operations_and_continuation(
+        [
+            (LOCATE_OPERATION_TAG, Structure::new()),
+            (LOCATE_OPERATION_TAG, Structure::new()),
+        ],
+        Some(CONTINUE),
+    );
+    assert!(evaluate(Some(&unrelated_continue), None));
+    result
+        .validate_request(&unrelated_continue)
+        .expect("batches without Check remain outside this recommendation");
 }
 
 #[test]
