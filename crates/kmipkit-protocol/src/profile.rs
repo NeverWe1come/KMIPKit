@@ -763,6 +763,8 @@ const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const CERTIFY_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SPECIFICATION_TAG_PREFIX: u32 = 0x42;
 const EXTENSION_TAG_PREFIX: u32 = 0x54;
+const PKCS12_FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+const VENDOR_EXTENSION: u32 = 0x0042_009C;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
@@ -1544,6 +1546,50 @@ fn client_check_optional_usage_limits_count_is_long_integer(
         USAGE_LIMITS_COUNT,
         CheckOptionalFieldType::LongInteger,
     )
+}
+
+fn client_pkcs12_friendly_name_uses_lowercase_text(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        batch_item
+            .with_request_payload(|payload| {
+                structure_uses_lowercase_pkcs12_friendly_name_text(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn structure_uses_lowercase_pkcs12_friendly_name_text(structure: &StructureView<'_>) -> bool {
+    structure.children().iter().all(|field| {
+        let tag = field.tag().raw();
+        if tag == PKCS12_FRIENDLY_NAME_ATTRIBUTE {
+            return field.with_value(|value| match value {
+                ValueView::TextString(text) => text.to_lowercase() == *text,
+                _ => false,
+            });
+        }
+
+        if tag == VENDOR_ATTRIBUTE || tag == VENDOR_EXTENSION || tag_is_extension(tag) {
+            return true;
+        }
+
+        field.with_value(|value| match value {
+            ValueView::Structure(nested) => {
+                structure_uses_lowercase_pkcs12_friendly_name_text(&nested)
+            }
+            _ => true,
+        })
+    })
+}
+
+fn tag_is_extension(raw_tag: u32) -> bool {
+    ((raw_tag >> 16) & 0xFF) == EXTENSION_TAG_PREFIX
 }
 
 fn client_check_additional_attributes_are_limited_to_listed_set(
@@ -7292,6 +7338,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.39-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.39-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(client_pkcs12_friendly_name_uses_lowercase_text),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_lowercase_pkcs12_friendly_name_values",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
