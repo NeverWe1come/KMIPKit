@@ -25,7 +25,7 @@ OPERATIONS = {
     "Revoke",
 }
 CHECK_ATTRIBUTE_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
-UNASSIGNED_RECERTIFY_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+SCOPED_RECERTIFY_IDENTIFIER_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
 SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.43-005"
 ABSENT_LINK_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-4.31-002"
 CHECK_ATTRIBUTE_ELEMENT_IDS = [
@@ -89,12 +89,19 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
         for row in rows:
             requirement = requirements[row[0]]
             self.assertEqual(requirement["feature_spec"], FEATURE_SPEC, row[0])
-            if row[0] == UNASSIGNED_RECERTIFY_REQUIREMENT_ID:
-                self.assertEqual(requirement["status"], "unassigned", row[0])
-                self.assertEqual(requirement["implementation_refs"], [], row[0])
-                self.assertEqual(requirement["verification_refs"], [], row[0])
-                self.assertEqual(row[4], "unassigned", row[0])
-                self.assertEqual(row[5:7], ["—", "—"], row[0])
+            if row[0] == SCOPED_RECERTIFY_IDENTIFIER_REQUIREMENT_ID:
+                self.assertEqual(requirement["status"], "scoped_verified", row[0])
+                self.assertTrue(requirement["implementation_refs"], row[0])
+                self.assertTrue(requirement["verification_refs"], row[0])
+                self.assertEqual(row[4], "scoped_verified", row[0])
+                self.assertIn("crates/kmipkit-protocol/src/recertify.rs::into_ttlv_payload", row[5])
+                self.assertIn("client_recertify_identifier_required_when_request_value_is_omitted", row[5])
+                self.assertIn("DEC-019", row[7])
+                self.assertEqual(
+                    requirement["element_ids"],
+                    ["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"],
+                    row[0],
+                )
             elif row[0] == SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
                 self.assertEqual(requirement["status"], "scoped_verified", row[0])
                 self.assertEqual(row[4], "scoped_verified", row[0])
@@ -135,12 +142,6 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                         batch_option_element_id,
                         "KMIPKIT-ELEM-OP-C2S-CHECK",
                     ],
-                    row[0],
-                )
-            elif row[0] == UNASSIGNED_RECERTIFY_REQUIREMENT_ID:
-                self.assertEqual(
-                    requirement["element_ids"],
-                    ["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"],
                     row[0],
                 )
             elif row[0] == SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID:
@@ -201,6 +202,12 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                         "KMIPKIT-ELEM-OP-C2S-GET",
                         "KMIPKIT-ELEM-TAG-420094",
                     ],
+                    row[0],
+                )
+            elif row[0] == SCOPED_RECERTIFY_IDENTIFIER_REQUIREMENT_ID:
+                self.assertEqual(
+                    requirement["element_ids"],
+                    ["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"],
                     row[0],
                 )
             elif row[0] == "KMIPKIT-REQ-SPEC-6.1.6-007":

@@ -1,6 +1,6 @@
 //! Re-certify contracts derived from OASIS KMIP Specification v2.1 §6.1.45,
 //! Tables 298–302. Traceability: `KMIPKIT-REQ-SPEC-6.1.45-001`, `-002-001`,
-//! `-002-002`, `-004`, `-006-001`, `-006-002`, and `-008`. These are derived
+//! `-002-002`, `-002-003`, `-004`, `-006-001`, `-006-002`, and `-008`. These are derived
 //! tests, not official OASIS Test Case executions.
 
 use crate::async_operation_fixtures::{response_message, structure};

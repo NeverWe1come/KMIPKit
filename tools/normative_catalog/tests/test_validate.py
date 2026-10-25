@@ -17026,6 +17026,8 @@ class CatalogValidationTests(unittest.TestCase):
                     if requirement_id == "KMIPKIT-REQ-SPEC-6.1.18-001-001"
                     else "scoped_verified"
                     if requirement_id == "KMIPKIT-REQ-SPEC-4.39-002-001"
+                    else "scoped_verified"
+                    if requirement_id == "KMIPKIT-REQ-SPEC-6.1.45-002-003"
                     else "unassigned"
                 )
                 self.assertEqual(requirement["status"], expected_status)
