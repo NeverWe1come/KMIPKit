@@ -5247,7 +5247,10 @@ fn profile_recommends_batch_order_true_when_check_is_present() {
     assert!(!evaluate(Some(&unrelated_unordered_batch), None));
 
     let unrelated_operation = request_message_with_batch_operations_and_order(
-        [(LOCATE_OPERATION_TAG, Structure::new())],
+        [
+            (LOCATE_OPERATION_TAG, Structure::new()),
+            (LOCATE_OPERATION_TAG, Structure::new()),
+        ],
         Some(false),
     );
     assert!(evaluate(Some(&unrelated_operation), None));
