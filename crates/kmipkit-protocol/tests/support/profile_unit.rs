@@ -4478,9 +4478,7 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     const MULTIPART_CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.8-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const CORRELATION_VALUE: u32 = 0x0042_00D6;
     const INITIAL_INDICATOR: u32 = 0x0042_00D7;
-    const FINAL_INDICATOR: u32 = 0x0042_00D8;
     const CRYPTOGRAPHIC_OPERATIONS: [u32; 7] = [
         0x0000_0027, // Hash
         0x0000_0023, // MAC
@@ -4511,18 +4509,17 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
         evidence.test_id == MULTIPART_CLIENT_TEST_ID
             && evidence.kind == RuleTestKind::PositiveBehavior
     }));
-    for unrelated_requirement in [
-        "KMIPKIT-REQ-SPEC-6.1.11-005",
-        "KMIPKIT-REQ-SPEC-6.1.11-006",
-    ] {
+    for unrelated_requirement in ["KMIPKIT-REQ-SPEC-6.1.11-005", "KMIPKIT-REQ-SPEC-6.1.11-006"] {
         let unrelated_mapping = TYPED_RULE_MAPPINGS
             .iter()
             .find(|mapping| mapping.requirement_id == unrelated_requirement)
             .expect("the unrelated multipart Decrypt rule remains mapped separately");
-        assert!(!unrelated_mapping
-            .test_evidence
-            .iter()
-            .any(|evidence| evidence.test_id == MULTIPART_CLIENT_TEST_ID));
+        assert!(
+            !unrelated_mapping
+                .test_evidence
+                .iter()
+                .any(|evidence| evidence.test_id == MULTIPART_CLIENT_TEST_ID)
+        );
     }
     let evaluate = mapping
         .evaluator
@@ -4534,78 +4531,7 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     };
 
     for operation in CRYPTOGRAPHIC_OPERATIONS {
-        let initial = request_message_with_operation_payload(
-            operation,
-            structure([tagged(INITIAL_INDICATOR, Value::boolean(true))]),
-        );
-        assert!(evaluate(Some(&initial), None));
-        result
-            .validate_request(&initial)
-            .expect("the first multipart request has no prior correlation value");
-
-        let continuation = request_message_with_operation_payload(
-            operation,
-            structure([
-                tagged(
-                    CORRELATION_VALUE,
-                    Value::byte_string(b"server-value".to_vec()),
-                ),
-                tagged(INITIAL_INDICATOR, Value::boolean(false)),
-            ]),
-        );
-        assert!(evaluate(Some(&continuation), None));
-        result
-            .validate_request(&continuation)
-            .expect("each continuation carries the server Correlation Value");
-
-        let missing_correlation = request_message_with_operation_payload(
-            operation,
-            structure([tagged(INITIAL_INDICATOR, Value::boolean(false))]),
-        );
-        assert!(!evaluate(Some(&missing_correlation), None));
-        assert_eq!(
-            result
-                .validate_request(&missing_correlation)
-                .expect_err("a continuation without Correlation Value is rejected")
-                .code(),
-            ProfileValidationErrorCode::RequestRuleRejected
-        );
-
-        let missing_final_correlation = request_message_with_operation_payload(
-            operation,
-            structure([tagged(FINAL_INDICATOR, Value::boolean(true))]),
-        );
-        assert!(!evaluate(Some(&missing_final_correlation), None));
-        result
-            .validate_request(&missing_final_correlation)
-            .expect_err("a final continuation carries the server Correlation Value");
-
-        let final_with_correlation = request_message_with_operation_payload(
-            operation,
-            structure([
-                tagged(
-                    CORRELATION_VALUE,
-                    Value::byte_string(b"server-value".to_vec()),
-                ),
-                tagged(FINAL_INDICATOR, Value::boolean(true)),
-            ]),
-        );
-        assert!(evaluate(Some(&final_with_correlation), None));
-        result
-            .validate_request(&final_with_correlation)
-            .expect("a final continuation with Correlation Value is accepted");
-
-        let single_part_with_indicators = request_message_with_operation_payload(
-            operation,
-            structure([
-                tagged(INITIAL_INDICATOR, Value::boolean(true)),
-                tagged(FINAL_INDICATOR, Value::boolean(true)),
-            ]),
-        );
-        assert!(evaluate(Some(&single_part_with_indicators), None));
-        result
-            .validate_request(&single_part_with_indicators)
-            .expect("single-part operations may set both indicators without correlation");
+        assert_multipart_correlation_cases(operation, evaluate, &result);
     }
 
     let unrelated_operation = request_message_with_operation_payload(
@@ -4613,6 +4539,89 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
         structure([tagged(INITIAL_INDICATOR, Value::boolean(false))]),
     );
     assert!(evaluate(Some(&unrelated_operation), None));
+}
+
+fn assert_multipart_correlation_cases(
+    operation: u32,
+    evaluate: RuleEvaluator,
+    result: &ProfileValidationResult,
+) {
+    const CORRELATION_VALUE: u32 = 0x0042_00D6;
+    const INITIAL_INDICATOR: u32 = 0x0042_00D7;
+    const FINAL_INDICATOR: u32 = 0x0042_00D8;
+
+    let initial = request_message_with_operation_payload(
+        operation,
+        structure([tagged(INITIAL_INDICATOR, Value::boolean(true))]),
+    );
+    assert!(evaluate(Some(&initial), None));
+    result
+        .validate_request(&initial)
+        .expect("the first multipart request has no prior correlation value");
+
+    let continuation = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(
+                CORRELATION_VALUE,
+                Value::byte_string(b"server-value".to_vec()),
+            ),
+            tagged(INITIAL_INDICATOR, Value::boolean(false)),
+        ]),
+    );
+    assert!(evaluate(Some(&continuation), None));
+    result
+        .validate_request(&continuation)
+        .expect("each continuation carries the server Correlation Value");
+
+    let missing_correlation = request_message_with_operation_payload(
+        operation,
+        structure([tagged(INITIAL_INDICATOR, Value::boolean(false))]),
+    );
+    assert!(!evaluate(Some(&missing_correlation), None));
+    assert_eq!(
+        result
+            .validate_request(&missing_correlation)
+            .expect_err("a continuation without Correlation Value is rejected")
+            .code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let missing_final_correlation = request_message_with_operation_payload(
+        operation,
+        structure([tagged(FINAL_INDICATOR, Value::boolean(true))]),
+    );
+    assert!(!evaluate(Some(&missing_final_correlation), None));
+    result
+        .validate_request(&missing_final_correlation)
+        .expect_err("a final continuation carries the server Correlation Value");
+
+    let final_with_correlation = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(
+                CORRELATION_VALUE,
+                Value::byte_string(b"server-value".to_vec()),
+            ),
+            tagged(FINAL_INDICATOR, Value::boolean(true)),
+        ]),
+    );
+    assert!(evaluate(Some(&final_with_correlation), None));
+    result
+        .validate_request(&final_with_correlation)
+        .expect("a final continuation with Correlation Value is accepted");
+
+    let single_part_with_indicators = request_message_with_operation_payload(
+        operation,
+        structure([
+            tagged(INITIAL_INDICATOR, Value::boolean(true)),
+            tagged(FINAL_INDICATOR, Value::boolean(true)),
+        ]),
+    );
+    assert!(evaluate(Some(&single_part_with_indicators), None));
+    result
+        .validate_request(&single_part_with_indicators)
+        .expect("single-part operations may set both indicators without correlation");
 }
 
 #[test]
