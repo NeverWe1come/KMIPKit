@@ -4495,9 +4495,9 @@ fn client_key_block_algorithm_requires_length(
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
-const HASH_OPERATION: u32 = 0x0000_0013;
-const MAC_OPERATION: u32 = 0x0000_0014;
-const MAC_VERIFY_OPERATION: u32 = 0x0000_0015;
+const HASH_OPERATION: u32 = 0x0000_0027;
+const MAC_OPERATION: u32 = 0x0000_0023;
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INITIAL_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
@@ -8730,6 +8730,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],

@@ -585,20 +585,32 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
 
 #[test]
 fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
-    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
-    let hash_parameters = || test_structure([test_item(0x0042_0038, Value::enumeration(6))]);
+    assert_hash_server_correlation_reused();
+    assert_mac_server_correlation_reused();
+    assert_mac_verify_server_correlation_reused();
+    assert_encrypt_server_correlation_reused();
+    assert_decrypt_server_correlation_reused();
+    assert_sign_server_correlation_reused();
+    assert_signature_verify_server_correlation_reused();
+}
 
+fn assert_hash_server_correlation_reused() {
+    let parameters = || test_structure([test_item(0x0042_0038, Value::enumeration(6))]);
     assert_server_correlation_reused(
         HASH_OPERATION,
-        ClientRequest::Hash(HashRequest::new(hash_parameters()).with_init_indicator(true)),
-        |correlation| {
+        ClientRequest::Hash(HashRequest::new(parameters()).with_init_indicator(true)),
+        |value| {
             ClientRequest::Hash(
-                HashRequest::new(hash_parameters())
-                    .with_correlation_value(correlation)
+                HashRequest::new(parameters())
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_mac_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         MAC_OPERATION,
         ClientRequest::Mac(
@@ -606,15 +618,19 @@ fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
                 .with_unique_identifier(identifier())
                 .with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::Mac(
                 MacRequest::new()
                     .with_unique_identifier(identifier())
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_mac_verify_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         MAC_VERIFY_OPERATION,
         ClientRequest::MacVerify(
@@ -622,41 +638,53 @@ fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
                 .with_unique_identifier(identifier())
                 .with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::MacVerify(
                 MacVerifyRequest::new()
                     .with_unique_identifier(identifier())
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_encrypt_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         ENCRYPT_OPERATION,
         ClientRequest::Encrypt(
             EncryptRequest::new(Some(identifier()), None).with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::Encrypt(
                 EncryptRequest::new(Some(identifier()), None)
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_decrypt_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         DECRYPT_OPERATION,
         ClientRequest::Decrypt(
             DecryptRequest::new(Some(identifier()), None).with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::Decrypt(
                 DecryptRequest::new(Some(identifier()), None)
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_sign_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         SIGN_OPERATION,
         ClientRequest::Sign(
@@ -664,15 +692,19 @@ fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
                 .with_unique_identifier(identifier())
                 .with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::Sign(
                 SignRequest::new()
                     .with_unique_identifier(identifier())
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
     );
+}
+
+fn assert_signature_verify_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
     assert_server_correlation_reused(
         SIGNATURE_VERIFY_OPERATION,
         ClientRequest::SignatureVerify(
@@ -680,11 +712,11 @@ fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
                 .with_unique_identifier(identifier())
                 .with_init_indicator(true),
         ),
-        |correlation| {
+        |value| {
             ClientRequest::SignatureVerify(
                 SignatureVerifyRequest::new()
                     .with_unique_identifier(identifier())
-                    .with_correlation_value(correlation)
+                    .with_correlation_value(value)
                     .with_final_indicator(true),
             )
         },
