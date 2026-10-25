@@ -740,6 +740,7 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
+const LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
@@ -1611,6 +1612,19 @@ fn client_login_request_count_is_optional_integer(
         LOGIN_OPERATION,
         LOGIN_REQUEST_COUNT,
         OperationFieldType::Integer,
+        false,
+    )
+}
+
+fn client_login_usage_limits_is_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        LOGIN_OPERATION,
+        LOGIN_USAGE_LIMITS,
+        OperationFieldType::UsageLimitsStructure,
         false,
     )
 }
@@ -8195,6 +8209,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-003",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_login_usage_limits_is_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
