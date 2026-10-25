@@ -5171,6 +5171,93 @@ fn profile_maps_client_check_usage_limits_count() {
 }
 
 #[test]
+fn profile_maps_get_usage_allocation_required_usage_limits_count() {
+    // KMIP Specification v2.1 §6.1.23 Table 232 marks Usage Limits Count
+    // required; §7.40 Table 392 defines its TTLV type as Long Integer.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.23-002-001";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Get Usage Allocation has a typed Usage Limits Count rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the required count resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required table-row mapping has category-matched evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count"
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let missing_count =
+        request_message_with_operation_payload(GET_USAGE_ALLOCATION_OPERATION, Structure::new());
+    let error = result
+        .validate_request(&missing_count)
+        .expect_err("Get Usage Allocation requires Usage Limits Count");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), None);
+    assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
+
+    let valid_count = request_message_with_operation_payload(
+        GET_USAGE_ALLOCATION_OPERATION,
+        structure([tagged(
+            USAGE_LIMITS_COUNT_TAG,
+            Value::long_integer(3),
+        )]),
+    );
+    result
+        .validate_request(&valid_count)
+        .expect("a Long Integer count satisfies the required request field");
+
+    for malformed_count in [
+        structure([tagged(
+            USAGE_LIMITS_COUNT_TAG,
+            Value::integer(3),
+        )]),
+        structure([
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+        ]),
+    ] {
+        let malformed = request_message_with_operation_payload(
+            GET_USAGE_ALLOCATION_OPERATION,
+            malformed_count,
+        );
+        result
+            .validate_request(&malformed)
+            .expect_err("wrong-type and duplicate Usage Limits Count fields are rejected");
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(
+            USAGE_LIMITS_COUNT_TAG,
+            Value::text_string("three units".to_owned()),
+        )]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("Get Usage Allocation requiredness does not constrain Check");
+}
+
+#[test]
 fn profile_maps_client_check_lease_time() {
     // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define optional
     // Check Lease Time; §4.30 Table 88 defines its TTLV type as Interval.
