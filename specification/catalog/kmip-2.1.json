@@ -89998,6 +89998,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.35"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.8"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -90008,20 +90016,26 @@
       "direction": "unclear",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
-      "profile_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create.rs"
+        "crates/kmipkit-protocol/src/create.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_create_object_group_instances_are_representable"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_object_group_membership_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Spec v2.1 §4.35 and Table 99 define Object Group as Text String and permit a Managed Object to belong to a group. The linked Create test asserts the direct Object Group tag, Text String type, value, and count in the request payload; it makes no server-persistence claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.35, line 16596, says a Managed Object MAY be part of a group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says it may initially be set by the Client or Server (lines 16655–16661). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. The Baseline Client mapping and linked tests verify that an outgoing Create can represent one direct Object Group Text String value; omission remains valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-002",
@@ -90036,6 +90050,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.8"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -90046,7 +90064,9 @@
       "direction": "unclear",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
       ],
@@ -90063,7 +90083,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.35, lines 16596–16598, permits an object to belong to more than one group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says multiple instances are permitted (lines 16707–16713). §6.1.8 Table 186 carries Attributes in a Create request. The Baseline Client mapping and linked tests verify that an outgoing Create can represent two direct Object Group Text String values; omission and one value remain valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
+      "review_note": "KMIP Specification v2.1 §4.35, lines 16596–16598, permits an object to belong to more than one group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says multiple instances are permitted (lines 16707–16713). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. The Baseline Client mapping and linked tests verify that an outgoing Create can represent two direct Object Group Text String values; omission and one value remain valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-003",

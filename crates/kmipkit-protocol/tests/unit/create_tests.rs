@@ -341,7 +341,8 @@ fn request_encodes_application_namespace_without_application_data() {
 #[test]
 fn create_preserves_two_repeated_object_group_text_values_in_order() {
     // OASIS KMIP v2.1 §4.35, Table 99, defines Object Group as Text String;
-    // §6.1.8, Table 186, carries the attributes in a Create request.
+    // §6.1.8, Table 186, carries the attributes in a Create request; §11.56
+    // assigns the Object Group tag.
     let attributes = AttributeSet::try_new([
         item(OBJECT_GROUP, Value::text_string("group-primary".to_owned())),
         item(

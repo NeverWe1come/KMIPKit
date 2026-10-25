@@ -9955,7 +9955,8 @@ fn profile_validates_nested_register_gcm_tag_length() {
 #[test]
 fn profile_maps_single_object_group_membership_as_optional_capability() {
     // KMIP Specification v2.1 §4.35 permits a client to associate an object
-    // with a group; Table 99 defines its Text String encoding.
+    // with a group; Table 99 defines its Text String encoding, and §11.56
+    // assigns the Object Group tag used below.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -10020,7 +10021,8 @@ fn profile_maps_single_object_group_membership_as_optional_capability() {
 #[test]
 fn profile_maps_multiple_object_group_membership_as_optional_capability() {
     // KMIP Specification v2.1 §4.35 permits multiple Object Group values;
-    // Table 99 defines Text String and §6.1.8 Table 186 carries Attributes.
+    // Table 99 defines Text String, §6.1.8 Table 186 carries Attributes, and
+    // §11.56 assigns the Object Group tag used below.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
