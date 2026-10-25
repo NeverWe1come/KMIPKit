@@ -16049,7 +16049,9 @@ fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior
         .expect("the Re-certify single-certificate SHALL has a typed profile mapping");
     let requirement = CLIENT_REQUIREMENTS
         .iter()
-        .find(|requirement| requirement.requirement_id == RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID)
+        .find(|requirement| {
+            requirement.requirement_id == RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID
+        })
         .expect("the Re-certify single-certificate SHALL resolves to normative metadata");
 
     assert_eq!(
@@ -16064,9 +16066,9 @@ fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior
         .expect("the required Re-certify behavior has positive executable evidence");
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.kind == RuleTestKind::PositiveBehavior
-            && evidence
-                .test_id
-                .ends_with("profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior")
+            && evidence.test_id.ends_with(
+                "profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior",
+            )
     }));
 
     let evaluate = mapping
