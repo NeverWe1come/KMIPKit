@@ -6385,3 +6385,13 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.7-002-001` from KMIP Specification v2.1 §6.1.7 par
 | Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Pending sequential reviews and CI for the next published head. |
 
 Baseline Client now has 183 valid executable typed mappings out of 265 assigned requirements; 82 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
+
+### CI follow-up — deterministic catalog relationship ordering (2026-10-25)
+
+CI run `40159239246` failed the same catalog-ordering contract on Windows, Ubuntu, and macOS. The failure was caused by unsorted `element_ids` in the Set Attribute Read-Only requirement; later Login Usage Limits and Check links also needed the same canonical ordering. This was catalog determinism only and did not change any requirement meaning or client behavior.
+
+| Check | Evidence | Result |
+|---|---|---|
+| Red | Before the fix, `python -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically` | Reproduced the CI failure at the Set Attribute `element_ids` relation. |
+| Green | DCO fix commit `b6229068` and the same focused test | PASS after sorting the three affected relation lists. |
+| Catalog and generated metadata | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`; `python -B tools/normative_catalog/report.py --repo-root . --check` | PASS: catalog valid, profile metadata current, and generated report current. |
