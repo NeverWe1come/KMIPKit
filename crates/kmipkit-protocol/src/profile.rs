@@ -726,6 +726,7 @@ struct TypedRuleMapping {
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const ARCHIVE_OPERATION: u32 = 0x0000_0015;
 const REKEY_OPERATION: u32 = 0x0000_0004;
 const RECERTIFY_OPERATION: u32 = 0x0000_0007;
 const REPROVISION_OPERATION: u32 = 0x0000_0035;
@@ -4454,6 +4455,39 @@ fn client_import_preserves_wrapped_object_and_attributes(
     })
 }
 
+fn client_archive_request_is_well_formed(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != ARCHIVE_OPERATION {
+            return true;
+        }
+        batch_item
+            .with_request_payload(
+                |payload| match field_presence(&payload, UNIQUE_IDENTIFIER) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Unique(identifier) => identifier.with_value(|value| {
+                        matches!(
+                            value,
+                            ValueView::Enumeration(_)
+                                | ValueView::Integer(_)
+                                | ValueView::TextString(_)
+                        )
+                    }),
+                    FieldPresence::Duplicate => false,
+                },
+            )
+            .unwrap_or(false)
+    })
+}
+
 fn import_payload_preserves_wrapped_object_and_attributes(payload: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(attributes) = field_presence(payload, ATTRIBUTES) else {
         return false;
@@ -7335,6 +7369,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/import_execution_tests.rs::explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.4-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_archive_request_is_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_archive_request_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs::request_omits_the_optional_unique_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

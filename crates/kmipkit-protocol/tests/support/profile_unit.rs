@@ -12701,6 +12701,25 @@ fn profile_maps_optional_archive_request_capability() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Archive capability has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Archive capability resolves to generated normative metadata");
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has category-appropriate executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional Archive capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
     let with_identifier = request_message_with_operation_payload(
         ARCHIVE_OPERATION,
         structure([tagged(
@@ -12717,6 +12736,33 @@ fn profile_maps_optional_archive_request_capability() {
     result
         .validate_request(&with_id_placeholder)
         .expect("Archive may use the ID Placeholder when Unique Identifier is omitted");
+
+    let duplicate_identifier = request_message_with_operation_payload(
+        ARCHIVE_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("archive-target-a".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("archive-target-b".to_owned()),
+            ),
+        ]),
+    );
+    let error = result
+        .validate_request(&duplicate_identifier)
+        .expect_err("Archive cannot contain duplicate Unique Identifier fields");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    let unrelated = request_message_with_operation_payload(GET_OPERATION, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("the optional Archive capability does not constrain other operations");
 }
 
 #[test]
