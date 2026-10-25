@@ -15604,6 +15604,8 @@ const CERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-007";
 const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-007";
 const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-008";
 const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-008";
+const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-001";
+const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-001";
 const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const RECERTIFY_OPERATION_TAG: u32 = 0x0000_0007;
 const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
@@ -15651,6 +15653,13 @@ fn recertify_request_type_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn recertify_single_certificate_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -16028,6 +16037,128 @@ fn profile_maps_recertify_request_type_when_request_value_is_present_as_required
     let unrelated_request =
         request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
     assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.45 paragraph 1 limits each Re-certify
+    // Batch Item to one target certificate; separate Batch Items remain separate.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID)
+        .expect("the Re-certify single-certificate SHALL has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID)
+        .expect("the Re-certify single-certificate SHALL resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(RECERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the required Re-certify behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence
+                .test_id
+                .ends_with("profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior")
+    }));
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the Re-certify single-certificate SHALL has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = recertify_single_certificate_profile_result();
+    for payload in [
+        Structure::new(),
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("certificate-a".to_owned()),
+        )]),
+    ] {
+        let request = request_message_with_operation_payload(RECERTIFY_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("zero or one explicit target is allowed in a Re-certify Batch Item");
+    }
+
+    let separate_batch_items = request_message_with_batch_operations([
+        (
+            RECERTIFY_OPERATION_TAG,
+            structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("certificate-a".to_owned()),
+            )]),
+        ),
+        (
+            RECERTIFY_OPERATION_TAG,
+            structure([tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("certificate-b".to_owned()),
+            )]),
+        ),
+    ]);
+    result
+        .validate_request(&separate_batch_items)
+        .expect("separate Re-certify Batch Items remain independent operations");
+
+    let unrelated = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("unrelated-a".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("unrelated-b".to_owned()),
+            ),
+        ]),
+    );
+    result
+        .validate_request(&unrelated)
+        .expect("the Re-certify single-certificate rule is operation-scoped");
+}
+
+#[test]
+fn profile_rejects_multiple_recertify_certificate_selectors_in_one_batch_item() {
+    // KMIP Specification v2.1 §6.1.45 paragraph 1 permits only one renewal target.
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("certificate-a".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("certificate-b".to_owned()),
+            ),
+        ]),
+    );
+    let error = recertify_single_certificate_profile_result()
+        .validate_request(&request)
+        .expect_err("one Re-certify Batch Item cannot select multiple certificates");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID)
+    );
 }
 
 #[test]
