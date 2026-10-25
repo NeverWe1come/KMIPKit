@@ -737,6 +737,12 @@ const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const JOIN_SPLIT_KEY_OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const CHECK_STANDARD_REQUEST_MEMBER_TAGS: [u32; 4] = [
+    UNIQUE_IDENTIFIER,
+    USAGE_LIMITS_COUNT,
+    CRYPTOGRAPHIC_USAGE_MASK,
+    LEASE_TIME,
+];
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
@@ -1538,6 +1544,33 @@ fn client_check_optional_usage_limits_count_is_long_integer(
         USAGE_LIMITS_COUNT,
         CheckOptionalFieldType::LongInteger,
     )
+}
+
+fn client_check_additional_attributes_are_limited_to_listed_set(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CHECK_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload.children().iter().all(|field| {
+                    let tag = field.tag();
+                    CHECK_STANDARD_REQUEST_MEMBER_TAGS.contains(&tag.raw()) || tag.is_extension()
+                })
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_check_batch_order_option_is_true_when_check_is_present(
@@ -6621,6 +6654,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_stop_or_undo_when_check_is_present",
             kind: RuleTestKind::RecommendedBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_check_additional_attributes_are_limited_to_listed_set),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
