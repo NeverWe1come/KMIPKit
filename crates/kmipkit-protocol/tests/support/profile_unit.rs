@@ -4475,6 +4475,7 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     // KMIP Specification v2.1 §7.8 requires the server-generated Correlation
     // Value on every subsequent request in a multipart cryptographic operation.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.8-001";
+    const MULTIPART_CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.8-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CORRELATION_VALUE: u32 = 0x0042_00D6;
@@ -4506,6 +4507,23 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the required behavior has executable positive evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == MULTIPART_CLIENT_TEST_ID
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    for unrelated_requirement in [
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006",
+    ] {
+        let unrelated_mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == unrelated_requirement)
+            .expect("the unrelated multipart Decrypt rule remains mapped separately");
+        assert!(!unrelated_mapping
+            .test_evidence
+            .iter()
+            .any(|evidence| evidence.test_id == MULTIPART_CLIENT_TEST_ID));
+    }
     let evaluate = mapping
         .evaluator
         .expect("the requirement has a typed request evaluator");
@@ -4561,6 +4579,21 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
         result
             .validate_request(&missing_final_correlation)
             .expect_err("a final continuation carries the server Correlation Value");
+
+        let final_with_correlation = request_message_with_operation_payload(
+            operation,
+            structure([
+                tagged(
+                    CORRELATION_VALUE,
+                    Value::byte_string(b"server-value".to_vec()),
+                ),
+                tagged(FINAL_INDICATOR, Value::boolean(true)),
+            ]),
+        );
+        assert!(evaluate(Some(&final_with_correlation), None));
+        result
+            .validate_request(&final_with_correlation)
+            .expect("a final continuation with Correlation Value is accepted");
 
         let single_part_with_indicators = request_message_with_operation_payload(
             operation,
