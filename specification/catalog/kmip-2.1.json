@@ -96880,6 +96880,18 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.51"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.30"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.7"
         }
       ],
       "source_keyword": "SHALL NOT",
@@ -96891,6 +96903,8 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE",
+        "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
         "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
       ],
       "profile_ids": [],
@@ -96900,6 +96914,8 @@
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/set_attribute.rs"
       ],
       "verification_refs": [
@@ -96907,12 +96923,14 @@
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_set_attribute_on_read_only_standard_attribute",
         "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.1 defines Read-Only attributes as not modifiable by either server or client; §6.1.51 paragraph 1 prohibits adding or modifying one through Set Attribute. The typed Baseline Client rule inspects each direct attribute in the request's New Attribute Structure and rejects standard attributes whose generated §4 policy says they are not client-modifiable; the negative fixture uses Lease Time, explicitly read-only for clients under §4.30. A modifiable Comment remains accepted. Unknown and vendor-specific attributes are not classified by this standard-attribute rule, so no vendor policy is inferred. This verifies outbound request screening only and makes no server-response or profile-conformance claim. No requirement-specific official Test Case ID is linked by the pinned OASIS inventory."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-001",
