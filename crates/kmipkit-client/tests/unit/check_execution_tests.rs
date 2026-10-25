@@ -513,7 +513,7 @@ fn check_leaves_recommended_batch_options_explicitly_selected_by_the_caller() {
             .with_unique_batch_item_id(b"check-second".to_vec()),
     ])
     .with_batch_order_option(true)
-    .with_batch_error_continuation_option(1);
+    .with_batch_error_continuation_option(2);
 
     let response = client
         .execute(batch, &CodecLimits::defaults())
