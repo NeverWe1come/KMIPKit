@@ -10715,6 +10715,117 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
 }
 
 #[test]
+fn profile_requires_equal_create_key_pair_table_191_values() {
+    // KMIP Specification v2.1 §6.1.9, Table 191 requires four attributes to
+    // have the same effective value for the private and public keys.
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002b;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    fn table_191_attributes(generation: i32) -> Vec<Item> {
+        let domain_parameters = || {
+            Value::structure(structure([tagged(QLENGTH, Value::integer(generation))]))
+        };
+        [
+            (
+                CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(u32::try_from(generation + 1).expect("positive fixture")),
+            ),
+            (CRYPTOGRAPHIC_LENGTH, Value::integer(2048 + generation)),
+            (CRYPTOGRAPHIC_DOMAIN_PARAMETERS, domain_parameters()),
+            (CRYPTOGRAPHIC_PARAMETERS, domain_parameters()),
+        ]
+        .into_iter()
+        .map(|(tag, value)| tagged(tag, value))
+        .collect()
+    }
+
+    let request = |common: Option<Vec<Item>>,
+                   private: Option<Vec<Item>>,
+                   public: Option<Vec<Item>>| {
+        let mut fields = Vec::new();
+        for (tag, attributes) in [
+            (COMMON_ATTRIBUTES, common),
+            (PRIVATE_KEY_ATTRIBUTES, private),
+            (PUBLIC_KEY_ATTRIBUTES, public),
+        ] {
+            if let Some(attributes) = attributes {
+                fields.push(tagged(tag, Value::structure(structure(attributes))));
+            }
+        }
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, structure(fields))
+    };
+
+    for requirement_id in [
+        "KMIPKIT-REQ-SPEC-6.1.9-006",
+        "KMIPKIT-REQ-SPEC-6.1.9-007",
+    ] {
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("Table 191 requirement is present in generated metadata");
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Table 191 equality has an explicit typed rule mapping");
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the Table 191 mapping cites its own source clause and evidence");
+
+        let validation = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+        for valid in [
+            request(None, None, None),
+            request(None, Some(table_191_attributes(1)), Some(table_191_attributes(1))),
+            request(
+                Some(table_191_attributes(0)),
+                Some(table_191_attributes(1)),
+                Some(table_191_attributes(1)),
+            ),
+        ] {
+            validation
+                .validate_request(&valid)
+                .expect("omitted, inherited, and equal effective values are valid");
+        }
+
+        let unequal = request(
+            Some(table_191_attributes(0)),
+            Some(table_191_attributes(1)),
+            Some(table_191_attributes(2)),
+        );
+        let error = validation
+            .validate_request(&unequal)
+            .expect_err("private and public effective Table 191 values must match");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(requirement_id));
+        assert_eq!(
+            error.source_clause_id(),
+            Some(if requirement_id.ends_with("006") {
+                "KMIPKIT-CLAUSE-SPEC-6.1.9-006"
+            } else {
+                "KMIPKIT-CLAUSE-SPEC-6.1.9-007"
+            })
+        );
+
+        let one_sided = request(None, Some(table_191_attributes(1)), None);
+        validation
+            .validate_request(&one_sided)
+            .expect_err("an effective value on only one key violates Table 191");
+    }
+}
+
+#[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
