@@ -28,7 +28,7 @@ The §7.8 test continues to distinguish the §7.8 request requirement from the s
 |---|---|---|
 | Red | `e0ae85e20ca7dc096d3747a51c44677aceeea3f0` | Focused baseline reproduction failed as expected: one stale §7.8 expectation and two Decrypt wording subtests. The corrected §7.8 evidence test passes while the two Decrypt subtests remain failing. |
 | Green | `730ed56a8618b0485959f30db66507b088a4f60e` | Catalog review-note updates make the two existing official-Test-Cases contract subtests pass. Focused contracts and catalog validation pass. |
-| Refactor | This commit | Regenerated the report and updated this evidence report, the task ledger, and plan progress. No generated file was edited by hand. |
+| Refactor | DCO-signed commit `c30fe9be668e6f5ec86cb681871ba2b6ff854ea0` | Regenerated the report and updated this evidence report, the task ledger, and plan progress. No generated file was edited by hand. |
 
 ## Verification
 
