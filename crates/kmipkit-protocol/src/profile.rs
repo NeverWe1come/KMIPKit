@@ -245,9 +245,10 @@ impl ProfileValidationResult {
     ///
     /// This standalone method cannot validate caller-owned context that is not
     /// encoded in TTLV. An `Ok` result alone does not establish operation-level
-    /// requirements that depend on that context. Use the typed
-    /// `Client::execute_with_profiles` path for an exchange; typed operation
-    /// serializers validate such context before constructing the message.
+    /// requirements that depend on that context. The typed
+    /// `Client::execute_with_profiles` path validates operation-local request
+    /// rules before an exchange, but it cannot infer remote object attributes
+    /// or other context that the caller has not supplied.
     ///
     /// # Errors
     ///

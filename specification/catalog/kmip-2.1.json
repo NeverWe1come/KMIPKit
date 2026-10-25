@@ -92675,15 +92675,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/decrypt.rs"
+        "crates/kmipkit-protocol/src/decrypt.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_decrypt_cryptographic_parameters_are_optional_structure"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
         "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional Cryptographic Parameters wire shape. It does not inspect remote object attributes or predict server acceptance. No requirement-specific official Test Case ID is linked by the pinned sources, and no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-001-002",
@@ -92709,15 +92711,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/decrypt.rs"
+        "crates/kmipkit-protocol/src/decrypt.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_decrypt_iv_counter_nonce_is_optional_byte_string"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
         "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The linked local Rust request-construction test provides executable evidence for this client MAY/OPTIONAL request-field capability. No official OASIS test execution is claimed. The pinned official Test Cases inventory has no requirement-specific test ID for this requirement; no official test execution is claimed."
+      "review_note": "The typed Decrypt serializer preserves omission, and the Baseline rule verifies the optional IV/Counter/Nonce wire shape. The algorithm's need for an IV is caller-supplied context and is not inferred; server acceptance is not predicted. No requirement-specific official Test Case ID is linked by the pinned sources, and no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-003",

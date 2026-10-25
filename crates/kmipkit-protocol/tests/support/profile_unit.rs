@@ -10011,7 +10011,7 @@ fn profile_maps_decrypt_optional_fields_from_section_6_1_11() {
         };
         validation
             .validate_request(&request)
-            .expect("the caller can omit Decrypt fields under the §6.1.11 conditions");
+            .expect("profile validation accepts the locally represented omitted Decrypt fields");
     }
 }
 
