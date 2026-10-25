@@ -1875,6 +1875,13 @@ mod unrelated {
         self.assertIn("No category-appropriate rule test", report)
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)
         self.assertIn("Category test reference: present", report)
+        usage_count_source_row = next(
+            line
+            for line in report.splitlines()
+            if line.startswith("| KMIPKIT-REQ-SPEC-6.1.23-002-001 |")
+            and "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED" in line
+        )
+        self.assertIn("KMIPKIT-SRC-spec §6.1.23, KMIPKIT-SRC-spec §7.40", usage_count_source_row)
         profile_state_section = report.split("## Profile states\n", 1)[1]
         baseline_row = next(
             line for line in profile_state_section.splitlines()

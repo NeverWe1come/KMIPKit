@@ -14575,7 +14575,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(usage_count_requirement["source_clause_ids"], [])
         self.assertEqual(
             usage_count_requirement["source_refs"],
-            [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.23"}],
+            [
+                {"source_id": "KMIPKIT-SRC-spec", "section": "6.1.23"},
+                {"source_id": "KMIPKIT-SRC-spec", "section": "7.40"},
+            ],
         )
         self.assertIsNone(usage_count_requirement["source_keyword"])
         self.assertEqual(usage_count_requirement["source_force"], "required_table_body_value")
