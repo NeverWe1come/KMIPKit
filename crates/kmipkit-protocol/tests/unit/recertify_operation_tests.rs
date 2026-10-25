@@ -132,6 +132,51 @@ fn request_requires_type_when_certificate_request_value_is_present() {
 }
 
 #[test]
+fn request_requires_unique_identifier_when_certificate_request_value_is_omitted() {
+    assert!(RecertifyRequest::new().into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_id_placeholder_when_certificate_request_value_is_omitted() {
+    let request = RecertifyRequest::new().with_unique_identifier(UniqueIdentifier::Enumeration(1));
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_preserves_optional_identifier_when_certificate_request_value_is_present() {
+    let payload = RecertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()))
+        .into_ttlv_payload()
+        .expect("Certificate Request Value permits an omitted Unique Identifier");
+
+    assert_eq!(
+        field_tags(&payload),
+        [CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
+}
+
+#[test]
+fn request_preserves_id_placeholder_when_certificate_request_value_is_present() {
+    let payload = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::Enumeration(1))
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()))
+        .into_ttlv_payload()
+        .expect("the omission-specific rule does not constrain this request form");
+
+    assert_eq!(
+        field_tags(&payload),
+        [
+            UNIQUE_IDENTIFIER,
+            CERTIFICATE_REQUEST_TYPE,
+            CERTIFICATE_REQUEST_VALUE
+        ]
+    );
+}
+
+#[test]
 fn request_can_omit_request_fields_to_reuse_existing_certificate_type() {
     let payload = RecertifyRequest::new()
         .into_ttlv_payload()

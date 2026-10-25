@@ -16800,6 +16800,9 @@ const CERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-007";
 const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-007";
 const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-008";
 const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-008";
+const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-003";
+const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
 const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-001";
 const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-001";
 const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -16849,6 +16852,13 @@ fn recertify_request_type_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn recertify_omitted_request_identifier_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -17323,6 +17333,161 @@ fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior
     result
         .validate_request(&unrelated)
         .expect("the Re-certify single-certificate rule is operation-scoped");
+}
+
+#[test]
+fn profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.45 paragraph 2 requires a Unique Identifier
+    // when Certificate Request Value is omitted; Table 300's optional field
+    // and ID Placeholder note are adjudicated separately by KMIPKIT-DEC-019.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| {
+            mapping.requirement_id == RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("the conditional Re-certify identifier SHALL has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("the conditional Re-certify identifier SHALL resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(RECERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the conditional Re-certify identifier rule has executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence
+                .test_id
+                .ends_with("profile_accepts_recertify_identifier_when_request_value_is_omitted")
+    }));
+    for expected_test in [
+        "profile_rejects_recertify_without_identifier_when_request_value_is_omitted",
+        "profile_rejects_recertify_id_placeholder_when_request_value_is_omitted",
+    ] {
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.kind == RuleTestKind::NegativeBehavior
+                && evidence.test_id.ends_with(expected_test)
+        }));
+    }
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the conditional Re-certify identifier SHALL has an evaluator");
+    assert!(!evaluate(None, None));
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_accepts_recertify_identifier_when_request_value_is_omitted() {
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("certificate-or-key-selector".to_owned()),
+        )]),
+    );
+
+    recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect("one direct Unique Identifier satisfies the omission-specific rule");
+}
+
+#[test]
+fn profile_rejects_recertify_without_identifier_when_request_value_is_omitted() {
+    let request = request_message_with_operation_payload(RECERTIFY_OPERATION_TAG, Structure::new());
+    let error = recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect_err("Certificate Request Value omission requires one direct Unique Identifier");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_rejects_recertify_id_placeholder_when_request_value_is_omitted() {
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1))]),
+    );
+    let error = recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect_err("the omission-specific SHALL requires an explicit identifier");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID)
+    );
+}
+
+#[test]
+fn profile_accepts_recertify_without_identifier_when_request_value_is_present() {
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([
+            tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                CERTIFICATE_REQUEST_VALUE_TAG,
+                Value::byte_string(vec![0x30, 0x00]),
+            ),
+        ]),
+    );
+
+    recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect("the omission-specific rule does not require an identifier here");
+}
+
+#[test]
+fn profile_accepts_recertify_id_placeholder_when_request_value_is_present() {
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1)),
+            tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                CERTIFICATE_REQUEST_VALUE_TAG,
+                Value::byte_string(vec![0x30, 0x00]),
+            ),
+        ]),
+    );
+
+    recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect("the omission-specific rule does not reject this identifier here");
+}
+
+#[test]
+fn profile_leaves_unrelated_operations_outside_recertify_identifier_rule() {
+    let request = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+
+    recertify_omitted_request_identifier_profile_result()
+        .validate_request(&request)
+        .expect("the Re-certify-only rule does not constrain Locate requests");
 }
 
 #[test]
