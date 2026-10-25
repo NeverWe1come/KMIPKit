@@ -5407,6 +5407,124 @@ fn client_set_attribute_does_not_mutate_read_only_attributes(
     })
 }
 
+fn client_read_only_attribute_modification_is_not_requested(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        let Some(mutation) = (match operation {
+            ADD_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Add),
+            ADJUST_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Adjust),
+            MODIFY_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Modify),
+            SET_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Set),
+            _ => None,
+        }) else {
+            return true;
+        };
+
+        batch_item
+            .with_request_payload(|payload| match operation {
+                ADD_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+                    attribute_fields_allow_client_mutation(&payload, NEW_ATTRIBUTE, mutation)
+                }
+                ADJUST_ATTRIBUTE_OPERATION => {
+                    attribute_references_allow_client_mutation(&payload, mutation)
+                }
+                MODIFY_ATTRIBUTE_OPERATION => {
+                    attribute_fields_allow_client_mutation(&payload, CURRENT_ATTRIBUTE, mutation)
+                        && attribute_fields_allow_client_mutation(&payload, NEW_ATTRIBUTE, mutation)
+                }
+                _ => true,
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_read_only_attribute_deletion_is_not_requested(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DELETE_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                attribute_fields_allow_client_mutation(
+                    &payload,
+                    CURRENT_ATTRIBUTE,
+                    ClientAttributeMutation::Delete,
+                ) && attribute_references_allow_client_mutation(
+                    &payload,
+                    ClientAttributeMutation::Delete,
+                )
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn attribute_fields_allow_client_mutation(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == wrapper_tag)
+        .all(|field| {
+            field.with_value(|value| match value {
+                ValueView::Structure(attributes) => attributes.children().iter().all(|attribute| {
+                    !client_attribute_mutation_is_prohibited(attribute.tag().raw(), mutation)
+                }),
+                _ => false,
+            })
+        })
+}
+
+fn attribute_references_allow_client_mutation(
+    payload: &StructureView<'_>,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE)
+        .all(|field| {
+            let Ok(reference) = AttributeReference::try_from_ttlv_item(field) else {
+                return false;
+            };
+            if let Some(tag) = reference.tag_value() {
+                return !client_attribute_mutation_is_prohibited(tag, mutation);
+            }
+            let Some((vendor_identification, attribute_name)) = reference.name_parts() else {
+                return false;
+            };
+            if !vendor_identification.is_empty() {
+                return true;
+            }
+            crate::attribute_policy::ATTRIBUTE_POLICIES
+                .iter()
+                .find(|policy| policy.name == attribute_name)
+                .is_none_or(|policy| !client_attribute_mutation_is_prohibited(policy.tag, mutation))
+        })
+}
+
 fn client_usage_limits_count_is_not_set_by_add_or_modify(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7205,6 +7323,30 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_key_value_present_is_not_modified),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_attribute_mutations",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_read_only_attribute_modification_is_not_requested),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_modification_on_all_client_routes",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_read_only_attribute_deletion_is_not_requested),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_deletion",
             kind: RuleTestKind::NegativeBehavior,
         }],
         constraints: &[],
