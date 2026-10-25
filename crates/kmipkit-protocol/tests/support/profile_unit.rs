@@ -14249,6 +14249,88 @@ fn profile_rejects_key_value_present_attribute_mutations() {
 }
 
 #[test]
+fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.51-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the Read-Only Set Attribute SHALL NOT has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Set Attribute prohibition resolves to normative metadata");
+
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the client SHALL NOT has negative executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::NegativeBehavior
+            && evidence.test_id.ends_with(
+                "profile_rejects_set_attribute_on_read_only_standard_attribute",
+            )
+    }));
+}
+
+#[test]
+fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
+    // KMIP Specification v2.1 §§4.1 and 6.1.51; Lease Time is client read-only in §4.30.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const COMMENT_ATTRIBUTE_TAG: u32 = 0x0042_00FD;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let read_only_request = request_message_with_operation_payload(
+        SET_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                LEASE_TIME_TAG,
+                Value::interval(60),
+            )])),
+        )]),
+    );
+    let error = result
+        .validate_request(&read_only_request)
+        .expect_err("Set Attribute must reject a known Read-Only attribute");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.51-001")
+    );
+
+    let modifiable_request = request_message_with_operation_payload(
+        SET_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                COMMENT_ATTRIBUTE_TAG,
+                Value::text_string("operator note".to_owned()),
+            )])),
+        )]),
+    );
+    result
+        .validate_request(&modifiable_request)
+        .expect("Set Attribute remains available for a modifiable attribute");
+}
+
+#[test]
 fn profile_rejects_key_value_present_mutation_in_mixed_batch() {
     // KMIP Specification v2.1 §4.28/Table 85; batch operations are §8.1 and the payloads are §§6.1.28, 6.1.51.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
