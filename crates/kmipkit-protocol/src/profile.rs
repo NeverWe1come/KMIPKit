@@ -4430,6 +4430,66 @@ fn import_preserves_wrapped_secret_data_shape(
     })
 }
 
+fn client_import_preserves_wrapped_object_and_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != IMPORT_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                import_payload_preserves_wrapped_object_and_attributes(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn import_payload_preserves_wrapped_object_and_attributes(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(attributes) = field_presence(payload, ATTRIBUTES) else {
+        return false;
+    };
+    if !attributes.with_value(|value| matches!(value, ValueView::Structure(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(object_type) = field_presence(payload, IMPORT_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    let Some(object_tag) = key_block_object_tag(object_type) else {
+        return true;
+    };
+
+    let FieldPresence::Unique(object) = field_presence(payload, object_tag) else {
+        return false;
+    };
+    object.with_value(|value| match value {
+        ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+            FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => key_block_preserves_wrapping(&key_block),
+                _ => false,
+            }),
+            FieldPresence::Missing | FieldPresence::Duplicate => false,
+        },
+        _ => false,
+    })
+}
+
 fn client_key_wrapping_data_is_absent_or_has_required_key_information(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7260,6 +7320,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.25-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.25-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_import_preserves_wrapped_object_and_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/import_execution_tests.rs::explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

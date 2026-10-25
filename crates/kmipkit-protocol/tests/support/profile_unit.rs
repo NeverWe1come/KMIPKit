@@ -14,6 +14,7 @@ use super::{
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_create_split_key_requires_prime_field_size_for_polynomial_method,
     client_get_or_export_key_compression_type_is_enumeration,
+    client_import_preserves_wrapped_object_and_attributes,
     client_key_value_present_is_not_modified,
     client_key_wrapping_data_is_absent_or_has_required_key_information,
     client_key_wrapping_data_is_only_present_for_wrapped_key_value,
@@ -12517,6 +12518,9 @@ fn register_wrapped_key_without_wrapping_key_information() -> crate::RequestMess
 fn typed_rule_evaluators_fail_closed_without_a_request() {
     // KMIP Specification v2.1 §§2.7, 4.14, and 4.27; the rules must fail closed
     // when no request is available to evaluate.
+    assert!(!client_import_preserves_wrapped_object_and_attributes(
+        None, None
+    ));
     assert!(!import_preserves_wrapped_secret_data_shape(None, None));
     assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
