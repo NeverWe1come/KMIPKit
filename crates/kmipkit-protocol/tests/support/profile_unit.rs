@@ -5203,12 +5203,11 @@ fn login_usage_limits() -> Structure {
 #[test]
 fn profile_maps_check_additional_attributes_to_the_listed_set() {
     // KMIP Specification v2.1 §6.1.7 Tables 182–183 list direct Check fields;
-    // §9.13 Table 418 places vendor extensions on the Batch Item.
+    // §9.13 Table 418 places vendor extensions on the Batch Item, and §11.56
+    // assigns the extension-tag prefix used by the opaque vendor value.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const COMMENT_TAG: u32 = 0x0042_0007;
-    const VENDOR_EXTENSION_RANGE_TAG: u32 = 0x0054_0123;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -5241,7 +5240,16 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    assert_check_payload_accepts_omission_and_listed_members(&result, evaluate);
+    assert_check_payload_rejects_unlisted_members(&result, evaluate);
+    assert_check_payload_preserves_batch_item_message_extensions(&result, evaluate);
+    assert_check_limit_is_scoped_to_check(&result, evaluate);
+}
 
+fn assert_check_payload_accepts_omission_and_listed_members(
+    result: &ProfileValidationResult,
+    evaluate: RuleEvaluator,
+) {
     let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
     assert!(evaluate(Some(&omitted), None));
     result
@@ -5264,11 +5272,16 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
     result
         .validate_request(&listed)
         .expect("the four standard Check request members are allowed");
+}
 
+fn assert_check_payload_rejects_unlisted_members(
+    result: &ProfileValidationResult,
+    evaluate: RuleEvaluator,
+) {
     let extra_standard_member = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([tagged(
-            COMMENT_TAG,
+            0x0042_0007,
             Value::text_string("not a Check request member".to_owned()),
         )]),
     );
@@ -5278,19 +5291,28 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
     let misplaced_vendor_extension = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([tagged(
-            VENDOR_EXTENSION_RANGE_TAG,
+            0x0054_0123,
             Value::text_string("opaque extension".to_owned()),
         )]),
     );
     assert!(!evaluate(Some(&misplaced_vendor_extension), None));
-    assert!(result.validate_request(&misplaced_vendor_extension).is_err());
+    assert!(
+        result
+            .validate_request(&misplaced_vendor_extension)
+            .is_err()
+    );
+}
 
+fn assert_check_payload_preserves_batch_item_message_extensions(
+    result: &ProfileValidationResult,
+    evaluate: RuleEvaluator,
+) {
     let properly_placed_vendor_extension =
         request_message_with_operation_payload_and_vendor_extension(
             CHECK_OPERATION_TAG,
             Structure::new(),
             structure([tagged(
-                VENDOR_EXTENSION_RANGE_TAG,
+                0x0054_0123,
                 Value::text_string("opaque extension".to_owned()),
             )]),
         );
@@ -5303,20 +5325,24 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
         .message_extension(0)
         .expect("the optional Batch Item Message Extension is preserved");
     assert_eq!(
-        message_extension.with_vendor_extension(|extension| {
-            extension.children()[0].tag().raw()
-        }),
-        Some(VENDOR_EXTENSION_RANGE_TAG)
+        message_extension
+            .with_vendor_extension(|extension| { extension.children()[0].tag().raw() }),
+        Some(0x0054_0123)
     );
     assert!(evaluate(Some(&properly_placed_vendor_extension), None));
     result
         .validate_request(&properly_placed_vendor_extension)
         .expect("§9.13 Message Extension remains separate from Check payload attributes");
+}
 
+fn assert_check_limit_is_scoped_to_check(
+    result: &ProfileValidationResult,
+    evaluate: RuleEvaluator,
+) {
     let unrelated_operation = request_message_with_operation_payload(
         LOCATE_OPERATION_TAG,
         structure([tagged(
-            COMMENT_TAG,
+            0x0042_0007,
             Value::text_string("outside Check".to_owned()),
         )]),
     );

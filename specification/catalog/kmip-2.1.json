@@ -57089,6 +57089,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -102090,6 +102091,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.7"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -102101,25 +102110,30 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
+        "KMIPKIT-ELEM-OP-C2S-CHECK",
         "KMIPKIT-ELEM-TAG-42002C",
         "KMIPKIT-ELEM-TAG-420049",
         "KMIPKIT-ELEM-TAG-420096"
       ],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_check_additional_attributes_are_limited_to_listed_set"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "The typed Check request exposes the optional additional request attributes from the KMIP Specification v2.1 §6.1.7 list (Usage Limits Count, Cryptographic Usage Mask, and Lease Time); protocol and fake-transport tests verify serialization. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty. The qualified client execution test is derived local evidence, not an OASIS test-case pass. The generic TTLV API remains structurally validating rather than operation-aware, so this does not claim server conformance."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define the direct standard Check request members: Unique Identifier and the three listed additional fields (Usage Limits Count, Cryptographic Usage Mask, and Lease Time). The Baseline Client mapping accepts omission or those members and rejects other assigned or extension-range tags placed directly in the Check Request Payload. §9.13 Table 418 places vendor extensions in an optional Message Extension appended to the Batch Item; the test preserves an allocated §11.56 extension tag there without treating it as a Check payload attribute. This validates request representation only. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty; local tests are not OASIS test-case passes and this is not a server-conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
