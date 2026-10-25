@@ -8598,6 +8598,80 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
     }
 }
 
+#[test]
+fn profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.17 and Table 214 permit omission when the
+    // Managed Cryptographic Object supplies the applicable parameters.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.17-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.17-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Encrypt Cryptographic Parameters omission has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Encrypt omission capability resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the MAY has category-matched omission evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted_parameters = request_message_with_operation_payload(
+        ENCRYPT_OPERATION,
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                vec![0x41, 0x42],
+            ))),
+        )
+        .to_ttlv_payload()
+        .expect("Encrypt serializes caller omission without inferred parameters"),
+    );
+    let item = omitted_parameters
+        .batch_items()
+        .next()
+        .expect("the test request contains one batch item");
+    let has_parameters = item
+        .with_request_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG)
+        })
+        .expect("the test request contains a Request Payload");
+    assert!(!has_parameters);
+    result
+        .validate_request(&omitted_parameters)
+        .expect("profile preflight permits caller omission without inferring remote attributes");
+
+    let unrelated_operation = request_message_with_operation_payload(
+        0x0000_000A,
+        structure([tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, Value::integer(7))]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Encrypt omission capability does not constrain unrelated operations");
+}
+
 fn variable_iv_profile_rule() -> (RuleEvaluator, ProfileValidationResult) {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
