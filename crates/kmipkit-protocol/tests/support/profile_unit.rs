@@ -5246,6 +5246,101 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
     assert_check_limit_is_scoped_to_check(&result, evaluate);
 }
 
+#[test]
+fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
+    // KMIP Specification v2.1 §4.39 says clients SHOULD use a lowercase
+    // PKCS#12 Friendly Name text string.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.39-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.39-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("PKCS#12 Friendly Name has a typed profile recommendation");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the friendly-name recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHOULD mapping has recommended-behavior evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("PKCS#12 Friendly Name has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let lowercase_register = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                FRIENDLY_NAME_ATTRIBUTE,
+                Value::text_string("client alias".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&lowercase_register), None));
+    result
+        .validate_request(&lowercase_register)
+        .expect("a lowercase Register value follows the recommendation");
+
+    let uppercase_modify = request_message_with_operation_payload(
+        ADD_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                FRIENDLY_NAME_ATTRIBUTE,
+                Value::text_string("Client Alias".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(!evaluate(Some(&uppercase_modify), None));
+    let error = result
+        .validate_request(&uppercase_modify)
+        .expect_err("a non-lowercase Add Attribute value deviates from the recommendation");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let lowercase_unicode = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                FRIENDLY_NAME_ATTRIBUTE,
+                Value::text_string("école".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&lowercase_unicode), None));
+
+    let omitted = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(Structure::new()),
+        )]),
+    );
+    assert!(evaluate(Some(&omitted), None));
+}
+
 fn assert_check_payload_accepts_omission_and_listed_members(
     result: &ProfileValidationResult,
     evaluate: RuleEvaluator,
