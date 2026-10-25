@@ -101821,15 +101821,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0038",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/login.rs"
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_login_request_count_is_optional_integer"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Request Count (HTML lines 29689-29704), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30 Table 253, request payload row Request Count (HTML lines 29689-29704), records optional_table_body_value, not an RFC keyword. The typed Baseline Client mapping accepts omission or one Integer and rejects duplicate or wrong-type fields; the linked Login model and profile tests verify request representation. It does not impose a numeric range or track later ticket use. The pinned official OASIS Test Cases inventory has no requirement-specific test ID; no official case-level pass, server behavior, or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.30-003",
