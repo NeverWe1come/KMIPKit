@@ -5256,6 +5256,7 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     const FRIENDLY_NAME_ATTRIBUTE: u32 = 0x0042_00FB;
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const VENDOR_EXTENSION_VALUE_TAG: u32 = 0x0054_0001;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -5319,6 +5320,18 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 
+    let opaque_extension = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            VENDOR_EXTENSION_VALUE_TAG,
+            Value::structure(structure([tagged(
+                FRIENDLY_NAME_ATTRIBUTE,
+                Value::text_string("Client Alias".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&opaque_extension), None));
+
     let lowercase_unicode = request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
         structure([tagged(
@@ -5333,10 +5346,7 @@ fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
 
     let omitted = request_message_with_operation_payload(
         REGISTER_OPERATION_TAG,
-        structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(Structure::new()),
-        )]),
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
     );
     assert!(evaluate(Some(&omitted), None));
 }
