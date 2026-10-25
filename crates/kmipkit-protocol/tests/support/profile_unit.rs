@@ -14272,9 +14272,9 @@ fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
         .expect("the client SHALL NOT has negative executable evidence");
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.kind == RuleTestKind::NegativeBehavior
-            && evidence.test_id.ends_with(
-                "profile_rejects_set_attribute_on_read_only_standard_attribute",
-            )
+            && evidence
+                .test_id
+                .ends_with("profile_rejects_set_attribute_on_read_only_standard_attribute")
     }));
 }
 
@@ -14295,10 +14295,7 @@ fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
         SET_ATTRIBUTE_OPERATION,
         structure([tagged(
             NEW_ATTRIBUTE_TAG,
-            Value::structure(structure([tagged(
-                LEASE_TIME_TAG,
-                Value::interval(60),
-            )])),
+            Value::structure(structure([tagged(LEASE_TIME_TAG, Value::interval(60))])),
         )]),
     );
     let error = result
@@ -14328,6 +14325,42 @@ fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
     result
         .validate_request(&modifiable_request)
         .expect("Set Attribute remains available for a modifiable attribute");
+
+    let unrelated_request = request_message_with_operation_payload(
+        0x0000_0008,
+        structure([tagged(LEASE_TIME_TAG, Value::interval(60))]),
+    );
+    result
+        .validate_request(&unrelated_request)
+        .expect("the Set Attribute restriction does not reject another operation");
+
+    let mixed_batch = request_message_with_batch_operations([
+        (
+            SET_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                NEW_ATTRIBUTE_TAG,
+                Value::structure(structure([tagged(
+                    COMMENT_ATTRIBUTE_TAG,
+                    Value::text_string("operator note".to_owned()),
+                )])),
+            )]),
+        ),
+        (
+            SET_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                NEW_ATTRIBUTE_TAG,
+                Value::structure(structure([tagged(LEASE_TIME_TAG, Value::interval(60))])),
+            )]),
+        ),
+    ]);
+    let error = result
+        .validate_request(&mixed_batch)
+        .expect_err("a prohibited mutation in any Set Attribute Batch Item is rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
 }
 
 #[test]

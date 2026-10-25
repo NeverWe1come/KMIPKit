@@ -5074,6 +5074,46 @@ fn client_key_value_present_is_not_modified(
     })
 }
 
+fn client_set_attribute_does_not_mutate_read_only_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != SET_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == NEW_ATTRIBUTE)
+                    .all(|new_attribute| {
+                        new_attribute.with_value(|value| match value {
+                            ValueView::Structure(attributes) => {
+                                attributes.children().iter().all(|attribute| {
+                                    !client_attribute_mutation_is_prohibited(
+                                        attribute.tag().raw(),
+                                        ClientAttributeMutation::Set,
+                                    )
+                                })
+                            }
+                            _ => false,
+                        })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_usage_limits_count_is_not_set_by_add_or_modify(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7386,6 +7426,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.51-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.51-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_set_attribute_does_not_mutate_read_only_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_set_attribute_on_read_only_standard_attribute",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
