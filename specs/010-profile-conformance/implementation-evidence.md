@@ -6371,3 +6371,17 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.30-003` from KMIP Specification v2.1 §6.1.30 Table
 | Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Independent QA approved the mapping, tests, catalog links, and scope with no actionable findings; all slice commits carry DCO sign-offs. Security review of `d52ae18d..81fa398d` found no actionable findings. Exact-head CI after publication remains pending. |
 
 Baseline Client now has 182 valid executable typed mappings out of 265 assigned requirements; 83 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
+
+### KMIPKIT-0010 T040 — Batch Order Option recommendation for Check (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.7-002-001` from KMIP Specification v2.1 §6.1.7 paragraph 2 (pinned HTML lines 23731–23734), which says Batch Order Option SHOULD be true in a batch containing Check. §9.8 (pinned HTML lines 43860–43865) defines the option as Boolean and says omission assumes true. The Baseline Client rule accepts omission or explicit true, rejects explicit false when a Check Batch Item appears at any position, and leaves batches without Check outside this rule. This is request-side client validation; it does not assert the server's execution order and does not cover the sibling Batch Error Continuation Option recommendation.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `88a57c5b` | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_recommends_batch_order_true_when_check_is_present -- --nocapture` failed because no typed mapping existed for the recommendation. |
+| Green | DCO commit `813f0971` | Added an evaluator that detects Check in any Batch Item and checks the effective Batch Order Option. Profile tests accept omission and true, reject false with stable requirement context, verify Check in a later item, and allow false for batches without Check. |
+| Refactor, catalog, and generated report | DCO commit `76b80070` | Added §9.8 and Batch Order Option element links, the Check evaluator and tests, an exact SHOULD source note, regenerated the report, and updated the typed-registry snapshot. |
+| Local verification | Protocol tests; Clippy; format/diff; catalog/profile/report; report snapshot; typed profile traceability; bidirectional evidence | PASS: 1,024 protocol unit tests plus integration/doctest targets; protocol Clippy with `-D warnings`; formatting and whitespace checks; catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and report current; report snapshot and bidirectional requirement-evidence test pass; typed profile traceability passes (197.158s on Windows). Coverage thresholds remain temporarily waived for unfinished PRs #90 and #104 while collection stays enabled. |
+| Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Pending sequential reviews and CI for the next published head. |
+
+Baseline Client now has 183 valid executable typed mappings out of 265 assigned requirements; 82 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
