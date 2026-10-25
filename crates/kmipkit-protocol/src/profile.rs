@@ -4495,10 +4495,84 @@ fn client_key_block_algorithm_requires_length(
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
+const HASH_OPERATION: u32 = 0x0000_0013;
+const MAC_OPERATION: u32 = 0x0000_0014;
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0015;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INITIAL_INDICATOR: u32 = 0x0042_00D7;
+const FINAL_INDICATOR: u32 = 0x0042_00D8;
 const AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA: u32 = 0x0042_00FE;
 const AUTHENTICATED_ENCRYPTION_TAG: u32 = 0x0042_00FF;
+
+fn client_multipart_continuation_has_server_correlation(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(
+            operation,
+            HASH_OPERATION
+                | MAC_OPERATION
+                | MAC_VERIFY_OPERATION
+                | ENCRYPT_OPERATION
+                | DECRYPT_OPERATION
+                | SIGN_OPERATION
+                | SIGNATURE_VERIFY_OPERATION
+        ) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let correlation_value = match field_presence(&payload, CORRELATION_VALUE) {
+                    FieldPresence::Missing => None,
+                    FieldPresence::Duplicate => return false,
+                    FieldPresence::Unique(value) => {
+                        Some(value.with_value(|value| matches!(value, ValueView::ByteString(_))))
+                    }
+                };
+                let initial_indicator = match field_presence(&payload, INITIAL_INDICATOR) {
+                    FieldPresence::Missing => None,
+                    FieldPresence::Duplicate => return false,
+                    FieldPresence::Unique(value) => match value.with_value(|value| match value {
+                        ValueView::Boolean(value) => Some(*value),
+                        _ => None,
+                    }) {
+                        Some(value) => Some(value),
+                        None => return false,
+                    },
+                };
+                let final_indicator = match field_presence(&payload, FINAL_INDICATOR) {
+                    FieldPresence::Missing => None,
+                    FieldPresence::Duplicate => return false,
+                    FieldPresence::Unique(value) => match value.with_value(|value| match value {
+                        ValueView::Boolean(value) => Some(*value),
+                        _ => None,
+                    }) {
+                        Some(value) => Some(value),
+                        None => return false,
+                    },
+                };
+
+                if initial_indicator == Some(true) {
+                    return correlation_value.is_none();
+                }
+
+                let is_continuation = correlation_value.is_some()
+                    || initial_indicator == Some(false)
+                    || final_indicator.is_some();
+                !is_continuation || correlation_value == Some(true)
+            })
+            .unwrap_or(false)
+    })
+}
 
 fn client_encrypt_aad_is_on_initial_request(
     request: Option<&RequestMessage>,
@@ -9163,6 +9237,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.8-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.8-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_multipart_continuation_has_server_correlation),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_server_generated_correlation_to_multipart_continuations",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

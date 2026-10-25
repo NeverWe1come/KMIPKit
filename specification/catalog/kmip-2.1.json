@@ -99045,12 +99045,34 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_multipart_continuation_has_server_correlation",
+        "crates/kmipkit-protocol/src/encrypt.rs::EncryptRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/hash.rs::HashRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/mac.rs::MacRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/mac_verify.rs::MacVerifyRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/sign.rs::SignRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/signature_verify.rs::SignatureVerifyRequest::with_correlation_value",
+        "crates/kmipkit-protocol/src/encrypt.rs::EncryptResponse::correlation_value",
+        "crates/kmipkit-protocol/src/decrypt.rs::DecryptResponse::correlation_value",
+        "crates/kmipkit-protocol/src/hash.rs::HashResponse::correlation_value",
+        "crates/kmipkit-protocol/src/mac.rs::MacResponse::correlation_value",
+        "crates/kmipkit-protocol/src/mac_verify.rs::MacVerifyResponse::correlation_value",
+        "crates/kmipkit-protocol/src/sign.rs::SignResponse::correlation_value",
+        "crates/kmipkit-protocol/src/signature_verify.rs::SignatureVerifyResponse::correlation_value"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_server_generated_correlation_to_multipart_continuations",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::shared_multipart_correlation_and_indicators_keep_the_exact_values",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs::every_crypto_request_shape_method_accepts_single_part_and_rejects_missing_input",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §7.8 states that the server generates the Correlation Value in the first response and that the client SHALL include it in every subsequent cryptographic request for that operation. The typed Baseline Client evaluator requires a well-formed Byte String when a continuation is identified by Correlation Value, Init Indicator, or Final Indicator, across KMIPKit's seven multipart cryptographic operations; initial and single-part requests remain valid without it. Typed request builders accept the opaque value and typed responses expose it; fake-transport tests verify exact reuse for Encrypt and Decrypt, while protocol contract tests cover correlation representation and multipart shape across operation models. The server still determines which operations support multipart. These checks do not claim server acceptance, arbitrary caller-sequence token provenance enforcement, official Test Case success, or formal profile conformance. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-001",

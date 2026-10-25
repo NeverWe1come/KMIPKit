@@ -4526,7 +4526,10 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
         let continuation = request_message_with_operation_payload(
             operation,
             structure([
-                tagged(CORRELATION_VALUE, Value::byte_string(b"server-value".to_vec())),
+                tagged(
+                    CORRELATION_VALUE,
+                    Value::byte_string(b"server-value".to_vec()),
+                ),
                 tagged(INITIAL_INDICATOR, Value::boolean(false)),
             ]),
         );
