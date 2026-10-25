@@ -6667,10 +6667,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
-                kind: RuleTestKind::NegativeBehavior,
-            },
         ],
         constraints: &[],
     },
