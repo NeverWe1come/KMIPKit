@@ -452,6 +452,41 @@ fn request_message_with_operation_payload(
     .expect("test Request Message with operation payload is valid")
 }
 
+fn request_message_with_operation_payload_and_vendor_extension(
+    operation: u32,
+    payload: Structure,
+    vendor_extension: Structure,
+) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
+                tagged(
+                    MESSAGE_EXTENSION_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            VENDOR_IDENTIFICATION_TAG,
+                            Value::text_string("KMIPKit_Test".to_owned()),
+                        ),
+                        tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(false)),
+                        tagged(VENDOR_EXTENSION_TAG, Value::structure(vendor_extension)),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("Message Extension is placed on the Batch Item")
+}
+
 fn request_payload_signature(request: &crate::RequestMessage) -> Vec<(u32, ItemType, Option<u32>)> {
     request
         .batch_items()
@@ -5167,13 +5202,13 @@ fn login_usage_limits() -> Structure {
 
 #[test]
 fn profile_maps_check_additional_attributes_to_the_listed_set() {
-    // KMIP Specification v2.1 §6.1.7 Table 182 limits optional Check
-    // attributes to Usage Limits Count, Cryptographic Usage Mask, and Lease Time.
+    // KMIP Specification v2.1 §6.1.7 Tables 182–183 list direct Check fields;
+    // §9.13 Table 418 places vendor extensions on the Batch Item.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const COMMENT_TAG: u32 = 0x0042_0007;
-    const VENDOR_EXTENSION_TAG: u32 = 0x0054_0123;
+    const VENDOR_EXTENSION_RANGE_TAG: u32 = 0x0054_0123;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -5240,17 +5275,43 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
     assert!(!evaluate(Some(&extra_standard_member), None));
     assert!(result.validate_request(&extra_standard_member).is_err());
 
-    let vendor_extension = request_message_with_operation_payload(
+    let misplaced_vendor_extension = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         structure([tagged(
-            VENDOR_EXTENSION_TAG,
+            VENDOR_EXTENSION_RANGE_TAG,
             Value::text_string("opaque extension".to_owned()),
         )]),
     );
-    assert!(evaluate(Some(&vendor_extension), None));
+    assert!(!evaluate(Some(&misplaced_vendor_extension), None));
+    assert!(result.validate_request(&misplaced_vendor_extension).is_err());
+
+    let properly_placed_vendor_extension =
+        request_message_with_operation_payload_and_vendor_extension(
+            CHECK_OPERATION_TAG,
+            Structure::new(),
+            structure([tagged(
+                VENDOR_EXTENSION_RANGE_TAG,
+                Value::text_string("opaque extension".to_owned()),
+            )]),
+        );
+    let batch_item = properly_placed_vendor_extension
+        .batch_items()
+        .next()
+        .expect("the request contains a Batch Item");
+    assert_eq!(batch_item.message_extension_count(), 1);
+    let message_extension = batch_item
+        .message_extension(0)
+        .expect("the optional Batch Item Message Extension is preserved");
+    assert_eq!(
+        message_extension.with_vendor_extension(|extension| {
+            extension.children()[0].tag().raw()
+        }),
+        Some(VENDOR_EXTENSION_RANGE_TAG)
+    );
+    assert!(evaluate(Some(&properly_placed_vendor_extension), None));
     result
-        .validate_request(&vendor_extension)
-        .expect("allocated vendor extensions remain preserved");
+        .validate_request(&properly_placed_vendor_extension)
+        .expect("§9.13 Message Extension remains separate from Check payload attributes");
 
     let unrelated_operation = request_message_with_operation_payload(
         LOCATE_OPERATION_TAG,
