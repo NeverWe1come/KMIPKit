@@ -350,6 +350,47 @@ class CoverageReportTests(unittest.TestCase):
                 load_typed_rule_mappings(repository),
             )
 
+    def test_typed_rule_registry_reader_accepts_rustfmt_wrapped_evaluator(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(
+            client_check_batch_error_continuation_is_stop_or_undo,
+        ),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_stop_or_undo_when_check_is_present",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[],
+    },
+];
+"""
+
+        self.assertEqual(
+            _parse_typed_rule_registry(source),
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+                    "source_gap_id": None,
+                    "verification_category": "RecommendedBehaviorOrDeviation",
+                    "evaluator_present": True,
+                    "transport_only": False,
+                    "configuration_only": False,
+                    "test_kind": "RecommendedBehavior",
+                    "test_id": (
+                        "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                        "profile_recommends_stop_or_undo_when_check_is_present"
+                    ),
+                }
+            ],
+        )
+
     def test_typed_rule_registry_rejects_unresolvable_test_evidence(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
