@@ -93419,7 +93419,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.17 explains that the client MAY omit Encrypt Cryptographic Parameters when they are attributes of the Managed Cryptographic Object; Table 214 marks the request field Required=No. The typed Baseline Client rule permits an Encrypt request with caller omission and validates representation only. It cannot inspect remote object attributes or predict the server's result if required parameters are unavailable. No official OASIS test execution is claimed. The pinned Test Cases inventory has no requirement-specific test ID."
+      "review_note": "KMIP Specification v2.1 §6.1.17 explains that the client MAY omit Encrypt Cryptographic Parameters when they are attributes of the Managed Cryptographic Object; Table 214 marks the request field Required=No. The typed Baseline Client rule permits an Encrypt request with caller omission and validates representation only. It cannot inspect remote object attributes or predict the server's result if required parameters are unavailable. No official OASIS test execution is claimed. No requirement-specific official Test Cases ID is linked in the pinned OASIS inventory; no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-001-002",
@@ -93455,7 +93455,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.17 permits omission when the supplied Cryptographic Parameters direct server Random IV generation or the selected algorithm does not require an IV. The typed Baseline Client rule validates only the optional outbound Byte String representation; focused tests preserve omission in both a Random IV request and RSA (Cryptographic Algorithm value 4, §11.12 Table 443). KMIPKit does not generate an IV, inspect remote object attributes, or predict server acceptance. No official OASIS test execution is claimed. The pinned Test Cases inventory has no requirement-specific test ID."
+      "review_note": "KMIP Specification v2.1 §6.1.17 permits omission when the supplied Cryptographic Parameters direct server Random IV generation or the selected algorithm does not require an IV. The typed Baseline Client rule validates only the optional outbound Byte String representation; focused tests preserve omission in both a Random IV request and RSA (Cryptographic Algorithm value 4, §11.12 Table 443). KMIPKit does not generate an IV, inspect remote object attributes, or predict server acceptance. No official OASIS test execution is claimed. No requirement-specific official Test Cases ID is linked in the pinned OASIS inventory; no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.17-004",
@@ -94010,7 +94010,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.23 Table 232, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value; this is table-field semantics, not a formal RFC keyword. KMIP Specification v2.1 §7.40 Table 392 defines Usage Limits Count as Long Integer. The typed Baseline Client rule requires exactly one Long Integer in each Get Usage Allocation request. Its positive test also verifies missing, wrong-type, and duplicate fields are rejected while Check remains outside this operation-scoped rule. It does not impose numeric range, positivity, budget, or guard-response semantics; those remain separately scoped in KMIPKIT-0039. The scoped structural verification is not a full profile conformance claim. The pinned OASIS Test Cases inventory has no requirement-specific test ID for this row."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.23 Table 232, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value; this is table-field semantics, not a formal RFC keyword. KMIP Specification v2.1 §7.40 Table 392 defines Usage Limits Count as Long Integer. The typed Baseline Client rule requires exactly one Long Integer in each Get Usage Allocation request. Its positive test also verifies missing, wrong-type, and duplicate fields are rejected while Check remains outside this operation-scoped rule. It does not impose numeric range, positivity, budget, or guard-response semantics; those remain separately scoped in KMIPKIT-0039. The scoped structural verification is not a full profile conformance claim. No requirement-specific official Test Case ID is linked in the pinned OASIS Test Cases inventory for this row; no official test execution or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-002",
@@ -96221,16 +96221,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_multiple_recertify_certificate_selectors_in_one_batch_item",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "KMIP Specification v2.1 §6.1.45 paragraph 1 limits a Re-certify operation to one renewed certificate. The typed Baseline Client rule enforces at most one direct Unique Identifier selector per Re-certify Batch Item; separate Batch Items remain independent operation requests. The rule checks request cardinality only: it does not inspect Certificate Request Value bytes or assert the server's renewal result. See specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-001",

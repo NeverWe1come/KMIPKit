@@ -1650,6 +1650,7 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-4.47-001-002",
                 "KMIPKIT-REQ-SPEC-6.1.44-003-002",
                 "KMIPKIT-REQ-SPEC-6.1.44-003-002",
+                "KMIPKIT-REQ-SPEC-6.1.45-001",
                 "KMIPKIT-REQ-SPEC-6.1.45-008",
                 "KMIPKIT-REQ-SPEC-6.1.45-008",
                 "KMIPKIT-REQ-SPEC-6.1.45-008",
