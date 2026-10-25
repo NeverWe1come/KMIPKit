@@ -12868,6 +12868,8 @@ fn client_response_operation_matches_the_operation_it_was_sent_for() {
 
 #[test]
 fn client_response_correlates_reordered_items_by_id_when_batch_order_is_effective() {
+    // KMIP Specification v2.1 §§6.1, 9.8, and 9.21: execution order does not
+    // replace the Unique Batch Item ID used to correlate each response.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;

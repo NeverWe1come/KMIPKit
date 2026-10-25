@@ -3316,25 +3316,9 @@ fn client_understands_response_operations(
         }
 
         let response_id = response_item.with_unique_batch_item_id(<[u8]>::to_vec);
-        let request_index = if request.header().effective_batch_order_option() {
-            let request_item = request_items[response_index];
-            let request_id = request_item.with_unique_batch_item_id(<[u8]>::to_vec);
-            if request_id != response_id {
-                return false;
-            }
-            response_index
-        } else if request_items.len() == 1
-            && response_items.len() == 1
-            && response_id.is_none()
-            && request_items[0]
-                .with_unique_batch_item_id(<[u8]>::to_vec)
-                .is_none()
-        {
-            0
-        } else {
-            let Some(response_id) = response_id else {
-                return false;
-            };
+        // Batch Order Option constrains execution order (§9.8); a supplied
+        // Unique Batch Item ID remains the response correlation key (§9.21).
+        let request_index = if let Some(response_id) = response_id {
             let matching_indices = request_items
                 .iter()
                 .enumerate()
@@ -3349,6 +3333,24 @@ fn client_understands_response_operations(
                 [index] => *index,
                 _ => return false,
             }
+        } else if request_items.len() == 1
+            && response_items.len() == 1
+            && request_items[0]
+                .with_unique_batch_item_id(<[u8]>::to_vec)
+                .is_none()
+        {
+            0
+        } else if request.header().effective_batch_order_option() {
+            let request_item = request_items[response_index];
+            if request_item
+                .with_unique_batch_item_id(<[u8]>::to_vec)
+                .is_some()
+            {
+                return false;
+            }
+            response_index
+        } else {
+            return false;
         };
 
         if consumed_requests[request_index] {
