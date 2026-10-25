@@ -87389,7 +87389,8 @@
         "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
         "crates/kmipkit-protocol/src/register.rs::attributes_satisfy_register_requirements",
         "crates/kmipkit-protocol/src/register.rs::key_block_has",
-        "crates/kmipkit-protocol/src/register.rs::key_value_has_attribute"
+        "crates/kmipkit-protocol/src/register.rs::key_value_has_attribute",
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
@@ -87397,12 +87398,14 @@
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_rejects_mistyped_embedded_cryptographic_metadata",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_algorithm_and_length_attributes_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_algorithm_missing_from_key_value"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_algorithm_missing_from_key_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_keeps_key_block_omission_exemptions_and_unknown_object_types_neutral"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Algorithm when its value is available from the plaintext Key Value Attributes Structure. The linked profile tests accept that request shape and reject omission when Key Value contains only Cryptographic Length. This request-local evidence does not inspect wrapped Byte String contents, establish server acceptance, link an official Test Case, or claim profile conformance."
+      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Algorithm when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-004-002",
@@ -87492,7 +87495,8 @@
         "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
         "crates/kmipkit-protocol/src/register.rs::attributes_satisfy_register_requirements",
         "crates/kmipkit-protocol/src/register.rs::key_block_has",
-        "crates/kmipkit-protocol/src/register.rs::key_value_has_attribute"
+        "crates/kmipkit-protocol/src/register.rs::key_value_has_attribute",
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
@@ -87500,12 +87504,14 @@
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_rejects_mistyped_embedded_cryptographic_metadata",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_algorithm_and_length_attributes_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_length_missing_from_key_value"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_key_block_length_missing_from_key_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_keeps_key_block_omission_exemptions_and_unknown_object_types_neutral"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Length when its value is available from the plaintext Key Value Attributes Structure. The linked profile tests accept that request shape and reject omission when Key Value contains only Cryptographic Algorithm. This request-local evidence does not inspect wrapped Byte String contents, establish server acceptance, link an official Test Case, or claim profile conformance."
+      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Length when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-005-002",

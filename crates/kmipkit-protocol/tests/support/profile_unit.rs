@@ -14363,21 +14363,70 @@ fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
     }
 
     assert_table12_key_block_omission_accepted(
+        TABLE12_REGISTER_OPERATION,
         REQUIREMENT_IDS[0],
         tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
     );
     assert_table12_key_block_omission_accepted(
+        TABLE12_REGISTER_OPERATION,
         REQUIREMENT_IDS[1],
         tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
     );
 }
 
 #[test]
+fn profile_maps_key_block_algorithm_and_length_omission_for_import() {
+    assert_table12_key_block_omission_accepted(
+        TABLE12_IMPORT_OPERATION,
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+    );
+    assert_table12_key_block_omission_accepted(
+        TABLE12_IMPORT_OPERATION,
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+        tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    );
+}
+
+#[test]
+fn profile_keeps_key_block_omission_exemptions_and_unknown_object_types_neutral() {
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+    ];
+
+    let secret_data = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SECRET_DATA, false, false, None),
+            [],
+        ),
+    );
+    assert_table12_key_block_omission_is_neutral(&secret_data, &REQUIREMENT_IDS);
+
+    let opaque = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(TABLE12_REGISTER_OPERATION, table12_opaque_object(), []),
+    );
+    assert_table12_key_block_omission_is_neutral(&opaque, &REQUIREMENT_IDS);
+
+    let unknown_object_type = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(TABLE12_OBJECT_TYPE, Value::enumeration(0x8000_0001)),
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+        ]),
+    );
+    assert_table12_key_block_omission_is_neutral(&unknown_object_type, &REQUIREMENT_IDS);
+}
+
+#[test]
 fn profile_rejects_omitted_key_block_algorithm_missing_from_key_value() {
-    let request = table12_key_block_omission_request(tagged(
-        TABLE12_CRYPTOGRAPHIC_LENGTH,
-        Value::integer(256),
-    ));
+    let request = table12_key_block_omission_request(
+        TABLE12_REGISTER_OPERATION,
+        tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    );
     assert_table12_key_block_omission_rejected(
         &request,
         "KMIPKIT-REQ-SPEC-3.1-004-001",
@@ -14387,10 +14436,10 @@ fn profile_rejects_omitted_key_block_algorithm_missing_from_key_value() {
 
 #[test]
 fn profile_rejects_omitted_key_block_length_missing_from_key_value() {
-    let request = table12_key_block_omission_request(tagged(
-        TABLE12_CRYPTOGRAPHIC_ALGORITHM,
-        Value::enumeration(3),
-    ));
+    let request = table12_key_block_omission_request(
+        TABLE12_REGISTER_OPERATION,
+        tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+    );
     assert_table12_key_block_omission_rejected(
         &request,
         "KMIPKIT-REQ-SPEC-3.1-005-001",
@@ -14398,7 +14447,10 @@ fn profile_rejects_omitted_key_block_length_missing_from_key_value() {
     );
 }
 
-fn table12_key_block_omission_request(key_value_attribute: Item) -> crate::RequestMessage {
+fn table12_key_block_omission_request(
+    operation: u32,
+    key_value_attribute: Item,
+) -> crate::RequestMessage {
     let object = table12_key_block_object(
         TABLE12_SYMMETRIC_KEY,
         false,
@@ -14406,16 +14458,29 @@ fn table12_key_block_omission_request(key_value_attribute: Item) -> crate::Reque
         Some(key_value_attribute),
     );
     request_message_with_operation_payload(
-        TABLE12_REGISTER_OPERATION,
-        table12_request_payload(TABLE12_REGISTER_OPERATION, object, []),
+        operation,
+        table12_request_payload(operation, object, []),
     )
 }
 
-fn assert_table12_key_block_omission_accepted(requirement_id: &str, attribute: Item) {
-    let request = table12_key_block_omission_request(attribute);
+fn assert_table12_key_block_omission_accepted(
+    operation: u32,
+    requirement_id: &str,
+    attribute: Item,
+) {
+    let request = table12_key_block_omission_request(operation, attribute);
     table12_profile_result(&[requirement_id])
         .validate_request(&request)
         .expect("omission is permitted when the value is in plaintext Key Value Attributes");
+}
+
+fn assert_table12_key_block_omission_is_neutral(
+    request: &crate::RequestMessage,
+    requirement_ids: &[&str],
+) {
+    table12_profile_result(requirement_ids)
+        .validate_request(request)
+        .expect("non-applicable or unknown Object Types remain uninterpreted");
 }
 
 fn assert_table12_key_block_omission_rejected(
