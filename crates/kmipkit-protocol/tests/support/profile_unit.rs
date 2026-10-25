@@ -10146,7 +10146,7 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
     // §6.1.2 Table 167, §6.1.6 Table 179, §6.1.8 Table 186,
     // §6.1.9 Table 189, §6.1.14 Table 205, §6.1.34 Table 265,
     // §6.1.43 Table 291, §6.1.45 Table 300, §6.1.46 Table 305,
-    // §6.1.47 Table 310, and §6.1.51 Table 322.
+    // §6.1.47 Table 310, §6.1.51 Table 322, and §11.56 (Object Group tag).
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
