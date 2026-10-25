@@ -6357,3 +6357,17 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.30-002` from KMIP Specification v2.1 §6.1.30 Table
 | Independent reviews and hosted CI | QA/security review; exact-head hosted CI | QA approved the slice with no remaining findings. QA initially found missing DCO trailers; the local slice commits were re-signed and evidence/task references now match Red `1f86df1c`, Green `42ba85b3`, and Refactor `a6a03917`. Independent security review of `c065ce9c..3970b3bf` found no actionable findings. Exact-head CI after publication remains pending. |
 
 Baseline Client now has 181 valid executable typed mappings out of 265 assigned requirements; 84 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
+
+### KMIPKIT-0010 T040 — optional Login Usage Limits (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.30-003` from KMIP Specification v2.1 §6.1.30 Table 253, Request Payload row Usage Limits (pinned HTML lines 29705–29720; Required=No). Its value is a Structure governed by §7.40 Table 392 (pinned HTML lines 42039–42145), which requires one Usage Limits Total Long Integer, Usage Limits Count Long Integer, and Usage Limits Unit Enumeration. The Baseline Client rule accepts omission or one well-formed structure and rejects malformed outer values, duplicate wrappers or known members, missing required members, and wrong member types. An unknown extension Enumeration is accepted without assigned semantics. This verifies request representation only; it makes no numeric-range, usage-consumption, allocation, server-policy, official Test Case, or profile-conformance claim.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `88a7e371` | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_login_optional_usage_limits_as_table_392_structure -- --nocapture` failed because the requirement had no typed profile mapping. |
+| Green | DCO commit `a047a76f` | Added an operation-scoped optional Structure rule for Login Usage Limits using the existing Table 392 member/type validator. The focused test accepts omission and a valid structure with an unknown Unit Enumeration, rejects malformed outer/nested values and duplicate wrapper/member fields, and leaves Locate unaffected. |
+| Refactor, catalog, and generated report | DCO commit `d8a2aff1` | Linked §7.40, the nested Usage Limits elements, evaluator and tests in the catalog; generalized the shared Table 392 structural helper; regenerated profile evidence/report and updated the report snapshot. |
+| Local verification | Protocol tests; Clippy; format/diff; catalog/profile/report; report snapshot; typed profile traceability; bidirectional evidence | PASS: 1,023 protocol unit tests plus integration/doctest targets; protocol Clippy with `-D warnings`; formatting and whitespace checks; catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and report current; report snapshot and bidirectional requirement-evidence test pass; typed profile traceability passes (195.798s on Windows). Coverage thresholds remain temporarily waived for unfinished PRs #90 and #104 while collection stays enabled. |
+| Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Pending sequential reviews and CI for the next published head. |
+
+Baseline Client now has 182 valid executable typed mappings out of 265 assigned requirements; 83 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
