@@ -1919,6 +1919,8 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-6.1.31-001",
                     "KMIPKIT-REQ-SPEC-6.1.31-001",
                     "KMIPKIT-REQ-SPEC-6.1.13-005",
+                    "KMIPKIT-REQ-SPEC-6.1-001-003",
+                    "KMIPKIT-REQ-SPEC-6.1-001-003",
                 ],
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],

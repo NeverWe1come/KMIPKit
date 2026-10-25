@@ -29,6 +29,7 @@ UNASSIGNED_RECERTIFY_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
 SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.43-005"
 ABSENT_LINK_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-4.31-002"
 CHECK_ATTRIBUTE_ELEMENT_IDS = [
+    "KMIPKIT-ELEM-OP-C2S-CHECK",
     "KMIPKIT-ELEM-TAG-42002C",
     "KMIPKIT-ELEM-TAG-420049",
     "KMIPKIT-ELEM-TAG-420096",
@@ -119,6 +120,23 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if row[0] == CHECK_ATTRIBUTE_REQUIREMENT_ID:
                 self.assertEqual(row[3].split("(")[0].strip(), "Check", row[0])
                 self.assertEqual(requirement["element_ids"], CHECK_ATTRIBUTE_ELEMENT_IDS, row[0])
+            elif row[0] in {
+                "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+                "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+            }:
+                batch_option_element_id = (
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
+                    if row[0] == "KMIPKIT-REQ-SPEC-6.1.7-002-001"
+                    else "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+                )
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        batch_option_element_id,
+                        "KMIPKIT-ELEM-OP-C2S-CHECK",
+                    ],
+                    row[0],
+                )
             elif row[0] == UNASSIGNED_RECERTIFY_REQUIREMENT_ID:
                 self.assertEqual(
                     requirement["element_ids"],

@@ -1359,6 +1359,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "mapping_status": "reviewed",
         }
         expected_error_requirement_ids = [
+            "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-001",
+            "KMIPKIT-REQ-SPEC-9.6-001-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-003",
+        ]
+        expected_error_item_requirement_ids = [
             "KMIPKIT-REQ-SPEC-9.6-001-001",
             "KMIPKIT-REQ-SPEC-9.6-001-002",
             "KMIPKIT-REQ-SPEC-9.6-001-003",
@@ -1368,7 +1374,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         expected_error_mapping = {
             "item": "Batch Error Continuation Option",
             "element_id": expected_error_element_id,
-            "requirement_ids": expected_error_requirement_ids,
+            "requirement_ids": expected_error_item_requirement_ids,
             "source_clause_ids": [expected_error_clause_id],
             "mapping_status": "reviewed",
         }
@@ -1790,7 +1796,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(check_specific_should["source_keyword"], "SHOULD")
         self.assertEqual(check_specific_should["condition"], "When a batch contains Check.")
-        self.assertEqual(check_specific_should["element_ids"], ["KMIPKIT-ELEM-OP-C2S-CHECK"])
+        self.assertEqual(
+            check_specific_should["element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
+            ],
+        )
         self.assertNotIn(
             "KMIPKIT-REQ-SPEC-6.1.7-002-001", expected_batch_order_option_mapping["requirement_ids"]
         )
@@ -2047,7 +2059,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(error_clause["locator"], {"ordinal": 1, "block_kind": "paragraph"})
         self.assertEqual(error_clause["source_keywords"], ["SHALL"])
         self.assertEqual(error_clause["disposition"], "requirement")
-        self.assertEqual(error_clause["requirement_ids"], expected_error_requirement_ids)
+        self.assertEqual(error_clause["requirement_ids"], expected_error_item_requirement_ids)
         self.assertEqual(error_clause["role"], "client")
         self.assertEqual(error_clause["direction"], "client_to_server")
         self.assertEqual(error_clause["scope_state"], "client_1_0")
@@ -2108,7 +2120,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(error_review["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
         self.assertEqual(error_review["html_line_range"], [43773, 43775])
         self.assertEqual(error_review["source_excerpt"], error_excerpt)
-        self.assertEqual(error_review["expected_client_requirement_ids"], expected_error_requirement_ids)
+        self.assertEqual(error_review["expected_client_requirement_ids"], expected_error_item_requirement_ids)
         self.assertEqual(
             error_review["source_obligations"],
             [
@@ -2120,7 +2132,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "direction": "client_to_server",
                     "condition": "The client includes Batch Error Continuation Option.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": expected_error_requirement_ids[0],
+                    "candidate_requirement_id": expected_error_item_requirement_ids[0],
                 },
                 {
                     "source_order": 2,
@@ -2130,7 +2142,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "direction": "client_to_server",
                     "condition": "The client includes Batch Error Continuation Option.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": expected_error_requirement_ids[1],
+                    "candidate_requirement_id": expected_error_item_requirement_ids[1],
                 },
                 {
                     "source_order": 3,
@@ -2143,7 +2155,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "direction": "client_to_server",
                     "condition": "The option is omitted; the source states Stop as the default.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": expected_error_requirement_ids[2],
+                    "candidate_requirement_id": expected_error_item_requirement_ids[2],
                 },
             ],
         )

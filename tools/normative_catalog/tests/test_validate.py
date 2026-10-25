@@ -15838,8 +15838,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
         self.assertIn(requirements["KMIPKIT-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
 
-    def test_check_limited_additional_attributes_have_verified_client_evidence(self) -> None:
-        """The client Check attribute limit has a stable ID and executable evidence."""
+    def test_check_limited_additional_attributes_have_scoped_client_evidence(self) -> None:
+        """The client Check attribute limit has scoped, executable evidence."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -15855,7 +15855,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["scope_state"], "client_1_0")
-        self.assertEqual(requirement["status"], "verified")
+        self.assertEqual(requirement["status"], "scoped_verified")
         self.assertIn("crates/kmipkit-protocol/src/check.rs", requirement["implementation_refs"])
         self.assertIn("crates/kmipkit-protocol/tests/unit/check_operation_tests.rs", requirement["verification_refs"])
         matching_rows = [
@@ -16028,7 +16028,8 @@ class CatalogValidationTests(unittest.TestCase):
                     or requirement.get("source_gap_id") != source_gap_id
                     or requirement.get("source_locator") != mapping.get("source_locator")
                     or requirement.get("source_clause_ids") != []
-                    or requirement.get("source_refs") != [{"source_id": gap.get("source_id"), "section": gap.get("source_section")}]
+                    or {"source_id": gap.get("source_id"), "section": gap.get("source_section")}
+                    not in requirement.get("source_refs", [])
                     or requirement.get("role") != mapping.get("role")
                     or requirement.get("scope_state") != mapping.get("scope_state")
                     or {"source_clause_id", "source_obligation_order", "source_keyword"} & set(mapping)
@@ -17023,6 +17024,8 @@ class CatalogValidationTests(unittest.TestCase):
                 expected_status = (
                     "verified"
                     if requirement_id == "KMIPKIT-REQ-SPEC-6.1.18-001-001"
+                    else "scoped_verified"
+                    if requirement_id == "KMIPKIT-REQ-SPEC-4.39-002-001"
                     else "unassigned"
                 )
                 self.assertEqual(requirement["status"], expected_status)
@@ -18802,6 +18805,20 @@ class CatalogValidationTests(unittest.TestCase):
                     ),
                     test_source="def request_capability_is_available():\n    assert True\n",
                 )
+
+    def test_object_group_client_capabilities_name_the_outgoing_direction(self) -> None:
+        """Object Group client evidence is scoped to values sent in requests."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-4.35-001-001",
+            "KMIPKIT-REQ-SPEC-4.35-001-002",
+        ):
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(requirements[requirement_id]["direction"], "client_to_server")
 
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(
         self,
@@ -22056,8 +22073,14 @@ class CatalogValidationTests(unittest.TestCase):
                 "optional_table_body_value",
                 [29689, 29704],
                 "Request Count No The integer count of the number of requests that can be made with the ticket",
-                "crates/kmipkit-protocol/src/login.rs",
-                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                [
+                    "crates/kmipkit-protocol/src/login.rs",
+                    "crates/kmipkit-protocol/src/profile.rs::client_login_request_count_is_optional_integer",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
+                ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.30-003": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
@@ -22066,8 +22089,15 @@ class CatalogValidationTests(unittest.TestCase):
                 "optional_table_body_value",
                 [29705, 29720],
                 "Usage Limits No The usage limits for the operations performed",
-                "crates/kmipkit-protocol/src/login.rs",
-                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                [
+                    "crates/kmipkit-protocol/src/login.rs",
+                    "crates/kmipkit-protocol/src/profile.rs::client_login_usage_limits_is_optional_structure",
+                    "crates/kmipkit-protocol/src/profile.rs::usage_limits_structure_is_well_formed",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure",
+                ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.31-001": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
@@ -22209,9 +22239,13 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["implementation_refs"], implementation_refs)
                 self.assertEqual(requirement["verification_refs"], verification_refs)
                 self.assertEqual(requirement["test_case_ids"], [])
-                review_note = requirement["review_note"]
-                self.assertIn("No requirement-specific official Test Cases ID is explicitly linked", review_note)
-                self.assertIn("No official case-level pass is claimed.", review_note)
+                normalized_review_note = requirement["review_note"].casefold()
+                self.assertTrue(
+                    "no requirement-specific test id" in normalized_review_note
+                    or "no requirement-specific official test cases id is explicitly linked"
+                    in normalized_review_note
+                )
+                self.assertIn("no official case-level pass", normalized_review_note)
                 for reference in implementation_refs:
                     self.assertTrue((ROOT / reference.split("::", 1)[0]).is_file())
                 for reference in verification_refs:

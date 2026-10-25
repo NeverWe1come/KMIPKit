@@ -90013,7 +90013,7 @@
       "subject": "Managed Object group membership",
       "summary": "The client may associate a Managed Object with a group.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
@@ -90035,7 +90035,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.35, line 16596, says a Managed Object MAY be part of a group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says it may initially be set by the Client or Server (lines 16655–16661). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. The Baseline Client mapping and linked tests verify that an outgoing Create can represent one direct Object Group Text String value; omission remains valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
+      "review_note": "KMIP Specification v2.1 §4.35, line 16596, says a Managed Object MAY be part of a group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says it may initially be set by the Client or Server (lines 16655–16661). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. This requirement records the client-to-server representation direction; the source also permits server initialization, which is outside this client exchange evidence. The Baseline Client mapping and linked tests verify that an outgoing Create can represent one direct Object Group Text String value; omission remains valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-002",
@@ -90061,7 +90061,7 @@
       "subject": "Multiple group membership",
       "summary": "The client may associate one object with more than one group.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
@@ -90083,7 +90083,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.35, lines 16596–16598, permits an object to belong to more than one group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says multiple instances are permitted (lines 16707–16713). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. The Baseline Client mapping and linked tests verify that an outgoing Create can represent two direct Object Group Text String values; omission and one value remain valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
+      "review_note": "KMIP Specification v2.1 §4.35, lines 16596–16598, permits an object to belong to more than one group. Table 99 defines Object Group as Text String (lines 16620–16626), and Table 100 says multiple instances are permitted (lines 16707–16713). §6.1.8 Table 186 carries Attributes in a Create request; §11.56 allocates the Object Group tag. This requirement records the client-to-server representation direction; the source also permits server initialization, which is outside this client exchange evidence. The Baseline Client mapping and linked tests verify that an outgoing Create can represent two direct Object Group Text String values; omission and one value remain valid because this is a MAY capability. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.35-001-003",
@@ -92375,19 +92375,23 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_client_operations_in_one_batch_as_optional_capability",
         "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Specification v2.1 §6.1 permits multiple operations to be combined in one batch. The linked test demonstrates a two-operation batch exchange; it does not claim support for every batch-order or ID Placeholder combination. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "review_note": "Specification v2.1 §6.1 permits a client to combine multiple operations in one batch. Baseline Client has a typed OptionalCapability mapping: the protocol profile regression validates a request containing two different operation values, while the KMIPKIT-0019 fake-transport test demonstrates a Create plus Encrypt exchange in one request/response pair. A single-operation request remains valid when the capability is unused. These tests do not establish server acceptance or every Batch Order Option and ID Placeholder combination. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-002-001",
@@ -102192,7 +102196,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define the direct standard Check request members: Unique Identifier and the three listed additional fields (Usage Limits Count, Cryptographic Usage Mask, and Lease Time). The Baseline Client mapping accepts omission or those members and rejects other assigned or extension-range tags placed directly in the Check Request Payload. §9.13 Table 418 places vendor extensions in an optional Message Extension appended to the Batch Item; the test preserves an allocated §11.56 extension tag there without treating it as a Check payload attribute. This validates request representation only. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty; local tests are not OASIS test-case passes and this is not a server-conformance claim."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define the direct standard Check request members: Unique Identifier and the three listed additional fields (Usage Limits Count, Cryptographic Usage Mask, and Lease Time). The Baseline Client mapping accepts omission or those members and rejects other assigned or extension-range tags placed directly in the Check Request Payload. §9.13 Table 418 places vendor extensions in an optional Message Extension appended to the Batch Item; the test preserves an allocated §11.56 extension tag there without treating it as a Check payload attribute. This validates request representation only. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-6.1.7-002-003 under the catalog's source-backed linking policy, so test_case_ids remains empty; local tests are not OASIS test-case passes and this is not a server-conformance claim. This is derived local evidence and not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-006",
