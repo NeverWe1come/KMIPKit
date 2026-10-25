@@ -920,6 +920,10 @@ fn discover_versions_payload(versions: &[(i32, i32)]) -> Structure {
 }
 
 fn response_message() -> crate::ResponseMessage {
+    response_message_with_operation(0x1E)
+}
+
+fn response_message_with_operation(operation: u32) -> crate::ResponseMessage {
     crate::ResponseMessage::try_from_ttlv(structure([
         tagged(
             RESPONSE_HEADER_TAG,
@@ -932,7 +936,7 @@ fn response_message() -> crate::ResponseMessage {
         tagged(
             BATCH_ITEM_TAG,
             Value::structure(structure([
-                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
                 tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
                 tagged(RESPONSE_PAYLOAD_TAG, Value::structure(Structure::new())),
             ])),
@@ -12722,6 +12726,160 @@ fn baseline_profile_and_shared_batch_requirements_have_typed_mappings() {
         validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
             .unwrap_or_else(|error| panic!("{requirement_id} mapping is invalid: {error}"));
     }
+}
+
+#[test]
+fn baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests() {
+    // KMIP Profiles v2.1 §§4.1.2, 6, and 6.1 define evidence/conformance
+    // conditions. They do not make Baseline Client an operation allowlist.
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPECTED_GATES: [(&str, &str, &str); 6] = [
+        (
+            "KMIPKIT-REQ-PROF-4.1.2-001",
+            "KMIPKIT-CLAUSE-PROF-4.1.2-001",
+            "profiles_4_1_2_test_variations",
+        ),
+        (
+            "KMIPKIT-REQ-PROF-6-001",
+            "KMIPKIT-CLAUSE-PROF-6-001",
+            "all_applicable_profile_normative_statements",
+        ),
+        (
+            "KMIPKIT-REQ-PROF-6.1-001",
+            "KMIPKIT-CLAUSE-PROF-6.1-001",
+            "kmip_specification_v2_1",
+        ),
+        (
+            "KMIPKIT-REQ-PROF-6.1-002",
+            "KMIPKIT-CLAUSE-PROF-6.1-002",
+            "profiles_3_1_basic_authentication_suite",
+        ),
+        (
+            "KMIPKIT-REQ-PROF-6.1-003",
+            "KMIPKIT-CLAUSE-PROF-6.1-003",
+            "baseline_client_conditions_5_1_1",
+        ),
+        (
+            "KMIPKIT-REQ-PROF-6.1-004",
+            "KMIPKIT-CLAUSE-PROF-6.1-004",
+            "one_or_more_baseline_mandatory_tests_5_1_3_or_5_6_3",
+        ),
+    ];
+    let requirement_ids = EXPECTED_GATES
+        .iter()
+        .map(|(requirement_id, _, _)| (*requirement_id).to_owned())
+        .collect::<Vec<_>>();
+
+    for (requirement_id, source_clause_id, gate_value) in EXPECTED_GATES {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("each Baseline conformance gate has a typed mapping");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert!(mapping.evaluator.is_none());
+        assert!(mapping.constraints.iter().any(|constraint| {
+            constraint.key == "client_profile_conformance_evidence"
+                && constraint.value == gate_value
+        }));
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("each conformance gate resolves to generated metadata");
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("evidence-only gates have category-appropriate test evidence");
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids,
+    };
+    let discover_versions = request_message();
+    result
+        .validate_request(&discover_versions)
+        .expect("conformance gates do not impose runtime operation restrictions");
+    result
+        .validate_response(&discover_versions, &response_message())
+        .expect("conformance gates do not change response processing");
+}
+
+#[test]
+fn client_response_operation_matches_the_operation_it_was_sent_for() {
+    // KMIP Specification v2.1 §6.1 requires a client to understand responses
+    // to operations it issues. This bounded check pairs response operations
+    // with the corresponding request and leaves operation payload decoding to
+    // each typed response model.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_OPERATION: u32 = 0x0000_000A;
+    const ENCRYPT_OPERATION: u32 = 0x0000_0003;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(GET_OPERATION, Structure::new());
+    result
+        .validate_response(&request, &response_message_with_operation(GET_OPERATION))
+        .expect("the response operation matches the issued Get");
+
+    let error = result
+        .validate_response(
+            &request,
+            &response_message_with_operation(ENCRYPT_OPERATION),
+        )
+        .expect_err("a response for a different operation is not understood as this Get result");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn recover_before_use_remains_explicit_caller_controlled_behavior() {
+    // KMIP Specification v2.1 §6.1 requires Recover before using an archived
+    // object. The client cannot infer remote archive state; the caller issues
+    // Recover and then chooses whether to use the returned object.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_0003;
+    const RECOVER_OPERATION: u32 = 0x0000_0016;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("caller-controlled Recover-before-use has an explicit typed mapping");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.constraints.iter().any(|constraint| {
+        constraint.key == "client_profile_capability"
+            && constraint.value == "recover_before_use_caller_controlled"
+    }));
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Recover-before-use resolves to generated metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the caller-controlled workflow has positive test evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&request_message_with_operation_payload(
+            RECOVER_OPERATION,
+            Structure::new(),
+        ))
+        .expect("the caller may explicitly issue Recover");
+    result
+        .validate_request(&request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            Structure::new(),
+        ))
+        .expect("profile validation does not infer remote object state");
 }
 
 #[test]
