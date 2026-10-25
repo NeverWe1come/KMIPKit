@@ -5166,6 +5166,110 @@ fn login_usage_limits() -> Structure {
 }
 
 #[test]
+fn profile_maps_check_additional_attributes_to_the_listed_set() {
+    // KMIP Specification v2.1 §6.1.7 Table 182 limits optional Check
+    // attributes to Usage Limits Count, Cryptographic Usage Mask, and Lease Time.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const COMMENT_TAG: u32 = 0x0042_0007;
+    const VENDOR_EXTENSION_TAG: u32 = 0x0054_0123;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Check has a typed rule for its limited additional attributes");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Check MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the limited Check capability has category-matched evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set"
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set"
+            && evidence.kind == RuleTestKind::NegativeBehavior
+    }));
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the Check additional-attribute rule has a typed evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let omitted = request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("all optional Check attributes may be omitted");
+
+    let listed = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        crate::CheckRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "checked-object".to_owned(),
+            ))
+            .with_usage_limits_count(3)
+            .with_cryptographic_usage_mask(0x04)
+            .with_lease_time(60)
+            .into_ttlv_payload()
+            .expect("typed Table 183 Check members are representable"),
+    );
+    assert!(evaluate(Some(&listed), None));
+    result
+        .validate_request(&listed)
+        .expect("the four standard Check request members are allowed");
+
+    let extra_standard_member = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(
+            COMMENT_TAG,
+            Value::text_string("not a Check request member".to_owned()),
+        )]),
+    );
+    assert!(!evaluate(Some(&extra_standard_member), None));
+    assert!(result.validate_request(&extra_standard_member).is_err());
+
+    let vendor_extension = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([tagged(
+            VENDOR_EXTENSION_TAG,
+            Value::text_string("opaque extension".to_owned()),
+        )]),
+    );
+    assert!(evaluate(Some(&vendor_extension), None));
+    result
+        .validate_request(&vendor_extension)
+        .expect("allocated vendor extensions remain preserved");
+
+    let unrelated_operation = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        structure([tagged(
+            COMMENT_TAG,
+            Value::text_string("outside Check".to_owned()),
+        )]),
+    );
+    assert!(evaluate(Some(&unrelated_operation), None));
+    result
+        .validate_request(&unrelated_operation)
+        .expect("this Check-specific limit leaves other operations alone");
+}
+
+#[test]
 fn profile_maps_client_check_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
     // optional Check field and its Long Integer representation.
