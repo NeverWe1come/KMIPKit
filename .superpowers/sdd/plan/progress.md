@@ -1,13 +1,12 @@
 # SDD ledger — plan: specs/010-profile-conformance/plan.md
 
-## Current authoritative state (refreshed 2026-10-15)
-- Worktree: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-t001-t002`; clean at `e8841b4c9e997393dfbe8bbddb3b7d310ef654c5` before this evidence refresh.
-- PR #90 is open/draft at remote head `e8841b4c9e997393dfbe8bbddb3b7d310ef654c5`, base `release/1.0.0`.
-- Exact-head CI run [38768093897](https://github.com/NeverWe1come/KMIPKit/actions/runs/38768093897) completed successfully for `e8841b4c`: 34 successful jobs, zero failures, and 3 schedule-only skips. The PR description still incorrectly says this run is pending.
-- T001 is complete. T002 is in progress. T003 and later tasks remain incomplete overall.
-- The §5.1.1 inventory has eight conditions and 30 nested values. Baseline item 4's Query, Get, Get Attributes, and Locate mappings are independently reviewed; its parent remains null/pending until whole-feature/profile closure is done. Item 5 has 14 reviewed value mappings; items 7 and 8 have reviewed optional dispositions.
-- Independent source audit confirms Baseline §6.1 item 4 references the 13 BL-M and 3 SKLC-M test cases as its 16-case candidate set; the normative text requires “one or more,” not every case individually. All 17 other client-profile §6.x clauses incorporate §6.1. These Profiles-defined IDs do not have matching CN01 IDs; no cross-source links are fabricated. The catalog/oracle case ID sets match for all 18 profiles.
-- PR #104 (#0043 shared client mapping) remains open/draft at `a6696836e2eec54f9ee9781b0ccb5b484ad6e4b2`, base `release/1.0.0`. Its profile-validation mapping is gated on KMIPKIT-0010 closure; shared paths will need integration and revalidation. Keep this work focused on #90.
+## Current authoritative state (refreshed 2026-10-25)
+- Worktree: `C:\Users\ramp1953\.codex\worktrees\0010-t040-profile-evidence\KMIPKit`; branch `feature/KMIPKIT-0010-profile-conformance-implementation-refresh`; clean at `0c70e7fadadf262cef45be3b7ed5ed6dc4541a06` before the next T040 slice.
+- PR #90 is open/draft at exact remote head `0c70e7fadadf262cef45be3b7ed5ed6dc4541a06`, base `release/1.0.0`.
+- Exact-head CI run [40214587778](https://github.com/NeverWe1come/KMIPKit/actions/runs/40214587778) is still in progress for `0c70e7fa`; the latest poll found no failed jobs and multiple cross-platform jobs remain active or queued. Do not claim CI complete.
+- T040 remains open. Baseline has 198/265 typed requirement mappings (67 unmapped); readiness remains `evidence_incomplete`. Three pinned mandatory fixtures remain blocked by typed preflight gaps and must be revisited in T045 after T040 closes.
+- The latest T040 slice adds Decrypt optional-field mappings for KMIP Specification v2.1 §6.1.11: Red `762ccf67`, Green `81d8ac9e`, Refactor `048f2716`, evidence hash follow-up `0c70e7fa`. Independent QA and security reviews found no blocking or actionable findings; CI for the exact head remains pending.
+- PR #104 (#0043 client mapping/parity) is open/draft at `ab81508877f45284b95009028b9683509d891c6d`, base `release/1.0.0`. Its subagent remains paused as requested; keep implementation work on #90 unless the user resumes #104.
 ## Scoped pre-flight conflict scan
 | Tasks | Shared artifact or interface | Producer/consumer relationship | Finding and ruling |
 |---|---|---|---|
@@ -16,7 +15,7 @@
 | T009 / T010 / T013 | profile.rs, client execute/preflight API and tests | T009 specifies protocol validation; T010/T013 integrate preflight and delivery-state behavior | Keep protocol rule contracts authoritative; preserve `NotSent` and response-started semantics. Existing tasks explicitly separate test, implementation, and refactor stages. |
 
 ## Current task
-Task T002: continue auditing the remaining profile applicability, source ownership, and cross-source test references against the pinned OASIS copies. Do not claim profile conformance. Do not invent owners; use approved feature scope and catalog traceability, then update documentation and evidence in this branch.
+Task T040: complete typed implementation and test assignments for every applicable Baseline Client requirement in the full inherited normative clause closure. The next scoped subtask is T046: map `KMIPKIT-REQ-SPEC-6.1.32-001` and `KMIPKIT-REQ-SPEC-6.1.33-001-001/-002` from pinned KMIP Specification v2.1 §§6.1.32–6.1.33. Validate request-field shape only; do not infer remote object attributes, algorithm needs, or server acceptance. Keep T045's three fixture blockers and the `evidence_incomplete` state explicit; make no profile-conformance claim.
 
 ## Independent source audit — Baseline mandatory case inheritance (2026-10-15)
 - Profiles v2.1 §6.1 item 4 (pinned HTML lines 10483–10489) refers to both Baseline Mandatory Test Cases in §5.1.3 and Symmetric Key Lifecycle Mandatory Test Cases in §5.6.3. The resulting Baseline candidate set is BL-M-1–13-21 plus SKLC-M-1–3-21; “one or more” does not make each case individually mandatory.
