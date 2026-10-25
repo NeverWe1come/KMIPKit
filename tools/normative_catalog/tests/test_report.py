@@ -350,6 +350,48 @@ class CoverageReportTests(unittest.TestCase):
                 load_typed_rule_mappings(repository),
             )
 
+    def test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-6.1-004",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-6.1-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[],
+        constraints: &[
+            RuleConstraint {
+                key: "client_profile_conformance_evidence",
+                value: "one_or_more_baseline_mandatory_tests_5_1_3_or_5_6_3",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "recover_before_use_caller_controlled",
+            },
+        ],
+    },
+];
+"""
+
+        self.assertEqual(
+            _parse_typed_rule_registry(source),
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
+                    "source_clause_id": "KMIPKIT-CLAUSE-PROF-6.1-004",
+                    "source_gap_id": None,
+                    "verification_category": "RequiredBehavior",
+                    "evaluator_present": False,
+                    "transport_only": False,
+                    "configuration_only": True,
+                    "test_kind": None,
+                    "test_id": None,
+                }
+            ],
+        )
+
     def test_typed_rule_registry_reader_accepts_rustfmt_wrapped_evaluator(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
