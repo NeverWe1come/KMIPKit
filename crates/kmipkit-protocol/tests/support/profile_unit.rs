@@ -17515,6 +17515,10 @@ const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.4
 const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-003";
 const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
     "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID: &str =
+    "KMIPKIT-REQ-SPEC-6.1.45-002-001";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
 const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-001";
 const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-001";
 const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -17571,6 +17575,13 @@ fn recertify_omitted_request_identifier_profile_result() -> ProfileValidationRes
     ProfileValidationResult {
         profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn recertify_optional_certificate_request_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -18098,6 +18109,50 @@ fn profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_b
     let unrelated_request =
         request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
     assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_maps_recertify_optional_certificate_request_as_optional_capability() {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| {
+            mapping.requirement_id == RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID
+        })
+        .expect("the optional Re-certify Certificate Request capability has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID
+        })
+        .expect("the optional Re-certify Certificate Request resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(RECERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the optional Certificate Request capability has executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::OptionalCapabilityUsable
+            && evidence
+                .test_id
+                .ends_with("profile_accepts_recertify_identifier_when_request_value_is_omitted")
+    }));
+
+    let request = request_message_with_operation_payload(
+        RECERTIFY_OPERATION_TAG,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("certificate-or-key-selector".to_owned()),
+        )]),
+    );
+    recertify_optional_certificate_request_profile_result()
+        .validate_request(&request)
+        .expect("an explicit Unique Identifier permits omitting Certificate Request");
 }
 
 #[test]
