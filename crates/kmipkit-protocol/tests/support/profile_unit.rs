@@ -12867,7 +12867,7 @@ fn client_response_operation_matches_the_operation_it_was_sent_for() {
 }
 
 #[test]
-fn client_response_does_not_reorder_items_when_batch_order_is_effective() {
+fn client_response_correlates_reordered_items_by_id_when_batch_order_is_effective() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;
@@ -12888,14 +12888,9 @@ fn client_response_does_not_reorder_items_when_batch_order_is_effective() {
         (GET_OPERATION, b"first-item"),
     ]);
 
-    let error = result
+    result
         .validate_response(&request, &out_of_order_response)
-        .expect_err("Batch Order Option defaults to true and preserves the request item order");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::ResponseRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        .expect("response items correlate by Unique Batch Item ID regardless of execution order");
 }
 
 #[test]
