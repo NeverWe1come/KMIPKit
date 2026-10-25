@@ -7291,11 +7291,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_create_key_pair_table_191_values_match),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
                 kind: RuleTestKind::NegativeBehavior,
             },
             RuleTestEvidence {
@@ -7317,11 +7321,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_create_key_pair_table_191_values_match),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_equal_create_key_pair_table_191_values",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
                 kind: RuleTestKind::NegativeBehavior,
             },
             RuleTestEvidence {
