@@ -95614,6 +95614,7 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_archive_request_capability",
+        "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs::request_omits_the_optional_unique_identifier",
         "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion"
       ],
       "negative_verification_required": false,
