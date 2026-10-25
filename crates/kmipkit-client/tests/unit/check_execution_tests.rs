@@ -572,6 +572,7 @@ fn check_can_consume_a_preceding_successful_create_placeholder() {
     let request = captured_request
         .as_deref()
         .expect("the ordered Create and Check batch reaches the fake transport");
+    assert_eq!(request_header_values(request), (Some(true), Some(2)));
     assert!(!request_payload_tags(request, 1).contains(&UNIQUE_IDENTIFIER));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
