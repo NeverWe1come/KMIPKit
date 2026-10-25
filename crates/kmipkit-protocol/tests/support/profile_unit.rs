@@ -5215,7 +5215,10 @@ fn profile_recommends_batch_order_true_when_check_is_present() {
 
     for order_option in [None, Some(true)] {
         let request = request_message_with_batch_operations_and_order(
-            [(CHECK_OPERATION_TAG, Structure::new()), (LOCATE_OPERATION_TAG, Structure::new())],
+            [
+                (CHECK_OPERATION_TAG, Structure::new()),
+                (LOCATE_OPERATION_TAG, Structure::new()),
+            ],
             order_option,
         );
         assert!(request.header().effective_batch_order_option());
@@ -5226,7 +5229,10 @@ fn profile_recommends_batch_order_true_when_check_is_present() {
     }
 
     let unordered_check_batch = request_message_with_batch_operations_and_order(
-        [(CHECK_OPERATION_TAG, Structure::new()), (LOCATE_OPERATION_TAG, Structure::new())],
+        [
+            (CHECK_OPERATION_TAG, Structure::new()),
+            (LOCATE_OPERATION_TAG, Structure::new()),
+        ],
         Some(false),
     );
     assert!(!evaluate(Some(&unordered_check_batch), None));
@@ -5240,7 +5246,10 @@ fn profile_recommends_batch_order_true_when_check_is_present() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
 
     let unrelated_unordered_batch = request_message_with_batch_operations_and_order(
-        [(LOCATE_OPERATION_TAG, Structure::new()), (CHECK_OPERATION_TAG, Structure::new())],
+        [
+            (LOCATE_OPERATION_TAG, Structure::new()),
+            (CHECK_OPERATION_TAG, Structure::new()),
+        ],
         Some(false),
     );
     // A batch containing Check still triggers the recommendation irrespective of order.

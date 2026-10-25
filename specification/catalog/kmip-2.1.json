@@ -97814,6 +97814,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.7"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.8"
         }
       ],
       "source_keyword": "SHOULD",
@@ -97825,23 +97829,26 @@
       "condition": "When a batch contains Check.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-CHECK"
+        "KMIPKIT-ELEM-OP-C2S-CHECK",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_check_batch_order_option_is_true_when_check_is_present"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_leaves_recommended_batch_options_explicitly_selected_by_the_caller",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_batch_order_true_when_check_is_present"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "KMIP Specification v2.1 §6.1.7 paragraph 2 recommends Batch Order Option true when a batch contains Check. §9.8 says omission has effective value true. The typed Baseline Client mapping accepts omission or explicit true and rejects explicit false when any Check Batch Item is present; a batch without Check is outside this rule. This validates request-side client behavior only and does not assert server execution order. It does not cover the sibling Batch Error Continuation Option recommendation. The pinned official OASIS Test Cases inventory has no requirement-specific test ID; no official case-level pass or full profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-002",
