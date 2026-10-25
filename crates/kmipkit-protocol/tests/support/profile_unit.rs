@@ -10084,6 +10084,59 @@ fn profile_maps_multiple_object_group_membership_as_optional_capability() {
 }
 
 #[test]
+fn profile_recommends_object_group_name_attribute_when_assigning_group() {
+    // KMIP Specification v2.1 §4.35 recommends setting the group name into
+    // Object Group; Table 99 defines Text String and §11.56 assigns its tag.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("group-name recommendation has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("group-name recommendation resolves to catalog metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the group-name recommendation has executable positive evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("group-name recommendation has a request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let assigning_group = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    OBJECT_GROUP_TAG,
+                    Value::text_string("team-alpha".to_owned()),
+                )])),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&assigning_group), None));
+    result
+        .validate_request(&assigning_group)
+        .expect("the client sets the group name in the Object Group attribute");
+}
+
+#[test]
 fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
     // KMIP Specification v2.1 §5.1, Table 157 permits repeated §4 attributes
     // in request Attributes structures and returned response Attributes.
