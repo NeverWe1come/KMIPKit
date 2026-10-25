@@ -771,6 +771,7 @@ const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const IV_COUNTER_NONCE: u32 = 0x0042_003D;
+const MAC_VERIFY_ORIGINAL_DATA: u32 = 0x0042_00C2;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
@@ -1963,6 +1964,51 @@ fn client_signature_verify_original_data_is_optional_byte_string(
         request,
         SIGNATURE_VERIFY_OPERATION,
         SIGNATURE_VERIFY_DATA,
+        OperationFieldType::ByteString,
+        false,
+    )
+}
+
+fn client_mac_cryptographic_parameters_are_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.32 permits omission when managed-object attributes supply the
+    // parameters. This request-local rule validates shape only.
+    client_operation_field_is_well_formed(
+        request,
+        MAC_OPERATION,
+        CRYPTOGRAPHIC_PARAMETERS,
+        OperationFieldType::Structure,
+        false,
+    )
+}
+
+fn client_mac_verify_cryptographic_parameters_are_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.33 permits omission when managed-object attributes supply the
+    // parameters. This request-local rule validates shape only.
+    client_operation_field_is_well_formed(
+        request,
+        MAC_VERIFY_OPERATION,
+        CRYPTOGRAPHIC_PARAMETERS,
+        OperationFieldType::Structure,
+        false,
+    )
+}
+
+fn client_mac_verify_original_data_is_optional_byte_string(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.33 permits original Data for algorithms that need it. The client
+    // validates its representation and does not infer algorithm requirements.
+    client_operation_field_is_well_formed(
+        request,
+        MAC_VERIFY_OPERATION,
+        MAC_VERIFY_ORIGINAL_DATA,
         OperationFieldType::ByteString,
         false,
     )
@@ -8327,6 +8373,60 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.32-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_mac_cryptographic_parameters_are_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_cryptographic_parameters_omission_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_mac_verify_original_data_is_optional_byte_string),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_original_data_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_mac_verify_cryptographic_parameters_are_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
