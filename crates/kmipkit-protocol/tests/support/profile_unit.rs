@@ -4471,6 +4471,86 @@ fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
 }
 
 #[test]
+fn profile_maps_server_generated_correlation_to_multipart_continuations() {
+    // KMIP Specification v2.1 §7.8 requires the server-generated Correlation
+    // Value on every subsequent request in a multipart cryptographic operation.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.8-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.8-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CORRELATION_VALUE: u32 = 0x0042_00D6;
+    const INITIAL_INDICATOR: u32 = 0x0042_00D7;
+    const CRYPTOGRAPHIC_OPERATIONS: [u32; 7] = [
+        0x0000_0013, // Hash
+        0x0000_0014, // MAC
+        0x0000_0015, // MAC Verify
+        0x0000_001F, // Encrypt
+        0x0000_0020, // Decrypt
+        0x0000_0021, // Sign
+        0x0000_0022, // Signature Verify
+    ];
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("§7.8 has a typed profile rule for multipart correlation");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("§7.8 resolves to generated client requirement metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has executable positive evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed request evaluator");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for operation in CRYPTOGRAPHIC_OPERATIONS {
+        let initial = request_message_with_operation_payload(
+            operation,
+            structure([tagged(INITIAL_INDICATOR, Value::boolean(true))]),
+        );
+        assert!(evaluate(Some(&initial), None));
+        result
+            .validate_request(&initial)
+            .expect("the first multipart request has no prior correlation value");
+
+        let continuation = request_message_with_operation_payload(
+            operation,
+            structure([
+                tagged(CORRELATION_VALUE, Value::byte_string(b"server-value".to_vec())),
+                tagged(INITIAL_INDICATOR, Value::boolean(false)),
+            ]),
+        );
+        assert!(evaluate(Some(&continuation), None));
+        result
+            .validate_request(&continuation)
+            .expect("each continuation carries the server Correlation Value");
+
+        let missing_correlation = request_message_with_operation_payload(
+            operation,
+            structure([tagged(INITIAL_INDICATOR, Value::boolean(false))]),
+        );
+        assert!(!evaluate(Some(&missing_correlation), None));
+        assert_eq!(
+            result
+                .validate_request(&missing_correlation)
+                .expect_err("a continuation without Correlation Value is rejected")
+                .code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+    }
+}
+
+#[test]
 fn profile_maps_optional_client_correlation_value_capability() {
     // KMIP Specification v2.1 §9.9 permits clients to add this request string.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.9-001";
