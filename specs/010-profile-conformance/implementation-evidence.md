@@ -6441,3 +6441,17 @@ Mapped `KMIPKIT-REQ-SPEC-4.39-002-001` from KMIP Specification v2.1 §4.39, para
 | Independent reviews | QA and static security review | PASS: QA re-review confirmed valid §9.13 extension placement and citations to the SHOULD paragraph, Table 107, and §11.56. Static security review found no actionable issue. No automated scanner report was produced for this slice. Exact-head hosted CI will be recorded after publishing this batch. |
 
 This mapping does not establish a server's acceptance, official OASIS Test Case success, or KMIP profile conformance. T040 remains open.
+
+### KMIPKIT-0010 T040 — Multiple Object Group membership (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-4.35-001-002` from KMIP Specification v2.1 §4.35, lines 16596–16598: a Managed Object MAY belong to more than one group. Table 99 defines Object Group as Text String (lines 16620–16626); Table 100 permits multiple instances (lines 16707–16713). §6.1.8 Table 186 carries Attributes in a Create request. The Baseline Client evaluator accepts valid repeated Object Group Text String values; the linked Create serialization test verifies that the model preserves them. Omission and one value remain valid because this requirement is a MAY capability. It does not establish server acceptance or persistence.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `8a903a92` | `cargo test -p kmipkit-protocol --all-features --locked profile_maps_multiple_object_group_membership_as_optional_capability -- --nocapture` failed because the requirement had no typed profile mapping. |
+| Green | DCO commit `5f9ee386` | Added an OptionalCapability mapping and Create-scoped evaluator. The focused test accepts two Object Group Text String values and also accepts omission or one value; the linked Create serialization test checks both values, direct tags, types, count, and order. |
+| Refactor, catalog, and generated evidence | This DCO-signed Refactor commit | Added the Baseline Client profile assignment, direct evaluator/test references, exact §4.35 / Tables 99–100 / §6.1.8 Table 186 citations, bounded no-server-claim review note, report snapshot count, and cross-feature traceability. Regenerated profile metadata and report. Baseline Client now has 187/265 typed mappings (78 unmapped); runtime readiness remains `evidence_incomplete`. |
+| Local verification | Protocol, catalog, profile/report generation, report snapshot, feature traceability, Clippy, format, immutable source, and whitespace checks | PASS: 1,028 protocol unit tests plus integration/doctest targets; 58 report tests and 21 feature-traceability tests (each with one expected Windows symlink-permission skip); strict catalog validation (4 sources, 1,411 clauses, 4,123 records); generated profile and report checks; workspace Clippy with `-D warnings`; formatting, diff, and pinned OASIS-source integrity checks. |
+| Independent reviews and hosted CI | QA/security review; exact-head CI | QA confirmed the source-to-test scope and optionality, with its documentation-evidence finding resolved in this Refactor record. Independent static security review and exact-head hosted CI are pending. Coverage collection remains enabled; minimum-threshold enforcement remains waived only for unfinished PRs #90 and #104. |
+
+No requirement-specific official OASIS Test Case ID is linked by the pinned sources. This mapping does not claim profile conformance. T040 remains open.
