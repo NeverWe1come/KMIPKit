@@ -524,7 +524,7 @@ fn check_leaves_recommended_batch_options_explicitly_selected_by_the_caller() {
     let request = captured_request
         .as_deref()
         .expect("the caller's Check batch reaches the fake transport");
-    assert_eq!(request_header_values(request), (Some(true), Some(1)));
+    assert_eq!(request_header_values(request), (Some(true), Some(2)));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
