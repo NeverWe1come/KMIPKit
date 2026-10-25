@@ -25,8 +25,11 @@ const OPERATION_FAILED: u32 = 1;
 const SERVER_REJECTED_OBJECT: u32 = 0xF123_4567;
 
 fn attributes() -> AttributeSet {
-    AttributeSet::try_new([test_item(0x0042_0028, Value::enumeration(3))])
-        .expect("caller attributes are valid")
+    AttributeSet::try_new([
+        test_item(0x0042_0028, Value::enumeration(3)),
+        test_item(0x0042_002A, Value::integer(256)),
+    ])
+    .expect("caller attributes are valid")
 }
 
 fn object() -> Item {
