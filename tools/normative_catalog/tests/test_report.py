@@ -1611,6 +1611,8 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-3.1-001",
                 "KMIPKIT-REQ-SPEC-3.1-001",
                 "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-4-001-004",
+                "KMIPKIT-REQ-SPEC-4-001-005",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-001",
                 "KMIPKIT-REQ-SPEC-4.14-001-002",

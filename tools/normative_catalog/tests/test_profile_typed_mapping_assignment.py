@@ -58,6 +58,11 @@ class ProfileTypedMappingAssignmentTests(unittest.TestCase):
             "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
             requirement["verification_refs"],
         )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs",
+            requirement["verification_refs"],
+        )
         self.assertTrue(requirement["negative_verification_required"])
 
     def test_read_only_attribute_deletion_is_assigned_with_client_scope(self) -> None:
@@ -79,6 +84,11 @@ class ProfileTypedMappingAssignmentTests(unittest.TestCase):
         self.assertIn("crates/kmipkit-protocol/src/attribute.rs", requirement["implementation_refs"])
         self.assertIn(
             "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+            requirement["verification_refs"],
+        )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs",
             requirement["verification_refs"],
         )
         self.assertTrue(requirement["negative_verification_required"])

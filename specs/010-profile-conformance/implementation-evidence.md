@@ -6464,11 +6464,27 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.20-001-001` from KMIP Specification v2.1 §6.1.20. 
 |---|---|---|
 | Red | DCO commit `3092c960` | Added `test_get_attributes_duplicate_reference_prohibition_is_assigned`; it failed because the catalog still marked the Baseline-selected requirement `unassigned`. |
 | Green | DCO commit `887458da` | Marked the requirement `verified` and replaced the stale review note with the existing typed evaluator and negative-test evidence. The focused catalog test passed. |
-| Refactor, traceability, and generated evidence | This DCO-signed Refactor commit | Updated KMIPKIT-0016 traceability, T040 task/progress records, and generated profile/report outputs using the pinned tools. Baseline Client now has 192/265 typed mappings (73 unmapped); readiness remains `evidence_incomplete`. |
+| Refactor, traceability, and generated evidence | This DCO-signed Refactor commit | Updated KMIPKIT-0016 traceability, T040 task/progress records, and generated profile/report outputs using the pinned tools. The exact typed-rule registry intersection at this head is 191/265 (74 unmapped); readiness remains `evidence_incomplete`. The prior 192/265 progress figure was an off-by-one. |
 | Local verification | Current worktree | PASS: focused assignment test, strict catalog validation, generated profile/report `--check`, report and feature-traceability tests, formatting, and `git diff --check`. The full normative suite remains covered by exact-head hosted CI. |
 | Reviews and hosted CI | Catalog-only update; independent review and exact-head CI pending publication | This increment reuses the existing operation-scoped negative evaluator and test; no behavior change was introduced. Coverage collection remains enabled; minimum-threshold enforcement remains waived only for unfinished PRs #90 and #104. |
 
 No requirement-specific official OASIS Test Case ID is linked for this rule. The mapping makes no server-acceptance or profile-conformance claim. T040 remains open.
+
+
+### KMIPKIT-0010 T040 — Read-only attribute mutation prohibitions (2026-10-25)
+
+KMIP Specification v2.1 §4 defines read-only attributes as not modifiable by either the client or server and not deletable by a client. `KMIPKIT-REQ-SPEC-4-001-004` maps the client side of the modification prohibition; `KMIPKIT-REQ-SPEC-4-001-005` maps client deletion. Both are `scoped_verified`: generated policy and executable client evidence cover source-catalogued standard attributes marked unconditionally non-modifiable/non-deletable. No server behavior or policy for unknown/vendor attributes is inferred. The profile evaluator resolves a standard Attribute Reference by tag or canonical name with an empty Vendor Identification and rejects malformed reference structures closed. Modifiable Comment remains accepted. The pinned OASIS inventory links no requirement-specific official Test Case.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red — catalog assignment | DCO commit `35b68ba3` | Added catalog-assignment regressions for both requirements; they failed while both statuses were `unassigned`. |
+| Red — typed profile routes | DCO commit `d8c362ec` | Added profile tests for Add, Adjust by tag/name, Modify current/new values, Set, and Delete by Current Attribute or tag/name reference; expected Red because the typed rules were absent. |
+| Green | DCO commit `57404ecb` | Added separate `ProhibitedBehavior` typed evaluators for client modification and deletion; added profile route coverage including malformed Attribute References and mixed-operation batches. |
+| Refactor and traceability | This DCO-signed Refactor commit | Extracted common lease-time name-reference fixture and mapping assertions; updated KMIPKIT-0016 FR-015 and cross-feature traceability, T040 progress, and this record. |
+| Local verification | Current worktree | PASS: full protocol suite (1,046 library tests plus integration/doctest targets); focused read-only profile tests (2), catalog-assignment tests (3), focused report snapshot test, strict catalog validation (4,125 records), generated profile/report checks, protocol Clippy with `-D warnings`, formatting, and `git diff --check`. Exact-head hosted CI remains pending publication. |
+| Independent review and hosted CI | Pending | No independent QA/security review is recorded for this increment yet. Coverage collection remains enabled; minimum-threshold enforcement remains waived only for unfinished PRs #90 and #104. |
+
+Baseline now has 193/265 typed mappings (72 unmapped); readiness remains `evidence_incomplete`. The `scoped_verified` records do not claim server compliance, official OASIS Test Case success, or profile conformance. T040 remains open.
 
 ### KMIPKIT-0010 T040 — Re-certify identifier when Certificate Request Value is omitted (2026-10-25)
 

@@ -88519,7 +88519,8 @@
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
-        "crates/kmipkit-protocol/src/set_attribute.rs"
+        "crates/kmipkit-protocol/src/set_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
@@ -88529,12 +88530,14 @@
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_modification_on_all_client_routes"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The existing generated-policy preflight rejects client Add, Adjust, Modify, and Set requests for catalogued standard attributes whose source-backed client mutability is unconditionally No. This verifies the client portion of KMIP v2.1 §4 only; server behavior, unrecognized/vendor attributes, and official Test Case results are not verified. No requirement-specific official OASIS Test Case is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-005",
@@ -88565,19 +88568,22 @@
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
-        "crates/kmipkit-protocol/src/delete_attribute.rs"
+        "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_deletion"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "The existing generated-policy preflight rejects client Delete requests for catalogued standard attributes whose source-backed client deletability is unconditionally No. Evidence is bounded to client requests for catalogued standard attributes; no requirement-specific official OASIS Test Case is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-001",
