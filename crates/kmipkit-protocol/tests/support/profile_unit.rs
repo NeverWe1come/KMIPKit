@@ -15336,6 +15336,209 @@ fn profile_rejects_key_value_present_attribute_mutations() {
 }
 
 #[test]
+fn profile_rejects_read_only_attribute_modification_on_all_client_routes() {
+    // KMIP Specification v2.1 §4 defines read-only attributes as non-modifiable by the client or server.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+    const COMMENT_ATTRIBUTE_TAG: u32 = 0x0042_00FD;
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the §4 read-only modification rule has generated metadata");
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the §4 client modification prohibition has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the scoped client SHALL NOT has negative executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let read_only = || tagged(LEASE_TIME_TAG, Value::interval(60));
+    let current = || {
+        tagged(
+            CURRENT_ATTRIBUTE_TAG,
+            Value::structure(structure([read_only()])),
+        )
+    };
+    let new_value = || {
+        tagged(NEW_ATTRIBUTE_TAG, Value::structure(structure([read_only()])))
+    };
+    let tag_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::enumeration(LEASE_TIME_TAG),
+        )
+    };
+    let name_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::structure(structure([
+                tagged(VENDOR_IDENTIFICATION_TAG, Value::text_string(String::new())),
+                tagged(
+                    ATTRIBUTE_NAME_TAG,
+                    Value::text_string("Lease Time".to_owned()),
+                ),
+            ])),
+        )
+    };
+    let requests = [
+        ("Add Attribute", ADD_ATTRIBUTE_OPERATION, structure([new_value()])),
+        (
+            "Adjust Attribute",
+            ADJUST_ATTRIBUTE_OPERATION,
+            structure([tag_reference()]),
+        ),
+        (
+            "Modify Attribute current value",
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([current()]),
+        ),
+        (
+            "Modify Attribute new value",
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([new_value()]),
+        ),
+        ("Set Attribute", SET_ATTRIBUTE_OPERATION, structure([new_value()])),
+    ];
+    for (case, operation, payload) in requests {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(operation, payload))
+            .expect_err(case);
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected, "{case}");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{case}");
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID), "{case}");
+    }
+
+    let error = result
+        .validate_request(&request_message_with_operation_payload(
+            ADJUST_ATTRIBUTE_OPERATION,
+            structure([name_reference()]),
+        ))
+        .expect_err("the standard Attribute Name reference must resolve to its read-only tag");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            ADD_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                NEW_ATTRIBUTE_TAG,
+                Value::structure(structure([tagged(
+                    COMMENT_ATTRIBUTE_TAG,
+                    Value::text_string("operator note".to_owned()),
+                )])),
+            )]),
+        ))
+        .expect("Add Attribute remains available for a source-modifiable attribute");
+}
+
+#[test]
+fn profile_rejects_read_only_attribute_deletion() {
+    // KMIP Specification v2.1 §4 defines read-only attributes as non-deletable by the client.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+    const COMMENT_ATTRIBUTE_TAG: u32 = 0x0042_00FD;
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the §4 read-only deletion rule has generated metadata");
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the §4 client deletion prohibition has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the client SHALL NOT has negative executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let read_only = || tagged(LEASE_TIME_TAG, Value::interval(60));
+    let current_attribute = || {
+        tagged(
+            CURRENT_ATTRIBUTE_TAG,
+            Value::structure(structure([read_only()])),
+        )
+    };
+    let tag_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::enumeration(LEASE_TIME_TAG),
+        )
+    };
+    let name_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::structure(structure([
+                tagged(VENDOR_IDENTIFICATION_TAG, Value::text_string(String::new())),
+                tagged(
+                    ATTRIBUTE_NAME_TAG,
+                    Value::text_string("Lease Time".to_owned()),
+                ),
+            ])),
+        )
+    };
+    for (case, selector) in [
+        ("Current Attribute", current_attribute()),
+        ("tag Attribute Reference", tag_reference()),
+        ("name Attribute Reference", name_reference()),
+    ] {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(
+                DELETE_ATTRIBUTE_OPERATION,
+                structure([selector]),
+            ))
+            .expect_err(case);
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected, "{case}");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{case}");
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID), "{case}");
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            DELETE_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                CURRENT_ATTRIBUTE_TAG,
+                Value::structure(structure([tagged(
+                    COMMENT_ATTRIBUTE_TAG,
+                    Value::text_string("operator note".to_owned()),
+                )])),
+            )]),
+        ))
+        .expect("Delete Attribute remains available for a source-deletable attribute");
+}
+
+#[test]
 fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.51-001";
