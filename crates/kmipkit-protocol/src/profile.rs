@@ -1891,6 +1891,36 @@ fn client_encrypt_iv_counter_nonce_is_optional_byte_string(
     )
 }
 
+fn client_decrypt_cryptographic_parameters_are_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.11 permits omission when the managed object's attributes supply
+    // parameters. This request-local check cannot inspect those attributes.
+    client_operation_field_is_well_formed(
+        request,
+        DECRYPT_OPERATION,
+        CRYPTOGRAPHIC_PARAMETERS,
+        OperationFieldType::Structure,
+        false,
+    )
+}
+
+fn client_decrypt_iv_counter_nonce_is_optional_byte_string(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.11 permits omission when the algorithm does not use an IV. The
+    // caller supplies that context; this check validates only the wire shape.
+    client_operation_field_is_well_formed(
+        request,
+        DECRYPT_OPERATION,
+        IV_COUNTER_NONCE,
+        OperationFieldType::ByteString,
+        false,
+    )
+}
+
 fn client_sign_cryptographic_parameters_are_optional_structure(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8879,6 +8909,42 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_decrypt_cryptographic_parameters_are_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_decrypt_iv_counter_nonce_is_optional_byte_string),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
