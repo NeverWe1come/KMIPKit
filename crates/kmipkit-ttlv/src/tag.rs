@@ -70,6 +70,14 @@ impl Tag {
     pub const fn raw(&self) -> u32 {
         self.0
     }
+
+    /// Returns whether this tag belongs to an allocated KMIP extension range.
+    ///
+    /// This reports allocation only; it does not validate extension semantics.
+    #[must_use]
+    pub fn is_extension(&self) -> bool {
+        matches!(allocation_kind(self.0), Some(TagAllocationKind::Extension))
+    }
 }
 
 fn allocation_kind(raw: u32) -> Option<TagAllocationKind> {
