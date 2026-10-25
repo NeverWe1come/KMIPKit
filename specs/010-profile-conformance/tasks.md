@@ -309,9 +309,18 @@
 
 ## Task 46: T040 MAC and MAC Verify optional request capabilities
 
-- [ ] T046 Add Baseline Client optional-capability mappings and evidence for MAC/MAC Verify:
+- [x] T046 Add Baseline Client optional-capability mappings and evidence for MAC/MAC Verify:
   - Normative requirements: `KMIPKIT-REQ-SPEC-6.1.32-001` from KMIP Specification v2.1 §6.1.32 and `KMIPKIT-REQ-SPEC-6.1.33-001-001` / `-002` from §6.1.33. Use source clauses `KMIPKIT-CLAUSE-SPEC-6.1.32-001` and `KMIPKIT-CLAUSE-SPEC-6.1.33-001`; each mapping category is `OptionalCapability`.
   - Positive behavior: verify that MAC and MAC Verify request builders permit Cryptographic Parameters to be omitted, and that MAC Verify can represent its optional original Data field. Add profile-evaluator cases for absent/present valid fields and rejection of duplicate or wrongly typed fields.
   - Boundary: validate represented request-field shape only. Do not infer remote object attributes, whether the selected algorithm requires original Data, or server acceptance. Keep official OASIS Test Case IDs empty unless an exact pinned case supports them.
   - Traceability: update catalog implementation/verification references, KMIPKIT-0019 traceability, generated report and snapshots, implementation evidence, and the T040 ledger. Preserve `evidence_incomplete`. The expected result is 201/265 typed mappings (64 unmapped), subject to generator verification.
   - Workflow: make distinct DCO-signed Red, Green, and Refactor commits. Verify focused and full relevant suites, catalog validation, profile/report generation and snapshots, formatting, Clippy, and immutable OASIS source integrity.
+
+## Task 47: repair stale profile-evidence contracts surfaced by exact-head CI
+
+- [ ] T047 Correct the three Python contract failures from exact-head CI run `40214587778`:
+  - For `KMIPKIT-REQ-SPEC-7.8-001`, preserve the implementation and verification references supported by KMIP Specification v2.1 §7.8 and the existing request-local evaluator, typed APIs, and fake-transport tests. Replace the stale test assertion that this normative requirement has no references with assertions for its specific §7.8 evidence; continue to distinguish the §7.8 requirement from the separate generic procedure paragraphs.
+  - For `KMIPKIT-REQ-SPEC-6.1.11-001-001` and `-002`, make the review notes state that the pinned official Test Cases inventory has no requirement-specific test IDs, satisfying the existing traceability contract without claiming official test execution or conformance.
+  - Regenerate `coverage-report.md` and update generated snapshots only with the pinned repository generator. Do not change runtime protocol behavior or OASIS upstream sources.
+  - Preserve the current mappings and `evidence_incomplete` readiness state. Verify the three reproductions first, then the focused contracts, catalog validator, report generator/check, format, Clippy if Rust source changes, immutable-source integrity, and `git diff --check`.
+  - Keep Red, Green, and Refactor evidence in distinct DCO-signed commits; the known three-test failure on the previous exact-head CI and focused local reproduction provide the Red evidence.
