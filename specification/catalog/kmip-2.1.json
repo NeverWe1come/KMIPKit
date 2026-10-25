@@ -96903,8 +96903,8 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE",
         "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
+        "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-7-NEW-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
       ],
       "profile_ids": [],
@@ -97829,8 +97829,8 @@
       "condition": "When a batch contains Check.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-CHECK",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
+        "KMIPKIT-ELEM-OP-C2S-CHECK"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -101876,8 +101876,8 @@
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-LOGIN",
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT"
       ],
       "profile_ids": [],
