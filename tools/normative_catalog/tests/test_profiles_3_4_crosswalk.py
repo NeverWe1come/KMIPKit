@@ -485,7 +485,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertNotIn(requirement_id, baseline["requirement_ids"])
         self.assertNotIn(requirement_id, self.crosswalk)
 
-    def test_profile_test_variations_are_a_claimed_profile_evidence_gate(self) -> None:
+    def test_profile_test_variations_are_a_typed_profile_evidence_gate(self) -> None:
         """§4.1.2 is conditional conformance evidence, not unconditional runtime behavior."""
         expected_scope = {
             "KMIPKIT-REQ-PROF-4.1-001": ("unclear", "unclear", "out_of_scope"),
@@ -528,9 +528,17 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 self.assertIn(requirement_id, self.crosswalk)
                 self.assertIn(requirement_id, baseline["requirement_ids"])
-                self.assertEqual(requirement["status"], "unassigned")
-                self.assertEqual(requirement["implementation_refs"], [])
-                self.assertEqual(requirement["verification_refs"], [])
+                self.assertEqual(requirement["status"], "scoped_verified")
+                self.assertEqual(
+                    requirement["implementation_refs"],
+                    ["crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"],
+                )
+                self.assertEqual(
+                    requirement["verification_refs"],
+                    [
+                        "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests"
+                    ],
+                )
             else:
                 self.assertEqual(review["expected_client_requirement_ids"], [])
                 self.assertNotIn(requirement_id, self.crosswalk)

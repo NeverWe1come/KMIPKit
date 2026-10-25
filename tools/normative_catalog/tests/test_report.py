@@ -1996,6 +1996,32 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-7.8-001",
                     "KMIPKIT-REQ-SPEC-7.8-001",
                     "KMIPKIT-REQ-SPEC-7.8-001",
+                    # KMIPKIT-0010 T049 and T050: caller-supplied wrapped
+                    # Import and optional Archive request evidence.
+                    "KMIPKIT-REQ-SPEC-6.1.25-006",
+                    "KMIPKIT-REQ-SPEC-6.1.25-006",
+                    "KMIPKIT-REQ-SPEC-6.1.4-001",
+                    "KMIPKIT-REQ-SPEC-6.1.4-001",
+                    "KMIPKIT-REQ-SPEC-6.1.4-001",
+                    # KMIPKIT-0010 T051: Baseline profile gates and shared
+                    # operation evidence; repeated IDs represent distinct
+                    # response/capability test references.
+                    "KMIPKIT-REQ-PROF-4.1.2-001",
+                    "KMIPKIT-REQ-PROF-6-001",
+                    "KMIPKIT-REQ-PROF-6.1-001",
+                    "KMIPKIT-REQ-PROF-6.1-002",
+                    "KMIPKIT-REQ-PROF-6.1-003",
+                    "KMIPKIT-REQ-PROF-6.1-004",
+                    "KMIPKIT-REQ-SPEC-6.1-001-001",
+                    "KMIPKIT-REQ-SPEC-6.1-001-002",
+                    "KMIPKIT-REQ-SPEC-6.1-001-002",
+                    "KMIPKIT-REQ-SPEC-6.1-001-002",
+                    "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "KMIPKIT-REQ-SPEC-6.1-004",
+                    "KMIPKIT-REQ-SPEC-6.1-004",
+                    "KMIPKIT-REQ-SPEC-6.1-005",
+                    "KMIPKIT-REQ-SPEC-6.1-005",
                 ],
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],

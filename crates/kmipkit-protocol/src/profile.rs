@@ -3307,6 +3307,16 @@ fn client_understands_response_operations(
     }
 
     let mut consumed_requests = vec![false; request_items.len()];
+    // Index IDs once so response matching remains bounded for large batches.
+    let mut request_indices_by_id = HashMap::new();
+    for (index, request_item) in request_items.iter().copied().enumerate() {
+        if let Some(request_id) = request_item.with_unique_batch_item_id(<[u8]>::to_vec)
+            && request_indices_by_id.insert(request_id, index).is_some()
+        {
+            return false;
+        }
+    }
+
     for (response_index, response_item) in response_items.iter().copied().enumerate() {
         let Some(response_operation) = response_item.operation() else {
             return false;
@@ -3319,20 +3329,10 @@ fn client_understands_response_operations(
         // Batch Order Option constrains execution order (§9.8); a supplied
         // Unique Batch Item ID remains the response correlation key (§9.21).
         let request_index = if let Some(response_id) = response_id {
-            let matching_indices = request_items
-                .iter()
-                .enumerate()
-                .filter_map(|(index, request_item)| {
-                    request_item
-                        .with_unique_batch_item_id(|request_id| request_id == response_id)
-                        .filter(|matches| *matches)
-                        .map(|_| index)
-                })
-                .collect::<Vec<_>>();
-            match matching_indices.as_slice() {
-                [index] => *index,
-                _ => return false,
-            }
+            let Some(request_index) = request_indices_by_id.get(&response_id).copied() else {
+                return false;
+            };
+            request_index
         } else if request_items.len() == 1
             && response_items.len() == 1
             && request_items[0]
