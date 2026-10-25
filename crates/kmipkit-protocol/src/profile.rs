@@ -8732,10 +8732,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
                 kind: RuleTestKind::PositiveBehavior,
             },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
-                kind: RuleTestKind::PositiveBehavior,
-            },
         ],
         constraints: &[],
     },
@@ -9260,6 +9256,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
