@@ -345,7 +345,7 @@ fn recertify_pending_preserves_correlation_without_implicit_poll() {
 }
 
 #[test]
-fn recertify_can_consume_a_preceding_successful_create_placeholder() {
+fn recertify_with_request_material_can_consume_a_preceding_create_placeholder() {
     let response = operation_batch_response_bytes([
         (
             CREATE_OPERATION,
@@ -374,22 +374,33 @@ fn recertify_can_consume_a_preceding_successful_create_placeholder() {
             AttributeSet::new(),
         )))
         .with_unique_batch_item_id(b"create-item".to_vec()),
-        ClientBatchItem::new(ClientRequest::Recertify(RecertifyRequest::new()))
-            .with_unique_batch_item_id(b"recertify-item".to_vec()),
+        ClientBatchItem::new(ClientRequest::Recertify(
+            // §6.1.45 permits an omitted Unique Identifier with request
+            // material; §8.1 resolves it through the ordered batch placeholder.
+            RecertifyRequest::new()
+                .with_certificate_request_type(1)
+                .with_certificate_request_value(SecretBytes::new(
+                    CERTIFICATE_REQUEST_BYTES.to_vec(),
+                )),
+        ))
+        .with_unique_batch_item_id(b"recertify-item".to_vec()),
     ])
     .with_batch_order_option(true)
     .with_batch_error_continuation_option(1);
 
     client
         .execute(batch, &CodecLimits::defaults())
-        .expect("Re-certify can use the preceding Create response ID Placeholder");
+        .expect("Re-certify request material can use the preceding Create ID Placeholder");
 
     let request = captured.borrow();
     let request = request
         .as_deref()
         .expect("the ordered Create and Re-certify batch reaches the fake transport");
     assert_eq!(request_fields(request, 1).0, Some(RECERTIFY_OPERATION));
-    assert_eq!(request_fields(request, 1).1, Vec::<u32>::new());
+    assert_eq!(
+        request_fields(request, 1).1,
+        vec![CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
