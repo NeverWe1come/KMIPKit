@@ -6343,3 +6343,17 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.51-001` from KMIP Specification v2.1 §6.1.51 parag
 | Citation correction and independent reviews | DCO commit `6c6dc6f7`; QA/security review; exact-head CI | Corrected the Read-Only definition citation from §4.1 to the introductory paragraph of §4 (Object Attributes) across the catalog, test comment, generated report, and evidence. QA approved the correction with no remaining actionable findings; independent security review of `a66823e5..6c6dc6f7` found no actionable findings. Exact-head CI will run after publication; run `40157683232` covers prior published head `f0b88834` and has no failures so far, with three script-contract jobs still in progress at review time. Coverage collection remains enabled; minimum-threshold enforcement remains waived only for unfinished PRs #90 and #104. |
 
 Baseline Client now has 180 valid executable typed mappings out of 265 assigned requirements; 85 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
+
+### KMIPKIT-0010 T040 — optional Login Request Count (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.30-002` from KMIP Specification v2.1 §6.1.30 Table 253, Request Payload row Request Count (pinned HTML lines 29689–29704). The table marks the field Required=No and describes an integer count of requests allowed with the ticket. The Baseline Client rule accepts omission or one Integer in a Login request, and rejects duplicate or non-Integer encodings. It does not impose a numeric range or track later ticket use. The source remains `optional_table_body_value` with its catalog source-gap ID; no RFC keyword, official Test Case, server behavior, or profile-conformance claim is inferred.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `2067ea76` | `cargo test -p kmipkit-protocol --lib --all-features --locked profile_maps_login_optional_request_count_as_integer -- --nocapture` failed because the requirement had no typed profile mapping. |
+| Green | DCO commit `eb298cfb` | Added an operation-scoped optional Integer rule for Login Request Count. The focused profile test accepts omission and one Integer, rejects duplicate and wrong-type fields with stable requirement context, and leaves Locate unaffected. |
+| Refactor, catalog, and generated report | DCO commit `7d320c13` | Linked the profile evaluator and both request/profile tests in the catalog, clarified the source-gap note, regenerated profile evidence, report, and updated the report snapshot expectation. |
+| Local verification | Protocol tests; Clippy; format/diff; catalog/profile/report; report snapshot; typed profile traceability; bidirectional evidence | PASS: 1,022 protocol unit tests plus integration/doctest targets; protocol Clippy with `-D warnings`; formatting and whitespace checks; catalog valid (4 sources, 1,411 clauses, 4,123 records); generated profile metadata and report current; report snapshot and bidirectional requirement-evidence test pass; typed profile traceability passes (194.034s on Windows). Coverage thresholds remain temporarily waived for unfinished PRs #90 and #104 while collection stays enabled. |
+| Independent reviews and hosted CI | QA/security review; exact-head hosted CI | Pending sequential reviews and CI for the next published head. |
+
+Baseline Client now has 181 valid executable typed mappings out of 265 assigned requirements; 84 remain unmapped. Runtime readiness remains `evidence_incomplete`; T040 remains open.
