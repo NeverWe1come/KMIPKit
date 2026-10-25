@@ -12606,6 +12606,86 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
 }
 
 #[test]
+fn profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capability() {
+    // KMIP Profiles v2.1 §5.1.1 item 7 permits optional support for unlisted
+    // clauses. KMIP Specification v2.1 §6.1.25 Table 238 permits wrapped Import
+    // objects and attributes; §3.2 permits the wrapped Key Value to be opaque.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.25-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let import_request = |key_value: Value, wrapping_data: Option<Value>| {
+        let mut key_block_fields = vec![
+            tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+            tagged(KEY_VALUE, key_value),
+        ];
+        let mut payload_fields = vec![
+            tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapped-import-key".to_owned()),
+            ),
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+        ];
+        if let Some(wrapping_data) = wrapping_data {
+            key_block_fields.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
+            payload_fields.push(tagged(KEY_WRAP_TYPE, Value::enumeration(1)));
+        }
+        payload_fields.extend([
+            tagged(
+                ATTRIBUTES,
+                Value::structure(structure([
+                    tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    tagged(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            ),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure(key_block_fields)),
+                )])),
+            ),
+        ]);
+        request_message_with_operation_payload(IMPORT_OPERATION, structure(payload_fields))
+    };
+
+    let wrapped = import_request(
+        Value::byte_string(b"opaque-wrapped-key-value-with-encapsulated-attributes".to_vec()),
+        Some(valid_secret_data_wrapping()),
+    );
+    result
+        .validate_request(&wrapped)
+        .expect("the selected profile preserves an Import with wrapped object material");
+
+    let unwrapped = import_request(
+        Value::structure(structure([tagged(
+            KEY_MATERIAL,
+            Value::byte_string(b"synthetic-plaintext-key-material".to_vec()),
+        )])),
+        None,
+    );
+    result
+        .validate_request(&unwrapped)
+        .expect("the optional capability does not require every Import to be wrapped");
+}
+
+#[test]
 fn typed_rule_evaluators_tolerate_missing_context() {
     for mapping in TYPED_RULE_MAPPINGS {
         if let Some(evaluator) = mapping.evaluator {
