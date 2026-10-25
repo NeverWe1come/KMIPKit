@@ -179,10 +179,13 @@ fn request_preserves_id_placeholder_when_certificate_request_value_is_present() 
 #[test]
 fn request_can_omit_request_fields_to_reuse_existing_certificate_type() {
     let payload = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "existing-certificate".to_owned(),
+        ))
         .into_ttlv_payload()
-        .expect("§6.1.45 reuses the existing type when request fields are omitted");
+        .expect("§6.1.45 permits omitted request fields when an explicit identifier is present");
 
-    assert!(payload.view().children().is_empty());
+    assert_eq!(field_tags(&payload), [UNIQUE_IDENTIFIER]);
 }
 
 #[test]

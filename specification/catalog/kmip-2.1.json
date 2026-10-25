@@ -102039,7 +102039,7 @@
       "summary": "When omitting Certificate Request, the client identifies the public key only by Unique Identifier.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "When Certificate Request is omitted.",
+      "condition": "When Certificate Request Value is omitted.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
@@ -102048,12 +102048,27 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_requires_unique_identifier_when_certificate_request_value_is_omitted",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_rejects_id_placeholder_when_certificate_request_value_is_omitted",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_preserves_optional_identifier_when_certificate_request_value_is_present",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_preserves_id_placeholder_when_certificate_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_without_identifier_when_request_value_is_omitted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_id_placeholder_when_request_value_is_omitted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_without_identifier_when_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_id_placeholder_when_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_leaves_unrelated_operations_outside_recertify_identifier_rule"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "This pinned conditional client SHALL is distinct from the optional omission permission and from the server Certificate Type fallback. Implementation, positive verification, and applicable official test cases remain unassigned."
+      "decision_id": "KMIPKIT-DEC-019",
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §6.1.45 paragraph 2 says that omitting Certificate Request requires the public key for the generated Certificate to be specified by Unique Identifier only. Table 300 marks Re-certify Unique Identifier optional and says omission uses ID Placeholder for the certificate being renewed. KMIPKIT-DISC-054 records this source tension; KMIPKIT-DEC-019 applies the paragraph-specific SHALL to outbound request representation: when Certificate Request Value is omitted, one direct non-ID-Placeholder Unique Identifier is required. When the value is present, identifier omission and the ID Placeholder representation remain allowed. The evaluator does not assert that the identifier denotes a public key or renewed certificate, or that a server resolves it. These local tests do not establish server acceptance, official Test Case success, or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-002",
@@ -135843,6 +135858,35 @@
       "state": "resolved_by_approved_decision",
       "decision_id": "KMIPKIT-DEC-016",
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-054",
+      "summary": "Re-certify §6.1.45 paragraph 2 and Table 300 differ on omitted Unique Identifier",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "normative_conflict",
+      "alternatives": [
+        "Follow §6.1.45 paragraph 2 and require one direct explicit Unique Identifier when Certificate Request Value is omitted.",
+        "Apply Table 300's optional Unique Identifier and ID Placeholder note when Certificate Request Value is omitted."
+      ],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+      ],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Client request representation when Certificate Request Value is omitted, including whether an omitted or ID Placeholder Unique Identifier is accepted.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-019",
+      "erratum_source_refs": []
     }
   ],
   "decisions": [
@@ -136343,6 +136387,28 @@
       "approval_evidence": "The user directed pinned OASIS KMIP 2.1 to be authoritative and authorized the best-supported project interpretation wherever the normative text is silent.",
       "approved_at": "2026-10-19",
       "consequence": "The source oracle and catalog crosswalk retain exact OASIS actor/direction facts separately from the client interpretation. Six existing TTLV requirements map to the 15 in-scope TTLV client profiles. The existing Profiles §4.1.2 SHALL maps to all 18 client profile records as a conditional conformance-evidence gate. No new normative IDs, runtime rule, OASIS source edit, profile-readiness claim, or conformance claim is added.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-019",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-054"
+      ],
+      "policy_ids": [],
+      "interpretation": "Follow the specific conditional SHALL in KMIP Specification v2.1 §6.1.45 paragraph 2 when Certificate Request Value is omitted: each outbound Re-certify Batch Item must contain exactly one direct Unique Identifier, and UniqueIdentifier::Enumeration(1) (ID Placeholder) is rejected in that branch. Preserve the ability to omit Unique Identifier and to represent ID Placeholder when Certificate Request Value is present. This Re-certify ruling is separate from Certify-only KMIPKIT-DEC-013.",
+      "approver": "KMIPKit maintainer, explicit ruling in the current T040 task brief",
+      "approval_evidence": "The user-approved source-first instruction and the exact ruling in .superpowers/sdd/plan/task-40-recertify-identifier-brief.md select this branch behavior.",
+      "approved_at": "2026-10-25",
+      "consequence": "The typed Re-certify request builder rejects omitted or ID Placeholder Unique Identifier only when Certificate Request Value is absent. The Baseline Client evaluator checks the request representation without claiming what the identifier denotes or how the server resolves it. The pinned OASIS source remains unchanged.",
       "status": "accepted"
     }
   ],

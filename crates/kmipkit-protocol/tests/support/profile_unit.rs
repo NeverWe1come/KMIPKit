@@ -6498,9 +6498,15 @@ fn profile_maps_recertify_offset_as_optional_interval() {
     };
     let requests = [
         crate::RecertifyRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "existing-certificate".to_owned(),
+            ))
             .into_ttlv_payload()
             .expect("Offset may be omitted"),
         crate::RecertifyRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "existing-certificate".to_owned(),
+            ))
             .with_offset(86_400)
             .into_ttlv_payload()
             .expect("Interval Offset is representable"),
