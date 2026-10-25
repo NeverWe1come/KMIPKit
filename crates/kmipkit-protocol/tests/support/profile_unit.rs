@@ -5210,36 +5210,31 @@ fn profile_maps_get_usage_allocation_required_usage_limits_count() {
     let error = result
         .validate_request(&missing_count)
         .expect_err("Get Usage Allocation requires Usage Limits Count");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), None);
     assert_eq!(error.source_gap_id(), Some(SOURCE_GAP_ID));
 
     let valid_count = request_message_with_operation_payload(
         GET_USAGE_ALLOCATION_OPERATION,
-        structure([tagged(
-            USAGE_LIMITS_COUNT_TAG,
-            Value::long_integer(3),
-        )]),
+        structure([tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3))]),
     );
     result
         .validate_request(&valid_count)
         .expect("a Long Integer count satisfies the required request field");
 
     for malformed_count in [
-        structure([tagged(
-            USAGE_LIMITS_COUNT_TAG,
-            Value::integer(3),
-        )]),
+        structure([tagged(USAGE_LIMITS_COUNT_TAG, Value::integer(3))]),
         structure([
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
             tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
         ]),
     ] {
-        let malformed = request_message_with_operation_payload(
-            GET_USAGE_ALLOCATION_OPERATION,
-            malformed_count,
-        );
+        let malformed =
+            request_message_with_operation_payload(GET_USAGE_ALLOCATION_OPERATION, malformed_count);
         result
             .validate_request(&malformed)
             .expect_err("wrong-type and duplicate Usage Limits Count fields are rejected");

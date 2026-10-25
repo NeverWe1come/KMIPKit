@@ -737,6 +737,7 @@ const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const JOIN_SPLIT_KEY_OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
@@ -1508,6 +1509,21 @@ fn client_check_optional_usage_limits_count_is_long_integer(
     )
 }
 
+fn client_get_usage_allocation_requires_usage_limits_count(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.23 Table 232 marks this field required; §7.40 Table 392 defines
+    // its Long Integer representation. This checks request shape only.
+    client_operation_field_is_well_formed(
+        request,
+        GET_USAGE_ALLOCATION_OPERATION,
+        USAGE_LIMITS_COUNT,
+        OperationFieldType::LongInteger,
+        true,
+    )
+}
+
 fn client_check_optional_lease_time_is_interval(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1802,6 +1818,7 @@ fn client_delegated_login_usage_limits_is_optional_structure(
 enum OperationFieldType {
     ByteString,
     Integer,
+    LongInteger,
     Interval,
     LeaseTime,
     Structure,
@@ -1814,6 +1831,7 @@ impl OperationFieldType {
         match self {
             Self::ByteString => matches!(value, ValueView::ByteString(_)),
             Self::Integer => matches!(value, ValueView::Integer(_)),
+            Self::LongInteger => matches!(value, ValueView::LongInteger(_)),
             Self::Interval => matches!(value, ValueView::Interval(_)),
             Self::LeaseTime => matches!(value, ValueView::Interval(_) | ValueView::DateTime(_)),
             Self::Structure => matches!(value, ValueView::Structure(_)),
@@ -6451,6 +6469,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_get_usage_allocation_requires_usage_limits_count),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
