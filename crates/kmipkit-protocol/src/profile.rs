@@ -739,6 +739,7 @@ const JOIN_SPLIT_KEY_OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
+const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
@@ -1597,6 +1598,19 @@ fn client_login_lease_time_is_optional_interval_or_date_time(
         LOGIN_OPERATION,
         LEASE_TIME,
         OperationFieldType::LeaseTime,
+        false,
+    )
+}
+
+fn client_login_request_count_is_optional_integer(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        LOGIN_OPERATION,
+        LOGIN_REQUEST_COUNT,
+        OperationFieldType::Integer,
         false,
     )
 }
@@ -8163,6 +8177,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-002",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL"),
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_login_request_count_is_optional_integer),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
