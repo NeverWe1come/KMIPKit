@@ -9966,6 +9966,56 @@ fn variable_iv_profile_rule() -> (RuleEvaluator, ProfileValidationResult) {
 }
 
 #[test]
+fn profile_maps_decrypt_optional_fields_from_section_6_1_11() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.11-001";
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+    ];
+
+    let request = request_message_with_operation_payload(
+        0x0000_0020,
+        crate::DecryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-decrypt-key".to_owned(),
+            )),
+            Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                vec![0x24, 0x68],
+            ))),
+        )
+        .to_ttlv_payload()
+        .expect("Decrypt request can omit parameters and IV/Counter/Nonce"),
+    );
+
+    for requirement_id in REQUIREMENT_IDS {
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("Decrypt omission requirement is in generated metadata");
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Decrypt omission requirement has a typed profile mapping");
+        assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::OptionalCapability
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("§6.1.11 omission evidence matches the optional-capability category");
+
+        let validation = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![requirement_id.to_owned()],
+        };
+        validation
+            .validate_request(&request)
+            .expect("the caller can omit Decrypt fields under the §6.1.11 conditions");
+    }
+}
+
+#[test]
 fn profile_maps_variable_iv_modes_to_required_iv_length() {
     // KMIP Specification v2.1 §4.16 requires IV Length for variable-IV modes,
     // including CTR and GCM. Existing NIST-based parameter validation also
