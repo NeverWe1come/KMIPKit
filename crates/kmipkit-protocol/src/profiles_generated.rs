@@ -6363,7 +6363,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         scope_state: "client_1_0",
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-6.1.7-002"],
-        profile_ids: &[],
+        profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         official_test_case_ids: &[],
         has_accepted_deviation: false,
     },
