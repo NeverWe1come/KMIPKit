@@ -5554,6 +5554,85 @@ fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
 }
 
 #[test]
+fn profile_maps_login_optional_request_count_as_integer() {
+    // KMIP Specification v2.1 §6.1.30 Table 253 marks Request Count optional
+    // and describes it as an integer; the catalog tracks its source gap.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-002";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REQUEST_COUNT_TAG: u32 = 0x0042_014C;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Request Count has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Request Count resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional Login Request Count has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional Login Request Count has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for payload in [
+        crate::LoginRequest::new()
+            .into_ttlv_payload()
+            .expect("Request Count may be omitted"),
+        crate::LoginRequest::new()
+            .with_request_count(3)
+            .into_ttlv_payload()
+            .expect("one Integer Request Count is representable"),
+    ] {
+        let request = request_message_with_operation_payload(LOGIN_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted and Integer Request Count are valid");
+    }
+
+    for payload in [
+        structure([
+            tagged(REQUEST_COUNT_TAG, Value::integer(3)),
+            tagged(REQUEST_COUNT_TAG, Value::integer(4)),
+        ]),
+        structure([tagged(
+            REQUEST_COUNT_TAG,
+            Value::text_string("three".to_owned()),
+        )]),
+    ] {
+        let malformed = request_message_with_operation_payload(LOGIN_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("duplicate or non-Integer Request Count is malformed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Login-only rule does not constrain Locate requests");
+}
+
+#[test]
 fn profile_maps_client_logout_required_ticket_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout;
     // §7.39 Table 391 defines Ticket as a Structure.
