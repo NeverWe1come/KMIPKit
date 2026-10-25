@@ -8672,6 +8672,112 @@ fn profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability
         .expect("the Encrypt omission capability does not constrain unrelated operations");
 }
 
+#[test]
+fn profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.17 permits omission when Random IV is true
+    // or the selected Cryptographic Algorithm does not require an IV. RSA is
+    // value 4 in §11.12 Table 443.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.17-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.17-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
+    const IV_COUNTER_NONCE_TAG: u32 = 0x0042_003D;
+    const RANDOM_IV_TAG: u32 = 0x0042_00C5;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Encrypt IV/Counter/Nonce omission has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Encrypt IV omission capability resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the MAY has category-matched omission evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "random-iv-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                vec![0x41, 0x42],
+            ))),
+        )
+        .with_cryptographic_parameters(structure([tagged(
+            RANDOM_IV_TAG,
+            Value::boolean(true),
+        )]))
+        .to_ttlv_payload()
+        .expect("random-IV Encrypt parameters have a valid local structure"),
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "rsa-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                vec![0x43, 0x44],
+            ))),
+        )
+        .with_cryptographic_parameters(structure([tagged(
+            CRYPTOGRAPHIC_ALGORITHM_TAG,
+            Value::enumeration(4),
+        )]))
+        .to_ttlv_payload()
+        .expect("RSA Encrypt parameters have a valid local structure"),
+    ];
+
+    for payload in requests {
+        let request = request_message_with_operation_payload(ENCRYPT_OPERATION, payload);
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request contains one batch item");
+        let (has_parameters, has_iv) = item
+            .with_request_payload(|payload| {
+                (
+                    payload
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG),
+                    payload
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == IV_COUNTER_NONCE_TAG),
+                )
+            })
+            .expect("the test request contains a Request Payload");
+        assert!(has_parameters);
+        assert!(!has_iv, "the caller's omitted IV must not be generated locally");
+        result
+            .validate_request(&request)
+            .expect("profile preflight permits the applicable IV omission");
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        0x0000_000A,
+        structure([tagged(IV_COUNTER_NONCE_TAG, Value::byte_string(vec![0x01]))]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Encrypt IV omission capability does not constrain unrelated operations");
+}
+
 fn variable_iv_profile_rule() -> (RuleEvaluator, ProfileValidationResult) {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
