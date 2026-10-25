@@ -5180,6 +5180,83 @@ fn profile_maps_client_check_usage_limits_count() {
 }
 
 #[test]
+fn profile_recommends_batch_order_true_when_check_is_present() {
+    // KMIP Specification v2.1 §6.1.7 paragraph 2 recommends true when a batch
+    // contains Check; §9.8 says omission has the effective value true.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Check batches have a typed Batch Order Option recommendation");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Check Batch Order recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHOULD mapping has recommended-behavior evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Check batch ordering has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for order_option in [None, Some(true)] {
+        let request = request_message_with_batch_operations_and_order(
+            [(CHECK_OPERATION_TAG, Structure::new()), (LOCATE_OPERATION_TAG, Structure::new())],
+            order_option,
+        );
+        assert!(request.header().effective_batch_order_option());
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted or true Batch Order Option follows the recommendation");
+    }
+
+    let unordered_check_batch = request_message_with_batch_operations_and_order(
+        [(CHECK_OPERATION_TAG, Structure::new()), (LOCATE_OPERATION_TAG, Structure::new())],
+        Some(false),
+    );
+    assert!(!evaluate(Some(&unordered_check_batch), None));
+    let error = result
+        .validate_request(&unordered_check_batch)
+        .expect_err("a Check batch with Batch Order Option false violates the recommendation");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    let unrelated_unordered_batch = request_message_with_batch_operations_and_order(
+        [(LOCATE_OPERATION_TAG, Structure::new()), (CHECK_OPERATION_TAG, Structure::new())],
+        Some(false),
+    );
+    // A batch containing Check still triggers the recommendation irrespective of order.
+    assert!(!evaluate(Some(&unrelated_unordered_batch), None));
+
+    let unrelated_operation = request_message_with_batch_operations_and_order(
+        [(LOCATE_OPERATION_TAG, Structure::new())],
+        Some(false),
+    );
+    assert!(evaluate(Some(&unrelated_operation), None));
+    result
+        .validate_request(&unrelated_operation)
+        .expect("batches without Check remain outside this recommendation");
+}
+
+#[test]
 fn profile_maps_get_usage_allocation_required_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.23 Table 232 marks Usage Limits Count
     // required; §7.40 Table 392 defines its TTLV type as Long Integer.
