@@ -5131,6 +5131,15 @@ fn delegated_login_usage_limits() -> Structure {
     ])
 }
 
+fn login_usage_limits() -> Structure {
+    // Preserve unknown extension values while checking the Table 392 wire types.
+    structure([
+        tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(20)),
+        tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+        tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
+    ])
+}
+
 #[test]
 fn profile_maps_client_check_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
@@ -5672,11 +5681,7 @@ fn profile_maps_login_optional_usage_limits_as_table_392_structure() {
             .into_ttlv_payload()
             .expect("Usage Limits may be omitted"),
         crate::LoginRequest::new()
-            .with_usage_limits(structure([
-                tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(20)),
-                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
-                tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
-            ]))
+            .with_usage_limits(login_usage_limits())
             .into_ttlv_payload()
             .expect("a Table 392 Usage Limits structure is representable"),
     ] {
@@ -5689,6 +5694,16 @@ fn profile_maps_login_optional_usage_limits_as_table_392_structure() {
 
     let malformed_values = [
         structure([tagged(LOGIN_USAGE_LIMITS_TAG, Value::integer(1))]),
+        structure([
+            tagged(
+                LOGIN_USAGE_LIMITS_TAG,
+                Value::structure(login_usage_limits()),
+            ),
+            tagged(
+                LOGIN_USAGE_LIMITS_TAG,
+                Value::structure(login_usage_limits()),
+            ),
+        ]),
         structure([tagged(
             LOGIN_USAGE_LIMITS_TAG,
             Value::structure(structure([

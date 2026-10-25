@@ -101840,6 +101840,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.30"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.40"
         }
       ],
       "source_keyword": null,
@@ -101863,21 +101867,28 @@
       "condition": "client chooses to supply the optional Usage Limits field",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-LOGIN"
+        "KMIPKIT-ELEM-OP-C2S-LOGIN",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0038",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/login.rs"
+        "crates/kmipkit-protocol/src/login.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_login_usage_limits_is_optional_structure",
+        "crates/kmipkit-protocol/src/profile.rs::usage_limits_structure_is_well_formed"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms"
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.30, request payload row Usage Limits (HTML lines 29705-29720), records optional_table_body_value. This is table-field semantics, not an RFC keyword. The linked local Rust request encoding/requiredness test provides verification; No requirement-specific official Test Cases ID is explicitly linked. No official case-level pass is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.30 Table 253, request payload row Usage Limits (HTML lines 29705-29720), records optional_table_body_value and Required=No; this is table-field semantics, not an RFC keyword. §7.40 Table 392 requires one Usage Limits Total Long Integer, Usage Limits Count Long Integer, and Usage Limits Unit Enumeration. The typed Baseline Client mapping accepts omission or one structurally valid Usage Limits Structure, rejects malformed outer or known nested members, and accepts unknown Enumeration values without assigning them semantics. It makes no numeric-range, usage-consumption, allocation, or server-policy claim. The pinned official OASIS Test Cases inventory has no requirement-specific test ID; no official case-level pass or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.31-001",

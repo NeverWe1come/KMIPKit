@@ -1897,7 +1897,7 @@ impl OperationFieldType {
                 _ => false,
             },
             Self::UsageLimitsStructure => match value {
-                ValueView::Structure(value) => delegated_login_usage_limits_are_well_formed(&value),
+                ValueView::Structure(value) => usage_limits_structure_is_well_formed(&value),
                 _ => false,
             },
         }
@@ -2047,9 +2047,8 @@ fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureVie
     })
 }
 
-fn delegated_login_usage_limits_are_well_formed(
-    structure: &kmipkit_ttlv::StructureView<'_>,
-) -> bool {
+fn usage_limits_structure_is_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
+    // Table 392 requires one of each standard member; unknown members remain uninterpreted.
     let mut total_seen = false;
     let mut count_seen = false;
     let mut unit_seen = false;
