@@ -562,7 +562,7 @@ fn check_can_consume_a_preceding_successful_create_placeholder() {
             .with_unique_batch_item_id(b"check-item".to_vec()),
     ])
     .with_batch_order_option(true)
-    .with_batch_error_continuation_option(1);
+    .with_batch_error_continuation_option(2);
 
     client
         .execute(batch, &CodecLimits::defaults())
