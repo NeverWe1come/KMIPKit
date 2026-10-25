@@ -73,6 +73,7 @@ The 30 applicable operation, shared attribute-structure, and Vendor Attribute re
 - §6.1.3: `KMIPKIT-REQ-SPEC-6.1.3-001`.
 - §6.1.13: `KMIPKIT-REQ-SPEC-6.1.13-001-001` and `KMIPKIT-REQ-SPEC-6.1.13-001-002`.
 - §6.1.20: `KMIPKIT-REQ-SPEC-6.1.20-001-001`, `KMIPKIT-REQ-SPEC-6.1.20-001-002`, and `KMIPKIT-REQ-SPEC-6.1.20-004`.
+  - Baseline Client maps the §6.1.20-001-001 prohibition to `profile.rs::get_attributes_references_are_not_repeated`; `profile_unit.rs::profile_rejects_repeated_identical_get_attributes_references` covers duplicate tag-form/name-form references and fail-closed malformed input. This is request validation evidence only.
 - §6.1.34: `KMIPKIT-REQ-SPEC-6.1.34-001-001`, `KMIPKIT-REQ-SPEC-6.1.34-001-002`, `KMIPKIT-REQ-SPEC-6.1.34-001-003`, and `KMIPKIT-REQ-SPEC-6.1.34-001-004`.
 - §6.1.51: `KMIPKIT-REQ-SPEC-6.1.51-001`.
 

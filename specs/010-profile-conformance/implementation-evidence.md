@@ -6456,6 +6456,20 @@ Mapped `KMIPKIT-REQ-SPEC-4.35-001-002` from KMIP Specification v2.1 §4.35, line
 
 No requirement-specific official OASIS Test Case ID is linked by the pinned sources. This mapping does not claim profile conformance. T040 remains open.
 
+### KMIPKIT-0010 T040 — Get Attributes duplicate-reference prohibition (2026-10-25)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.20-001-001` from KMIP Specification v2.1 §6.1.20. The existing Baseline Client evaluator `get_attributes_references_are_not_repeated` rejects repeated Attribute Reference values in one Get Attributes request. Its negative profile test covers repeated tag-form and name-form references and malformed references, and positive cases preserve omission, distinct references, and operation scope. This verifies the client request only; no server behavior or official Test Case result is inferred.
+
+| Stage | Commit | Evidence |
+|---|---|---|
+| Red | DCO commit `3092c960` | Added `test_get_attributes_duplicate_reference_prohibition_is_assigned`; it failed because the catalog still marked the Baseline-selected requirement `unassigned`. |
+| Green | DCO commit `887458da` | Marked the requirement `verified` and replaced the stale review note with the existing typed evaluator and negative-test evidence. The focused catalog test passed. |
+| Refactor, traceability, and generated evidence | This DCO-signed Refactor commit | Updated KMIPKIT-0016 traceability, T040 task/progress records, and generated profile/report outputs using the pinned tools. Baseline Client now has 192/265 typed mappings (73 unmapped); readiness remains `evidence_incomplete`. |
+| Local verification | Current worktree | PASS: focused assignment test, strict catalog validation, generated profile/report `--check`, report and feature-traceability tests, formatting, and `git diff --check`. The full normative suite remains covered by exact-head hosted CI. |
+| Reviews and hosted CI | Catalog-only update; independent review and exact-head CI pending publication | This increment reuses the existing operation-scoped negative evaluator and test; no behavior change was introduced. Coverage collection remains enabled; minimum-threshold enforcement remains waived only for unfinished PRs #90 and #104. |
+
+No requirement-specific official OASIS Test Case ID is linked for this rule. The mapping makes no server-acceptance or profile-conformance claim. T040 remains open.
+
 ### KMIPKIT-0010 T040 — Re-certify identifier when Certificate Request Value is omitted (2026-10-25)
 
 Mapped `KMIPKIT-REQ-SPEC-6.1.45-002-003` from pinned KMIP Specification v2.1 §6.1.45 paragraph 2 (HTML lines 33348–33353). Table 300 (lines 33597–33642) marks the Re-certify Unique Identifier optional and says an omitted field uses ID Placeholder. The paragraph refers to the public key used for the generated Certificate, while Table 300 describes the certificate being renewed; `KMIPKIT-DISC-054` records this tension and separate `KMIPKIT-DEC-019` applies the paragraph-specific conditional SHALL to outbound request representation. When Certificate Request Value is omitted, each Re-certify Batch Item must contain exactly one direct Unique Identifier and cannot use Enumeration(1), the ID Placeholder sentinel. When Certificate Request Value is present, identifier omission and ID Placeholder remain allowed. This mapping does not claim what the identifier denotes, server resolution or acceptance, certificate generation, official Test Case success, or profile conformance; `KMIPKIT-DEC-013` remains Certify-only.
