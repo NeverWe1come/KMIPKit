@@ -5633,6 +5633,107 @@ fn profile_maps_login_optional_request_count_as_integer() {
 }
 
 #[test]
+fn profile_maps_login_optional_usage_limits_as_table_392_structure() {
+    // KMIP Specification v2.1 §6.1.30 Table 253 permits Usage Limits;
+    // §7.40 Table 392 requires its three typed members.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-003";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Usage Limits has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Usage Limits resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional Login Usage Limits has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional Login Usage Limits has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for payload in [
+        crate::LoginRequest::new()
+            .into_ttlv_payload()
+            .expect("Usage Limits may be omitted"),
+        crate::LoginRequest::new()
+            .with_usage_limits(structure([
+                tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(20)),
+                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+                tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
+            ]))
+            .into_ttlv_payload()
+            .expect("a Table 392 Usage Limits structure is representable"),
+    ] {
+        let request = request_message_with_operation_payload(LOGIN_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted or structurally valid Usage Limits are accepted");
+    }
+
+    let malformed_values = [
+        structure([tagged(LOGIN_USAGE_LIMITS_TAG, Value::integer(1))]),
+        structure([tagged(
+            LOGIN_USAGE_LIMITS_TAG,
+            Value::structure(structure([
+                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+                tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
+            ])),
+        )]),
+        structure([tagged(
+            LOGIN_USAGE_LIMITS_TAG,
+            Value::structure(structure([
+                tagged(USAGE_LIMITS_TOTAL_TAG, Value::long_integer(20)),
+                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(4)),
+                tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
+            ])),
+        )]),
+        structure([tagged(
+            LOGIN_USAGE_LIMITS_TAG,
+            Value::structure(structure([
+                tagged(USAGE_LIMITS_TOTAL_TAG, Value::integer(20)),
+                tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+                tagged(USAGE_LIMITS_UNIT_TAG, Value::enumeration(0x8123_4567)),
+            ])),
+        )]),
+    ];
+    for payload in malformed_values {
+        let malformed = request_message_with_operation_payload(LOGIN_OPERATION_TAG, payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("malformed Usage Limits are rejected");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Login-only rule does not constrain Locate requests");
+}
+
+#[test]
 fn profile_maps_client_logout_required_ticket_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout;
     // §7.39 Table 391 defines Ticket as a Structure.
