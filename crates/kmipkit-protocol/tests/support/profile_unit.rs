@@ -945,6 +945,34 @@ fn response_message_with_operation(operation: u32) -> crate::ResponseMessage {
     .expect("test Response Message is valid")
 }
 
+fn response_message_with_batch_items(items: &[(u32, &[u8])]) -> crate::ResponseMessage {
+    let batch_count = i32::try_from(items.len()).expect("test batch count fits in an Integer");
+    let mut root_items = vec![tagged(
+        RESPONSE_HEADER_TAG,
+        Value::structure(structure([
+            test_protocol_version(),
+            tagged(TIME_STAMP_TAG, Value::date_time(1)),
+            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
+        ])),
+    )];
+    root_items.extend(items.iter().map(|(operation, identifier)| {
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(*operation)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(identifier.to_vec()),
+                ),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        )
+    }));
+    crate::ResponseMessage::try_from_ttlv(structure(root_items))
+        .expect("test batched Response Message is valid")
+}
+
 fn get_attributes_x509_response() -> crate::ResponseMessage {
     crate::ResponseMessage::try_from_ttlv(structure([
         tagged(
@@ -12836,6 +12864,38 @@ fn client_response_operation_matches_the_operation_it_was_sent_for() {
     assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn client_response_does_not_reorder_items_when_batch_order_is_effective() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_OPERATION: u32 = 0x0000_000A;
+    const ENCRYPT_OPERATION: u32 = 0x0000_0003;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_two_operation_payloads(
+        GET_OPERATION,
+        Structure::new(),
+        ENCRYPT_OPERATION,
+        Structure::new(),
+    );
+    let out_of_order_response = response_message_with_batch_items(&[
+        (ENCRYPT_OPERATION, b"second-item"),
+        (GET_OPERATION, b"first-item"),
+    ]);
+
+    let error = result
+        .validate_response(&request, &out_of_order_response)
+        .expect_err("Batch Order Option defaults to true and preserves the request item order");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
 }
 
 #[test]
