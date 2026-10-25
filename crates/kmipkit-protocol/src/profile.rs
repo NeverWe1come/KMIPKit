@@ -7356,6 +7356,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(client_create_object_group_instances_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_object_group_name_attribute_when_assigning_group",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
         source_gap_id: None,

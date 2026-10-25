@@ -90104,16 +90104,26 @@
       "direction": "unclear",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
-      "profile_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/create.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_create_object_group_instances_are_representable"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_object_group_name_attribute_when_assigning_group",
+        "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.35, line 16598, recommends setting the object group name into the Object Group attribute when assigning an object to a group. Table 99 defines Object Group as Text String (lines 16620–16626); Table 100 says it may initially be set by the Client or Server and is modifiable by the client (lines 16655–16661, 16681–16687). §6.1.8 Table 186 carries Attributes in a Create request, and §11.56 allocates the Object Group tag. The Baseline Client recommendation mapping and linked tests verify that an outgoing Create can represent the caller-selected group name as a direct Object Group Text String. Omission remains valid when no group assignment is requested. This makes no claim about server acceptance or persistence. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-001",
