@@ -903,8 +903,40 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for contract_id in request_contract_ids:
             self.assertIn(contract_id, contracts)
         existing_requirement = requirements["KMIPKIT-REQ-SPEC-7.8-001"]
-        self.assertFalse(existing_requirement["implementation_refs"])
-        self.assertFalse(existing_requirement["verification_refs"])
+        self.assertEqual(
+            existing_requirement["source_refs"],
+            [{"source_id": "KMIPKIT-SRC-spec", "section": "7.8"}],
+        )
+        implementation_refs = set(existing_requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/src/profile.rs::client_multipart_continuation_has_server_correlation",
+            implementation_refs,
+        )
+        operation_names = (
+            ("encrypt", "Encrypt"),
+            ("decrypt", "Decrypt"),
+            ("hash", "Hash"),
+            ("mac", "Mac"),
+            ("mac_verify", "MacVerify"),
+            ("sign", "Sign"),
+            ("signature_verify", "SignatureVerify"),
+        )
+        for module_name, operation_name in operation_names:
+            self.assertIn(
+                f"crates/kmipkit-protocol/src/{module_name}.rs::{operation_name}Request::with_correlation_value",
+                implementation_refs,
+            )
+            self.assertIn(
+                f"crates/kmipkit-protocol/src/{module_name}.rs::{operation_name}Response::correlation_value",
+                implementation_refs,
+            )
+        verification_refs = set(existing_requirement["verification_refs"])
+        self.assertIn(
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::"
+            "every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
+            verification_refs,
+        )
+        self.assertEqual(existing_requirement["test_case_ids"], [])
 
         for number in (13, 15, 18, 20):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
