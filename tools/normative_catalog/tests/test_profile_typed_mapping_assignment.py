@@ -30,7 +30,7 @@ class ProfileTypedMappingAssignmentTests(unittest.TestCase):
 
         self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.20-001"])
         self.assertEqual(requirement["source_keyword"], "SHALL NOT")
-        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertEqual(requirement["status"], "verified")
         self.assertIn(REQUIREMENT_ID, baseline["requirement_ids"])
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
         self.assertIn(TEST_ID, requirement["verification_refs"])

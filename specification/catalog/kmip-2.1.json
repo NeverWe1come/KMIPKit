@@ -93842,8 +93842,8 @@
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "No requirement-specific official OASIS Test Case ID is linked by the pinned sources. The Baseline Client typed evaluator rejects duplicate Attribute References in one Get Attributes request. The linked negative test covers repeated tag-form and name-form references, malformed references, omission, distinct references, and operation scope. This verifies client request validation only; it does not establish server response behavior or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.20-001-002",
