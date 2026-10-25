@@ -93995,16 +93995,18 @@
       "feature_spec": "KMIPKIT-0039",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/get_usage_allocation.rs",
-        "crates/kmipkit-client/src/usage_allocation.rs"
+        "crates/kmipkit-client/src/usage_allocation.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count",
         "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::successful_allocation_binds_returned_identifier_and_open_caller_unit"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §6.1.23, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value. This source force is table-field semantics, not an RFC keyword. The typed request carries the exact Long Integer count, and the guard binds the caller-supplied exact positive count and open unit to the successful response's resolved identifier. This scoped verification is not a full profile conformance claim. No requirement-specific official Test Cases are linked to this source row in the pinned OASIS test inventory."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.23 Table 232, request payload row Usage Limits Count (HTML lines 28080-28097), records required_table_body_value; this is table-field semantics, not a formal RFC keyword. The typed Baseline Client rule requires exactly one Long Integer in each Get Usage Allocation request. Its positive test also verifies missing, wrong-type, and duplicate fields are rejected while Check remains outside this operation-scoped rule. It does not impose numeric range, positivity, budget, or guard-response semantics; those remain separately scoped in KMIPKIT-0039. The scoped structural verification is not a full profile conformance claim. The pinned OASIS Test Cases inventory has no requirement-specific test ID for this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-002",
