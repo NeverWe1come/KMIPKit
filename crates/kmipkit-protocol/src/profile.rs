@@ -1609,6 +1609,22 @@ fn client_rekey_key_pair_offset_is_optional_interval(
     )
 }
 
+fn client_encrypt_cryptographic_parameters_are_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.17 permits omission when managed-object attributes supply the
+    // parameters. Client preflight checks representation only; it cannot
+    // inspect remote attributes or predict server acceptance.
+    client_operation_field_is_well_formed(
+        request,
+        ENCRYPT_OPERATION,
+        CRYPTOGRAPHIC_PARAMETERS,
+        OperationFieldType::Structure,
+        false,
+    )
+}
+
 fn client_sign_cryptographic_parameters_are_optional_structure(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7863,6 +7879,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_encrypt_cryptographic_parameters_are_optional_structure),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
