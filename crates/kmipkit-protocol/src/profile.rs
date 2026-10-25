@@ -3387,37 +3387,101 @@ fn client_repeated_attributes_are_representable(
     })
 }
 
-fn client_create_object_group_instances_are_representable(
+fn client_object_group_names_are_representable(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
     const OBJECT_GROUP_ATTRIBUTE_TAG: u32 = 0x0042_0056;
+    const OBJECT_GROUP_ASSIGNMENT_OPERATIONS: [u32; 7] = [
+        CREATE_OPERATION,
+        REGISTER_OPERATION,
+        DERIVE_KEY_OPERATION,
+        CERTIFY_OPERATION,
+        RECERTIFY_OPERATION,
+        REKEY_OPERATION,
+        REKEY_KEY_PAIR_OPERATION,
+    ];
 
     let Some(request) = request else {
         return false;
     };
 
     request.batch_items().all(|batch_item| {
-        if batch_item.operation() != Some(CREATE_OPERATION) {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !OBJECT_GROUP_ASSIGNMENT_OPERATIONS.contains(&operation)
+            && operation != CREATE_KEY_PAIR_OPERATION
+            && operation != ADD_ATTRIBUTE_OPERATION
+            && operation != MODIFY_ATTRIBUTE_OPERATION
+            && operation != SET_ATTRIBUTE_OPERATION
+        {
             return true;
         }
 
         batch_item
-            .with_request_payload(|payload| match field_presence(&payload, ATTRIBUTES) {
-                FieldPresence::Missing => true,
-                FieldPresence::Duplicate => false,
-                FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
-                    ValueView::Structure(attributes) => {
-                        attributes.children().iter().all(|attribute| {
-                            attribute.tag().raw() != OBJECT_GROUP_ATTRIBUTE_TAG
-                                || attribute.item_type() == ItemType::TextString
-                        })
+            .with_request_payload(|payload| {
+                if OBJECT_GROUP_ASSIGNMENT_OPERATIONS.contains(&operation) {
+                    return object_group_attribute_group_is_text(
+                        &payload,
+                        ATTRIBUTES,
+                        OBJECT_GROUP_ATTRIBUTE_TAG,
+                    );
+                }
+
+                match operation {
+                    CREATE_KEY_PAIR_OPERATION => {
+                        CREATE_KEY_PAIR_ATTRIBUTE_GROUPS
+                            .into_iter()
+                            .all(|attribute_group| {
+                                object_group_attribute_group_is_text(
+                                    &payload,
+                                    attribute_group,
+                                    OBJECT_GROUP_ATTRIBUTE_TAG,
+                                )
+                            })
                     }
-                    _ => false,
-                }),
+                    ADD_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+                        object_group_attribute_group_is_text(
+                            &payload,
+                            NEW_ATTRIBUTE,
+                            OBJECT_GROUP_ATTRIBUTE_TAG,
+                        )
+                    }
+                    MODIFY_ATTRIBUTE_OPERATION => {
+                        object_group_attribute_group_is_text(
+                            &payload,
+                            CURRENT_ATTRIBUTE,
+                            OBJECT_GROUP_ATTRIBUTE_TAG,
+                        ) && object_group_attribute_group_is_text(
+                            &payload,
+                            NEW_ATTRIBUTE,
+                            OBJECT_GROUP_ATTRIBUTE_TAG,
+                        )
+                    }
+                    _ => true,
+                }
             })
             .unwrap_or(false)
     })
+}
+
+fn object_group_attribute_group_is_text(
+    payload: &StructureView<'_>,
+    attribute_group_tag: u32,
+    object_group_attribute_tag: u32,
+) -> bool {
+    match field_presence(payload, attribute_group_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => attributes.children().iter().all(|attribute| {
+                attribute.tag().raw() != object_group_attribute_tag
+                    || attribute.item_type() == ItemType::TextString
+            }),
+            _ => false,
+        }),
+    }
 }
 
 fn client_create_key_pair_attribute_group_is_representable(
@@ -7324,7 +7388,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_object_group_instances_are_representable),
+        evaluator: Some(client_object_group_names_are_representable),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_object_group_membership_as_optional_capability",
@@ -7342,7 +7406,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_object_group_instances_are_representable),
+        evaluator: Some(client_object_group_names_are_representable),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_object_group_membership_as_optional_capability",
@@ -7360,10 +7424,14 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_create_object_group_instances_are_representable),
+        evaluator: Some(client_object_group_names_are_representable),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_object_group_name_attribute_when_assigning_group",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_object_group_names_on_every_client_assignment_route",
                 kind: RuleTestKind::RecommendedBehavior,
             },
             RuleTestEvidence {

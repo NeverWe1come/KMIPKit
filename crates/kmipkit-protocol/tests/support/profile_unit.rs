@@ -10142,8 +10142,11 @@ fn profile_recommends_object_group_name_attribute_when_assigning_group() {
 fn profile_checks_object_group_names_on_every_client_assignment_route() {
     // KMIP Specification v2.1 §4.35 and Table 100 cover implicit assignment
     // by all eight listed operations and client modification; Table 99
-    // requires Text String. Operation payload layouts are from §6.1 Tables
-    // 167, 179, 189, 205, 300, 291, 304, 308, 265, and 322.
+    // requires Text String. Operation payloads are defined by KMIP v2.1
+    // §6.1.2 Table 167, §6.1.6 Table 179, §6.1.8 Table 186,
+    // §6.1.9 Table 189, §6.1.14 Table 205, §6.1.34 Table 265,
+    // §6.1.43 Table 291, §6.1.45 Table 300, §6.1.46 Table 305,
+    // §6.1.47 Table 310, and §6.1.51 Table 322.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
@@ -10157,18 +10160,20 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let routes = [
-        (0x0000_0001, ATTRIBUTES_TAG), // Create
+        (0x0000_0001, ATTRIBUTES_TAG),        // Create
         (0x0000_0002, COMMON_ATTRIBUTES_TAG), // Create Key Pair
-        (0x0000_0003, ATTRIBUTES_TAG), // Register
-        (0x0000_0005, ATTRIBUTES_TAG), // Derive Key
-        (0x0000_0006, ATTRIBUTES_TAG), // Certify
-        (0x0000_0007, ATTRIBUTES_TAG), // Re-certify
-        (0x0000_0004, ATTRIBUTES_TAG), // Re-key
-        (0x0000_001D, ATTRIBUTES_TAG), // Re-key Key Pair
-        (0x0000_000D, NEW_ATTRIBUTE_TAG), // Add Attribute
+        (0x0000_0002, 0x0042_0127),           // Create Key Pair private-key attributes
+        (0x0000_0002, 0x0042_0128),           // Create Key Pair public-key attributes
+        (0x0000_0003, ATTRIBUTES_TAG),        // Register
+        (0x0000_0005, ATTRIBUTES_TAG),        // Derive Key
+        (0x0000_0006, ATTRIBUTES_TAG),        // Certify
+        (0x0000_0007, ATTRIBUTES_TAG),        // Re-certify
+        (0x0000_0004, ATTRIBUTES_TAG),        // Re-key
+        (0x0000_001D, ATTRIBUTES_TAG),        // Re-key Key Pair
+        (0x0000_000D, NEW_ATTRIBUTE_TAG),     // Add Attribute
         (0x0000_000E, CURRENT_ATTRIBUTE_TAG), // Modify Attribute selector
-        (0x0000_000E, NEW_ATTRIBUTE_TAG), // Modify Attribute replacement
-        (0x0000_0031, NEW_ATTRIBUTE_TAG), // Set Attribute
+        (0x0000_000E, NEW_ATTRIBUTE_TAG),     // Modify Attribute replacement
+        (0x0000_0031, NEW_ATTRIBUTE_TAG),     // Set Attribute
     ];
 
     for (operation, attribute_container_tag) in routes {
@@ -10177,10 +10182,7 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
                 operation,
                 structure([tagged(
                     attribute_container_tag,
-                    Value::structure(structure([tagged(
-                        OBJECT_GROUP_TAG,
-                        attribute_value,
-                    )])),
+                    Value::structure(structure([tagged(OBJECT_GROUP_TAG, attribute_value)])),
                 )]),
             )
         };
@@ -10194,7 +10196,10 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
         let error = result
             .validate_request(&invalid_name)
             .expect_err("every supported assignment route rejects a non-Text-String name");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 }
