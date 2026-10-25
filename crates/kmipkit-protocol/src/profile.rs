@@ -1559,6 +1559,29 @@ fn client_check_batch_order_option_is_true_when_check_is_present(
     !check_present || request.header().effective_batch_order_option()
 }
 
+fn client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let mut check_present = false;
+    for batch_item in request.batch_items() {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        check_present |= operation == CHECK_OPERATION;
+    }
+
+    !check_present
+        || matches!(
+            request.header().effective_batch_error_continuation_option(),
+            BATCH_ERROR_CONTINUATION_OPTION_STOP | BATCH_ERROR_CONTINUATION_OPTION_UNDO
+        )
+}
+
 fn client_get_usage_allocation_requires_usage_limits_count(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -6584,6 +6607,20 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::RecommendedBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(
+            client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_present,
+        ),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_stop_or_undo_when_check_is_present",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
