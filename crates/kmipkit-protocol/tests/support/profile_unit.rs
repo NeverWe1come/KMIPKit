@@ -517,19 +517,29 @@ fn assert_malformed_attribute_reference_is_rejected(
 fn assert_read_only_operation_rejects_mixed_batch(
     result: &ProfileValidationResult,
     operation: u32,
-    prohibited_payload: Structure,
+    prohibited_payload: impl Fn() -> Structure,
     requirement_id: &str,
 ) {
-    let mixed_batch = request_message_with_two_operation_payloads(
-        operation,
-        prohibited_payload,
-        GET_OPERATION,
-        Structure::new(),
-    );
-    let error = result
-        .validate_request(&mixed_batch)
-        .expect_err("a prohibited operation rejects the complete mixed-operation batch");
-    assert_eq!(error.requirement_id(), Some(requirement_id));
+    let mixed_batches = [
+        request_message_with_two_operation_payloads(
+            operation,
+            prohibited_payload(),
+            GET_OPERATION,
+            Structure::new(),
+        ),
+        request_message_with_two_operation_payloads(
+            GET_OPERATION,
+            Structure::new(),
+            operation,
+            prohibited_payload(),
+        ),
+    ];
+    for mixed_batch in mixed_batches {
+        let error = result
+            .validate_request(&mixed_batch)
+            .expect_err("a prohibited operation rejects the complete mixed-operation batch");
+        assert_eq!(error.requirement_id(), Some(requirement_id));
+    }
 }
 
 fn request_message_with_operation_payload_and_vendor_extension(
@@ -15571,8 +15581,8 @@ fn profile_rejects_read_only_attribute_modification_on_all_client_routes() {
     );
     assert_read_only_operation_rejects_mixed_batch(
         &result,
-        ADD_ATTRIBUTE_OPERATION,
-        structure([new_value()]),
+        MODIFY_ATTRIBUTE_OPERATION,
+        || structure([new_value()]),
         REQUIREMENT_ID,
     );
 }
@@ -15645,7 +15655,7 @@ fn profile_rejects_read_only_attribute_deletion() {
     assert_read_only_operation_rejects_mixed_batch(
         &result,
         DELETE_ATTRIBUTE_OPERATION,
-        structure([tag_reference()]),
+        || structure([tag_reference()]),
         REQUIREMENT_ID,
     );
 }
