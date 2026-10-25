@@ -14280,7 +14280,7 @@ fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
 
 #[test]
 fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
-    // KMIP Specification v2.1 §§4.1 and 6.1.51; Lease Time is client read-only in §4.30.
+    // KMIP Specification v2.1 §4 and §6.1.51; Lease Time is client read-only in §4.30.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
