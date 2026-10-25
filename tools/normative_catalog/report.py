@@ -38,7 +38,7 @@ _TYPED_RULE_MAPPING_ENTRY = re.compile(
     source_clause_id:\s*"(?P<source_clause_id>KMIPKIT-CLAUSE-[A-Z0-9.-]*|)",\s*
     source_gap_id:\s*(?:Some\("(?P<source_gap_id>KMIPKIT-SOURCE-GAP-[A-Z0-9.-]+)"\)|None),\s*
     verification_category:\s*GeneratedVerificationCategory::(?P<category>[A-Za-z][A-Za-z0-9_]*),\s*
-    evaluator:\s*(?P<evaluator>None|Some\([A-Za-z_][A-Za-z0-9_]*\)),\s*
+    evaluator:\s*(?P<evaluator>None|Some\s*\(\s*[A-Za-z_][A-Za-z0-9_]*\s*,?\s*\)),\s*
     test_evidence:\s*&\[(?P<test_evidence>.*?)\],\s*
     constraints:\s*&\[(?P<constraints>.*?)\],?\s*
     \}\s*''',
@@ -323,7 +323,7 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
 
         evaluator = fields["evaluator"]
         if evaluator != "None" and not re.fullmatch(
-            r"Some\([A-Za-z_][A-Za-z0-9_]*\)", evaluator
+            r"Some\s*\(\s*[A-Za-z_][A-Za-z0-9_]*\s*,?\s*\)", evaluator
         ):
             raise ValueError("unsupported typed profile rule mapping")
 
