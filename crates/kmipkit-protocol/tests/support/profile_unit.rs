@@ -594,48 +594,31 @@ fn request_message_with_batch_operations_and_order(
     operations: impl IntoIterator<Item = (u32, Structure)>,
     batch_order_option: Option<bool>,
 ) -> crate::RequestMessage {
-    let operations: Vec<_> = operations.into_iter().collect();
-    let batch_count = i32::try_from(operations.len()).expect("test batch count fits in an Integer");
-    let mut header_items = vec![test_protocol_version()];
-    if let Some(value) = batch_order_option {
-        header_items.push(tagged(BATCH_ORDER_OPTION_TAG, Value::boolean(value)));
-    }
-    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(batch_count)));
-    let mut root_items = vec![tagged(
-        REQUEST_HEADER_TAG,
-        Value::structure(structure(header_items)),
-    )];
-
-    root_items.extend(
-        operations
-            .into_iter()
-            .enumerate()
-            .map(|(index, (operation, payload))| {
-                tagged(
-                    BATCH_ITEM_TAG,
-                    Value::structure(structure([
-                        tagged(OPERATION_TAG, Value::enumeration(operation)),
-                        tagged(
-                            UNIQUE_BATCH_ITEM_ID_TAG,
-                            Value::byte_string(index.to_be_bytes().to_vec()),
-                        ),
-                        tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
-                    ])),
-                )
-            }),
-    );
-
-    crate::RequestMessage::try_from_ttlv(structure(root_items))
-        .expect("test multi-item Request Message has valid batch item identifiers")
+    request_message_with_batch_operations_and_options(operations, batch_order_option, None)
 }
 
 fn request_message_with_batch_operations_and_continuation(
     operations: impl IntoIterator<Item = (u32, Structure)>,
     batch_error_continuation_option: Option<u32>,
 ) -> crate::RequestMessage {
+    request_message_with_batch_operations_and_options(
+        operations,
+        None,
+        batch_error_continuation_option,
+    )
+}
+
+fn request_message_with_batch_operations_and_options(
+    operations: impl IntoIterator<Item = (u32, Structure)>,
+    batch_order_option: Option<bool>,
+    batch_error_continuation_option: Option<u32>,
+) -> crate::RequestMessage {
     let operations: Vec<_> = operations.into_iter().collect();
     let batch_count = i32::try_from(operations.len()).expect("test batch count fits in an Integer");
     let mut header_items = vec![test_protocol_version()];
+    if let Some(value) = batch_order_option {
+        header_items.push(tagged(BATCH_ORDER_OPTION_TAG, Value::boolean(value)));
+    }
     if let Some(value) = batch_error_continuation_option {
         header_items.push(tagged(
             BATCH_ERROR_CONTINUATION_OPTION_TAG,
@@ -668,7 +651,7 @@ fn request_message_with_batch_operations_and_continuation(
     );
 
     crate::RequestMessage::try_from_ttlv(structure(root_items))
-        .expect("test multi-item Request Message has valid continuation option shape")
+        .expect("test multi-item Request Message has valid batch item identifiers")
 }
 
 fn register_key_value_location_request(
