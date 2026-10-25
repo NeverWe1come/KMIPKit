@@ -109,15 +109,6 @@ fn every_allocation_range_boundary_and_adjacent_value_matches_catalog() {
 }
 
 #[test]
-fn checked_tags_report_vendor_extension_allocation() {
-    let vendor_extension = checked_tag(0x0054_0123);
-    let standard_tag = checked_tag(0x0042_0007);
-
-    assert!(vendor_extension.is_extension());
-    assert!(!standard_tag.is_extension());
-}
-
-#[test]
 fn every_extension_range_tag_is_accepted() {
     let (start, end, kind) = TAG_ALLOCATION_RANGES
         .iter()

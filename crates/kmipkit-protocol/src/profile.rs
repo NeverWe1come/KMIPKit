@@ -1566,7 +1566,7 @@ fn client_check_additional_attributes_are_limited_to_listed_set(
             .with_request_payload(|payload| {
                 payload.children().iter().all(|field| {
                     let tag = field.tag();
-                    CHECK_STANDARD_REQUEST_MEMBER_TAGS.contains(&tag.raw()) || tag.is_extension()
+                    CHECK_STANDARD_REQUEST_MEMBER_TAGS.contains(&tag.raw())
                 })
             })
             .unwrap_or(false)
@@ -6662,12 +6662,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_check_additional_attributes_are_limited_to_listed_set),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
