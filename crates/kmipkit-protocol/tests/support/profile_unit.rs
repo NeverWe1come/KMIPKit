@@ -20174,3 +20174,305 @@ fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
         .validate_request(&unrelated_operation)
         .expect("the Add/Modify-only rule does not constrain Locate");
 }
+
+fn mac_profile_test_parameters() -> Value {
+    const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
+    Value::structure(structure([tagged(
+        CRYPTOGRAPHIC_ALGORITHM_TAG,
+        Value::enumeration(0x13),
+    )]))
+}
+
+fn mac_profile_test_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DATA_TAG: u32 = 0x0042_00C2;
+
+    let mut fields = vec![
+        tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("profile-mac-key".to_owned()),
+        ),
+        tagged(DATA_TAG, Value::byte_string(b"mac input".to_vec())),
+    ];
+    fields.extend(
+        parameters
+            .into_iter()
+            .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
+    );
+    structure(fields)
+}
+
+fn mac_verify_profile_test_payload(
+    parameters: impl IntoIterator<Item = Value>,
+    original_data: impl IntoIterator<Item = Value>,
+) -> Structure {
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DATA_TAG: u32 = 0x0042_00C2;
+    const MAC_DATA_TAG: u32 = 0x0042_00C1;
+
+    let mut fields = vec![tagged(
+        UNIQUE_IDENTIFIER_TAG,
+        Value::text_string("profile-mac-verify-key".to_owned()),
+    )];
+    fields.extend(
+        parameters
+            .into_iter()
+            .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
+    );
+    fields.extend(
+        original_data
+            .into_iter()
+            .map(|data| tagged(DATA_TAG, data)),
+    );
+    fields.push(tagged(
+        MAC_DATA_TAG,
+        Value::byte_string(b"mac value".to_vec()),
+    ));
+    structure(fields)
+}
+
+#[test]
+fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.32-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MAC_OPERATION: u32 = 0x0000_0023;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional MAC Cryptographic Parameters have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("MAC omission has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("MAC omission has positive optional-capability evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("MAC omission has a typed request evaluator");
+    let omitted = crate::MacRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "profile-mac-key".to_owned(),
+        ))
+        .with_data(crate::OperationData::ByteString(crate::SecretBytes::new(
+            b"mac input".to_vec(),
+        )))
+        .to_ttlv_payload()
+        .expect("MAC builder permits omitted Cryptographic Parameters");
+    let omitted = request_message_with_operation_payload(MAC_OPERATION, omitted);
+    assert!(evaluate(Some(&omitted), None));
+
+    let present = request_message_with_operation_payload(
+        MAC_OPERATION,
+        mac_profile_test_payload([mac_profile_test_parameters()]),
+    );
+    assert!(evaluate(Some(&present), None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&omitted)
+        .expect("MAC profile validation accepts omitted parameters");
+    result
+        .validate_request(&present)
+        .expect("MAC profile validation accepts one Structure parameter field");
+
+    for malformed_payload in [
+        mac_profile_test_payload([Value::text_string("wrong type".to_owned())]),
+        mac_profile_test_payload([
+            mac_profile_test_parameters(),
+            mac_profile_test_parameters(),
+        ]),
+    ] {
+        let malformed = request_message_with_operation_payload(MAC_OPERATION, malformed_payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("MAC parameters reject duplicate or wrongly typed fields");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a MAC-only rule does not constrain Locate requests");
+}
+
+#[test]
+fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional MAC Verify Cryptographic Parameters have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("MAC Verify parameter omission has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("MAC Verify parameter omission has positive optional-capability evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("MAC Verify parameter omission has a typed request evaluator");
+    let omitted = crate::MacVerifyRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "profile-mac-verify-key".to_owned(),
+        ))
+        .with_mac_data(crate::SecretBytes::new(b"mac value".to_vec()))
+        .to_ttlv_payload()
+        .expect("MAC Verify builder permits omitted Cryptographic Parameters");
+    let omitted = request_message_with_operation_payload(MAC_VERIFY_OPERATION, omitted);
+    assert!(evaluate(Some(&omitted), None));
+
+    let present = request_message_with_operation_payload(
+        MAC_VERIFY_OPERATION,
+        mac_verify_profile_test_payload([mac_profile_test_parameters()], []),
+    );
+    assert!(evaluate(Some(&present), None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&omitted)
+        .expect("MAC Verify profile validation accepts omitted parameters");
+    result
+        .validate_request(&present)
+        .expect("MAC Verify profile validation accepts one Structure parameter field");
+
+    for malformed_payload in [
+        mac_verify_profile_test_payload([Value::text_string("wrong type".to_owned())], []),
+        mac_verify_profile_test_payload(
+            [
+                mac_profile_test_parameters(),
+                mac_profile_test_parameters(),
+            ],
+            [],
+        ),
+    ] {
+        let malformed =
+            request_message_with_operation_payload(MAC_VERIFY_OPERATION, malformed_payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("MAC Verify parameters reject duplicate or wrongly typed fields");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a MAC Verify parameter rule does not constrain Locate requests");
+}
+
+#[test]
+fn profile_maps_mac_verify_original_data_as_optional_capability() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional MAC Verify original Data has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("MAC Verify original Data has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("MAC Verify original Data has positive optional-capability evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("MAC Verify original Data has a typed request evaluator");
+    let omitted_payload = crate::MacVerifyRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "profile-mac-verify-key".to_owned(),
+        ))
+        .with_mac_data(crate::SecretBytes::new(b"mac value".to_vec()))
+        .to_ttlv_payload()
+        .expect("MAC Verify builder permits omitted original Data");
+    let omitted = request_message_with_operation_payload(MAC_VERIFY_OPERATION, omitted_payload);
+    assert!(evaluate(Some(&omitted), None));
+
+    let original_data_payload = crate::MacVerifyRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "profile-mac-verify-key".to_owned(),
+        ))
+        .with_data(crate::OperationData::ByteString(crate::SecretBytes::new(
+            b"original input".to_vec(),
+        )))
+        .with_mac_data(crate::SecretBytes::new(b"mac value".to_vec()))
+        .to_ttlv_payload()
+        .expect("MAC Verify builder represents optional original Data");
+    let original_data =
+        request_message_with_operation_payload(MAC_VERIFY_OPERATION, original_data_payload);
+    assert!(evaluate(Some(&original_data), None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&omitted)
+        .expect("MAC Verify profile validation accepts omitted original Data");
+    result
+        .validate_request(&original_data)
+        .expect("MAC Verify profile validation accepts one Byte String original Data field");
+
+    for malformed_payload in [
+        mac_verify_profile_test_payload([], [Value::text_string("wrong type".to_owned())]),
+        mac_verify_profile_test_payload(
+            [],
+            [
+                Value::byte_string(b"first input".to_vec()),
+                Value::byte_string(b"second input".to_vec()),
+            ],
+        ),
+    ] {
+        let malformed =
+            request_message_with_operation_payload(MAC_VERIFY_OPERATION, malformed_payload);
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("original Data rejects duplicate or wrongly typed fields");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a MAC Verify Data rule does not constrain Locate requests");
+}
