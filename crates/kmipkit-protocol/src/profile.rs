@@ -803,6 +803,7 @@ const SECRET_DATA: u32 = 0x0042_0085;
 const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const KEY_MATERIAL: u32 = 0x0042_0043;
 const KEY_VALUE: u32 = 0x0042_0045;
 const PGP_KEY: u32 = 0x0042_00BD;
 const PGP_KEY_VERSION: u32 = 0x0042_00BE;
@@ -813,6 +814,12 @@ const SPLIT_KEY: u32 = 0x0042_0089;
 const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
 const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const RSA_PRIVATE_KEY_FORMAT: u32 = 10;
+const RSA_PRIME_P: u32 = 0x0042_005E;
+const RSA_PRIME_EXPONENT_P: u32 = 0x0042_0060;
+const RSA_PRIME_EXPONENT_Q: u32 = 0x0042_0061;
+const RSA_PRIVATE_EXPONENT: u32 = 0x0042_0063;
+const RSA_PRIME_Q: u32 = 0x0042_0071;
 const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -4843,6 +4850,126 @@ fn client_key_block_algorithm_requires_length(
     )
 }
 
+fn client_transparent_rsa_private_key_has_material_alternative(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+                if object_type != PRIVATE_KEY_OBJECT_TYPE {
+                    return true;
+                }
+
+                let FieldPresence::Unique(private_key) = field_presence(&payload, PRIVATE_KEY)
+                else {
+                    return false;
+                };
+                private_key.with_value(|value| match value {
+                    ValueView::Structure(private_key) => {
+                        match field_presence(&private_key, KEY_BLOCK) {
+                            FieldPresence::Unique(key_block) => {
+                                key_block.with_value(|value| match value {
+                                    ValueView::Structure(key_block) => {
+                                        transparent_rsa_key_block_has_material_alternative(
+                                            &key_block,
+                                        )
+                                    }
+                                    _ => false,
+                                })
+                            }
+                            FieldPresence::Missing | FieldPresence::Duplicate => false,
+                        }
+                    }
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn transparent_rsa_key_block_has_material_alternative(key_block: &StructureView<'_>) -> bool {
+    let key_format_type = match field_presence(key_block, KEY_FORMAT_TYPE) {
+        FieldPresence::Missing | FieldPresence::Duplicate => return false,
+        FieldPresence::Unique(item) => item.with_value(|value| match value {
+            ValueView::Enumeration(value) => Some(*value),
+            _ => None,
+        }),
+    };
+    let Some(key_format_type) = key_format_type else {
+        return false;
+    };
+    if key_format_type != RSA_PRIVATE_KEY_FORMAT {
+        return true;
+    }
+
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    key_value.with_value(|value| match value {
+        ValueView::ByteString(_) => match field_presence(key_block, KEY_WRAPPING_DATA) {
+            FieldPresence::Unique(wrapping_data) => {
+                wrapping_data.with_value(|value| matches!(value, ValueView::Structure(_)))
+            }
+            FieldPresence::Missing | FieldPresence::Duplicate => false,
+        },
+        ValueView::Structure(key_value) => {
+            let FieldPresence::Unique(key_material) = field_presence(&key_value, KEY_MATERIAL)
+            else {
+                return false;
+            };
+            key_material.with_value(|value| match value {
+                ValueView::Structure(key_material) => {
+                    transparent_rsa_private_key_material_has_alternative(&key_material)
+                }
+                _ => false,
+            })
+        }
+        _ => false,
+    })
+}
+
+fn transparent_rsa_private_key_material_has_alternative(key_material: &StructureView<'_>) -> bool {
+    let has_private_exponent = has_unique_big_integer(key_material, RSA_PRIVATE_EXPONENT);
+    let has_prime_factors = has_unique_big_integer(key_material, RSA_PRIME_P)
+        && has_unique_big_integer(key_material, RSA_PRIME_Q);
+    let has_prime_exponents = has_unique_big_integer(key_material, RSA_PRIME_EXPONENT_P)
+        && has_unique_big_integer(key_material, RSA_PRIME_EXPONENT_Q);
+
+    has_private_exponent || has_prime_factors || has_prime_exponents
+}
+
+fn has_unique_big_integer(structure: &StructureView<'_>, tag: u32) -> bool {
+    match field_presence(structure, tag) {
+        FieldPresence::Unique(item) => {
+            item.with_value(|value| matches!(value, ValueView::BigInteger(_)))
+        }
+        FieldPresence::Missing | FieldPresence::Duplicate => false,
+    }
+}
+
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const HASH_OPERATION: u32 = 0x0000_0027;
@@ -7237,6 +7364,32 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.7-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.7-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_transparent_rsa_private_key_has_material_alternative),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_each_complete_transparent_rsa_private_key_material_alternative",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_transparent_rsa_private_key_without_any_complete_material_alternative",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_transparent_rsa_private_key_component_pairs",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alternatives",
+                kind: RuleTestKind::PositiveBehavior,
             },
         ],
         constraints: &[],
