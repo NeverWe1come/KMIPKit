@@ -3012,6 +3012,129 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
 }
 
 #[test]
+fn profile_maps_requested_key_format_for_server_generated_material_operations() {
+    // KMIP Specification v2.1 §4.26 Table 79 permits a client to request the
+    // output Key Format Type in each operation that generates material.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.26-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.26-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
+    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+    const REKEY_OPERATION: u32 = 0x0000_0004;
+    const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0128;
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("server-generated Key Format Type requests have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("server-generated Key Format Type requests resolve to metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+    assert!(!evaluate(None, None));
+    let request_with_attribute_group = |operation, group, raw_format| {
+        request_message_with_operation_payload(
+            operation,
+            structure([tagged(
+                group,
+                Value::structure(structure([tagged(
+                    KEY_FORMAT_TYPE_TAG,
+                    Value::enumeration(raw_format),
+                )])),
+            )]),
+        )
+    };
+    let mut requests = vec![
+        request_with_attribute_group(CREATE_OPERATION, ATTRIBUTES_TAG, 1),
+        request_with_attribute_group(CREATE_SPLIT_KEY_OPERATION, ATTRIBUTES_TAG, 2),
+        request_with_attribute_group(REKEY_OPERATION, ATTRIBUTES_TAG, 3),
+        request_with_attribute_group(DERIVE_KEY_OPERATION, ATTRIBUTES_TAG, 4),
+    ];
+    let key_pair_group = |group, raw_format| {
+        tagged(
+            group,
+            Value::structure(structure([tagged(
+                KEY_FORMAT_TYPE_TAG,
+                Value::enumeration(raw_format),
+            )])),
+        )
+    };
+    requests.push(request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        structure([
+            key_pair_group(COMMON_ATTRIBUTES_TAG, 1),
+            key_pair_group(PRIVATE_KEY_ATTRIBUTES_TAG, 2),
+            key_pair_group(PUBLIC_KEY_ATTRIBUTES_TAG, 0xF123_4567),
+        ]),
+    ));
+    requests.push(request_message_with_operation_payload(
+        REKEY_KEY_PAIR_OPERATION,
+        structure([
+            key_pair_group(COMMON_ATTRIBUTES_TAG, 1),
+            key_pair_group(PRIVATE_KEY_ATTRIBUTES_TAG, 2),
+            key_pair_group(PUBLIC_KEY_ATTRIBUTES_TAG, 0xF123_4567),
+        ]),
+    ));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for request in &requests {
+        assert!(evaluate(Some(request), None));
+        result
+            .validate_request(request)
+            .expect("each §4.26 operation can request its generated material format");
+    }
+
+    let no_format_request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
+    );
+    assert!(evaluate(Some(&no_format_request), None));
+    result
+        .validate_request(&no_format_request)
+        .expect("Key Format Type remains optional for Create");
+
+    let wrong_type_request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                KEY_FORMAT_TYPE_TAG,
+                Value::text_string("Raw".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(!evaluate(Some(&wrong_type_request), None));
+    assert_request_rejected_for_requirement(
+        &result,
+        &wrong_type_request,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Key Format Type uses the Table 79 Enumeration encoding",
+    );
+}
+
+#[test]
 fn profile_maps_request_batch_item_repetition_as_optional_capability() {
     // KMIP Specification v2.1 §8.1 Table 394 allows Request Batch Item to repeat.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.1-002";
