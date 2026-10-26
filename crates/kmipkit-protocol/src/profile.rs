@@ -12719,7 +12719,7 @@ fn is_configuration_only_mapping(mapping: &TypedRuleMapping) -> bool {
             .all(is_configuration_only_rule_constraint)
 }
 
-fn is_caller_owned_lifecycle_date_constraint(constraint: &RuleConstraint) -> bool {
+fn is_caller_owned_temporal_constraint(constraint: &RuleConstraint) -> bool {
     matches!(
         (constraint.key, constraint.value),
         (
@@ -12729,16 +12729,7 @@ fn is_caller_owned_lifecycle_date_constraint(constraint: &RuleConstraint) -> boo
                 | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
                 | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
                 | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
-        )
-    )
-}
-
-fn is_caller_owned_time_constraint(constraint: &RuleConstraint) -> bool {
-    matches!(
-        (constraint.key, constraint.value),
-        (
-            "client_profile_capability",
-            "hashed_password_timestamp_monotonicity_caller_asserted"
+                | "hashed_password_timestamp_monotonicity_caller_asserted"
                 | "countdown_timer_relative_dates_from_server_timestamp_caller_asserted"
         )
     )
@@ -12792,9 +12783,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     );
-    is_known_constraint
-        || is_caller_owned_lifecycle_date_constraint(constraint)
-        || is_caller_owned_time_constraint(constraint)
+    is_known_constraint || is_caller_owned_temporal_constraint(constraint)
 }
 
 fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
@@ -12844,9 +12833,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     );
-    is_configuration_only
-        || is_caller_owned_lifecycle_date_constraint(constraint)
-        || is_caller_owned_time_constraint(constraint)
+    is_configuration_only || is_caller_owned_temporal_constraint(constraint)
 }
 
 #[cfg(test)]
