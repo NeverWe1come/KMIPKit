@@ -6197,6 +6197,46 @@ fn profile_maps_device_identifier_uniqueness_as_caller_responsibility() {
 }
 
 #[test]
+fn profile_maps_name_uniqueness_as_caller_responsibility() {
+    // KMIP Specification v2.1 §4.32 requires a client-assigned Name to be
+    // unique within its target server; the request model cannot inspect remote
+    // or concurrent Name assignments.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.32-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const NAME_ATTRIBUTE_TEST_ID: &str =
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("client-assigned Name uniqueness has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Name uniqueness resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the caller-supplied Name capability has positive representation evidence");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == NAME_ATTRIBUTE_TEST_ID
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "name_unique_within_target_server_caller_asserted",
+        }]
+    );
+}
+
+#[test]
 fn profile_maps_declared_response_capacity_as_required_behavior() {
     // KMIP Specification v2.1 §9.12 makes the advertised byte count the
     // response size the requester SHALL be able to handle.
