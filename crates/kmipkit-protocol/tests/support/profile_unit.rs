@@ -23951,3 +23951,93 @@ fn profile_obtain_lease_response_capabilities_reject_malformed_success() {
         .validate_response(&unrelated_request, &unrelated_response)
         .expect("Obtain Lease response rules do not constrain unrelated operations");
 }
+
+fn assert_static_caller_owned_operation_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    verification_category: GeneratedVerificationCategory,
+    capability: &'static str,
+    operation_test_id: &str,
+    profile_test_id: &str,
+    test_kind: RuleTestKind,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("caller-owned operation workflow has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("caller-owned operation workflow resolves to normative metadata");
+
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(mapping.verification_category, verification_category);
+    assert!(mapping.evaluator.is_none());
+    validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+        .expect("the caller-directed operation contract has category-matched evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == operation_test_id && evidence.kind == test_kind
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == profile_test_id && evidence.kind == test_kind
+    }));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: capability,
+        }]
+    );
+}
+
+#[test]
+fn profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation() {
+    assert_static_caller_owned_operation_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        "recertify_once_per_existing_certificate_caller_asserted",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation",
+        RuleTestKind::RecommendedBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation() {
+    assert_static_caller_owned_operation_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        "rekey_once_per_existing_key_caller_asserted",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation",
+        RuleTestKind::RecommendedBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation() {
+    assert_static_caller_owned_operation_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.47-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        "rekey_key_pair_once_per_existing_pair_caller_asserted",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation",
+        RuleTestKind::RecommendedBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior() {
+    assert_static_caller_owned_operation_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.48-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+        GeneratedVerificationCategory::RequiredBehavior,
+        "reprovision_when_credentials_are_required_caller_directed",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior",
+        RuleTestKind::PositiveBehavior,
+    );
+}
