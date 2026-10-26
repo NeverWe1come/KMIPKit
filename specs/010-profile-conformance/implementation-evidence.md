@@ -7100,5 +7100,5 @@ KMIP Specification v2.1 §6.1.14 paragraph 1 says a Derive Key request may apply
 | Protocol regression suite | `cargo test -p kmipkit-protocol --all-features --quiet` | PASS: 1,115 unit tests plus all integration targets and doctests. |
 | Protocol quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` | PASS: formatting and Clippy clean. |
 | Catalog and generated artifacts | catalog validation; profile metadata `--check`; report `--check`; pinned OASIS source diff check; `git diff --check` | PASS: catalog valid (`sources=4 clauses=1411 records=4125`), generated outputs current, and no pinned source changed. |
-| Refactor | DCO-signed Refactor commit to be recorded below | Bilingual profile guide and KMIPKIT-0023 traceability now explain the caller duty and the limit of local verification. |
+| Refactor | DCO-signed commit `728ea8008` | Bilingual profile guide and KMIPKIT-0023 traceability now explain the caller duty and the limit of local verification. |
 | Current Baseline state | Typed mapping registry and generated report | 247/265 typed mappings, 18 unmapped; readiness remains `evidence_incomplete`, runtime profile validation unavailable, and no public claim or official OASIS Test Case pass is made. |
