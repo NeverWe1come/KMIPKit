@@ -21874,3 +21874,150 @@ fn profile_rejects_multiple_direct_attributes_in_new_attribute() {
         );
     }
 }
+
+#[test]
+fn profile_maps_obtain_lease_response_capabilities() {
+    // KMIP Specification v2.1 Section 6.1.35, Table 269, and Sections 4.29-4.30.
+    const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
+    const LAST_CHANGE_DATE_TAG: u32 = 0x0042_0048;
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REQUIREMENT_IDS: [&str; 3] = [
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
+    ];
+
+    let request = request_message_with_operation_payload(OBTAIN_LEASE_OPERATION, Structure::new());
+    let zero_response = get_attributes_response_with_payload(
+        OBTAIN_LEASE_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("leased-object".to_owned()),
+            ),
+            tagged(LEASE_TIME_TAG, Value::interval(0)),
+            tagged(LAST_CHANGE_DATE_TAG, Value::date_time(1_700_000_000)),
+        ]),
+    );
+    let zero_item = zero_response
+        .batch_items()
+        .next()
+        .expect("the test response has one Obtain Lease item");
+    let zero_typed = crate::ObtainLeaseResponse::try_from_response_item(zero_item)
+        .expect("Table 269 zero-interval response is typed");
+    assert_eq!(zero_typed.lease_time(), Some(0));
+    assert_eq!(zero_typed.last_change_date(), Some(1_700_000_000));
+
+    let positive_response = get_attributes_response_with_payload(
+        OBTAIN_LEASE_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("leased-object".to_owned()),
+            ),
+            tagged(LEASE_TIME_TAG, Value::interval(30)),
+            tagged(LAST_CHANGE_DATE_TAG, Value::date_time(1_700_000_030)),
+        ]),
+    );
+    let positive_item = positive_response
+        .batch_items()
+        .next()
+        .expect("the test response has one Obtain Lease item");
+    let positive_typed = crate::ObtainLeaseResponse::try_from_response_item(positive_item)
+        .expect("Table 269 positive-interval response is typed");
+    assert_eq!(positive_typed.lease_time(), Some(30));
+    assert_eq!(positive_typed.last_change_date(), Some(1_700_000_030));
+
+    for requirement_id in REQUIREMENT_IDS {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("each Obtain Lease response capability has a typed profile mapping");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("each Obtain Lease response capability has generated metadata");
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::OptionalCapability
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the response capability mapping has category-appropriate evidence");
+    }
+
+    let selected = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENT_IDS.into_iter().map(str::to_owned).collect(),
+    };
+    selected
+        .validate_request(&request)
+        .expect("response capabilities do not reject the outbound Obtain Lease request");
+    selected
+        .validate_response(&request, &zero_response)
+        .expect("zero Lease Time and Last Change Date remain caller-visible");
+    selected
+        .validate_response(&request, &positive_response)
+        .expect("positive Lease Time and Last Change Date remain caller-visible");
+}
+
+#[test]
+fn profile_obtain_lease_response_capabilities_reject_malformed_success() {
+    const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REQUIREMENT_IDS: [&str; 3] = [
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
+    ];
+    let request = request_message_with_operation_payload(OBTAIN_LEASE_OPERATION, Structure::new());
+    let selected = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENT_IDS.into_iter().map(str::to_owned).collect(),
+    };
+
+    let malformed_success = get_attributes_response_with_payload(
+        OBTAIN_LEASE_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("leased-object".to_owned()),
+            ),
+            tagged(LEASE_TIME_TAG, Value::interval(30)),
+        ]),
+    );
+    assert_eq!(
+        selected
+            .validate_response(&request, &malformed_success)
+            .expect_err("successful Obtain Lease requires Last Change Date")
+            .code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+
+    let mismatched_operation = response_message_with_operation_status(
+        Some(0x0000_000A),
+        0,
+        None,
+        Some(Structure::new()),
+    );
+    assert_eq!(
+        selected
+            .validate_response(&request, &mismatched_operation)
+            .expect_err("Obtain Lease validation requires its matching response operation")
+            .code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+
+    let server_failure =
+        response_message_with_operation_status(Some(OBTAIN_LEASE_OPERATION), 1, None, None);
+    selected
+        .validate_response(&request, &server_failure)
+        .expect("a server failure response has no successful lease fields to evaluate");
+
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    let unrelated_response =
+        get_attributes_response_with_payload(LOCATE_OPERATION_TAG, Structure::new());
+    selected
+        .validate_response(&unrelated_request, &unrelated_response)
+        .expect("Obtain Lease response rules do not constrain unrelated operations");
+}
