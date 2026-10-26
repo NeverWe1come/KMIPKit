@@ -5927,6 +5927,17 @@ fn application_specific_information_is_well_formed(
     attributes: &StructureView<'_>,
     allow_multiple_instances: bool,
 ) -> bool {
+    let contains_application_specific_information = attributes
+        .children()
+        .iter()
+        .any(|field| field.tag().raw() == APPLICATION_SPECIFIC_INFORMATION);
+    if !allow_multiple_instances
+        && contains_application_specific_information
+        && attributes.children().len() != 1
+    {
+        return false;
+    }
+
     let mut instance_count = 0;
     for application_information in attributes
         .children()
