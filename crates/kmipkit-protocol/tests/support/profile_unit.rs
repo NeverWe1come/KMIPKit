@@ -3025,9 +3025,6 @@ fn profile_maps_requested_key_format_for_server_generated_material_operations() 
     const REKEY_OPERATION: u32 = 0x0000_0004;
     const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
-    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
-    const PRIVATE_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0127;
-    const PUBLIC_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0128;
     const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -3050,48 +3047,17 @@ fn profile_maps_requested_key_format_for_server_generated_material_operations() 
         .evaluator
         .expect("the optional capability has a request evaluator");
     assert!(!evaluate(None, None));
-    let request_with_attribute_group = |operation, group, raw_format| {
-        request_message_with_operation_payload(
-            operation,
-            structure([tagged(
-                group,
-                Value::structure(structure([tagged(
-                    KEY_FORMAT_TYPE_TAG,
-                    Value::enumeration(raw_format),
-                )])),
-            )]),
-        )
-    };
     let mut requests = vec![
-        request_with_attribute_group(CREATE_OPERATION, ATTRIBUTES_TAG, 1),
-        request_with_attribute_group(CREATE_SPLIT_KEY_OPERATION, ATTRIBUTES_TAG, 2),
-        request_with_attribute_group(REKEY_OPERATION, ATTRIBUTES_TAG, 3),
-        request_with_attribute_group(DERIVE_KEY_OPERATION, ATTRIBUTES_TAG, 4),
+        request_with_key_format_attribute_group(CREATE_OPERATION, ATTRIBUTES_TAG, 1),
+        request_with_key_format_attribute_group(CREATE_SPLIT_KEY_OPERATION, ATTRIBUTES_TAG, 2),
+        request_with_key_format_attribute_group(REKEY_OPERATION, ATTRIBUTES_TAG, 3),
+        request_with_key_format_attribute_group(DERIVE_KEY_OPERATION, ATTRIBUTES_TAG, 4),
     ];
-    let key_pair_group = |group, raw_format| {
-        tagged(
-            group,
-            Value::structure(structure([tagged(
-                KEY_FORMAT_TYPE_TAG,
-                Value::enumeration(raw_format),
-            )])),
-        )
-    };
-    requests.push(request_message_with_operation_payload(
+    requests.push(request_with_key_format_pair_attributes(
         CREATE_KEY_PAIR_OPERATION,
-        structure([
-            key_pair_group(COMMON_ATTRIBUTES_TAG, 1),
-            key_pair_group(PRIVATE_KEY_ATTRIBUTES_TAG, 2),
-            key_pair_group(PUBLIC_KEY_ATTRIBUTES_TAG, 0xF123_4567),
-        ]),
     ));
-    requests.push(request_message_with_operation_payload(
+    requests.push(request_with_key_format_pair_attributes(
         REKEY_KEY_PAIR_OPERATION,
-        structure([
-            key_pair_group(COMMON_ATTRIBUTES_TAG, 1),
-            key_pair_group(PRIVATE_KEY_ATTRIBUTES_TAG, 2),
-            key_pair_group(PUBLIC_KEY_ATTRIBUTES_TAG, 0xF123_4567),
-        ]),
     ));
 
     let result = ProfileValidationResult {
@@ -3132,6 +3098,48 @@ fn profile_maps_requested_key_format_for_server_generated_material_operations() 
         SOURCE_CLAUSE_ID,
         "Key Format Type uses the Table 79 Enumeration encoding",
     );
+}
+
+fn request_with_key_format_attribute_group(
+    operation: u32,
+    group_tag: u32,
+    raw_format: u32,
+) -> crate::RequestMessage {
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
+    request_message_with_operation_payload(
+        operation,
+        structure([tagged(
+            group_tag,
+            Value::structure(structure([tagged(
+                KEY_FORMAT_TYPE_TAG,
+                Value::enumeration(raw_format),
+            )])),
+        )]),
+    )
+}
+
+fn request_with_key_format_pair_attributes(operation: u32) -> crate::RequestMessage {
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
+    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0128;
+    let group = |group_tag, raw_format| {
+        tagged(
+            group_tag,
+            Value::structure(structure([tagged(
+                KEY_FORMAT_TYPE_TAG,
+                Value::enumeration(raw_format),
+            )])),
+        )
+    };
+    request_message_with_operation_payload(
+        operation,
+        structure([
+            group(COMMON_ATTRIBUTES_TAG, 1),
+            group(PRIVATE_KEY_ATTRIBUTES_TAG, 2),
+            group(PUBLIC_KEY_ATTRIBUTES_TAG, 0xF123_4567),
+        ]),
+    )
 }
 
 #[test]

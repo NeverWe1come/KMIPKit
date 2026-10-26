@@ -5905,6 +5905,65 @@ fn application_namespace_is_well_formed(fields: &StructureView<'_>) -> bool {
     namespace_is_valid && data_is_valid
 }
 
+fn client_server_generated_key_format_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        let attribute_groups: &[u32] = match operation {
+            CREATE_OPERATION
+            | CREATE_SPLIT_KEY_OPERATION
+            | REKEY_OPERATION
+            | DERIVE_KEY_OPERATION => &[ATTRIBUTES],
+            CREATE_KEY_PAIR_OPERATION | REKEY_KEY_PAIR_OPERATION => {
+                &CREATE_KEY_PAIR_ATTRIBUTE_GROUPS
+            }
+            _ => return true,
+        };
+
+        batch_item
+            .with_request_payload(|payload| {
+                attribute_groups
+                    .iter()
+                    .all(|group| attribute_group_key_format_type_is_enumeration(&payload, *group))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn attribute_group_key_format_type_is_enumeration(
+    payload: &StructureView<'_>,
+    group_tag: u32,
+) -> bool {
+    match field_presence(payload, group_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(group) => group.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                key_format_type_attribute_is_enumeration(&attributes)
+            }
+            _ => false,
+        }),
+    }
+}
+
+fn key_format_type_attribute_is_enumeration(attributes: &StructureView<'_>) -> bool {
+    match field_presence(attributes, KEY_FORMAT_TYPE) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(key_format_type) => {
+            key_format_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }
+    }
+}
+
 fn rng_parameters_attribute_is_well_formed(attributes: &StructureView<'_>) -> bool {
     match field_presence(attributes, RANDOM_NUMBER_GENERATOR) {
         FieldPresence::Missing => true,
@@ -7469,6 +7528,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_add_attribute_application_namespace_without_application_data",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.26-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.26-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_server_generated_key_format_type_is_enumeration),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_requested_key_format_for_server_generated_material_operations",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
