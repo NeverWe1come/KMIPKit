@@ -381,6 +381,34 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "target_usage_mask_allows_requested_function_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "target_usage_mask_excludes_requested_function_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "lease_not_expired_or_renewed_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "usage_allocation_obtained_before_protection_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "usage_allocation_requested_within_object_date_window_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "usage_allocation_remains_available_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "lease_not_expired_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "recertify_once_per_existing_certificate_caller_asserted",
             },
             RuleConstraint {
