@@ -14993,6 +14993,59 @@ fn archived_locate_recover_get_workflow_is_explicitly_caller_controlled() {
         .expect("caller-directed workflow mapping has category-appropriate evidence");
 }
 
+fn assert_caller_directed_optional_profile_mapping(
+    requirement_id: &str,
+    capability: &str,
+    test_id: &str,
+) {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the Recover workflow has an explicit typed profile mapping");
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.constraints.iter().any(|constraint| {
+        constraint.key == "client_profile_capability" && constraint.value == capability
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == test_id && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the Recover capability resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("caller-directed optional capability has category-appropriate evidence");
+}
+
+#[test]
+fn profile_maps_recover_poll_as_caller_directed_optional_capability() {
+    // KMIP Specification v2.1 §6.1.42 permits asynchronous polling when
+    // Recover is delayed; the caller supplies each Poll correlation.
+    assert_caller_directed_optional_profile_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "recover_poll_caller_directed",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+    );
+}
+
+#[test]
+fn profile_maps_recover_get_as_caller_directed_optional_capability() {
+    // KMIP Specification v2.1 §6.1.42 permits Get once Recover completes;
+    // each exchange remains explicitly selected by the caller.
+    assert_caller_directed_optional_profile_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        "recover_get_caller_directed",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+    );
+}
+
 #[test]
 fn profile_maps_optional_archive_request_capability() {
     // KMIP Specification v2.1 §6.1.4 and Table 173 define Archive as a client

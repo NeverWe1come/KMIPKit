@@ -444,6 +444,57 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_typed_rule_registry_accepts_caller_directed_recover_capabilities(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "recover_poll_caller_directed",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "recover_get_caller_directed",
+        }],
+    },
+];
+"""
+
+        mappings = _parse_typed_rule_registry(source)
+        self.assertEqual(
+            [mapping["requirement_id"] for mapping in mappings],
+            [
+                "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+            ],
+        )
+        self.assertTrue(all(mapping["configuration_only"] for mapping in mappings))
+        self.assertEqual(
+            [mapping["test_kind"] for mapping in mappings],
+            ["OptionalCapabilityUsable", "OptionalCapabilityUsable"],
+        )
+
     def test_typed_rule_registry_reader_accepts_rustfmt_wrapped_evaluator(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
