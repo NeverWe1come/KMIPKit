@@ -3014,7 +3014,8 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
 #[test]
 fn profile_maps_requested_key_format_for_server_generated_material_operations() {
     // KMIP Specification v2.1 §4.26 Table 79 permits a client to request the
-    // output Key Format Type in each operation that generates material.
+    // output Key Format Type in each operation that generates material. Table
+    // 80 defines the attribute as single-instance.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.26-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.26-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -3097,6 +3098,25 @@ fn profile_maps_requested_key_format_for_server_generated_material_operations() 
         REQUIREMENT_ID,
         SOURCE_CLAUSE_ID,
         "Key Format Type uses the Table 79 Enumeration encoding",
+    );
+
+    let duplicate_request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([
+                tagged(KEY_FORMAT_TYPE_TAG, Value::enumeration(1)),
+                tagged(KEY_FORMAT_TYPE_TAG, Value::enumeration(2)),
+            ])),
+        )]),
+    );
+    assert!(!evaluate(Some(&duplicate_request), None));
+    assert_request_rejected_for_requirement(
+        &result,
+        &duplicate_request,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Key Format Type is a single-instance attribute",
     );
 }
 
