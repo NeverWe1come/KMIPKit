@@ -45,6 +45,10 @@ const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const AUTHENTICATION_TAG: u32 = 0x0042_000C;
+const CREDENTIAL_TAG: u32 = 0x0042_0023;
+const CREDENTIAL_TYPE_TAG: u32 = 0x0042_0024;
+const CREDENTIAL_VALUE_TAG: u32 = 0x0042_0025;
 const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
@@ -276,6 +280,46 @@ fn test_protocol_version() -> Item {
 
 fn request_message() -> crate::RequestMessage {
     request_message_with_unique_batch_item_id(None)
+}
+
+fn request_message_with_authentication(
+    credential_count: Option<usize>,
+) -> crate::RequestMessage {
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(credential_count) = credential_count {
+        let credentials = (0..credential_count).map(|_| {
+            tagged(
+                CREDENTIAL_TAG,
+                Value::structure(structure([
+                    tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(0xF123_4567)),
+                    tagged(CREDENTIAL_VALUE_TAG, Value::structure(Structure::new())),
+                ])),
+            )
+        });
+        header_items.push(tagged(
+            AUTHENTICATION_TAG,
+            Value::structure(structure(credentials)),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure(header_items)),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has structurally valid optional Authentication")
 }
 
 fn request_message_with_attestation_capable_indicator(
@@ -5375,6 +5419,63 @@ fn profile_maps_optional_maximum_response_size_capability() {
     result
         .validate_request(&supplied)
         .expect("a client may include Maximum Response Size");
+}
+
+#[test]
+fn profile_requires_a_credential_when_request_authentication_is_present() {
+    // KMIP Specification v2.1 §9.4 and Table 403: Authentication is optional,
+    // but a present Authentication structure contains one or more Credentials.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.4-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("present Authentication has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Authentication requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("Authentication cardinality has executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("present Authentication uses a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let omitted = request_message_with_authentication(None);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("§9.4 makes Authentication optional");
+
+    for credential_count in [1, 2] {
+        let request = request_message_with_authentication(Some(credential_count));
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("one or more Credential structures satisfy §9.4");
+    }
+
+    let empty_authentication = request_message_with_authentication(Some(0));
+    assert!(!evaluate(Some(&empty_authentication), None));
+    let error = result
+        .validate_request(&empty_authentication)
+        .expect_err("present empty Authentication violates §9.4");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
 }
 
 #[test]
