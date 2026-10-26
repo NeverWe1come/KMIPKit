@@ -21692,3 +21692,58 @@ fn profile_rejects_multiple_application_specific_information_values_in_one_new_a
             .is_err());
     }
 }
+
+#[test]
+fn profile_rejects_multiple_direct_attributes_in_new_attribute() {
+    // KMIP Specification v2.1 §5.7 Table 163 defines New Attribute as one
+    // direct §4 attribute Item. A valid Application Specific Information
+    // value cannot be combined with a second direct Name attribute.
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
+    const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
+    const NAME_TAG: u32 = 0x0042_0053;
+    const NAME_TYPE_TAG: u32 = 0x0042_0054;
+    const NAME_VALUE_TAG: u32 = 0x0042_0055;
+
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+
+    for operation in [0x0000_000D, 0x0000_000E, 0x0000_0031] {
+        let malformed_request = request_message_with_operation_payload(
+            operation,
+            structure([tagged(
+                NEW_ATTRIBUTE_TAG,
+                Value::structure(structure([
+                    tagged(
+                        APPLICATION_SPECIFIC_INFORMATION_TAG,
+                        Value::structure(structure([tagged(
+                            APPLICATION_NAMESPACE_TAG,
+                            Value::text_string("com.example.kmipkit".to_owned()),
+                        )])),
+                    ),
+                    tagged(
+                        NAME_TAG,
+                        Value::structure(structure([
+                            tagged(
+                                NAME_VALUE_TAG,
+                                Value::text_string("secondary-name".to_owned()),
+                            ),
+                            tagged(NAME_TYPE_TAG, Value::enumeration(1)),
+                        ])),
+                    ),
+                ])),
+            )]),
+        );
+
+        assert!(
+            !evaluate(Some(&malformed_request), None),
+            "New Attribute must reject multiple direct items for operation {operation:#x}"
+        );
+        assert!(
+            application_information_profile_result()
+                .validate_request(&malformed_request)
+                .is_err()
+        );
+    }
+}
