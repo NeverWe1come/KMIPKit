@@ -99763,12 +99763,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/variants.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_device_password_authentication_capability"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §9.11 and Table 412 permit an optional Password encoded as Text String in a Device Credential. The Baseline evaluator accepts omission and validates a supplied field's TTLV type. Under KMIPKIT-0008 OD-002, Password supplements rather than replaces one of the four identifier fields whose uniqueness is required separately. KMIPKit preserves the caller-supplied value and does not verify authentication or server acceptance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-006",

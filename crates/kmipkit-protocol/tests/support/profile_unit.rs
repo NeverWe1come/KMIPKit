@@ -15151,34 +15151,32 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
         Some(wrapping_data_without_key_information()),
     );
-    let error = result
+    let malformed_import_has_expected_rejection = result
         .validate_request(&malformed_import)
-        .expect_err("wrapped Secret Data requires Encryption or MAC/Signature Key Information");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::RequestRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+        .is_err_and(|error| {
+            error.code() == ProfileValidationErrorCode::RequestRuleRejected
+                && error.requirement_id() == Some(REQUIREMENT_ID)
+                && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+        });
+    assert!(
+        malformed_import_has_expected_rejection,
+        "malformed wrapped Secret Data must be rejected by its mapped rule"
     );
 
     let wrong_type_import = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
         Some(Value::integer(1)),
     );
-    let error = result
+    let wrong_type_import_has_expected_rejection = result
         .validate_request(&wrong_type_import)
-        .expect_err("Key Wrapping Data must remain a Structure");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::RequestRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+        .is_err_and(|error| {
+            error.code() == ProfileValidationErrorCode::RequestRuleRejected
+                && error.requirement_id() == Some(REQUIREMENT_ID)
+                && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+        });
+    assert!(
+        wrong_type_import_has_expected_rejection,
+        "wrong-type Key Wrapping Data must be rejected by its mapped rule"
     );
 
     let malformed_register = register_wrapped_key_without_wrapping_key_information();
@@ -15209,22 +15207,19 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
     };
 
     for (label, payload) in malformed_secret_data_import_payloads() {
-        let error = result
+        let rejected_by_expected_rule = result
             .validate_request(&request_message_with_operation_payload(
                 IMPORT_OPERATION,
                 payload,
             ))
-            .expect_err(label);
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected,
-            "{label}"
-        );
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{label}");
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIPKIT-CLAUSE-SPEC-2.7-001"),
-            "{label}"
+            .is_err_and(|error| {
+                error.code() == ProfileValidationErrorCode::RequestRuleRejected
+                    && error.requirement_id() == Some(REQUIREMENT_ID)
+                    && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+            });
+        assert!(
+            rejected_by_expected_rule,
+            "malformed Secret Data case: {label}"
         );
     }
 
