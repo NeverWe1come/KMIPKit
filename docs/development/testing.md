@@ -35,18 +35,16 @@ The CodeQL job does not run for fork pull requests because SARIF upload needs
 `security-events: write`. Fork contributions still use the unprivileged CI
 workflow described above.
 
-The SonarQube Cloud workflow is prepared for the public repository and does
-not run until a maintainer completes the free Cloud project setup. Import
-KMIPKit into a SonarQube Cloud Free or OSS organization, choose GitHub Actions
-analysis, and add repository Actions variables `SONAR_PROJECT_KEY` and
-`SONAR_ORGANIZATION` with the exact keys shown by that project. Add its scan
-token as the `SONAR_TOKEN` Actions secret; do not commit or print the token.
-After configuration, rerun the workflow and check that the analysis appears
-in the SonarQube Cloud project. A missing token fails the scan with a setup
-message. The Sonar job is skipped for fork pull requests so their code never
-receives the token. Its Java compile step supplies bytecode to the Java
-analyzer. The scan supplements the repository coverage and dependency gates;
-it does not replace them.
+SonarQube Cloud already analyzes the public project `NeverWe1come_KMIPKit`
+in organization `neverwe1come` automatically and reports its quality gate as
+the `SonarCloud Code Analysis` GitHub check on pull requests. This integration
+needs no Actions token or repository workflow. Do not run SonarScanner against
+the same project while automatic analysis is enabled: SonarQube Cloud rejects
+concurrent CI-based analysis. The automatic scan does not import the test
+coverage collected by this repository's CI; the coverage gate below remains
+authoritative. If richer Sonar analysis is needed later, review a separate
+switch to CI-based analysis, including disabling automatic analysis and
+provisioning a scan token through the repository's normal secret process.
 
 ## Test layers
 
