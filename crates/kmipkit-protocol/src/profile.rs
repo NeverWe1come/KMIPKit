@@ -3325,17 +3325,24 @@ fn client_device_credential_password_is_text_string_if_present(
                             .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
                             .is_some_and(|child| {
                                 child.with_value(|value| match value {
-                                    ValueView::Structure(device) => device
-                                        .children()
-                                        .iter()
-                                        .filter(|field| {
-                                            field.tag().raw() == DEVICE_CREDENTIAL_PASSWORD
-                                        })
-                                        .all(|field| {
-                                            field.with_value(|value| {
-                                                matches!(value, ValueView::TextString(_))
+                                    ValueView::Structure(device) => {
+                                        let mut password_seen = false;
+                                        device
+                                            .children()
+                                            .iter()
+                                            .filter(|field| {
+                                                field.tag().raw() == DEVICE_CREDENTIAL_PASSWORD
                                             })
-                                        }),
+                                            .all(|field| {
+                                                if password_seen {
+                                                    return false;
+                                                }
+                                                password_seen = true;
+                                                field.with_value(|value| {
+                                                    matches!(value, ValueView::TextString(_))
+                                                })
+                                            })
+                                    }
                                     _ => false,
                                 })
                             })
