@@ -5847,6 +5847,20 @@ fn client_add_application_specific_information_can_omit_data(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
+    const ATTRIBUTE_CREATION_OPERATIONS: [u32; 11] = [
+        CREATE_OPERATION,
+        CREATE_KEY_PAIR_OPERATION,
+        REGISTER_OPERATION,
+        REKEY_OPERATION,
+        DERIVE_KEY_OPERATION,
+        CERTIFY_OPERATION,
+        RECERTIFY_OPERATION,
+        REKEY_KEY_PAIR_OPERATION,
+        CREATE_SPLIT_KEY_OPERATION,
+        JOIN_SPLIT_KEY_OPERATION,
+        IMPORT_OPERATION,
+    ];
+
     let Some(request) = request else {
         return false;
     };
@@ -5855,38 +5869,62 @@ fn client_add_application_specific_information_can_omit_data(
         let Some(operation) = batch_item.operation() else {
             return false;
         };
-        if operation != ADD_ATTRIBUTE_OPERATION {
+        let attribute_groups: &[u32] = if ATTRIBUTE_CREATION_OPERATIONS.contains(&operation) {
+            if matches!(
+                operation,
+                CREATE_KEY_PAIR_OPERATION | REKEY_KEY_PAIR_OPERATION
+            ) {
+                &CREATE_KEY_PAIR_ATTRIBUTE_GROUPS
+            } else {
+                &[ATTRIBUTES]
+            }
+        } else if matches!(
+            operation,
+            ADD_ATTRIBUTE_OPERATION | MODIFY_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION
+        ) {
+            &[NEW_ATTRIBUTE]
+        } else {
             return true;
-        }
+        };
 
         batch_item
-            .with_request_payload(|payload| match field_presence(&payload, NEW_ATTRIBUTE) {
-                FieldPresence::Missing => true,
-                FieldPresence::Duplicate => false,
-                FieldPresence::Unique(new_attribute) => {
-                    new_attribute.with_value(|value| match value {
-                        ValueView::Structure(attributes) => {
-                            application_specific_information_is_well_formed(&attributes)
-                        }
-                        _ => false,
-                    })
-                }
+            .with_request_payload(|payload| {
+                attribute_groups
+                    .iter()
+                    .all(|group| application_attribute_group_is_well_formed(&payload, *group))
             })
             .unwrap_or(false)
     })
 }
 
-fn application_specific_information_is_well_formed(attributes: &StructureView<'_>) -> bool {
-    match field_presence(attributes, APPLICATION_SPECIFIC_INFORMATION) {
+fn application_attribute_group_is_well_formed(payload: &StructureView<'_>, group_tag: u32) -> bool {
+    match field_presence(payload, group_tag) {
         FieldPresence::Missing => true,
         FieldPresence::Duplicate => false,
-        FieldPresence::Unique(application_information) => {
-            application_information.with_value(|value| match value {
-                ValueView::Structure(fields) => application_namespace_is_well_formed(&fields),
-                _ => false,
-            })
+        FieldPresence::Unique(group) => group.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                application_specific_information_is_well_formed(&attributes)
+            }
+            _ => false,
+        }),
+    }
+}
+
+fn application_specific_information_is_well_formed(attributes: &StructureView<'_>) -> bool {
+    for application_information in attributes
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == APPLICATION_SPECIFIC_INFORMATION)
+    {
+        let is_well_formed = application_information.with_value(|value| match value {
+            ValueView::Structure(fields) => application_namespace_is_well_formed(&fields),
+            _ => false,
+        });
+        if !is_well_formed {
+            return false;
         }
     }
+    true
 }
 
 fn application_namespace_is_well_formed(fields: &StructureView<'_>) -> bool {
