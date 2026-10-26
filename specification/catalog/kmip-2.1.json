@@ -87892,7 +87892,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "BLOCKER: KMIP Specification v2.1 §3.3 Table 14 makes IV/Counter/Nonce conditional on the wrapping method. The text following Table 14 derives the algorithm from the referenced key attributes and permits Cryptographic Parameters to come from the referenced server object when they are absent from Key Information in the request. A request-local evaluator therefore cannot determine whether the field is required for every valid request. Keep this requirement unassigned until the API exposes sufficient algorithm and parameter context; do not infer from Wrapping Method alone. No requirement-specific official Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-003",
@@ -88024,7 +88024,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "BLOCKER: KMIP Specification v2.1 §3.3 Table 15 says that when Encoding Option is absent, the wrapped Key Value structure SHALL be TTLV encoded. Register and Import accept the wrapped Key Value as opaque bytes; a request-local evaluator cannot inspect its encrypted plaintext encoding. Keep this requirement unassigned until a KMIPKit construction boundary owns the pre-wrap TTLV encoding. Do not decode ciphertext or imply that opaque bytes were checked. No requirement-specific official Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-007",
@@ -89945,7 +89945,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "BLOCKER: KMIP Specification v2.1 §4.32 requires client-assigned Names to be unique within a given key management server, but not globally, and allows server-specific naming rules conveyed through an unspecified mechanism. A request-local evaluator cannot observe existing or concurrent server Names or those comparison rules. A local or same-message duplicate check cannot prove server-wide uniqueness. Keep this requirement unassigned until the client API has a defensible caller-visible uniqueness contract; do not claim global uniqueness. No requirement-specific official Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-002",
