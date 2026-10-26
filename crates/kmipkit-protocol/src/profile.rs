@@ -758,6 +758,7 @@ const DEVICE_CREDENTIAL_IDENTIFIER_FIELDS: [u32; 4] = [
     0x0042_00A9, // Machine Identifier
     0x0042_00AA, // Media Identifier
 ];
+const DEVICE_CREDENTIAL_PASSWORD: u32 = 0x0042_00A1;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
@@ -3280,6 +3281,61 @@ fn client_device_credential_has_identifier_if_present(
                                                 })
                                         })
                                     }
+                                    _ => false,
+                                })
+                            })
+                    }
+                    _ => false,
+                })
+            })
+        })
+        .unwrap_or(true)
+}
+
+fn client_device_credential_password_is_text_string_if_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request
+        .header()
+        .with_authentication(|authentication| {
+            authentication.children().iter().all(|field| {
+                if field.tag().raw() != CREDENTIAL {
+                    return true;
+                }
+
+                field.with_value(|value| match value {
+                    ValueView::Structure(credential) => {
+                        let Ok(credential_type) =
+                            crate::credential::credential_type_from_view(&credential)
+                        else {
+                            return false;
+                        };
+                        if credential_type != CredentialType::Device {
+                            return true;
+                        }
+
+                        credential
+                            .children()
+                            .iter()
+                            .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
+                            .is_some_and(|child| {
+                                child.with_value(|value| match value {
+                                    ValueView::Structure(device) => device
+                                        .children()
+                                        .iter()
+                                        .filter(|field| {
+                                            field.tag().raw() == DEVICE_CREDENTIAL_PASSWORD
+                                        })
+                                        .all(|field| {
+                                            field.with_value(|value| {
+                                                matches!(value, ValueView::TextString(_))
+                                            })
+                                        }),
                                     _ => false,
                                 })
                             })
@@ -9943,6 +9999,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_device_credential_password_is_text_string_if_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_device_password_authentication_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
