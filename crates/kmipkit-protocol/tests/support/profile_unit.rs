@@ -331,15 +331,9 @@ fn request_message_with_device_credential(
 ) -> crate::RequestMessage {
     let credential = structure([
         tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(2)),
-        tagged(
-            CREDENTIAL_VALUE_TAG,
-            Value::structure(structure(fields)),
-        ),
+        tagged(CREDENTIAL_VALUE_TAG, Value::structure(structure(fields))),
     ]);
-    let authentication = structure([tagged(
-        CREDENTIAL_TAG,
-        Value::structure(credential),
-    )]);
+    let authentication = structure([tagged(CREDENTIAL_TAG, Value::structure(credential))]);
     let header = structure([
         test_protocol_version(),
         tagged(AUTHENTICATION_TAG, Value::structure(authentication)),
