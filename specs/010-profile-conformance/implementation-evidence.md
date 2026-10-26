@@ -6830,6 +6830,12 @@ Mapped `KMIPKIT-REQ-SPEC-9.11-004-001` from KMIP Specification v2.1 §9.11/Table
 | Catalog and generated artifacts | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d5d5ab75ec9318d7d646c6ba85c5e56559ace21e` | PASS: catalog valid (`sources=4 clauses=1411 records=4125`), generated files current, pinned OASIS sources unchanged. |
 | Remaining scope | T056 task | Open: other authentication and credential requirements; response-size behavior; unresolved Hashed Password timestamp monotonicity; and the existing deferred countdown-derived Time Stamp capability. T056 remains partial; no profile-conformance claim is made. |
 
+### KMIPKIT-0010 CI mapping inventory regression (2026-10-26)
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red | Existing hosted PR run `40290546961`, Ubuntu job `121464462904` and macOS job `121464462959`; local `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | Expected failure: the hand-maintained typed-mapping inventory omitted all six T055 test references even though those mappings were implemented. On the local T056 worktree it also omitted the newly added authentication, Device Credential, and response-extension mapping test references. The report behavior was consistent; the test snapshot was stale. |
+
 ### KMIPKIT-0010 T056 — Response Message Extension handling (2026-10-26)
 
 Mapped `KMIPKIT-REQ-SPEC-9.13-001-004` and `KMIPKIT-REQ-SPEC-9.13-001-005` from KMIP Specification v2.1 §9.13. KMIPKit has no registered vendor Message Extension handler, so the typed Baseline response evaluator rejects critical extensions as unrecognized. For non-critical extensions, the client keeps the opaque Vendor Extension available through the typed response API and continues processing the rest of the message, which is permitted by the MAY to treat the extension as absent. No official OASIS Test Case ID is explicitly linked to these requirements by the pinned sources.
