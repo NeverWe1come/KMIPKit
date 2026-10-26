@@ -3041,6 +3041,7 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
             groups,
             APPLICATION_SPECIFIC_INFORMATION_TAG,
             APPLICATION_NAMESPACE_TAG,
+            !groups.contains(&NEW_ATTRIBUTE_TAG),
         );
         assert!(evaluate(Some(&request), None), "operation {operation:#x}");
         result
@@ -3085,28 +3086,37 @@ fn request_with_application_specific_information_groups(
     groups: &[u32],
     application_specific_information_tag: u32,
     application_namespace_tag: u32,
+    allow_multiple_instances: bool,
 ) -> crate::RequestMessage {
+    const APPLICATION_DATA: u32 = 0x0042_0002;
     request_message_with_operation_payload(
         operation,
         structure(groups.iter().map(|group| {
-            tagged(
-                *group,
-                Value::structure(structure([
-                    tagged(
-                        application_specific_information_tag,
-                        Value::structure(structure([tagged(
-                            application_namespace_tag,
-                            Value::text_string("com.example.kmipkit".to_owned()),
-                        )])),
-                    ),
-                    tagged(
-                        application_specific_information_tag,
-                        Value::structure(structure([tagged(
+            let mut instances = vec![tagged(
+                application_specific_information_tag,
+                Value::structure(structure([tagged(
+                    application_namespace_tag,
+                    Value::text_string("com.example.kmipkit".to_owned()),
+                )])),
+            )];
+            if allow_multiple_instances {
+                instances.push(tagged(
+                    application_specific_information_tag,
+                    Value::structure(structure([
+                        tagged(
                             application_namespace_tag,
                             Value::text_string("com.example.other".to_owned()),
-                        )])),
-                    ),
-                ])),
+                        ),
+                        tagged(
+                            APPLICATION_DATA,
+                            Value::text_string("generated-by-server".to_owned()),
+                        ),
+                    ])),
+                ));
+            }
+            tagged(
+                *group,
+                Value::structure(structure(instances)),
             )
         })),
     )
@@ -21670,6 +21680,7 @@ fn profile_rejects_multiple_application_specific_information_values_in_one_new_a
             &[NEW_ATTRIBUTE_TAG],
             APPLICATION_SPECIFIC_INFORMATION_TAG,
             APPLICATION_NAMESPACE_TAG,
+            true,
         );
 
         assert!(

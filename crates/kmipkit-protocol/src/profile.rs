@@ -5891,31 +5891,53 @@ fn client_add_application_specific_information_can_omit_data(
             .with_request_payload(|payload| {
                 attribute_groups
                     .iter()
-                    .all(|group| application_attribute_group_is_well_formed(&payload, *group))
+                    .all(|group| {
+                        application_attribute_group_is_well_formed(
+                            &payload,
+                            *group,
+                            *group != NEW_ATTRIBUTE,
+                        )
+                    })
             })
             .unwrap_or(false)
     })
 }
 
-fn application_attribute_group_is_well_formed(payload: &StructureView<'_>, group_tag: u32) -> bool {
+fn application_attribute_group_is_well_formed(
+    payload: &StructureView<'_>,
+    group_tag: u32,
+    allow_multiple_instances: bool,
+) -> bool {
     match field_presence(payload, group_tag) {
         FieldPresence::Missing => true,
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(group) => group.with_value(|value| match value {
             ValueView::Structure(attributes) => {
-                application_specific_information_is_well_formed(&attributes)
+                application_specific_information_is_well_formed(
+                    &attributes,
+                    allow_multiple_instances,
+                )
             }
             _ => false,
         }),
     }
 }
 
-fn application_specific_information_is_well_formed(attributes: &StructureView<'_>) -> bool {
+fn application_specific_information_is_well_formed(
+    attributes: &StructureView<'_>,
+    allow_multiple_instances: bool,
+) -> bool {
+    let mut instance_count = 0;
     for application_information in attributes
         .children()
         .iter()
         .filter(|field| field.tag().raw() == APPLICATION_SPECIFIC_INFORMATION)
     {
+        if !allow_multiple_instances && instance_count > 0 {
+            return false;
+        }
+        instance_count += 1;
+
         let is_well_formed = application_information.with_value(|value| match value {
             ValueView::Structure(fields) => application_namespace_is_well_formed(&fields),
             _ => false,
