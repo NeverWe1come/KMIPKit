@@ -3900,8 +3900,14 @@ impl Client {
     ///
     /// The selection is validated before request encoding or transport I/O.
     /// A profile remains unavailable until every applicable requirement has a
-    /// complete typed rule and category-appropriate executable test. The
-    /// ordinary [`Self::execute`] method remains unprofiled.
+    /// complete typed rule and category-appropriate executable test. Request
+    /// preflight checks only rules observable from the request and explicitly
+    /// supplied context; it does not attest caller-owned obligations. In
+    /// particular, the caller remains responsible for IV/Counter/Nonce when
+    /// required by the selected wrapping method and for TTLV-encoding wrapped
+    /// Key Value plaintext when Encoding Option is absent (KMIP Specification
+    /// v2.1 §3.3, Tables 14–15). Success does not by itself establish profile
+    /// conformance. The ordinary [`Self::execute`] method remains unprofiled.
     ///
     /// # Errors
     ///

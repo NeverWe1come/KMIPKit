@@ -248,7 +248,11 @@ impl ProfileValidationResult {
     /// requirements that depend on that context. The typed
     /// `Client::execute_with_profiles` path validates operation-local request
     /// rules before an exchange, but it cannot infer remote object attributes
-    /// or other context that the caller has not supplied.
+    /// or other context that the caller has not supplied. In particular, it
+    /// does not confirm that IV/Counter/Nonce is present when the selected
+    /// wrapping method requires it, or inspect whether opaque wrapped Key
+    /// Value plaintext was TTLV encoded. The caller remains responsible for
+    /// those KMIP Specification v2.1 §3.3, Tables 14–15 obligations.
     ///
     /// # Errors
     ///
