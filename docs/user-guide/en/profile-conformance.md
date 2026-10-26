@@ -83,6 +83,12 @@ Other Baseline mappings record caller responsibilities that depend on remote
 object state or application time: Activation Date (§4.1), Deactivation Date
 (§4.18), the effective Cryptographic Usage Mask (§4.17), lease expiry
 (§§4.30 and 6.1.35), and Usage Allocation and its date window (§6.1.23).
+The mandatory Hashed Password Timestamp monotonicity requirement (§9.11)
+remains unmapped while KMIPKIT-0008 OD-003 leaves its enforcement owner,
+comparison scope, and clock behavior unresolved; profile validation fails
+closed on this requirement. The OPTIONAL §9.20 relative Date capability is
+separate: if the application uses it, it provides the countdown timer and
+performs subtraction using the exposed Time Stamp and Date-Time values.
 Profile preflight does not retrieve that state, track it across calls, or
 enforce these conditions for ordinary or raw requests. For Deactivation Date,
 the caller must also establish any extraordinary circumstance and special

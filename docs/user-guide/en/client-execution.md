@@ -141,6 +141,11 @@ A typed Hashed Password Credential requires the caller's Timestamp and hashed
 bytes. Hashing Algorithm is optional. If omitted, the model reports effective
 SHA-256 (raw Enumeration value `6`) while leaving the field absent in the
 retained TTLV tree. KMIPKit does not calculate the hash.
+KMIP Specification v2.1 §9.11 requires this Timestamp to increase
+monotonically. The current model preserves the supplied value but does not
+retain prior timestamps or enforce that sequence. KMIPKIT-0008 OD-003 leaves
+the enforcement owner, comparison scope, and clock behavior unresolved, so
+KMIPKit does not claim this requirement is satisfied.
 
 A typed Device Credential must include at least one of Device Serial Number,
 Network Identifier, Machine Identifier, or Media Identifier. The caller is
@@ -174,6 +179,12 @@ the caller, its KMIP Date-Time value is sent exactly as supplied. The client
 does not generate a timestamp from a clock or countdown timer. Client-initiated
 requests omit Server Correlation Value. Client Correlation Value, if present,
 is independent metadata and never identifies a batch item.
+
+KMIP Specification v2.1 §9.20 also permits a client with a countdown timer but
+no real-time clock to derive relative seconds by subtracting Date attributes
+from a Time Stamp. KMIPKit exposes the required server response Time Stamp and
+generic TTLV Date-Time values; the application owns the timer and subtraction.
+This does not synthesize an outgoing request Time Stamp.
 
 For a multi-item batch, every request item has a Unique Batch Item ID. The
 client associates each response with its request by that ID, even when the
