@@ -6128,6 +6128,26 @@ fn profile_maps_optional_device_password_authentication_capability() {
             .code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
+
+    let duplicate_passwords = request_message_with_device_credential([
+        tagged(
+            DEVICE_SERIAL_NUMBER_TAG,
+            Value::text_string("serial".to_owned()),
+        ),
+        tagged(PASSWORD_TAG, Value::text_string("first-secret".to_owned())),
+        tagged(PASSWORD_TAG, Value::text_string("second-secret".to_owned())),
+    ]);
+    let duplicate_passwords_are_rejected = result
+        .validate_request(&duplicate_passwords)
+        .is_err_and(|error| {
+            error.code() == ProfileValidationErrorCode::RequestRuleRejected
+                && error.requirement_id() == Some(REQUIREMENT_ID)
+                && error.source_clause_id() == Some(SOURCE_CLAUSE_ID)
+        });
+    assert!(
+        duplicate_passwords_are_rejected,
+        "duplicate Device Password fields must be rejected"
+    );
 }
 
 #[test]
