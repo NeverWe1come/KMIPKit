@@ -4010,11 +4010,26 @@ fn derive_key_specifies_cryptographic_length(
 }
 
 fn payload_has_explicit_unique_identifier(payload: &StructureView<'_>) -> bool {
-    // Table 205 permits repeats but requires at least one explicit source ID.
-    payload
+    // Table 205 permits repeats, requires a source ID, and prohibits the
+    // ID Placeholder enumeration in every Unique Identifier occurrence.
+    let mut found_identifier = false;
+    for field in payload
         .children()
         .iter()
-        .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+        .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+    {
+        found_identifier = true;
+        let is_id_placeholder = field.with_value(|value| {
+            matches!(
+                value,
+                ValueView::Enumeration(value) if *value == ID_PLACEHOLDER_ENUMERATION_VALUE
+            )
+        });
+        if is_id_placeholder {
+            return false;
+        }
+    }
+    found_identifier
 }
 
 fn derive_key_specifies_explicit_source_identifiers(
