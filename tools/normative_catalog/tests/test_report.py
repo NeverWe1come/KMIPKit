@@ -405,6 +405,45 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_typed_rule_registry_accepts_archived_retrieval_workflow_capability(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "archived_locate_recover_get_workflow_caller_directed",
+        }],
+    },
+];
+"""
+
+        self.assertEqual(
+            _parse_typed_rule_registry(source),
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                    "source_gap_id": None,
+                    "verification_category": "RequiredBehavior",
+                    "evaluator_present": False,
+                    "transport_only": False,
+                    "configuration_only": True,
+                    "test_kind": "PositiveBehavior",
+                    "test_id": "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+                }
+            ],
+        )
+
     def test_typed_rule_registry_reader_accepts_rustfmt_wrapped_evaluator(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
