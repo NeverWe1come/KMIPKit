@@ -99871,12 +99871,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/hashed_password.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_omission_exposes_sha256_default_without_materializing_field",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_preserves_explicit_and_unknown_algorithm_values",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_sha256_default_as_required_behavior"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "The KMIPKit typed model exposes SHA-256 (raw Enumeration value 6) as the effective Hashing Algorithm when omitted while preserving field absence; explicit assigned and unknown raw values remain unchanged. This is model-level evidence only: KMIPKit does not calculate hashes or claim credential transmission, server behavior, or an official OASIS Test Case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-001",

@@ -10046,6 +10046,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_omission_exposes_sha256_default_without_materializing_field",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_preserves_explicit_and_unknown_algorithm_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "hashed_password_sha256_default",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.5-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
         source_gap_id: None,
@@ -12235,6 +12256,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "id_placeholder"
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
+                    | "hashed_password_sha256_default"
             )
     )
 }
@@ -12262,6 +12284,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "id_placeholder"
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
+                    | "hashed_password_sha256_default"
             )
     )
 }

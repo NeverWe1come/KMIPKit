@@ -109,6 +109,7 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "id_placeholder"),
     ("client_profile_capability", "zero_or_more_create_attributes"),
     ("client_profile_capability", "recover_before_use_caller_controlled"),
+    ("client_profile_capability", "hashed_password_sha256_default"),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),

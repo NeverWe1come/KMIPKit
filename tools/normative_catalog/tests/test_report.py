@@ -1776,6 +1776,9 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
+                # KMIPKIT-0010 T056: model-level Hashing Algorithm default.
+                "KMIPKIT-REQ-SPEC-9.11-010-002",
+                "KMIPKIT-REQ-SPEC-9.11-010-002",
                 "KMIPKIT-REQ-SPEC-6.1.5-001",
                 "KMIPKIT-REQ-SPEC-6.1.5-001",
                 "KMIPKIT-REQ-SPEC-6.1.5-001",
