@@ -144,17 +144,23 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIsNone(server_atom["candidate_requirement_id"])
         self.assertEqual(
             requirement["condition"],
-            "Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
+            "The server produces cryptographic material for the client using Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
         )
         self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.26-001"])
         self.assertNotIn("Register", requirement["condition"])
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(
             requirement["verification_refs"],
-            ["crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create"],
+            [
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_requested_key_format_for_server_generated_material_operations",
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create",
+            ],
         )
-        self.assertIn("covers the Create request only", requirement["review_note"])
-        self.assertIn("does not evidence the other operations", requirement["review_note"])
+        self.assertIn(
+            "The client evaluator checks the request-side Attribute or key-pair attribute groups",
+            requirement["review_note"],
+        )
+        self.assertIn("no server acceptance", requirement["review_note"].lower())
 
         catalog_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
         oracle_profiles = [row for row in oracle["profiles"] if row["role"] == "client"]

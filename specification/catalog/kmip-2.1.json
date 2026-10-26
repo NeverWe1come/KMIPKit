@@ -87405,7 +87405,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Algorithm when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance."
+      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Algorithm when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-004-002",
@@ -87511,7 +87511,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Length when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance."
+      "review_note": "KMIP Specification v2.1 §3.1 Tables 11–12 and §3.2 Table 13 permit omission of Key Block Cryptographic Length when its value is available from plaintext Key Value Attributes. The linked profile tests cover caller-issued Register and Import shapes; they accept the omission when that typed value is present, reject it when absent, preserve the Secret Data and Opaque exceptions, and leave unknown Object Types uninterpreted. Wrapped Key Value bytes remain opaque. This request-local evidence does not establish server acceptance, link an official Test Case, or claim profile conformance. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-005-002",
@@ -88307,7 +88307,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §3.7, Table 21, and the following paragraph require a Transparent RSA Private Key material structure to contain a Private Exponent, both P and Q, or both Prime Exponent P and Prime Exponent Q. The typed client profile enforces this on plaintext caller-supplied Register and Import requests. Wrapped Key Value bytes remain opaque, and the separate Table 21 Modulus requirement is not attributed to this clause. No server-generated response behavior, official Test Case, server acceptance, or profile-conformance claim is inferred."
+      "review_note": "KMIP Specification v2.1 §3.7, Table 21, and the following paragraph require a Transparent RSA Private Key material structure to contain a Private Exponent, both P and Q, or both Prime Exponent P and Prime Exponent Q. The typed client profile enforces this on plaintext caller-supplied Register and Import requests. Wrapped Key Value bytes remain opaque, and the separate Table 21 Modulus requirement is not attributed to this clause. No server-generated response behavior, official Test Case, server acceptance, or profile-conformance claim is inferred. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.8-001",
@@ -89409,7 +89409,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §4.26 Table 79 says a client MAY request a Key Format Type when the server produces cryptographic material on its behalf through Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key. The client evaluator checks the request-side Attribute or key-pair attribute groups for the Table 79 Enumeration encoding and preserves unknown Enumeration values. The server SHALL comply with the request or fail it, and any digest calculation is server behavior not evaluated here. Get and Export format selectors are separate requirements. No requirement-specific official Test Case is linked; no server acceptance, digest behavior, or profile-conformance claim is made."
+      "review_note": "KMIP Specification v2.1 §4.26 Table 79 says a client MAY request a Key Format Type when the server produces cryptographic material on its behalf through Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key. The client evaluator checks the request-side Attribute or key-pair attribute groups for the Table 79 Enumeration encoding and preserves unknown Enumeration values. The server SHALL comply with the request or fail it, and any digest calculation is server behavior not evaluated here. Get and Export format selectors are separate requirements. No requirement-specific official Test Case is linked; no server acceptance, digest behavior, or profile-conformance claim is made. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.27-001",
@@ -90468,7 +90468,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.4, Tables 35–36, §5.7 Table 163, and §11.56 permit a client to submit Application Specific Information with a required Application Namespace (Text String, tag 0x420003) and optional Application Data (Text String, tag 0x420002). Table 36 permits multiple such attribute instances in object Attributes groups. Table 163 defines each mutation New Attribute as a Structure containing exactly one direct §4 attribute Item, so Add Attribute (§6.1.2), Modify Attribute (§6.1.34), and Set Attribute (§6.1.51) carry one Application Specific Information item per mutation request. The evaluator covers the 14 operations in §§6.1.2, 6.1.6, 6.1.8–6.1.10, 6.1.14, 6.1.25, 6.1.27, 6.1.34, 6.1.43, 6.1.45–6.1.47, and 6.1.51, including all key-pair attribute groups. Query can discover namespace support but §4.4 does not mandate a client preflight; generation of Data or an error for unsupported namespaces is server behavior and is not evaluated. No requirement-specific official Test Case is linked, and no server behavior or profile-conformance claim is made."
+      "review_note": "KMIP Specification v2.1 §4.4, Tables 35–36, §5.7 Table 163, and §11.56 permit a client to submit Application Specific Information with a required Application Namespace (Text String, tag 0x420003) and optional Application Data (Text String, tag 0x420002). Table 36 permits multiple such attribute instances in object Attributes groups. Table 163 defines each mutation New Attribute as a Structure containing exactly one direct §4 attribute Item, so Add Attribute (§6.1.2), Modify Attribute (§6.1.34), and Set Attribute (§6.1.51) carry one Application Specific Information item per mutation request. The evaluator covers the 14 operations in §§6.1.2, 6.1.6, 6.1.8–6.1.10, 6.1.14, 6.1.25, 6.1.27, 6.1.34, 6.1.43, 6.1.45–6.1.47, and 6.1.51, including all key-pair attribute groups. Query can discover namespace support but §4.4 does not mandate a client preflight; generation of Data or an error for unsupported namespaces is server behavior and is not evaluated. No requirement-specific official Test Case is linked, and no server behavior or profile-conformance claim is made. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-002",
@@ -95523,7 +95523,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves a zero value and the Baseline profile evaluator accepts the complete successful response. This demonstrates caller-visible zero semantics only; it does not enforce later object use, server lease decisions, or timekeeping. No official Test Case is linked and no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves a zero value and the Baseline profile evaluator accepts the complete successful response. This demonstrates caller-visible zero semantics only; it does not enforce later object use, server lease decisions, or timekeeping. No official Test Case is linked and no formal conformance is claimed. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-001-002",
@@ -95602,7 +95602,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Last Change Date. The typed response preserves its exact Date-Time value and the Baseline profile evaluator accepts the complete successful response, so the caller can compare it with caller-owned prior state. No cache or automatic refresh is asserted. No official Test Case is linked and no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Last Change Date. The typed response preserves its exact Date-Time value and the Baseline profile evaluator accepts the complete successful response, so the caller can compare it with caller-owned prior state. No cache or automatic refresh is asserted. No official Test Case is linked and no formal conformance is claimed. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-005",
@@ -95642,7 +95642,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves positive values and the Baseline profile evaluator accepts the complete successful response. This supports caller-controlled use of the interval only; it does not add timers, automatic renewal, or server behavior. No official Test Case is linked and no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves positive values and the Baseline profile evaluator accepts the complete successful response. This supports caller-controlled use of the interval only; it does not add timers, automatic renewal, or server behavior. No official Test Case is linked and no formal conformance is claimed. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001",
@@ -96487,7 +96487,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Profiles v2.1 §5.1.1 item 7 makes support for unlisted Specification clauses optional in Baseline Client; KMIP Specification v2.1 §6.1.45 paragraph 2 permits omitting Certificate Request when the public key is identified by Unique Identifier. The typed profile rule checks only the represented outbound request shape and reuses the separate DEC-019 identifier condition when Certificate Request Value is omitted. Fake-transport evidence confirms the caller can send an explicit Unique Identifier without Certificate Request fields. This does not claim server acceptance, certificate generation, an official Test Case pass, or profile conformance."
+      "review_note": "KMIP Profiles v2.1 §5.1.1 item 7 makes support for unlisted Specification clauses optional in Baseline Client; KMIP Specification v2.1 §6.1.45 paragraph 2 permits omitting Certificate Request when the public key is identified by Unique Identifier. The typed profile rule checks only the represented outbound request shape and reuses the separate DEC-019 identifier condition when Certificate Request Value is omitted. Fake-transport evidence confirms the caller can send an explicit Unique Identifier without Certificate Request fields. This does not claim server acceptance, certificate generation, an official Test Case pass, or profile conformance. The pinned OASIS Test Cases inventory has no requirement-specific official Test Cases ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-002-002",
@@ -98021,7 +98021,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. For the selected Baseline Client profile, KMIP Specification v2.1 §6.1.7 opening paragraph is mapped to require at least two Batch Items when Check is present. Its later sequence is described as usual and is not enforced. Profile request-rule failures retain NotSent delivery semantics; the separate client test uses a stable source-backed error fixture because remaining Baseline mappings still prevent real profile selection. The unprofiled execute path remains unchanged. The pinned OASIS Test Cases inventory has no requirement-specific test ID; no official case pass or full profile-conformance claim is made."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. For the selected Baseline Client profile, KMIP Specification v2.1 §6.1.7 opening paragraph is mapped to require at least two Batch Items when Check is present. Its later sequence is described as usual and is not enforced. Profile request-rule failures retain NotSent delivery semantics; the separate client test uses a stable source-backed error fixture because remaining Baseline mappings still prevent real profile selection. The unprofiled execute path remains unchanged. The pinned OASIS inventory has no requirement-specific official Test Cases ID linked here; no official case pass or full profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-001",
