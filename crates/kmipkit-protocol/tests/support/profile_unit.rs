@@ -6199,13 +6199,12 @@ fn profile_maps_device_identifier_uniqueness_as_caller_responsibility() {
 #[test]
 fn profile_maps_name_uniqueness_as_caller_responsibility() {
     // KMIP Specification v2.1 §4.32 requires a client-assigned Name to be
-    // unique within its target server; the request model cannot inspect remote
-    // or concurrent Name assignments.
+    // unique within its target server; Table 93 defines the Name structure.
+    // The request model cannot inspect remote or concurrent Name assignments.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.32-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const NAME_ATTRIBUTE_TEST_ID: &str =
-        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text";
+    const NAME_ATTRIBUTE_TEST_ID: &str = "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text";
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()

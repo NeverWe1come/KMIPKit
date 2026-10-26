@@ -111,8 +111,9 @@ pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
 ///
 /// For the standard Name attribute, callers are responsible for choosing a
 /// Name Value that is unique within the target key management server and for
-/// following any server-specific naming rules communicated out of band.
-/// KMIPKit preserves the supplied Name and cannot detect collisions with
+/// following any server-specific naming rules communicated through a mechanism
+/// not specified by KMIP v2.1.
+/// `KMIPKit` preserves the supplied Name and cannot detect collisions with
 /// existing or concurrent server objects; global uniqueness is not required
 /// by KMIP v2.1 §4.32.
 pub struct AttributeSet {

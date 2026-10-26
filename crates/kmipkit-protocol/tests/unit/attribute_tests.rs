@@ -128,6 +128,9 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
 
 #[test]
 fn name_attribute_is_preserved_as_caller_supplied_text() {
+    // KMIP Specification v2.1 §4.32 and Table 93 define the Name structure,
+    // required Name Value (Text String), required Name Type (Enumeration),
+    // and their source order.
     const NAME_ATTRIBUTE_TAG: u32 = 0x0042_0053;
     const NAME_TYPE_TAG: u32 = 0x0042_0054;
     const NAME_VALUE_TAG: u32 = 0x0042_0055;
@@ -150,10 +153,12 @@ fn name_attribute_is_preserved_as_caller_supplied_text() {
         let children = name.children();
         children.len() == 2
             && children[0].tag().raw() == NAME_VALUE_TAG
-            && children[0].with_value(|value| matches!(
-                value,
-                ValueView::TextString(value) if value == caller_name
-            ))
+            && children[0].with_value(|value| {
+                matches!(
+                    value,
+                    ValueView::TextString(value) if value == caller_name
+                )
+            })
             && children[1].tag().raw() == NAME_TYPE_TAG
             && children[1].item_type() == ItemType::Enumeration
     }));
