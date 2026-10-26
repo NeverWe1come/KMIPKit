@@ -109,6 +109,10 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "id_placeholder"),
     ("client_profile_capability", "zero_or_more_create_attributes"),
     ("client_profile_capability", "recover_before_use_caller_controlled"),
+    (
+        "client_profile_capability",
+        "archived_locate_recover_get_workflow_caller_directed",
+    ),
     ("client_profile_capability", "hashed_password_sha256_default"),
     ("client_profile_capability", "credential_identification_representation"),
     ("client_profile_capability", "declared_response_capacity"),
