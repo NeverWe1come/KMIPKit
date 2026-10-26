@@ -58,6 +58,12 @@ enforce or perform the required Recover-then-Get sequence from KMIP
 Specification v2.1 §6.1.28. The caller must issue Recover after Locate
 succeeds, then Get after Recover succeeds.
 
+The Recover profile mappings also record optional caller-directed follow-ups:
+the caller can issue Poll with the correlation value when Recover returns
+Pending, and can issue Get after Recover succeeds (KMIP Specification v2.1
+§6.1.42). Profile preflight does not poll, repeat Poll, or issue Get
+automatically, and it does not guarantee server completion.
+
 ## Reading profile status
 
 The [generated coverage report](../../../specification/catalog/coverage-report.md)

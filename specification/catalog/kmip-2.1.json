@@ -95900,16 +95900,18 @@
       "feature_spec": "KMIPKIT-0018",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-protocol/src/poll.rs",
         "crates/kmipkit-protocol/src/recover.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recover_poll_as_caller_directed_optional_capability",
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test extracts the correlation from a scripted Recover Pending response and the caller explicitly invokes Poll with it, consistent with sections 6.1.42 and 6.1.38. No implicit polling is claimed; the scripted exchange does not establish server-side Recover completion. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
+      "review_note": "KMIPKIT-0010 records Poll after Recover Pending as a caller-directed OptionalCapability with no request-local evaluator because polling spans exchanges. The named fake-transport test extracts the correlation from a scripted Recover Pending response and the caller explicitly invokes Poll with it, consistent with KMIP Specification v2.1 §§6.1.42 and 6.1.38. KMIPKit does not poll implicitly, and the scripted exchange does not establish server-side Recover completion. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source; no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.42-001-002",
@@ -95940,16 +95942,18 @@
       "feature_spec": "KMIPKIT-0018",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-protocol/src/get.rs",
         "crates/kmipkit-protocol/src/recover.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recover_get_as_caller_directed_optional_capability",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test verifies the caller directs Locate, Recover, then Get as three exchanges, consistent with sections 6.1.42 and 6.1.19. The test makes no claim about archive state beyond its scripted responses. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
+      "review_note": "KMIPKIT-0010 records Get after Recover Success as a caller-directed OptionalCapability with no request-local evaluator because the workflow spans exchanges. The named fake-transport test verifies the caller directs Locate, Recover, then Get as three exchanges, consistent with KMIP Specification v2.1 §§6.1.42 and 6.1.19. The test makes no claim about archive state beyond its scripted responses, and KMIPKit does not issue Get automatically. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source; no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-001",

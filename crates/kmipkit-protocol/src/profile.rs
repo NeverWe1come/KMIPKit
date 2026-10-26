@@ -255,7 +255,9 @@ impl ProfileValidationResult {
     /// those KMIP Specification v2.1 §3.3, Tables 14–15 obligations. It also
     /// cannot enforce workflows spanning exchanges: for archived Locate
     /// results, the caller issues Recover and then Get after successful
-    /// preceding results (KMIP Specification v2.1 §6.1.28).
+    /// preceding results (KMIP Specification v2.1 §6.1.28). If Recover returns
+    /// Pending, the caller may explicitly issue Poll with its correlation
+    /// value under §6.1.42; this method does not poll implicitly.
     ///
     /// # Errors
     ///

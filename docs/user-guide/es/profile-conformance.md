@@ -63,6 +63,13 @@ intercambio cada vez; no impone ni ejecuta la secuencia Recover y luego Get de
 KMIP Specification v2.1 §6.1.28. La aplicación debe solicitar Recover cuando
 Locate termine correctamente y después Get cuando Recover tenga éxito.
 
+Los mappings de Recover también registran seguimientos opcionales dirigidos
+por la aplicación: esta puede solicitar Poll con el valor de correlación si
+Recover devuelve Pending y Get después de un Recover exitoso (KMIP
+Specification v2.1 §6.1.42). El preflight del perfil no hace Poll, no lo
+repite ni solicita Get automáticamente, y no garantiza que el servidor
+complete la operación.
+
 ## Cómo leer el estado de un perfil
 
 El [informe de cobertura generado](../../../specification/catalog/coverage-report.md)

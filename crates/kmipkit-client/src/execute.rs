@@ -3910,6 +3910,9 @@ impl Client {
     /// conformance. Preflight also does not enforce multi-exchange workflows;
     /// for archived Locate results, the caller issues Recover and then Get
     /// after successful preceding results (KMIP Specification v2.1 §6.1.28).
+    /// If Recover returns Pending, the caller may explicitly issue Poll with
+    /// its correlation value under §6.1.42; this method does not poll
+    /// implicitly or establish that the server will complete the operation.
     /// The ordinary [`Self::execute`] method remains unprofiled.
     ///
     /// # Errors
