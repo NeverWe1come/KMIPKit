@@ -99701,7 +99701,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The Baseline evaluator implements the conservative typed Device interpretation selected by KMIPKIT-0008 OD-002: require at least one of the four §9.11 identifiers named in the preceding uniqueness sentence. This is a project interpretation of the source's broader phrase “at least one field,” not wording stated verbatim by KMIP. A present-empty Text String still counts as field presence. The caller remains responsible for actual uniqueness under KMIPKIT-REQ-SPEC-9.11-004-002; KMIPKit does not infer a comparison scope or verify uniqueness. Tests cover each identifier, Password-only and Device-Identifier-only rejection, and absence of Authentication. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Table 410 defines the required outer Credential Type and Credential Value members. The Baseline evaluator validates that envelope, then implements the conservative typed Device interpretation selected by KMIPKIT-0008 OD-002: require at least one of the four §9.11 identifiers named in the preceding uniqueness sentence. This is a project interpretation of the source phrase “at least one field,” not wording stated verbatim by KMIP. A present-empty Text String still counts as field presence. The caller remains responsible for actual uniqueness under KMIPKIT-REQ-SPEC-9.11-004-002; KMIPKit does not infer a comparison scope or verify uniqueness. Tests cover each identifier, Password-only and Device-Identifier-only rejection, malformed outer Credential members, and absence of Authentication. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -99808,7 +99808,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed Attestation Credential model validates the Table 413 Attestation Type and Nonce fields and requires at least one correctly typed Attestation Measurement or Attestation Assertion; the Baseline evaluator applies the same validation to each Attestation Credential present in Authentication. This is request-structure evidence only and does not claim attestation evidence generation, verification, or server acceptance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Table 410 defines the required outer Credential Type and Credential Value members. The typed Attestation Credential model validates the Table 413 Attestation Type and Nonce fields and requires at least one correctly typed Attestation Measurement or Attestation Assertion; the Baseline evaluator validates each outer envelope before applying the same inner validation to Attestation Credentials present in Authentication. This is request-structure evidence only and does not claim attestation evidence generation, verification, or server acceptance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-001",

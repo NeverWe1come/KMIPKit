@@ -5806,6 +5806,7 @@ fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_use
 
 #[test]
 fn profile_rejects_malformed_device_credential_envelopes() {
+    // KMIP Specification v2.1 §9.11/Table 410 defines the outer Credential fields.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -5891,6 +5892,7 @@ fn profile_rejects_malformed_device_credential_envelopes() {
 
 #[test]
 fn profile_rejects_malformed_attestation_credential_envelopes() {
+    // KMIP Specification v2.1 §9.11/Table 410 defines the outer Credential fields.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
