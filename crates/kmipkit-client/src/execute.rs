@@ -6267,6 +6267,9 @@ fn build_request_header(
 }
 
 fn maximum_response_size_for_batch(batch: &ClientBatch, limits: &CodecLimits) -> Option<i32> {
+    // KMIP Specification v2.1 §9.12/Table 417 encodes this field as a signed
+    // Integer. Clamp only the peer-visible declaration; transport still gets
+    // the full configured local response cap.
     batch
         .items
         .iter()

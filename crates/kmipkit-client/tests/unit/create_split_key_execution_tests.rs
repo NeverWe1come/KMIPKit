@@ -781,6 +781,7 @@ fn create_split_key_keeps_repeated_registered_message_extensions_in_caller_order
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
+// §9.12/Table 417's signed Integer bounds the advertised value; the local cap stays larger.
 #[test]
 fn create_split_key_advertises_local_response_cap_clamped_to_signed_integer() {
     let cap = i32::MAX as usize + 1;
@@ -814,6 +815,7 @@ fn create_split_key_advertises_local_response_cap_clamped_to_signed_integer() {
     );
 }
 
+// KMIP Specification v2.1 §9.12/Table 417: the response fits the advertised cap.
 #[test]
 fn create_split_key_accepts_response_exactly_at_local_limit() {
     let response = response_bytes([response_batch_item(
