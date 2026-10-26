@@ -5805,6 +5805,91 @@ fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_use
 }
 
 #[test]
+fn profile_rejects_malformed_device_credential_envelopes() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Device identifier presence has a typed profile rule");
+    let evaluator = mapping
+        .evaluator
+        .expect("Device credentials use a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_device_value = || {
+        structure([tagged(
+            DEVICE_SERIAL_NUMBER_TAG,
+            Value::text_string("serial".to_owned()),
+        )])
+    };
+
+    let malformed_credentials = [
+        (
+            "missing Credential Type",
+            structure([tagged(
+                CREDENTIAL_VALUE_TAG,
+                Value::structure(valid_device_value()),
+            )]),
+        ),
+        (
+            "wrong Credential Type item type",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::boolean(true)),
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(valid_device_value())),
+            ]),
+        ),
+        (
+            "duplicate Credential Type hiding Device",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(1)),
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(2)),
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(valid_device_value())),
+            ]),
+        ),
+        (
+            "duplicate Credential Value after valid Device",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(2)),
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(valid_device_value())),
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(Structure::new())),
+            ]),
+        ),
+        (
+            "Credential Value before Credential Type",
+            structure([
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(valid_device_value())),
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(2)),
+            ]),
+        ),
+    ];
+
+    for (case, credential) in malformed_credentials {
+        let request = request_message_with_raw_credential(credential);
+        assert!(
+            result.validate_request(&request).is_err(),
+            "profile validation must reject {case}"
+        );
+    }
+
+    let valid_unknown_credential = request_message_with_raw_credential(structure([
+        tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(0xF123_4567)),
+        tagged(CREDENTIAL_VALUE_TAG, Value::structure(Structure::new())),
+        tagged(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string("opaque".to_owned()),
+        ),
+    ]));
+    assert!(evaluator(Some(&valid_unknown_credential), None));
+    result
+        .validate_request(&valid_unknown_credential)
+        .expect("valid unknown credentials remain opaque and accepted");
+}
+
+#[test]
 fn profile_rejects_malformed_attestation_credential_envelopes() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
