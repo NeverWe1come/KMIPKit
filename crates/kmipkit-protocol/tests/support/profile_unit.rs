@@ -6089,6 +6089,39 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
 }
 
 #[test]
+fn profile_maps_hashed_password_sha256_default_as_required_behavior() {
+    // KMIP Specification v2.1 §9.11 defaults an omitted Hashing Algorithm to SHA-256.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-010-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-010";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the Hashed Password SHA-256 default has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Hashed Password default resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the model-level default has linked positive behavior evidence");
+
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "hashed_password_sha256_default",
+        }]
+    );
+}
+
+#[test]
 fn profile_maps_optional_device_password_authentication_capability() {
     // KMIP Specification v2.1 §9.11/Table 412 defines Password as an optional Text String.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-003";
