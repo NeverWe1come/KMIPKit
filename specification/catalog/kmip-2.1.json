@@ -96380,16 +96380,16 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/revoke.rs",
-        "crates/kmipkit-client/src/execute.rs"
-      ,
-        "crates/kmipkit-protocol/src/profile.rs::client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons"],
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons"
+      ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
-      ,
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_revoke_compromise_date_recommendation_is_operation_specific_in_mixed_batch",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons"],
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
@@ -96587,16 +96587,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/recertify.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. The Baseline profile mapping is static caller-owned recommendation evidence; it does not retain certificate history or enforce the at-most-once operation across calls."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-006-001",
@@ -96739,16 +96741,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/rekey.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. The Baseline profile mapping is static caller-owned recommendation evidence; it does not retain key history or enforce the at-most-once operation across calls."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-004-001",
@@ -96848,16 +96852,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. The Baseline profile mapping is static caller-owned recommendation evidence; it does not retain key-pair history or enforce the at-most-once operation across calls."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.47-004-001",
@@ -97039,16 +97045,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/reprovision.rs",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim. The Baseline profile mapping records the caller-selected credential requirement; it does not infer credential expiry or invoke Re-Provision automatically."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.5-001",

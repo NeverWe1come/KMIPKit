@@ -9410,6 +9410,90 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "recertify_once_per_existing_certificate_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "rekey_once_per_existing_key_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "rekey_key_pair_once_per_existing_pair_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "reprovision_when_credentials_are_required_caller_directed",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
         source_gap_id: None,
@@ -12446,6 +12530,10 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
                     | "derive_key_source_usage_mask_caller_asserted"
+                    | "recertify_once_per_existing_certificate_caller_asserted"
+                    | "rekey_once_per_existing_key_caller_asserted"
+                    | "rekey_key_pair_once_per_existing_pair_caller_asserted"
+                    | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
@@ -12484,6 +12572,10 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
                     | "derive_key_source_usage_mask_caller_asserted"
+                    | "recertify_once_per_existing_certificate_caller_asserted"
+                    | "rekey_once_per_existing_key_caller_asserted"
+                    | "rekey_key_pair_once_per_existing_pair_caller_asserted"
+                    | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )

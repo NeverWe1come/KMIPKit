@@ -23975,12 +23975,17 @@ fn assert_static_caller_owned_operation_mapping(
     assert!(mapping.evaluator.is_none());
     validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
         .expect("the caller-directed operation contract has category-matched evidence");
-    assert!(mapping.test_evidence.iter().any(|evidence| {
-        evidence.test_id == operation_test_id && evidence.kind == test_kind
-    }));
-    assert!(mapping.test_evidence.iter().any(|evidence| {
-        evidence.test_id == profile_test_id && evidence.kind == test_kind
-    }));
+    assert!(
+        mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == operation_test_id && evidence.kind == test_kind
+        })
+    );
+    assert!(
+        mapping
+            .test_evidence
+            .iter()
+            .any(|evidence| { evidence.test_id == profile_test_id && evidence.kind == test_kind })
+    );
     assert_eq!(
         mapping.constraints,
         &[RuleConstraint {

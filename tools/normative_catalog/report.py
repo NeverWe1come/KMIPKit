@@ -121,6 +121,10 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
     ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
     ("client_profile_capability", "derive_key_source_usage_mask_caller_asserted"),
+    ("client_profile_capability", "recertify_once_per_existing_certificate_caller_asserted"),
+    ("client_profile_capability", "rekey_once_per_existing_key_caller_asserted"),
+    ("client_profile_capability", "rekey_key_pair_once_per_existing_pair_caller_asserted"),
+    ("client_profile_capability", "reprovision_when_credentials_are_required_caller_directed"),
     (
         "client_profile_capability",
         "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",

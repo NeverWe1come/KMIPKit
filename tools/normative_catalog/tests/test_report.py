@@ -381,6 +381,22 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "recertify_once_per_existing_certificate_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "rekey_once_per_existing_key_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "rekey_key_pair_once_per_existing_pair_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "reprovision_when_credentials_are_required_caller_directed",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
             },
             RuleConstraint {
@@ -2175,6 +2191,16 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-6.1.42-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.42-001-002",
                     "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+                    # KMIPKIT-0010 T054: caller-owned lifecycle
+                    # recommendations and credential reprovisioning.
+                    "KMIPKIT-REQ-SPEC-6.1.45-004",
+                    "KMIPKIT-REQ-SPEC-6.1.45-004",
+                    "KMIPKIT-REQ-SPEC-6.1.46-001",
+                    "KMIPKIT-REQ-SPEC-6.1.46-001",
+                    "KMIPKIT-REQ-SPEC-6.1.47-001",
+                    "KMIPKIT-REQ-SPEC-6.1.47-001",
+                    "KMIPKIT-REQ-SPEC-6.1.48-006",
+                    "KMIPKIT-REQ-SPEC-6.1.48-006",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
