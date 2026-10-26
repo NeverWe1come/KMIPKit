@@ -6156,6 +6156,43 @@ fn profile_maps_credential_identification_model_capability() {
 }
 
 #[test]
+fn profile_maps_declared_response_capacity_as_required_behavior() {
+    // KMIP Specification v2.1 §9.12 makes the advertised byte count the
+    // response size the requester SHALL be able to handle.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("declared Maximum Response Size has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("declared response capacity resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the advertised capacity has category-matched client behavior evidence");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == CLIENT_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "declared_response_capacity",
+        }]
+    );
+}
+
+#[test]
 fn profile_maps_optional_device_password_authentication_capability() {
     // KMIP Specification v2.1 §9.11/Table 412 defines Password as an optional Text String.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-003";
