@@ -1962,6 +1962,9 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
+                # KMIPKIT-0010 T056: caller-owned Hashed Password monotonicity.
+                "KMIPKIT-REQ-SPEC-9.11-010-001",
+                "KMIPKIT-REQ-SPEC-9.11-010-001",
                 # KMIPKIT-0010 T056: model-level Hashing Algorithm default.
                 "KMIPKIT-REQ-SPEC-9.11-010-002",
                 "KMIPKIT-REQ-SPEC-9.11-010-002",
@@ -1989,6 +1992,9 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.12-001-003",
                 "KMIPKIT-REQ-SPEC-9.20-001-001",
                 "KMIPKIT-REQ-SPEC-9.20-001-001",
+                # KMIPKIT-0010 T056: caller-owned relative Date interpretation.
+                "KMIPKIT-REQ-SPEC-9.20-001-002",
+                "KMIPKIT-REQ-SPEC-9.20-001-002",
                 "KMIPKIT-REQ-SPEC-9.21-001-001",
                 "KMIPKIT-REQ-SPEC-9.21-001-001",
                 "KMIPKIT-REQ-SPEC-8.3-003",
