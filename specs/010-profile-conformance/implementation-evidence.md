@@ -6835,6 +6835,8 @@ Mapped `KMIPKIT-REQ-SPEC-9.11-004-001` from KMIP Specification v2.1 §9.11/Table
 | Stage | Evidence | Result |
 |---|---|---|
 | Red | Local `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | Expected failure: the hand-maintained expected mapping inventory did not yet include the two `KMIPKIT-REQ-SPEC-9.4-001-001` references and three `KMIPKIT-REQ-SPEC-9.4-002` references added by the optional Authentication profile mappings. |
+| Green | DCO-signed commit `d53c4267a0bcf07b96da6bda79efdec48cab5b7e`; same focused Python command | PASS: expected profile-mapping multiplicities now match; the report regression passes locally (1 test, 62.748 seconds). |
+| Generated report and catalog | `py -3 -B tools/normative_catalog/report.py --check --repo-root .`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `git diff --check` | PASS: generated coverage report current and catalog valid (`sources=4 clauses=1411 records=4125`). The previous published head `ec7626079` failed this check because it predates the §9.4 catalog and report update; that run does not evaluate the current local head. |
 
 ### KMIPKIT-0010 T056 — Optional Authentication and repeated Credentials (2026-10-26)
 
