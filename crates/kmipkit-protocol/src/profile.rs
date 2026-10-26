@@ -10385,6 +10385,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_required_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "hashed_password_timestamp_monotonicity_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
         source_gap_id: None,
@@ -10608,6 +10629,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
         ],
         constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
+        }],
     },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-001",
@@ -12691,6 +12733,17 @@ fn is_caller_owned_lifecycle_date_constraint(constraint: &RuleConstraint) -> boo
     )
 }
 
+fn is_caller_owned_time_constraint(constraint: &RuleConstraint) -> bool {
+    matches!(
+        (constraint.key, constraint.value),
+        (
+            "client_profile_capability",
+            "hashed_password_timestamp_monotonicity_caller_asserted"
+                | "countdown_timer_relative_dates_from_server_timestamp_caller_asserted"
+        )
+    )
+}
+
 fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
     let is_known_constraint = matches!(
         (constraint.key, constraint.value),
@@ -12739,7 +12792,9 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     );
-    is_known_constraint || is_caller_owned_lifecycle_date_constraint(constraint)
+    is_known_constraint
+        || is_caller_owned_lifecycle_date_constraint(constraint)
+        || is_caller_owned_time_constraint(constraint)
 }
 
 fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
@@ -12789,7 +12844,9 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     );
-    is_configuration_only || is_caller_owned_lifecycle_date_constraint(constraint)
+    is_configuration_only
+        || is_caller_owned_lifecycle_date_constraint(constraint)
+        || is_caller_owned_time_constraint(constraint)
 }
 
 #[cfg(test)]

@@ -116,6 +116,14 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "recover_poll_caller_directed"),
     ("client_profile_capability", "recover_get_caller_directed"),
     ("client_profile_capability", "hashed_password_sha256_default"),
+    (
+        "client_profile_capability",
+        "hashed_password_timestamp_monotonicity_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
+    ),
     ("client_profile_capability", "credential_identification_representation"),
     ("client_profile_capability", "declared_response_capacity"),
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
