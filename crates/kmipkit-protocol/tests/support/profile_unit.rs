@@ -2965,7 +2965,6 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
-    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
     const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
     const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
 
@@ -2989,19 +2988,18 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
         .evaluator
         .expect("the optional capability has a request evaluator");
     assert!(!evaluate(None, None));
-    let request = request_message_with_operation_payload(
-        ADD_ATTRIBUTE_OPERATION,
-        structure([tagged(
-            NEW_ATTRIBUTE_TAG,
-            Value::structure(structure([tagged(
-                APPLICATION_SPECIFIC_INFORMATION_TAG,
-                Value::structure(structure([tagged(
-                    APPLICATION_NAMESPACE_TAG,
-                    Value::text_string("com.example.kmipkit".to_owned()),
-                )])),
-            )])),
-        )]),
+    let application_information = tagged(
+        APPLICATION_SPECIFIC_INFORMATION_TAG,
+        Value::structure(structure([tagged(
+            APPLICATION_NAMESPACE_TAG,
+            Value::text_string("com.example.kmipkit".to_owned()),
+        )])),
     );
+    let payload =
+        crate::AddAttributeRequest::new(None, crate::NewAttribute::new(application_information))
+            .to_ttlv_payload()
+            .expect("Add Attribute preserves a generic Application Specific Information item");
+    let request = request_message_with_operation_payload(ADD_ATTRIBUTE_OPERATION, payload);
     assert!(evaluate(Some(&request), None));
 
     let result = ProfileValidationResult {

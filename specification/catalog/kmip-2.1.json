@@ -90400,11 +90400,24 @@
       "summary": "The client may request this attribute with Application Namespace while omitting Application Data.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "Object creation or Add/Modify Attribute; namespace support is determined through Query.",
+      "condition": "Any operation that creates new Managed Object(s), or adds/modifies the attribute of an existing Managed Object; Query can discover namespace support but is not a mandatory client preflight.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
         "KMIPKIT-ELEM-OP-C2S-CREATE",
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+        "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-DATA",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE"
       ],
@@ -90412,16 +90425,19 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/create.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/add_attribute.rs::AddAttributeRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/attribute.rs::NewAttribute",
+        "crates/kmipkit-protocol/src/create.rs::CreateRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::client_add_application_specific_information_can_omit_data"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_add_attribute_application_namespace_without_application_data",
         "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.4 Tables 35–36 and §11.56 permit a client Create request to include Application Specific Information with required Application Namespace (Text String, tag 0x420003) and omitted Application Data (tag 0x420002). The linked test covers this Create shape only; it does not cover Add/Modify Attribute or Query namespace negotiation, and does not assert a server outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.4, Tables 35–36, and §11.56 permit a client to submit Application Specific Information with a required Application Namespace (Text String, tag 0x420003) while omitting optional Application Data (Text String, tag 0x420002). The client MAY do so in operations that create Managed Objects or add/modify the attribute of an existing Managed Object. Query can discover namespace support but §4.4 does not mandate a client preflight; the response or error requirement belongs to the server. Scoped evidence covers the Add Attribute request and existing Create serialization case; the other permitted routes remain unverified. No requirement-specific official Test Case is linked, and no server behavior or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-002",
