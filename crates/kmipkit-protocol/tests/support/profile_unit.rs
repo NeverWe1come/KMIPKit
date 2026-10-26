@@ -18503,7 +18503,10 @@ fn profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_re
         let error = result
             .validate_request(&request)
             .expect_err("the recommended field must be one well-typed Date Time");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REVOKE_SHOULD_REQUIREMENT_ID));
         assert_eq!(error.source_clause_id(), Some(REVOKE_SOURCE_CLAUSE_ID));
     }

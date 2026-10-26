@@ -8917,16 +8917,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(
             client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons,
         ),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

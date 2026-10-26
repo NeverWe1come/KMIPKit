@@ -96340,15 +96340,19 @@
       "implementation_refs": [
         "crates/kmipkit-protocol/src/revoke.rs",
         "crates/kmipkit-client/src/execute.rs"
-      ],
+      ,
+        "crates/kmipkit-protocol/src/profile.rs::client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons"],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
-      ],
+      ,
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_revoke_compromise_date_recommendation_is_operation_specific_in_mixed_batch",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons"],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim.\n\nT054 profile evidence: KMIP Specification v2.1 §6.1.44 paragraph 1 and Table 295 recommend that a client specify Compromise Occurrence Date for Key Compromise or CA Compromise. Baseline profile-selected validation now rejects omission for those two known reasons and preserves caller-supplied dates; unprofiled serialization remains optional, other reasons remain governed by the separate SHALL NOT, and no server fallback or official Test Case pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.44-003-002",
