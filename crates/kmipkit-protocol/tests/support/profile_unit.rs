@@ -24046,3 +24046,122 @@ fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_beh
         RuleTestKind::PositiveBehavior,
     );
 }
+
+fn assert_static_caller_owned_profile_rule_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    verification_category: GeneratedVerificationCategory,
+    capability: &'static str,
+    test_id: &str,
+    test_kind: RuleTestKind,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("caller-owned profile rule has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("caller-owned profile rule resolves to normative metadata");
+
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(mapping.verification_category, verification_category);
+    assert!(mapping.evaluator.is_none());
+    validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+        .expect("the static caller-owned rule has category-matched evidence");
+    assert!(mapping
+        .test_evidence
+        .iter()
+        .any(|evidence| evidence.test_id == test_id && evidence.kind == test_kind));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: capability,
+        }]
+    );
+}
+
+#[test]
+fn profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.17-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "target_usage_mask_allows_requested_function_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+}
+
+#[test]
+fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.17-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "target_usage_mask_excludes_requested_function_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-CLAUSE-SPEC-4.30-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "lease_not_expired_or_renewed_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "usage_allocation_obtained_before_protection_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        GeneratedVerificationCategory::RequiredBehavior,
+        "usage_allocation_requested_within_object_date_window_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
+        RuleTestKind::PositiveBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "usage_allocation_remains_available_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+fn profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "lease_not_expired_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
