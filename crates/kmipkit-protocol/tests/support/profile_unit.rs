@@ -49,6 +49,12 @@ const AUTHENTICATION_TAG: u32 = 0x0042_000C;
 const CREDENTIAL_TAG: u32 = 0x0042_0023;
 const CREDENTIAL_TYPE_TAG: u32 = 0x0042_0024;
 const CREDENTIAL_VALUE_TAG: u32 = 0x0042_0025;
+const DEVICE_IDENTIFIER_TAG: u32 = 0x0042_00A2;
+const PASSWORD_TAG: u32 = 0x0042_00A1;
+const MACHINE_IDENTIFIER_TAG: u32 = 0x0042_00A9;
+const MEDIA_IDENTIFIER_TAG: u32 = 0x0042_00AA;
+const NETWORK_IDENTIFIER_TAG: u32 = 0x0042_00AB;
+const DEVICE_SERIAL_NUMBER_TAG: u32 = 0x0042_00B0;
 const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
@@ -318,6 +324,42 @@ fn request_message_with_authentication(credential_count: Option<usize>) -> crate
         ),
     ]))
     .expect("test Request Message has structurally valid optional Authentication")
+}
+
+fn request_message_with_device_credential(
+    fields: impl IntoIterator<Item = Item>,
+) -> crate::RequestMessage {
+    let credential = structure([
+        tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(2)),
+        tagged(
+            CREDENTIAL_VALUE_TAG,
+            Value::structure(structure(fields)),
+        ),
+    ]);
+    let authentication = structure([tagged(
+        CREDENTIAL_TAG,
+        Value::structure(credential),
+    )]);
+    let header = structure([
+        test_protocol_version(),
+        tagged(AUTHENTICATION_TAG, Value::structure(authentication)),
+        tagged(BATCH_COUNT_TAG, Value::integer(1)),
+    ]);
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(REQUEST_HEADER_TAG, Value::structure(header)),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has a structurally valid Device Credential")
 }
 
 fn request_message_with_attestation_capable_indicator(
@@ -5474,6 +5516,76 @@ fn profile_requires_a_credential_when_request_authentication_is_present() {
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
+}
+
+#[test]
+fn profile_requires_a_device_identifier_field_in_device_credentials() {
+    // KMIP Specification v2.1 §9.11 and Table 412; the typed Device policy
+    // follows KMIPKIT-0008 OD-002 and keeps field presence separate from text.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Device Credentials have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Device requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("Device field presence has executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Device Credential validation has a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let omitted = request_message_with_authentication(None);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("requests without a Device Credential are unaffected");
+
+    for identifier_tag in [
+        DEVICE_SERIAL_NUMBER_TAG,
+        NETWORK_IDENTIFIER_TAG,
+        MACHINE_IDENTIFIER_TAG,
+        MEDIA_IDENTIFIER_TAG,
+    ] {
+        let request = request_message_with_device_credential([tagged(
+            identifier_tag,
+            Value::text_string(String::new()),
+        )]);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("each named identifier field satisfies the minimum field rule");
+    }
+
+    for non_identifier_tag in [DEVICE_IDENTIFIER_TAG, PASSWORD_TAG] {
+        let request = request_message_with_device_credential([tagged(
+            non_identifier_tag,
+            Value::text_string("caller-value".to_owned()),
+        )]);
+        assert!(!evaluate(Some(&request), None));
+        let error = result
+            .validate_request(&request)
+            .expect_err("Password and Device Identifier alone do not satisfy OD-002");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+    }
 }
 
 #[test]
