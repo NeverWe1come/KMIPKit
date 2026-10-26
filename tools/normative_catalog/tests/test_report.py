@@ -2249,11 +2249,16 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-6.1.47-001",
                     "KMIPKIT-REQ-SPEC-6.1.48-006",
                     "KMIPKIT-REQ-SPEC-6.1.48-006",
-                    # KMIPKIT-0010 T053: caller-owned Usage Mask, lease,
-                    # and allocation mappings. These tests verify the static
-                    # responsibility metadata; they do not assert local gating.
+                    # KMIPKIT-0010 T053: caller-owned lifecycle-date,
+                    # Usage Mask, lease, and allocation mappings. These tests
+                    # verify static responsibility metadata, not local gating.
+                    "KMIPKIT-REQ-SPEC-4.1-001-001",
+                    "KMIPKIT-REQ-SPEC-4.1-001-002",
+                    "KMIPKIT-REQ-SPEC-4.1-001-003",
                     "KMIPKIT-REQ-SPEC-4.17-001-001",
                     "KMIPKIT-REQ-SPEC-4.17-001-002",
+                    "KMIPKIT-REQ-SPEC-4.18-001-001",
+                    "KMIPKIT-REQ-SPEC-4.18-001-002",
                     "KMIPKIT-REQ-SPEC-4.30-001",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-002",

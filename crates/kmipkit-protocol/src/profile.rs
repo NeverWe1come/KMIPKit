@@ -9334,6 +9334,51 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "activation_date_reached_before_use_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "no_cryptographic_use_before_activation_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.17-001",
         source_gap_id: None,
@@ -9361,6 +9406,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "target_usage_mask_excludes_requested_function_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
         }],
     },
     TypedRuleMapping {
@@ -12648,6 +12723,11 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
+                    | "activation_date_reached_before_use_caller_asserted"
+                    | "no_cryptographic_use_before_activation_date_caller_asserted"
+                    | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
+                    | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
+                    | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
             )
     )
 }
@@ -12697,6 +12777,11 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
+                    | "activation_date_reached_before_use_caller_asserted"
+                    | "no_cryptographic_use_before_activation_date_caller_asserted"
+                    | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
+                    | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
+                    | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
             )
     )
 }
