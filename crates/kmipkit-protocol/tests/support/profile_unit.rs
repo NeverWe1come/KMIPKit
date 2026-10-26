@@ -4834,6 +4834,9 @@ fn profile_rejects_response_with_critical_message_extension() {
     result
         .validate_request(&request)
         .expect("response-extension rules do not constrain outgoing requests");
+    result
+        .validate_response(&request, &response_message())
+        .expect("a response without critical extensions is accepted");
     let response = response_message_with_extension_criticality(true);
     let error = result
         .validate_response(&request, &response)

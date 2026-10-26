@@ -2521,6 +2521,37 @@ fn client_can_repeat_request_message_extensions(
     request.is_some()
 }
 
+fn client_rejects_unknown_critical_response_extensions(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((_, response)) = response else {
+        return true;
+    };
+
+    response.batch_items().all(|batch_item| {
+        (0..batch_item.message_extension_count()).all(|extension_index| {
+            batch_item
+                .message_extension(extension_index)
+                .is_some_and(|extension| extension.criticality_indicator() == Some(false))
+        })
+    })
+}
+
+fn client_can_process_unknown_noncritical_response_extensions(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((_, response)) = response else {
+        return request.is_some();
+    };
+
+    response.batch_items().all(|batch_item| {
+        (0..batch_item.message_extension_count())
+            .all(|extension_index| batch_item.message_extension(extension_index).is_some())
+    })
+}
+
 fn client_can_include_optional_create_split_key_source_identifier(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -10016,6 +10047,54 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_rejects_unknown_critical_response_extensions),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_process_unknown_noncritical_response_extensions),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_noncritical_response_extension_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

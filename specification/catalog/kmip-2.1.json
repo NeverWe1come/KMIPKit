@@ -100129,16 +100129,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
         "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The complete response is rejected for an unrecognized critical extension; no vendor critical-extension support is claimed. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "The client has no registered vendor extension handler, so its typed Baseline response evaluator rejects any critical Message Extension as unrecognized; the execution path also rejects such responses. No vendor critical-extension support is claimed. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-005",
@@ -100165,16 +100167,18 @@
       "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/message/batch.rs"
+        "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_noncritical_response_extension_as_optional_capability",
         "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "OASIS permits treating an unknown non-critical extension as absent; KMIPKit's separate stricter policy preserves and exposes its opaque value. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "OASIS permits treating an unknown non-critical extension as absent; KMIPKit preserves and exposes its opaque value, which still permits processing the rest of the message. The profile evaluator accepts non-critical response extensions and rejects critical ones under the separate SHALL. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.19-002",
