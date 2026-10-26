@@ -1,8 +1,8 @@
 # KMIPKIT-0010 T002 — Unique Batch Item ID crosswalk report
 
-Date: 2026-10-15  
-Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`  
-BASE before this slice: `ddba006cdba960e765bc3b4bf0e147826544c6cc`
+- Date: 2026-10-15
+- Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`
+- BASE before this slice: `ddba006cdba960e765bc3b4bf0e147826544c6cc`
 
 ## Scope and source decision
 

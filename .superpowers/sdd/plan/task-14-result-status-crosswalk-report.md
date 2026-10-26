@@ -1,9 +1,9 @@
 # KMIPKIT-0010 T002 — Result Status crosswalk report
 
-Date: 2026-10-15  
-Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`  
-Workspace: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`  
-BASE before this slice: `413ea3108369f619790039f0541aba787ec50a5a`
+- Date: 2026-10-15
+- Branch: `feature/KMIPKIT-0010-profile-conformance-t001-t002`
+- Workspace: `C:\Users\ramp1953\.codex\worktrees\0010-profile-refresh\KMIPKit`
+- BASE before this slice: `413ea3108369f619790039f0541aba787ec50a5a`
 
 ## Scope and source decision
 
