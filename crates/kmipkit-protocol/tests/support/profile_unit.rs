@@ -1057,6 +1057,39 @@ fn response_message_with_operation(operation: u32) -> crate::ResponseMessage {
     .expect("test Response Message is valid")
 }
 
+fn response_message_with_extension_criticality(criticality: bool) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(Structure::new())),
+                tagged(
+                    MESSAGE_EXTENSION_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            VENDOR_IDENTIFICATION_TAG,
+                            Value::text_string("KMIPKit_Test".to_owned()),
+                        ),
+                        tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(criticality)),
+                        tagged(VENDOR_EXTENSION_TAG, Value::structure(Structure::new())),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("test Response Message with an extension is valid")
+}
+
 fn response_message_with_batch_items(items: &[(u32, &[u8])]) -> crate::ResponseMessage {
     let batch_count = i32::try_from(items.len()).expect("test batch count fits in an Integer");
     let mut root_items = vec![tagged(
@@ -4774,6 +4807,87 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
     result
         .validate_request(&request_with_extensions)
         .expect("a client request can carry repeated Message Extensions in source order");
+}
+
+#[test]
+fn profile_rejects_response_with_critical_message_extension() {
+    // KMIP Specification v2.1 §9.13 requires rejection of unknown critical extensions.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("unknown critical response extensions have a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message();
+    result
+        .validate_request(&request)
+        .expect("response-extension rules do not constrain outgoing requests");
+    let response = response_message_with_extension_criticality(true);
+    let error = result
+        .validate_response(&request, &response)
+        .expect_err("a response with a critical extension is rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+}
+
+#[test]
+fn profile_maps_noncritical_response_extension_as_optional_capability() {
+    // KMIP Specification v2.1 §9.13 permits treating an unknown non-critical extension as absent.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("non-critical response extensions have a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message();
+    result
+        .validate_request(&request)
+        .expect("an optional response capability does not constrain outgoing requests");
+    let response = response_message_with_extension_criticality(false);
+    result
+        .validate_response(&request, &response)
+        .expect("a non-critical extension is allowed in the response");
+    let extension = response
+        .batch_items()
+        .next()
+        .and_then(|item| item.message_extension(0))
+        .expect("the response extension remains available through the typed API");
+    assert_eq!(extension.criticality_indicator(), Some(false));
+    assert_eq!(
+        extension.with_vendor_identification(str::to_owned),
+        Some("KMIPKit_Test".to_owned())
+    );
+    assert_eq!(
+        extension.with_vendor_extension(|extension| extension.children().len()),
+        Some(0)
+    );
 }
 
 #[test]
