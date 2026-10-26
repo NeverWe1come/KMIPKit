@@ -6156,6 +6156,47 @@ fn profile_maps_credential_identification_model_capability() {
 }
 
 #[test]
+fn profile_maps_device_identifier_uniqueness_as_caller_responsibility() {
+    // KMIP Specification v2.1 §9.11/Table 412 requires unique caller-supplied
+    // Device identifiers; the comparison scope is not specified by the source.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DEVICE_MODEL_TEST_ID: &str = "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields";
+    const PUBLIC_API_TEST_ID: &str = "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Device identifier uniqueness has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Device identifier uniqueness resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the caller-supplied identifier capability has positive model evidence");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == DEVICE_MODEL_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PUBLIC_API_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "device_identifiers_caller_asserted_unique",
+        }]
+    );
+}
+
+#[test]
 fn profile_maps_declared_response_capacity_as_required_behavior() {
     // KMIP Specification v2.1 §9.12 makes the advertised byte count the
     // response size the requester SHALL be able to handle.
