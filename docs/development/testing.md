@@ -25,6 +25,29 @@ selected. The scheduled workflow is unchanged. Selective execution does not
 change the thresholds below; every selected report remains required, and a
 missing or malformed selected report fails the gate.
 
+## Static analysis services
+
+The separate CodeQL workflow scans Rust, C/C++, Java, and Python on pushes to
+`master` and `release/*`, same-repository pull requests into those branches,
+and its weekly schedule. It uses advanced setup; GitHub's CodeQL default setup
+must be disabled in repository settings before this workflow can upload SARIF.
+The CodeQL job does not run for fork pull requests because SARIF upload needs
+`security-events: write`. Fork contributions still use the unprivileged CI
+workflow described above.
+
+The SonarQube Cloud workflow is prepared for the public repository and does
+not run until a maintainer completes the free Cloud project setup. Import
+KMIPKit into a SonarQube Cloud Free or OSS organization, choose GitHub Actions
+analysis, and add repository Actions variables `SONAR_PROJECT_KEY` and
+`SONAR_ORGANIZATION` with the exact keys shown by that project. Add its scan
+token as the `SONAR_TOKEN` Actions secret; do not commit or print the token.
+After configuration, rerun the workflow and check that the analysis appears
+in the SonarQube Cloud project. A missing token fails the scan with a setup
+message. The Sonar job is skipped for fork pull requests so their code never
+receives the token. Its Java compile step supplies bytecode to the Java
+analyzer. The scan supplements the repository coverage and dependency gates;
+it does not replace them.
+
 ## Test layers
 
 ### Unit tests

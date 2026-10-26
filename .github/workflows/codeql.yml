@@ -11,10 +11,10 @@ on:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-      packages: read
       actions: read
       contents: read
 
@@ -28,20 +28,24 @@ jobs:
           build-mode: none
         - language: python
           build-mode: none
+        - language: rust
+          build-mode: none
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@8498dc4c2b27cdd99baf0f87955b29ebbf30c78d # github/codeql-action v4.39.1
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
 
     - name: Set up CMake
       if: matrix.language == 'c-cpp'
-      uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb
+      uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
 
     - name: Build C/C++ FFI
       if: matrix.language == 'c-cpp'
@@ -51,6 +55,6 @@ jobs:
         cmake --build build/c-consumer --config Release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@8498dc4c2b27cdd99baf0f87955b29ebbf30c78d # github/codeql-action v4.39.1
       with:
-        category: "/language:${{matrix.language}}"
+        category: "/language:${{ matrix.language }}"
