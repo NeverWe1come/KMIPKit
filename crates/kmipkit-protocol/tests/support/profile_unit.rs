@@ -24239,3 +24239,39 @@ fn profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibiti
         RuleTestKind::NegativeBehavior,
     );
 }
+
+#[test]
+// OASIS KMIP Specification v2.1 §9.11, Hashed Password paragraph before Table 415.
+fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_required_behavior() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        GeneratedVerificationCategory::RequiredBehavior,
+        "hashed_password_timestamp_monotonicity_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_required_behavior",
+        RuleTestKind::PositiveBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §9.20 paragraph 1.
+fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.20-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+
+    let server_timestamp = response_message().header().time_stamp();
+    let relative_date = tagged(0x0042_0173, Value::date_time(10)).with_value(|value| {
+        match value {
+            ValueView::DateTime(seconds) => Some(*seconds - server_timestamp),
+            _ => None,
+        }
+    });
+    assert_eq!(server_timestamp, 1);
+    assert_eq!(relative_date, Some(9));
+}
