@@ -35,6 +35,13 @@ The CodeQL job does not run for fork pull requests because SARIF upload needs
 `security-events: write`. Fork contributions still use the unprivileged CI
 workflow described above.
 
+The `zizmor` workflow audits GitHub Actions workflow files for unsafe
+expressions, credential exposure, excessive token permissions, and risky action
+references. It uploads findings to GitHub code scanning on pushes and
+same-repository pull requests targeting `master` or `release/*`, and on a
+weekly schedule. The action and scanner versions are pinned. Fork pull
+requests skip this privileged upload job.
+
 SonarQube Cloud already analyzes the public project `NeverWe1come_KMIPKit`
 in organization `neverwe1come` automatically and reports its quality gate as
 the `SonarCloud Code Analysis` GitHub check on pull requests. This integration
