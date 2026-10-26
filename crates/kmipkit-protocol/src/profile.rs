@@ -3453,7 +3453,7 @@ fn client_obtain_lease_response_values_are_typed(
         }
     }
 
-    for (response_index, response_item) in response_items.into_iter().enumerate() {
+    for response_item in response_items {
         let Some(response_operation) = response_item.operation() else {
             return false;
         };
@@ -3468,23 +3468,13 @@ fn client_obtain_lease_response_values_are_typed(
             };
             request_index
         } else if request_items.len() == 1
-            && response.batch_items().count() == 1
             && request_items[0]
                 .with_unique_batch_item_id(<[u8]>::to_vec)
                 .is_none()
         {
+            // A single-item request may omit the optional ID. For multiple
+            // items, §8.3 Table 396 requires one and §9.21 requires echoing it.
             0
-        } else if request.header().effective_batch_order_option() {
-            let Some(request_item) = request_items.get(response_index).copied() else {
-                return false;
-            };
-            if request_item
-                .with_unique_batch_item_id(<[u8]>::to_vec)
-                .is_some()
-            {
-                return false;
-            }
-            response_index
         } else {
             return false;
         };

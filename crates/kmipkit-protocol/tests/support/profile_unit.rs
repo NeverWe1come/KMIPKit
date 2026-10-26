@@ -21990,8 +21990,8 @@ fn profile_maps_obtain_lease_response_capabilities() {
 
 #[test]
 fn profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches() {
-    // KMIP Specification v2.1 §§6.1.35, 9.8, and 9.21: profile validation
-    // follows each response to its request even when the batch mixes operations.
+    // KMIP Specification v2.1 §§6.1.35, 8.3 Table 396, 9.8, and 9.21:
+    // profile validation correlates each mixed-operation response by its ID.
     const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
     const LOCATE_OPERATION: u32 = 0x0000_000A;
     const LAST_CHANGE_DATE_TAG: u32 = 0x0042_0048;
