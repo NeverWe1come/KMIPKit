@@ -88688,7 +88688,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.1 paragraph 1 permits cryptographic use at or after the Activation Date, but the evaluator has no trusted object-state or clock input. Request fields alone cannot establish that the date has arrived. Keep this requirement unmapped until a caller-visible state/time context exists; do not infer object usability."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-002",
@@ -88737,7 +88737,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.1 paragraph 1 prohibits cryptographic use before the Activation Date. The evaluator has no trusted object metadata or clock input and cannot establish either condition from an operation request. Keep this requirement unmapped; KMIPKit does not perform cryptographic operations."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-003",
@@ -88786,7 +88786,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.1 paragraph 1 prohibits changing or deleting Activation Date after transition from Pre-Active until destruction. Current request/response evidence does not reveal the server object state or destruction state. Rejecting all changes would also reject requests that the clause permits before transition. Keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.11-001",
@@ -89172,7 +89172,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 make permitted key use depend on the target object’s effective Cryptographic Usage Mask. The evaluator can see the requested operation but not the server-held mask; a requested Check mask is not evidence of the target key’s effective mask. Keep this capability unmapped until explicit caller-visible object metadata can be evaluated."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.17-001-002",
@@ -89202,7 +89202,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 prohibit functions excluded by the target object’s effective Cryptographic Usage Mask. The evaluator cannot observe that server-held mask from the operation request. Operation type alone cannot establish whether the function is prohibited. Keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-001",
@@ -89251,7 +89251,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.18 paragraph 1 makes use after Deactivation Date depend on the current object lifecycle state, time, purpose, extraordinary circumstances, and special permission. None is available to the request-only evaluator. An unconditional rejection would incorrectly exclude the clause’s permitted exceptional uses. Keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-002",
@@ -89300,7 +89300,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT002 applicability adjudication: KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.18 paragraph 1 limits changing or deleting Deactivation Date according to object state and destruction. The evaluator cannot observe those server-held facts. Rejecting every mutation would also reject changes allowed while the object is Pre-Active or Active. Keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.2-002",
@@ -89739,7 +89739,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.30 paragraph 1 prohibits use beyond the lease interval without obtaining another lease. The Obtain Lease response mapping exposes the returned interval, but the client API has no lease clock/state and cannot block later operations at expiry. Do not infer a timer or automatic renewal; keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.31-003",
@@ -94102,7 +94102,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The explicit guard enforces allocation context only for typed Encrypt, MAC, and Sign calls routed through it. Ordinary typed calls, raw requests, other clients, and server-side use bypass this caller-owned local guard. Caller responsibility and this limitation are defined in the approved guard contract and feature traceability; this is scoped verification, not a claim of global or server-side enforcement. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
+      "review_note": "The explicit guard enforces allocation context only for typed Encrypt, MAC, and Sign calls routed through it. Ordinary typed calls, raw requests, other clients, and server-side use bypass this caller-owned local guard. Caller responsibility and this limitation are defined in the approved guard contract and feature traceability; this is scoped verification, not a claim of global or server-side enforcement. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 1 requires an allocation before protection use of an object with Usage Limits. The caller-owned guard enforces allocation only for typed Encrypt, MAC, and Sign requests routed through that guard; ordinary, generic, and other client calls can bypass it, and the profile evaluator is not integrated with the guard. Keep the profile rule unmapped; the existing scoped caller-boundary record does not prove profile-wide enforcement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-001-002",
@@ -94141,7 +94141,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The caller must ensure allocation is requested within the object's Activation Date and Protect Stop Date window. KMIPKit has no local server-object metadata with which to enforce this timing condition; the approved contract assigns the check to the caller and explicitly says ordinary typed calls bypass the guard. No runtime date enforcement is claimed. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS inventory."
+      "review_note": "The caller must ensure allocation is requested within the object's Activation Date and Protect Stop Date window. KMIPKit has no local server-object metadata with which to enforce this timing condition; the approved contract assigns the check to the caller and explicitly says ordinary typed calls bypass the guard. No runtime date enforcement is claimed. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 1 permits allocation only after Activation Date and before Protect Stop Date. The evaluator has no trusted object dates, lifecycle state, or clock. The existing caller-boundary record assigns this timing check to the caller; it is not profile-evaluator evidence. Keep this requirement unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
@@ -94237,7 +94237,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The local guard prevents over-budget use only for explicitly routed typed Encrypt, MAC, and Sign calls. Other operations and callers bypass this context, and local reservations are not evidence of remote consumption. This is verified at the documented caller boundary, not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory."
+      "review_note": "The local guard prevents over-budget use only for explicitly routed typed Encrypt, MAC, and Sign calls. Other operations and callers bypass this context, and local reservations are not evidence of remote consumption. This is verified at the documented caller boundary, not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 2 prohibits protection use after the allocation is consumed until another allocation is obtained. The local guard accounts only for explicitly routed typed Encrypt, MAC, and Sign calls; ordinary and generic client calls bypass it, and local reservations cannot prove remote consumption. Keep the profile rule unmapped until profile-selected execution cannot bypass an explicit allocation context."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-001",
@@ -95561,7 +95561,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.35 paragraph 1 prohibits use after lease expiry until another lease is obtained. The mapped response values do not provide a timer or prior-lease state, and the evaluator cannot block subsequent use based on expiry. The existing scoped caller-boundary record does not establish profile-level enforcement. Keep this rule unmapped."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-002",
