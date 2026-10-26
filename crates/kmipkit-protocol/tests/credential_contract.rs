@@ -549,6 +549,8 @@ fn hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types()
     }
 }
 
+// KMIP Specification v2.1 §9.11 (paragraph before Table 415) defaults an omitted
+// Hashing Algorithm to SHA-256.
 #[test]
 fn hashed_password_omission_exposes_sha256_default_without_materializing_field() {
     let timestamp = 0x1122_3344_5566_7788;
@@ -590,6 +592,8 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
     assert_eq!(roundtrip_hash, Some(secret_bytes));
 }
 
+// KMIP Specification v2.1 §9.11/Table 415 defines Hashing Algorithm as an
+// Enumeration; KMIPKit preserves unknown values per its forward-compatibility policy.
 #[test]
 fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
     let timestamp = -0x0102_0304_0506_0708;
