@@ -120,6 +120,7 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "declared_response_capacity"),
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
     ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
+    ("client_profile_capability", "derive_key_source_usage_mask_caller_asserted"),
     (
         "client_profile_capability",
         "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",

@@ -377,6 +377,10 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "derive_key_source_usage_mask_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
             },
             RuleConstraint {
@@ -2170,6 +2174,7 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-6.1.28-004-001",
                     "KMIPKIT-REQ-SPEC-6.1.42-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+                    "KMIPKIT-REQ-SPEC-6.1.14-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",

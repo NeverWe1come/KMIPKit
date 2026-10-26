@@ -11308,6 +11308,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "derive_key_source_usage_mask_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
         source_gap_id: None,
@@ -12430,6 +12445,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "derive_key_source_usage_mask_caller_asserted"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
@@ -12467,6 +12483,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "derive_key_source_usage_mask_caller_asserted"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
