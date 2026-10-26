@@ -189,11 +189,15 @@ policies on individual-field uniqueness, permits a shared secret or password,
 and says the client SHALL provide at least one field. Table 412 contains six
 Device Credential fields: Device Serial Number, Password, Device Identifier,
 Network Identifier, Machine Identifier, and Media Identifier. Open
-`KMIPKIT-DISC-042` retains the alternatives that “at least one field” refers to
-any of the six Table 412 fields or to one of the four fields named for
-uniqueness. No minimum set is selected. Requirement
-`KMIPKIT-REQ-SPEC-9.11-004-001` now summarizes the source-neutral “at least one
-field” rule, its review note points to DISC-042, and it links to all six fields;
+`KMIPKIT-DISC-042` retains the source wording ambiguity between any of the six
+Table 412 fields and the four fields named for uniqueness. Approved
+`KMIPKIT-0008` OD-002 adopts a conservative typed-client interpretation that
+requires one of those four identifier fields; it does not claim that OASIS
+states that exact minimum verbatim. Empty Text Strings still count as present
+fields, while the caller remains responsible for actual uniqueness because
+the source defines no comparison scope. Requirement
+`KMIPKIT-REQ-SPEC-9.11-004-001` retains the source-neutral “at least one field”
+summary and links all six fields; its implementation note cites OD-002;
 `KMIPKIT-REQ-SPEC-9.11-004-002` links only to the four named uniqueness
 fields; and `KMIPKIT-REQ-SPEC-9.11-004-003` links to Device Password. No local
 uniqueness-enforcement requirement was added.

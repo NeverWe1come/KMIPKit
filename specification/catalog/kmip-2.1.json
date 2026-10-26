@@ -99690,12 +99690,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 does not choose a meaning for this requirement. The section 9.11 phrase “at least one field” has two plausible scopes: all six Table 412 fields or the four uniqueness fields named in the preceding sentence; see KMIPKIT-DISC-042. No interpretation is selected. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "The Baseline evaluator implements the conservative typed Device interpretation selected by KMIPKIT-0008 OD-002: require at least one of the four §9.11 identifiers named in the preceding uniqueness sentence. This is a project interpretation of the source's broader phrase “at least one field,” not wording stated verbatim by KMIP. A present-empty Text String still counts as field presence. The caller remains responsible for actual uniqueness under KMIPKIT-REQ-SPEC-9.11-004-002; KMIPKit does not infer a comparison scope or verify uniqueness. Tests cover each identifier, Password-only and Device-Identifier-only rejection, and absence of Authentication. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-002",

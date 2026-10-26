@@ -18,7 +18,7 @@ use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
     GeneratedVerificationCategory,
 };
-use crate::{AttributeReference, RequestMessage, ResponseMessage};
+use crate::{AttributeReference, CredentialType, RequestMessage, ResponseMessage};
 
 /// Stable reason that explicit profile validation could not be prepared.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -750,6 +750,14 @@ const LOGIN_OPERATION: u32 = 0x0000_002D;
 const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const CREDENTIAL: u32 = 0x0042_0023;
+const CREDENTIAL_TYPE: u32 = 0x0042_0024;
+const CREDENTIAL_VALUE: u32 = 0x0042_0025;
+const DEVICE_CREDENTIAL_IDENTIFIER_FIELDS: [u32; 4] = [
+    0x0042_00B0, // Device Serial Number
+    0x0042_00AB, // Network Identifier
+    0x0042_00A9, // Machine Identifier
+    0x0042_00AA, // Media Identifier
+];
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
@@ -3178,6 +3186,64 @@ fn client_authentication_contains_a_credential_if_present(
             authentication.children().iter().any(|field| {
                 field.tag().raw() == CREDENTIAL
                     && field.with_value(|value| matches!(value, ValueView::Structure(_)))
+            })
+        })
+        .unwrap_or(true)
+}
+
+fn client_device_credential_has_identifier_if_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request
+        .header()
+        .with_authentication(|authentication| {
+            authentication.children().iter().all(|field| {
+                if field.tag().raw() != CREDENTIAL {
+                    return true;
+                }
+
+                field.with_value(|value| match value {
+                    ValueView::Structure(credential) => {
+                        let credential_type = credential
+                            .children()
+                            .iter()
+                            .find(|child| child.tag().raw() == CREDENTIAL_TYPE)
+                            .and_then(|child| {
+                                child.with_value(|value| match value {
+                                    ValueView::Enumeration(raw) => Some(*raw),
+                                    _ => None,
+                                })
+                            });
+                        if credential_type != Some(CredentialType::Device.raw()) {
+                            return true;
+                        }
+
+                        credential
+                            .children()
+                            .iter()
+                            .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
+                            .is_some_and(|child| {
+                                child.with_value(|value| match value {
+                                    ValueView::Structure(structure) => {
+                                        structure.children().iter().any(|child| {
+                                            DEVICE_CREDENTIAL_IDENTIFIER_FIELDS
+                                                .contains(&child.tag().raw())
+                                                && child.with_value(|value| {
+                                                    matches!(value, ValueView::TextString(_))
+                                                })
+                                        })
+                                    }
+                                    _ => false,
+                                })
+                            })
+                    }
+                    _ => false,
+                })
             })
         })
         .unwrap_or(true)
@@ -9726,6 +9792,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_device_credential_has_identifier_if_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],
