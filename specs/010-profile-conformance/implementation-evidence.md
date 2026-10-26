@@ -7216,3 +7216,19 @@ The owner-state correction exposed a second issue in the full typed-profile trac
 | Independent reviews | Read-only QA and security re-review of commit `d3bf65aca` | PASS: no actionable findings; reviewers did not run tests. |
 | Refactor/evidence | DCO Refactor commit `58ed8bd5a` | Records the test failure and correction while preserving the owner record's deferred state and the profile mapping's independent evidence. |
 | Current Baseline state | Catalog and typed profile registry | The KMIPKIT-0007 row remains `deferred` with empty implementation/verification references; the separate KMIPKIT-0010 OptionalCapability remains mapped. Baseline remains at 264/265 typed mappings and `evidence_incomplete`; no profile-conformance claim is made. |
+
+## KMIPKIT-0010 exact-head catalog and traceability correction (2026-10-27)
+
+Exact-head CI run 40411394527 on a59c1dc5 failed the Ubuntu script-contract job after 679 tests in 2494.835 seconds (10 failures, 2 skips). The failures expose stale or incomplete traceability contracts and catalog metadata; they do not justify weakening normative coverage or profile-readiness checks.
+
+| Red finding | Observed failure |
+|---|---|
+| Object-lifecycle requirement crosswalk | The parser counted rows from the separate KMIPKIT-0010 T053 profile-rule section as KMIPKIT-0036 ledger rows; the traceability document had 51 rows and 50 distinct requirement IDs. |
+| Object-lifecycle source-symbol check | The traceability matrix references the real `TYPED_RULE_MAPPINGS` constant, while its resolver accepts only Rust functions. |
+| Catalog relationship ordering | KMIPKIT-REQ-SPEC-3.3-006 has unsorted `element_ids`. |
+| Device minimum-field source gap | The review note for KMIPKIT-REQ-SPEC-9.11-004-001 omits the still-open KMIPKIT-DISC-042 reference. |
+| Baseline optional-evidence snapshot | The expected gap set still lists KMIPKIT-REQ-SPEC-9.11-001 and KMIPKIT-REQ-SPEC-9.11-004-003 even though current typed mappings and positive tests cause the evidence gate to treat them as eligible; this set must be reconciled against the approved KMIP 2.1 clauses before it changes. |
+| Authentication wording contract | The test expects “omits authentication,” while its catalog note says the requests “omit Authentication.” |
+| Pinned-source evidence wording | Four review notes lack explicit pinned-source wording for KMIPKIT-REQ-SPEC-9.11-001, KMIPKIT-REQ-SPEC-9.11-004-002, KMIPKIT-REQ-SPEC-9.11-010-002, and KMIPKIT-REQ-SPEC-9.12-001-002. |
+
+The upstream OASIS source remains immutable. No catalog, test, or generated-file correction is included in this Red record.
