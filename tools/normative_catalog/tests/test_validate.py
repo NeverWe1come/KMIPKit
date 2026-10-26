@@ -18955,13 +18955,21 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual("evidence_incomplete", readiness["effective_state"])
         self.assertFalse(readiness["runtime_validation_available"])
         self.assertFalse(readiness["published_claim"])
-        for requirement_id in sorted(expected_blocked_requirement_ids):
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-REQ-SPEC-4.17-001-001",
+        ):
             self.assertIn(
-                f"typed rule mapping incomplete: {requirement_id}",
+                f"optional client capability source mapping incomplete: {requirement_id}",
+                readiness["blockers"],
+            )
+        for requirement_id in ("KMIPKIT-REQ-SPEC-9.20-001-002",):
+            self.assertIn(
+                f"missing implementation assignment: {requirement_id}",
                 readiness["blockers"],
             )
             self.assertIn(
-                f"category-appropriate test incomplete: {requirement_id}",
+                f"missing verification assignment: {requirement_id}",
                 readiness["blockers"],
             )
 

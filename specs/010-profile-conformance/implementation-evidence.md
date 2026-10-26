@@ -7240,3 +7240,11 @@ The pinned KMIP Specification v2.1 §9.11 defines Credential as a structure used
 | Red evidence | Command and result |
 |---|---|
 | Profile mapping source alignment | DCO Red test change; `cargo test -p kmipkit-protocol --lib profile_maps_profile_indicated_credential_authentication_model_capability -- --nocapture` | Expected Red: failed because the registry still declared `credential_identification_representation`; the test now requires the source-aligned `credential_authentication_representation`. |
+
+## KMIPKIT-0010 T056 optional-capability readiness — Red (2026-10-27)
+
+The optional-evidence audit identifies KMIPKIT-REQ-SPEC-4.1-001-001 and KMIPKIT-REQ-SPEC-4.17-001-001 as gaps because their caller-owned mappings have no resolved source direction/condition for a complete profile capability. However, `evaluate_profile_readiness` currently reports no blocker for either requirement, contrary to the feature contract that incomplete or untested selected profile rules fail closed. The new regression requires a stable per-requirement readiness blocker; the evaluator is not changed in this Red commit.
+
+| Red evidence | Command and result |
+|---|---|
+| Optional capability readiness | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v` | Expected Red: the readiness assertion fails because `optional client capability source mapping incomplete` is absent for KMIPKIT-REQ-SPEC-4.1-001-001 (and KMIPKIT-REQ-SPEC-4.17-001-001). The profile remains globally unavailable for other blockers, but these two capability gaps are not identified. |
