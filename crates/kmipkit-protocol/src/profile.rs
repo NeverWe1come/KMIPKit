@@ -12677,8 +12677,22 @@ fn is_configuration_only_mapping(mapping: &TypedRuleMapping) -> bool {
             .all(is_configuration_only_rule_constraint)
 }
 
-fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
+fn is_caller_owned_lifecycle_date_constraint(constraint: &RuleConstraint) -> bool {
     matches!(
+        (constraint.key, constraint.value),
+        (
+            "client_profile_capability",
+            "activation_date_reached_before_use_caller_asserted"
+                | "no_cryptographic_use_before_activation_date_caller_asserted"
+                | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
+                | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
+                | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
+        )
+    )
+}
+
+fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
+    let is_known_constraint = matches!(
         (constraint.key, constraint.value),
         ("transport", "raw_tls" | "https")
             | ("transport_security", "tls" | "tls13")
@@ -12723,17 +12737,13 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
-                    | "activation_date_reached_before_use_caller_asserted"
-                    | "no_cryptographic_use_before_activation_date_caller_asserted"
-                    | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
-                    | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
-                    | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
             )
-    )
+    );
+    is_known_constraint || is_caller_owned_lifecycle_date_constraint(constraint)
 }
 
 fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
-    matches!(
+    let is_configuration_only = matches!(
         (constraint.key, constraint.value),
         ("transport_security", "tls" | "tls13")
             | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
@@ -12777,13 +12787,9 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
-                    | "activation_date_reached_before_use_caller_asserted"
-                    | "no_cryptographic_use_before_activation_date_caller_asserted"
-                    | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
-                    | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
-                    | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
             )
-    )
+    );
+    is_configuration_only || is_caller_owned_lifecycle_date_constraint(constraint)
 }
 
 #[cfg(test)]
