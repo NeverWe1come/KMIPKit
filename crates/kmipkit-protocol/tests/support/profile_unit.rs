@@ -282,9 +282,7 @@ fn request_message() -> crate::RequestMessage {
     request_message_with_unique_batch_item_id(None)
 }
 
-fn request_message_with_authentication(
-    credential_count: Option<usize>,
-) -> crate::RequestMessage {
+fn request_message_with_authentication(credential_count: Option<usize>) -> crate::RequestMessage {
     let mut header_items = vec![test_protocol_version()];
     if let Some(credential_count) = credential_count {
         let credentials = (0..credential_count).map(|_| {

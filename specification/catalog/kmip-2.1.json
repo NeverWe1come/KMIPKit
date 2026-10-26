@@ -100553,12 +100553,16 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "The selected Baseline profile evaluator accepts omitted Authentication and requires at least one Credential Structure when Authentication is present. Derived local tests cover omission, one and repeated credentials, and reject an empty Authentication structure. This verifies request-model profile behavior only; KMIPKIT-0008 does not add authenticated client execution or establish server credential satisfaction. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-003",

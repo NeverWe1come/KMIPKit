@@ -749,6 +749,7 @@ const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const LOGIN_OPERATION: u32 = 0x0000_002D;
 const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
+const CREDENTIAL: u32 = 0x0042_0023;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
 const REPROVISION_CERTIFICATE: u32 = 0x0042_0013;
@@ -3161,6 +3162,25 @@ fn client_can_include_request_time_stamp(
     // §9.20 makes a client request Time Stamp optional; positive evidence
     // proves that the request model accepts and preserves the supplied value.
     request.is_some()
+}
+
+fn client_authentication_contains_a_credential_if_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request
+        .header()
+        .with_authentication(|authentication| {
+            authentication.children().iter().any(|field| {
+                field.tag().raw() == CREDENTIAL
+                    && field.with_value(|value| matches!(value, ValueView::Structure(_)))
+            })
+        })
+        .unwrap_or(true)
 }
 
 fn client_can_include_maximum_response_size(
@@ -9689,6 +9709,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_authentication_contains_a_credential_if_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
