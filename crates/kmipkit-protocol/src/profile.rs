@@ -252,7 +252,10 @@ impl ProfileValidationResult {
     /// does not confirm that IV/Counter/Nonce is present when the selected
     /// wrapping method requires it, or inspect whether opaque wrapped Key
     /// Value plaintext was TTLV encoded. The caller remains responsible for
-    /// those KMIP Specification v2.1 §3.3, Tables 14–15 obligations.
+    /// those KMIP Specification v2.1 §3.3, Tables 14–15 obligations. It also
+    /// cannot enforce workflows spanning exchanges: for archived Locate
+    /// results, the caller issues Recover and then Get after successful
+    /// preceding results (KMIP Specification v2.1 §6.1.28).
     ///
     /// # Errors
     ///

@@ -52,6 +52,12 @@ interoperability or profile conformance; the blocked cases and other evidence
 gaps remain open. Seventy-seven other linked profile cases have no local
 fixture. KMIPKit does not recreate or infer absent fixture contents.
 
+The typed mapping for archived Locate retrieval records a caller-directed
+workflow only. Profile preflight checks one exchange at a time; it does not
+enforce or perform the required Recover-then-Get sequence from KMIP
+Specification v2.1 §6.1.28. The caller must issue Recover after Locate
+succeeds, then Get after Recover succeeds.
+
 ## Reading profile status
 
 The [generated coverage report](../../../specification/catalog/coverage-report.md)

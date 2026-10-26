@@ -3907,7 +3907,10 @@ impl Client {
     /// required by the selected wrapping method and for TTLV-encoding wrapped
     /// Key Value plaintext when Encoding Option is absent (KMIP Specification
     /// v2.1 §3.3, Tables 14–15). Success does not by itself establish profile
-    /// conformance. The ordinary [`Self::execute`] method remains unprofiled.
+    /// conformance. Preflight also does not enforce multi-exchange workflows;
+    /// for archived Locate results, the caller issues Recover and then Get
+    /// after successful preceding results (KMIP Specification v2.1 §6.1.28).
+    /// The ordinary [`Self::execute`] method remains unprofiled.
     ///
     /// # Errors
     ///

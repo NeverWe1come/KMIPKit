@@ -57,6 +57,12 @@ las demás brechas de evidencia siguen abiertos. Otros 77 casos vinculados a
 perfiles no tienen fixture local. KMIPKit no reconstruye ni deduce el contenido
 de fixtures ausentes.
 
+El mapping tipado para recuperar resultados archivados de Locate solo registra
+un flujo dirigido por la aplicación. El preflight del perfil comprueba un
+intercambio cada vez; no impone ni ejecuta la secuencia Recover y luego Get de
+KMIP Specification v2.1 §6.1.28. La aplicación debe solicitar Recover cuando
+Locate termine correctamente y después Get cuando Recover tenga éxito.
+
 ## Cómo leer el estado de un perfil
 
 El [informe de cobertura generado](../../../specification/catalog/coverage-report.md)

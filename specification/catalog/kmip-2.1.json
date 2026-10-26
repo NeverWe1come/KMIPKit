@@ -94656,16 +94656,18 @@
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs::Client::execute",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "docs/user-guide/en/object-retrieval.md",
         "docs/user-guide/es/object-retrieval.md"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::archived_locate_recover_get_workflow_is_explicitly_caller_controlled",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The fake-transport test verifies three separate caller-issued exchanges: archived Locate, Recover using the returned identifier, and Get after successful Recover. KMIPKit does not automatically orchestrate the follow-up, and the test does not establish server archive state or behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
+      "review_note": "KMIPKIT-0010 records this as a caller-directed RequiredBehavior capability with no request-local evaluator because the workflow spans separate exchanges. The fake-transport test verifies three separate caller-issued exchanges: archived Locate, Recover using the returned identifier, and Get after successful Recover. Profile preflight does not enforce or orchestrate that sequence, and the tests do not establish server archive state or behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-002",

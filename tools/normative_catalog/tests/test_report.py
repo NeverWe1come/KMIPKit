@@ -2114,6 +2114,8 @@ mod unrelated {
                     # KMIPKIT-0010 T052: caller-owned Name uniqueness.
                     "KMIPKIT-REQ-SPEC-4.32-001",
                     "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+                    # KMIPKIT-0010 T054: caller-directed archived retrieval.
+                    "KMIPKIT-REQ-SPEC-6.1.28-004-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.35-001-001",
