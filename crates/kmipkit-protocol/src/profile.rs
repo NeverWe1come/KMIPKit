@@ -10385,27 +10385,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_required_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "hashed_password_timestamp_monotonicity_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
         source_gap_id: None,
@@ -12729,7 +12708,6 @@ fn is_caller_owned_temporal_constraint(constraint: &RuleConstraint) -> bool {
                 | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
                 | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
                 | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
-                | "hashed_password_timestamp_monotonicity_caller_asserted"
                 | "countdown_timer_relative_dates_from_server_timestamp_caller_asserted"
         )
     )

@@ -433,10 +433,6 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
-                value: "hashed_password_timestamp_monotonicity_caller_asserted",
-            },
-            RuleConstraint {
-                key: "client_profile_capability",
                 value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
             },
             RuleConstraint {
@@ -1962,9 +1958,6 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
                 "KMIPKIT-REQ-SPEC-9.11-006",
-                # KMIPKIT-0010 T056: caller-owned Hashed Password monotonicity.
-                "KMIPKIT-REQ-SPEC-9.11-010-001",
-                "KMIPKIT-REQ-SPEC-9.11-010-001",
                 # KMIPKIT-0010 T056: model-level Hashing Algorithm default.
                 "KMIPKIT-REQ-SPEC-9.11-010-002",
                 "KMIPKIT-REQ-SPEC-9.11-010-002",

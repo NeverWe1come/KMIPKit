@@ -99976,18 +99976,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/credential/hashed_password.rs",
-        "crates/kmipkit-protocol/src/profile.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_required_behavior"
-      ],
+      "implementation_refs": [],
+      "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp to monotonically increase. The existing typed model preserves a caller-supplied Timestamp and the profile records this obligation as caller-owned, without an evaluator. The standard does not define state ownership, comparison scope, or clock behavior; KMIPKit therefore does not claim monotonicity enforcement, a monotonicity test, credential transmission, or profile conformance. KMIPKIT-0008 OD-003 remains open for any future enforcement decision. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "deferred",
+      "review_note": "KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp to monotonically increase. KMIPKIT-0008 OD-003 leaves the implementation owner, comparison scope, and clock behavior unresolved; the profile registry therefore leaves this requirement unmapped and fails closed. KMIPKit does not claim monotonicity enforcement, a monotonicity test, or profile conformance for this requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-002",
