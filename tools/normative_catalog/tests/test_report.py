@@ -371,6 +371,10 @@ class CoverageReportTests(unittest.TestCase):
                 key: "client_profile_capability",
                 value: "recover_before_use_caller_controlled",
             },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "name_unique_within_target_server_caller_asserted",
+            },
         ],
     },
 ];
