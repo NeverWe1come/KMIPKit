@@ -11351,10 +11351,16 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[RuleConstraint {
             key: "encoding",
             value: "ttlv",
