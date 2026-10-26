@@ -25,7 +25,7 @@ class AnalysisWorkflowTests(unittest.TestCase):
         self.assertRegex(workflow, r"(?m)^\s+- language: rust\n\s+build-mode: none$")
 
     def test_analysis_actions_are_pinned_to_reviewed_commits(self) -> None:
-        for filename in ("codeql.yml", "sonar.yml"):
+        for filename in ("codeql.yml",):
             with self.subTest(filename=filename):
                 workflow = self.read_workflow(filename)
                 action_lines = [line for line in workflow.splitlines() if re.search(r"\buses:\s", line)]
@@ -34,19 +34,15 @@ class AnalysisWorkflowTests(unittest.TestCase):
                     self.assertRegex(line, r"@[0-9a-f]{40}\s+#\s+.+v\d")
 
     def test_token_bearing_analysis_does_not_run_on_fork_requests(self) -> None:
-        for filename in ("codeql.yml", "sonar.yml"):
+        for filename in ("codeql.yml",):
             with self.subTest(filename=filename):
                 workflow = self.read_workflow(filename)
                 self.assertNotIn("pull_request_target:", workflow)
                 self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", workflow)
                 self.assertIn("persist-credentials: false", workflow)
 
-    def test_sonar_requires_explicit_project_configuration(self) -> None:
-        workflow = self.read_workflow("sonar.yml")
-        self.assertIn("vars.SONAR_PROJECT_KEY", workflow)
-        self.assertIn("vars.SONAR_ORGANIZATION", workflow)
-        self.assertIn("secrets.SONAR_TOKEN", workflow)
-        self.assertIn("fetch-depth: 0", workflow)
+    def test_sonar_automatic_analysis_is_not_duplicated_by_actions(self) -> None:
+        self.assertFalse((WORKFLOWS / "sonar.yml").exists())
 
 
 if __name__ == "__main__":
