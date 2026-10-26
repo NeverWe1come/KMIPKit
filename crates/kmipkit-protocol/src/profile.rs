@@ -11911,6 +11911,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "recover_poll_caller_directed",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "recover_get_caller_directed",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-14.1-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-001",
         source_gap_id: None,
@@ -12391,6 +12421,8 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
                     | "archived_locate_recover_get_workflow_caller_directed"
+                    | "recover_poll_caller_directed"
+                    | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
                     | "declared_response_capacity"
@@ -12426,6 +12458,8 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
                     | "archived_locate_recover_get_workflow_caller_directed"
+                    | "recover_poll_caller_directed"
+                    | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
                     | "declared_response_capacity"
