@@ -38,13 +38,27 @@ workflow described above.
 SonarQube Cloud already analyzes the public project `NeverWe1come_KMIPKit`
 in organization `neverwe1come` automatically and reports its quality gate as
 the `SonarCloud Code Analysis` GitHub check on pull requests. This integration
-needs no Actions token or repository workflow. Do not run SonarScanner against
-the same project while automatic analysis is enabled: SonarQube Cloud rejects
-concurrent CI-based analysis. The automatic scan does not import the test
-coverage collected by this repository's CI; the coverage gate below remains
-authoritative. If richer Sonar analysis is needed later, review a separate
-switch to CI-based analysis, including disabling automatic analysis and
-provisioning a scan token through the repository's normal secret process.
+needs no Actions token or repository workflow. Its automatic analysis covers
+the default branch and pull requests, but [does not analyze other branches or
+Rust](https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis).
+In particular, its passing PR check does not mean that `release/1.0.0` or Rust
+was scanned. The current [long-lived branch pattern](https://docs.sonarsource.com/sonarqube-cloud/managing-your-projects/project-analysis/long-lived-branch-pattern)
+`(branch|release)-.*`
+matches `release-...`, not `release/...`; `^(branch-|release/).*$` would match
+the release branch name. That pattern only classifies a branch once it has
+been analyzed; it does not trigger branch analysis. The organization's current
+Free plan [supports analysis of the main branch only](https://docs.sonarsource.com/sonarqube-cloud/administering-sonarcloud/managing-subscription/subscription-plans).
+SonarQube for OSS is a free plan for public open-source projects that supports
+branch analysis, but activating it is a separate organization-level decision.
+
+Do not run SonarScanner against the same project while automatic analysis is
+enabled: SonarQube Cloud rejects concurrent CI-based analysis. The automatic
+scan does not import the test coverage collected by this repository's CI; the
+coverage gate below remains authoritative. Analyzing release branches and
+Rust in Sonar requires a separately reviewed switch to CI-based analysis,
+including disabling automatic analysis, confirming a plan that supports
+branch analysis, and provisioning a scan token through the repository's
+normal secret process.
 
 ## Test layers
 
