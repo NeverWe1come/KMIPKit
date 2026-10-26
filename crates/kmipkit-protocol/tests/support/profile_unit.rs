@@ -18466,7 +18466,10 @@ fn profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons()
         let error = result
             .validate_request(&request)
             .expect_err("the selected profile rejects omission of the recommended date");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REVOKE_SHOULD_REQUIREMENT_ID));
         assert_eq!(error.source_clause_id(), Some(REVOKE_SOURCE_CLAUSE_ID));
 
@@ -18476,6 +18479,33 @@ fn profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons()
             result.validate_request(&request).is_ok(),
             "the supplied date is preserved for compromise reason {reason}"
         );
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §6.1.44 Table 295 types Compromise Occurrence Date as Date Time.
+fn profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons() {
+    let result = revoke_compromise_date_recommended_profile_result();
+    let malformed_payloads = [
+        structure([
+            revoke_reason_item(Value::enumeration(2)),
+            tagged(COMPROMISE_OCCURRENCE_DATE, Value::integer(0)),
+        ]),
+        structure([
+            revoke_reason_item(Value::enumeration(3)),
+            tagged(COMPROMISE_OCCURRENCE_DATE, Value::date_time(0)),
+            tagged(COMPROMISE_OCCURRENCE_DATE, Value::date_time(1)),
+        ]),
+    ];
+
+    for payload in malformed_payloads {
+        let request = request_message_with_operation_payload(REVOKE_OPERATION, payload);
+        let error = result
+            .validate_request(&request)
+            .expect_err("the recommended field must be one well-typed Date Time");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REVOKE_SHOULD_REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(REVOKE_SOURCE_CLAUSE_ID));
     }
 }
 
