@@ -7085,3 +7085,20 @@ KMIP Specification v2.1 §6.1.42 paragraph 1 permits asynchronous polling when R
 | Independent QA | Read-only QA review of `a0128d983..bc34b4e62` | PASS: no actionable findings; the §6.1.42 MAY clauses, caller-issued Poll/Get exchanges, traceability, generated report, and incomplete readiness state agree. |
 | Codex Security diff scan | Completed scan `fb1577f6-cb74-4bfc-9ccd-7391ae1913a2`, exact range `a0128d983..bc34b4e62` | PASS: complete coverage across three reviewed surfaces; zero findings. The static optional mappings add no implicit Poll/Get, retry, or server-completion inference. |
 | Current Baseline state | Typed mapping registry and generated report | 246/265 typed mappings, 19 unmapped; readiness remains `evidence_incomplete`, runtime profile validation unavailable, and no public claim or official OASIS Test Case pass is made. |
+
+### KMIPKIT-0010 T054 — Derive Key source eligibility (2026-10-26)
+
+KMIP Specification v2.1 §6.1.14 paragraph 1 says a Derive Key request may apply only to a Managed Object whose server-held Cryptographic Usage Mask contains the Derive Key bit. The request carries a caller-selected source identifier; it does not carry the object's effective mask. The Baseline Client mapping therefore records a caller-owned `RequiredBehavior` with no evaluator. It does not claim that request preflight checks remote object state, and it adds no hidden Get or other network exchange.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO-signed commit `1608f77a6`; `cargo test -p kmipkit-protocol --lib profile_maps_derive_key_source_eligibility_as_caller_responsibility -- --nocapture` | Expected failure: the typed mapping for `KMIPKIT-REQ-SPEC-6.1.14-001-001` was absent. |
+| Green | DCO-signed commit `3290236e6`; static `RequiredBehavior` mapping, caller-asserted capability marker, source-linked catalog entry, report parser allowlist, report inventory snapshot, and generated coverage report | PASS: the mapping has no request-local evaluator and explicitly leaves source eligibility to the caller. |
+| Focused mapping | `cargo test -p kmipkit-protocol --lib profile_maps_derive_key_source_eligibility_as_caller_responsibility -- --nocapture` | PASS: 1 test. |
+| Report parser | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints -v` | PASS: 1 test. |
+| Full-profile report contract | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | PASS: 1 test in 75.794 seconds; Baseline remains unselectable while required evidence is incomplete. |
+| Protocol regression suite | `cargo test -p kmipkit-protocol --all-features --quiet` | PASS: 1,115 unit tests plus all integration targets and doctests. |
+| Protocol quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` | PASS: formatting and Clippy clean. |
+| Catalog and generated artifacts | catalog validation; profile metadata `--check`; report `--check`; pinned OASIS source diff check; `git diff --check` | PASS: catalog valid (`sources=4 clauses=1411 records=4125`), generated outputs current, and no pinned source changed. |
+| Refactor | DCO-signed Refactor commit to be recorded below | Bilingual profile guide and KMIPKIT-0023 traceability now explain the caller duty and the limit of local verification. |
+| Current Baseline state | Typed mapping registry and generated report | 247/265 typed mappings, 18 unmapped; readiness remains `evidence_incomplete`, runtime profile validation unavailable, and no public claim or official OASIS Test Case pass is made. |

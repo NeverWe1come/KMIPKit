@@ -70,6 +70,13 @@ Specification v2.1 §6.1.42). El preflight del perfil no hace Poll, no lo
 repite ni solicita Get automáticamente, y no garantiza que el servidor
 complete la operación.
 
+El mapping Baseline Client de Derive Key registra la obligación de la
+aplicación de elegir un Managed Object fuente cuyo Cryptographic Usage Mask
+incluya el bit Derive Key (KMIP Specification v2.1 §6.1.14). Esa máscara
+pertenece al estado del objeto en el servidor. El preflight del perfil no la
+consulta ni la certifica, y no vuelve elegible por sí solo una petición
+Derive Key.
+
 ## Cómo leer el estado de un perfil
 
 El [informe de cobertura generado](../../../specification/catalog/coverage-report.md)

@@ -64,6 +64,12 @@ Pending, and can issue Get after Recover succeeds (KMIP Specification v2.1
 §6.1.42). Profile preflight does not poll, repeat Poll, or issue Get
 automatically, and it does not guarantee server completion.
 
+The Baseline Client mapping for Derive Key records the caller's duty to choose
+a source Managed Object whose Cryptographic Usage Mask includes the Derive Key
+bit (KMIP Specification v2.1 §6.1.14). That mask belongs to server-held object
+state. Profile preflight does not fetch or attest it, and does not make a
+Derive Key request eligible by itself.
+
 ## Reading profile status
 
 The [generated coverage report](../../../specification/catalog/coverage-report.md)
