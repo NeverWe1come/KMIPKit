@@ -6066,7 +6066,10 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
     }
 
     let misordered_device_fields = request_message_with_device_credential([
-        tagged(PASSWORD_TAG, Value::text_string("caller-password".to_owned())),
+        tagged(
+            PASSWORD_TAG,
+            Value::text_string("caller-password".to_owned()),
+        ),
         tagged(
             DEVICE_SERIAL_NUMBER_TAG,
             Value::text_string("serial".to_owned()),

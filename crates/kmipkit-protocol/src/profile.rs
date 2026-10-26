@@ -3266,8 +3266,12 @@ fn client_device_credential_has_identifier_if_present(
                             .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
                             .is_some_and(|child| {
                                 child.with_value(|value| match value {
-                                    ValueView::Structure(structure) => crate::credential::
-                                        validate_device_credential_value_view(&structure).is_ok(),
+                                    ValueView::Structure(structure) => {
+                                        crate::credential::validate_device_credential_value_view(
+                                            &structure,
+                                        )
+                                        .is_ok()
+                                    }
                                     _ => false,
                                 })
                             })

@@ -315,9 +315,7 @@ fn validate(
 }
 
 impl DeviceCredential {
-    pub(super) fn validate_view(
-        view: &StructureView<'_>,
-    ) -> Result<(), CredentialValidationError> {
+    pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
         validation::validate_fields(view, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)
     }
 }
