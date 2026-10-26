@@ -2958,6 +2958,62 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
 }
 
 #[test]
+fn profile_maps_add_attribute_application_namespace_without_application_data() {
+    // KMIP Specification v2.1 §4.4, Table 35, and §6.1.2 Table 167 allow a
+    // client to add Application Specific Information with its Data omitted.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.4-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
+    const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Application Specific Information omission has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Application Specific Information omission resolves to metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+    assert!(!evaluate(None, None));
+    let request = request_message_with_operation_payload(
+        ADD_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(
+                APPLICATION_SPECIFIC_INFORMATION_TAG,
+                Value::structure(structure([tagged(
+                    APPLICATION_NAMESPACE_TAG,
+                    Value::text_string("com.example.kmipkit".to_owned()),
+                )])),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&request), None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&request)
+        .expect("Add Attribute can omit Application Data when supplying its Namespace");
+}
+
+#[test]
 fn profile_maps_request_batch_item_repetition_as_optional_capability() {
     // KMIP Specification v2.1 §8.1 Table 394 allows Request Batch Item to repeat.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.1-002";
