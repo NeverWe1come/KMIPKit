@@ -6830,6 +6830,12 @@ Mapped `KMIPKIT-REQ-SPEC-9.11-004-001` from KMIP Specification v2.1 §9.11/Table
 | Catalog and generated artifacts | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d5d5ab75ec9318d7d646c6ba85c5e56559ace21e` | PASS: catalog valid (`sources=4 clauses=1411 records=4125`), generated files current, pinned OASIS sources unchanged. |
 | Remaining scope | T056 task | Open: Device uniqueness and optional password rules; Attestation and Hashed Password mapping; response-size behavior; unresolved Hashed Password timestamp monotonicity; and the existing deferred countdown-derived Time Stamp capability. T056 remains partial; no profile-conformance claim is made. |
 
+### KMIPKIT-0010 report registry fixture — §9.4 mappings (2026-10-26)
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red | Local `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | Expected failure: the hand-maintained expected mapping inventory did not yet include the two `KMIPKIT-REQ-SPEC-9.4-001-001` references and three `KMIPKIT-REQ-SPEC-9.4-002` references added by the optional Authentication profile mappings. |
+
 ### KMIPKIT-0010 T056 — Optional Authentication and repeated Credentials (2026-10-26)
 
 Mapped `KMIPKIT-REQ-SPEC-9.4-001-001` and `KMIPKIT-REQ-SPEC-9.4-002` from KMIP Specification v2.1 §9.4/Table 403 as optional Baseline capabilities. The typed profile permits omitted Authentication and can represent repeated Credential Structures. The omission rule remains caller/server-policy dependent; repeated Credential model evidence does not claim Client::execute authenticated transmission or server credential satisfaction.
