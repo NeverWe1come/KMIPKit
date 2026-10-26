@@ -89190,12 +89190,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/010-profile-conformance/contracts/profile-validation.md",
+        "specs/022-object-lifecycle/traceability.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 make permitted key use depend on the target object’s effective Cryptographic Usage Mask. The evaluator can see the requested operation but not the server-held mask; a requested Check mask is not evidence of the target key’s effective mask. Keep this capability unmapped until explicit caller-visible object metadata can be evaluated."
+      "status": "scoped_verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 make this optional client capability depend on the target object’s effective Cryptographic Usage Mask. The profile API cannot observe the server-held mask. This static mapping records caller responsibility only; its profile test verifies mapping classification, not remote eligibility or local preflight enforcement. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.17-001-002",
@@ -89220,12 +89227,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/010-profile-conformance/contracts/profile-validation.md",
+        "specs/022-object-lifecycle/traceability.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 prohibit functions excluded by the target object’s effective Cryptographic Usage Mask. The evaluator cannot observe that server-held mask from the operation request. Operation type alone cannot establish whether the function is prohibited. Keep this requirement unmapped."
+      "status": "scoped_verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §4.17 paragraph 1 and Table 61 prohibit functions excluded by the target object’s effective Cryptographic Usage Mask. The profile API cannot observe that server-held mask. This static mapping records caller responsibility only; its profile test verifies mapping classification, not remote eligibility or local preflight enforcement. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-001",
@@ -89757,12 +89771,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-protocol/src/obtain_lease.rs",
+        "crates/kmipkit-client/src/execute.rs",
+        "specs/010-profile-conformance/contracts/profile-validation.md",
+        "specs/022-object-lifecycle/traceability.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
+      ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §4.30 paragraph 1 prohibits use beyond the lease interval without obtaining another lease. The Obtain Lease response mapping exposes the returned interval, but the client API has no lease clock/state and cannot block later operations at expiry. Do not infer a timer or automatic renewal; keep this requirement unmapped."
+      "status": "scoped_verified",
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §4.30 paragraph 1 prohibits use beyond the lease interval unless another lease is obtained. KMIPKit exposes the caller-supplied Obtain Lease response interval but does not retain lease history, run a timer, block later unprofiled calls, or renew automatically. This static mapping records the caller duty; its profile test verifies classification, not expiry enforcement. No requirement-specific official Test Case is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.31-003",
@@ -94128,16 +94151,19 @@
       "feature_spec": "KMIPKIT-0039",
       "implementation_refs": [
         "crates/kmipkit-client/src/usage_allocation.rs",
-        "specs/025-policy-controls/contracts/usage-allocation-guard.md"
+        "specs/025-policy-controls/contracts/usage-allocation-guard.md",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/025-policy-controls/traceability.md"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/usage_allocation_guard_boundary.rs",
-        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::successful_allocation_binds_returned_identifier_and_open_caller_unit"
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::successful_allocation_binds_returned_identifier_and_open_caller_unit",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The explicit guard enforces allocation context only for typed Encrypt, MAC, and Sign calls routed through it. Ordinary typed calls, raw requests, other clients, and server-side use bypass this caller-owned local guard. Caller responsibility and this limitation are defined in the approved guard contract and feature traceability; this is scoped verification, not a claim of global or server-side enforcement. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 1 requires an allocation before protection use of an object with Usage Limits. The caller-owned guard enforces allocation only for typed Encrypt, MAC, and Sign requests routed through that guard; ordinary, generic, and other client calls can bypass it, and the profile evaluator is not integrated with the guard. Keep the profile rule unmapped; the existing scoped caller-boundary record does not prove profile-wide enforcement."
+      "review_note": "The explicit guard enforces allocation context only for typed Encrypt, MAC, and Sign calls routed through it. Ordinary typed calls, raw requests, other clients, and server-side use bypass this caller-owned local guard. Caller responsibility and this limitation are defined in the approved guard contract and feature traceability; this is scoped verification, not a claim of global or server-side enforcement. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §6.1.23 paragraph 1 prohibits protection use of a Usage-Limited object before allocation. The existing caller-owned guard covers only typed Encrypt, MAC, and Sign routed through that guard; ordinary, raw, and other-client calls bypass it, and the profile evaluator is not integrated with the guard. This static profile mapping records the caller duty and does not claim profile-wide enforcement or server state."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-001-002",
@@ -94168,15 +94194,16 @@
       "feature_spec": "KMIPKIT-0039",
       "implementation_refs": [
         "specs/025-policy-controls/contracts/usage-allocation-guard.md",
-        "specs/025-policy-controls/traceability.md"
+        "specs/025-policy-controls/traceability.md",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "specs/025-policy-controls/traceability.md"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The caller must ensure allocation is requested within the object's Activation Date and Protect Stop Date window. KMIPKit has no local server-object metadata with which to enforce this timing condition; the approved contract assigns the check to the caller and explicitly says ordinary typed calls bypass the guard. No runtime date enforcement is claimed. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 1 permits allocation only after Activation Date and before Protect Stop Date. The evaluator has no trusted object dates, lifecycle state, or clock. The existing caller-boundary record assigns this timing check to the caller; it is not profile-evaluator evidence. Keep this requirement unmapped."
+      "review_note": "The caller must ensure allocation is requested within the object's Activation Date and Protect Stop Date window. KMIPKit has no local server-object metadata with which to enforce this timing condition; the approved contract assigns the check to the caller and explicitly says ordinary typed calls bypass the guard. No runtime date enforcement is claimed. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS inventory.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §6.1.23 paragraph 1 requires allocation requests to fall after Activation Date and before Protect Stop Date. KMIPKit has no trusted remote object dates or clock in the per-exchange profile context; the approved policy contract assigns this timing check to the caller. This static mapping records that responsibility and does not claim local date enforcement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.23-002-001",
@@ -94263,16 +94290,20 @@
       "feature_spec": "KMIPKIT-0039",
       "implementation_refs": [
         "crates/kmipkit-client/src/usage_allocation.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/025-policy-controls/contracts/usage-allocation-guard.md",
+        "specs/025-policy-controls/traceability.md"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::over_budget_is_not_sent_and_not_sent_failure_releases_a_valid_reservation",
-        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::possibly_sent_and_response_started_errors_keep_reservations"
+        "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs::possibly_sent_and_response_started_errors_keep_reservations",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The local guard prevents over-budget use only for explicitly routed typed Encrypt, MAC, and Sign calls. Other operations and callers bypass this context, and local reservations are not evidence of remote consumption. This is verified at the documented caller boundary, not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.23 paragraph 2 prohibits protection use after the allocation is consumed until another allocation is obtained. The local guard accounts only for explicitly routed typed Encrypt, MAC, and Sign calls; ordinary and generic client calls bypass it, and local reservations cannot prove remote consumption. Keep the profile rule unmapped until profile-selected execution cannot bypass an explicit allocation context."
+      "review_note": "The local guard prevents over-budget use only for explicitly routed typed Encrypt, MAC, and Sign calls. Other operations and callers bypass this context, and local reservations are not evidence of remote consumption. This is verified at the documented caller boundary, not a full profile conformance claim. No requirement-specific official Test Cases are linked to this clause in the pinned OASIS test inventory.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §6.1.23 paragraph 2 prohibits use after the allocation is consumed until another allocation is obtained. The local guard accounts only for explicitly routed typed Encrypt, MAC, and Sign calls; it cannot prove remote consumption, and ordinary or generic calls bypass it. The static profile mapping records caller responsibility, not profile-wide enforcement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-001",
@@ -95589,16 +95620,21 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/obtain_lease.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/010-profile-conformance/contracts/profile-validation.md",
+        "specs/022-object-lifecycle/traceability.md"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim.\n\nT053 profile-evaluator blocker: KMIP Specification v2.1 §6.1.35 paragraph 1 prohibits use after lease expiry until another lease is obtained. The mapped response values do not provide a timer or prior-lease state, and the evaluator cannot block subsequent use based on expiry. The existing scoped caller-boundary record does not establish profile-level enforcement. Keep this rule unmapped."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim.\n\nT053 caller-owned profile mapping: KMIP Specification v2.1 §6.1.35 paragraph 1 prohibits use after lease expiry until a new lease is obtained. KMIPKit exposes returned lease values but has no timer or prior-lease state with which to gate later calls. This static mapping records caller responsibility only; its profile test verifies mapping classification, not local expiry enforcement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-002",

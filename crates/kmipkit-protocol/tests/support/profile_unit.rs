@@ -24069,10 +24069,12 @@ fn assert_static_caller_owned_profile_rule_mapping(
     assert!(mapping.evaluator.is_none());
     validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
         .expect("the static caller-owned rule has category-matched evidence");
-    assert!(mapping
-        .test_evidence
-        .iter()
-        .any(|evidence| evidence.test_id == test_id && evidence.kind == test_kind));
+    assert!(
+        mapping
+            .test_evidence
+            .iter()
+            .any(|evidence| evidence.test_id == test_id && evidence.kind == test_kind)
+    );
     assert_eq!(
         mapping.constraints,
         &[RuleConstraint {
@@ -24083,6 +24085,7 @@ fn assert_static_caller_owned_profile_rule_mapping(
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §4.17 paragraph 1 and Table 61.
 fn profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-4.17-001-001",
@@ -24095,6 +24098,7 @@ fn profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §4.17 paragraph 1 and Table 61.
 fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-4.17-001-002",
@@ -24107,6 +24111,7 @@ fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §4.30 paragraph 1.
 fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-4.30-001",
@@ -24119,6 +24124,7 @@ fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §6.1.23 paragraph 1.
 fn profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
@@ -24131,6 +24137,7 @@ fn profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition()
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §6.1.23 paragraph 1.
 fn profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-6.1.23-001-002",
@@ -24143,6 +24150,7 @@ fn profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior()
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §6.1.23 paragraph 2.
 fn profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-6.1.23-002-002",
@@ -24155,6 +24163,7 @@ fn profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §6.1.35 paragraph 1.
 fn profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
         "KMIPKIT-REQ-SPEC-6.1.35-001-002",
