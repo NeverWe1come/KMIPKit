@@ -36,7 +36,7 @@ use super::{
 use crate::profiles_generated::{
     GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
 };
-use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
@@ -764,6 +764,16 @@ fn request_payload_signature(request: &crate::RequestMessage) -> Vec<(u32, ItemT
         .expect("the test request has one Request Payload")
 }
 
+fn structure_contains_tag(structure: &StructureView<'_>, tag: u32) -> bool {
+    structure.children().iter().any(|item| {
+        item.tag().raw() == tag
+            || item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_contains_tag(&nested, tag),
+                _ => false,
+            })
+    })
+}
+
 fn get_request_with_repeated_wrapping_attribute_names() -> crate::RequestMessage {
     request_with_repeated_wrapping_attribute_names(GET_OPERATION)
 }
@@ -1025,7 +1035,7 @@ fn register_wrapped_key_value_request(
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const ENCODING_OPTION: u32 = 0x0042_00A3;
-    const IV_COUNTER_NONCE: u32 = 0x0042_00A0;
+    const IV_COUNTER_NONCE: u32 = 0x0042_003D;
     const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
     const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 
@@ -15441,16 +15451,22 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
             .iter()
             .find(|mapping| mapping.requirement_id == requirement_id)
             .expect("caller-owned wrapping obligation has a typed profile mapping");
-        assert_eq!(mapping.verification_category, GeneratedVerificationCategory::RequiredBehavior);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
         assert!(mapping.evaluator.is_none());
         assert!(mapping.test_evidence.contains(&RuleTestEvidence {
             test_id: TEST_ID,
             kind: RuleTestKind::PositiveBehavior,
         }));
-        assert_eq!(mapping.constraints, &[RuleConstraint {
-            key: "client_profile_capability",
-            value: capability,
-        }]);
+        assert_eq!(
+            mapping.constraints,
+            &[RuleConstraint {
+                key: "client_profile_capability",
+                value: capability,
+            }]
+        );
     }
 
     let result = ProfileValidationResult {
@@ -15464,6 +15480,23 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
         None,
         Some(Value::byte_string(b"synthetic-wrapping-iv".to_vec())),
     );
+    let (has_iv_counter_nonce, has_encoding_option) = request
+        .batch_items()
+        .next()
+        .and_then(|item| {
+            item.with_request_payload(|payload| {
+                (
+                    structure_contains_tag(&payload, 0x0042_003D),
+                    structure_contains_tag(&payload, 0x0042_00A3),
+                )
+            })
+        })
+        .expect("the test request has a Request Payload");
+    assert!(
+        has_iv_counter_nonce,
+        "KMIP Specification v2.1 §3.3/Table 14 uses the IV/Counter/Nonce tag"
+    );
+    assert!(!has_encoding_option, "the test omits Encoding Option");
     result
         .validate_request(&request)
         .expect("the caller can supply IV metadata and omit Encoding Option for TTLV");
@@ -16689,8 +16722,7 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
         .validate_request(&without_key_block)
         .expect("objects without Key Block do not acquire a Key Value requirement here");
 
-    let wrapped_key_value =
-        register_wrapped_key_value_request(Some(Value::enumeration(2)), None);
+    let wrapped_key_value = register_wrapped_key_value_request(Some(Value::enumeration(2)), None);
     assert!(evaluate(Some(&wrapped_key_value), None));
     result
         .validate_request(&wrapped_key_value)

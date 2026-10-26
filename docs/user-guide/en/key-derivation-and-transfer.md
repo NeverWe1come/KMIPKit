@@ -173,6 +173,13 @@ When importing a wrapped key, supply the caller-selected Key Wrap Type exactly
 when the object's Key Block contains Key Wrapping Data. `Replace Existing` is
 set only when the caller chooses it explicitly.
 
+For wrapped Key Values, the caller supplies IV/Counter/Nonce whenever the
+selected wrapping method requires it. When Encoding Option is absent, encode
+the Key Value Structure as TTLV before wrapping it. These obligations come
+from KMIP Specification v2.1 §3.3, Tables 14–15. KMIPKit preserves the
+caller-supplied representation; it does not infer parameters from referenced
+server keys or inspect the wrapped plaintext or ciphertext.
+
 Every method returns the server result from one request. A local validation
 failure reports `NotSent`; transport failures retain their strongest delivery
 state. Pending results remain explicit when the caller enables asynchronous

@@ -46,6 +46,13 @@ pub enum OpaqueObjectContext {
 /// object item. `KMIPKit` preserves their order and unknown values. It checks
 /// only the source-defined local Table 293 attribute requirements; the server
 /// remains authoritative for object validity, policy, and registration.
+///
+/// For caller-supplied wrapped Key Values, the caller is responsible for
+/// providing IV/Counter/Nonce when the selected wrapping method requires it
+/// (KMIP Specification v2.1 §3.3, Table 14), and for TTLV-encoding the Key
+/// Value Structure before wrapping it when Encoding Option is absent (§3.3,
+/// Table 15). `KMIPKit` does not infer referenced-key parameters or inspect
+/// wrapped plaintext or ciphertext.
 pub struct RegisterRequest {
     object_type: ObjectType,
     attributes: AttributeSet,

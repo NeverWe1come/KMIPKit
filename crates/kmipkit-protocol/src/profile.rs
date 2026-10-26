@@ -8044,6 +8044,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-003",
         source_gap_id: None,
@@ -12343,6 +12373,8 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
+                    | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     )
 }
@@ -12375,6 +12407,8 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
+                    | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
             )
     )
 }
