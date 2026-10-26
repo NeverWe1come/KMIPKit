@@ -9332,6 +9332,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
@@ -9350,6 +9354,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
@@ -9365,6 +9373,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {

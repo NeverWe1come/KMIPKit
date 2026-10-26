@@ -973,6 +973,34 @@ fn response_message_with_batch_items(items: &[(u32, &[u8])]) -> crate::ResponseM
         .expect("test batched Response Message is valid")
 }
 
+fn response_message_with_success_batch_payloads(
+    items: impl IntoIterator<Item = (u32, Vec<u8>, Structure)>,
+) -> crate::ResponseMessage {
+    let items: Vec<_> = items.into_iter().collect();
+    let batch_count = i32::try_from(items.len()).expect("test batch count fits in an Integer");
+    let mut root_items = vec![tagged(
+        RESPONSE_HEADER_TAG,
+        Value::structure(structure([
+            test_protocol_version(),
+            tagged(TIME_STAMP_TAG, Value::date_time(1)),
+            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
+        ])),
+    )];
+    root_items.extend(items.into_iter().map(|(operation, identifier, payload)| {
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(UNIQUE_BATCH_ITEM_ID_TAG, Value::byte_string(identifier)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        )
+    }));
+    crate::ResponseMessage::try_from_ttlv(structure(root_items))
+        .expect("test successful response batch has valid IDs and payloads")
+}
+
 fn get_attributes_x509_response() -> crate::ResponseMessage {
     crate::ResponseMessage::try_from_ttlv(structure([
         tagged(
@@ -21958,6 +21986,71 @@ fn profile_maps_obtain_lease_response_capabilities() {
     selected
         .validate_response(&request, &positive_response)
         .expect("positive Lease Time and Last Change Date remain caller-visible");
+}
+
+#[test]
+fn profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches() {
+    // KMIP Specification v2.1 §§6.1.35, 9.8, and 9.21: profile validation
+    // follows each response to its request even when the batch mixes operations.
+    const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
+    const LOCATE_OPERATION: u32 = 0x0000_000A;
+    const LAST_CHANGE_DATE_TAG: u32 = 0x0042_0048;
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REQUIREMENT_IDS: [&str; 3] = [
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
+    ];
+    let selected = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENT_IDS.into_iter().map(str::to_owned).collect(),
+    };
+    let obtain_lease_payload = || {
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("leased-object".to_owned()),
+            ),
+            tagged(LEASE_TIME_TAG, Value::interval(30)),
+            tagged(LAST_CHANGE_DATE_TAG, Value::date_time(1_700_000_030)),
+        ])
+    };
+    let first_id = 0_usize.to_be_bytes().to_vec();
+    let second_id = 1_usize.to_be_bytes().to_vec();
+
+    let ordered_request = request_message_with_batch_operations_and_order(
+        [
+            (OBTAIN_LEASE_OPERATION, Structure::new()),
+            (LOCATE_OPERATION, Structure::new()),
+        ],
+        Some(true),
+    );
+    let ordered_response = response_message_with_success_batch_payloads([
+        (
+            OBTAIN_LEASE_OPERATION,
+            first_id.clone(),
+            obtain_lease_payload(),
+        ),
+        (LOCATE_OPERATION, second_id.clone(), Structure::new()),
+    ]);
+    selected
+        .validate_response(&ordered_request, &ordered_response)
+        .expect("ordered mixed responses preserve Obtain Lease capability evidence");
+
+    let unordered_request = request_message_with_batch_operations_and_order(
+        [
+            (OBTAIN_LEASE_OPERATION, Structure::new()),
+            (LOCATE_OPERATION, Structure::new()),
+        ],
+        Some(false),
+    );
+    let reordered_response = response_message_with_success_batch_payloads([
+        (LOCATE_OPERATION, second_id, Structure::new()),
+        (OBTAIN_LEASE_OPERATION, first_id, obtain_lease_payload()),
+    ]);
+    selected
+        .validate_response(&unordered_request, &reordered_response)
+        .expect("unordered mixed responses correlate by Unique Batch Item ID");
 }
 
 #[test]
