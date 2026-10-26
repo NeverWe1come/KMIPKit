@@ -433,6 +433,14 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "hashed_password_timestamp_monotonicity_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "activation_date_reached_before_use_caller_asserted",
             },
             RuleConstraint {
