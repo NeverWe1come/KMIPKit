@@ -99655,12 +99655,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/value.rs",
+        "crates/kmipkit-protocol/src/credential/variants.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_public_api.rs::credential_and_authentication_public_views_preserve_order_and_redact",
+        "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_credential_identification_model_capability",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_does_not_claim_server_satisfaction"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "KMIPKit's protocol model provides lossless typed Credential representation for client identification. This mapping is model capability evidence only: it does not select profile-specific Authentication mechanisms, transmit credentials, claim server acceptance, or claim an official OASIS Test Case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-001",

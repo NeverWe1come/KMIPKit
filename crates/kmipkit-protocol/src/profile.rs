@@ -10067,6 +10067,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::credential_and_authentication_public_views_preserve_order_and_redact",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "credential_identification_representation",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.5-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
         source_gap_id: None,
@@ -12257,6 +12278,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
                     | "hashed_password_sha256_default"
+                    | "credential_identification_representation"
             )
     )
 }
@@ -12285,6 +12307,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "zero_or_more_create_attributes"
                     | "recover_before_use_caller_controlled"
                     | "hashed_password_sha256_default"
+                    | "credential_identification_representation"
             )
     )
 }
