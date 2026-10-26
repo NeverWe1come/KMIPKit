@@ -7248,3 +7248,11 @@ The optional-evidence audit identifies KMIPKIT-REQ-SPEC-4.1-001-001 and KMIPKIT-
 | Red evidence | Command and result |
 |---|---|
 | Optional capability readiness | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v` | Expected Red: the readiness assertion fails because `optional client capability source mapping incomplete` is absent for KMIPKIT-REQ-SPEC-4.1-001-001 (and KMIPKIT-REQ-SPEC-4.17-001-001). The profile remains globally unavailable for other blockers, but these two capability gaps are not identified. |
+
+## KMIPKIT-0010 readiness linked-discrepancy blocker — Red (2026-10-27)
+
+Independent QA found that readiness did not name an open discrepancy affecting a selected profile requirement, contrary to Acceptance Scenario 3 in `specs/010-profile-conformance/spec.md`. Baseline includes `KMIPKIT-REQ-SPEC-9.11-004-001`, which open source discrepancy `KMIPKIT-DISC-042` lists as affected; its catalog mapping and executable tests do not resolve the source ambiguity.
+
+| Red evidence | Command and result |
+|---|---|
+| Linked open discrepancy blocker | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_for_linked_requirement -v` | Expected Red: the assertion for `unresolved source discrepancy: KMIPKIT-DISC-042 affects requirement KMIPKIT-REQ-SPEC-9.11-004-001` fails because readiness omits this blocker. |
