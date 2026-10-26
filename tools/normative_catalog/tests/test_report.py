@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import locale
 import os
@@ -1857,6 +1858,7 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-6.1.14-006-001",
                 "KMIPKIT-REQ-SPEC-6.1.14-006-002",
                 "KMIPKIT-REQ-SPEC-10.1.2-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-001",
                 "KMIPKIT-REQ-SPEC-10.1.2-002-001",
                 "KMIPKIT-REQ-SPEC-10.1.2-002-001",
                 "KMIPKIT-REQ-SPEC-10.1.2-002-002",
@@ -2313,6 +2315,30 @@ mod unrelated {
         report = render_report(catalog)
 
         self.assertNotIn(secret_suffix_marker, report)
+
+    def test_device_credential_order_evidence_stays_scoped_and_global_rule_deferred(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-10.1.2-001"
+        test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_requires_a_device_identifier_field_in_device_credentials"
+        )
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn(test_id, requirement["verification_refs"])
+        self.assertIn("Device Credential only", requirement["review_note"])
+
+        with (ROOT / "specification/compliance/requirements/KMIPKIT-0013.csv").open(
+            newline="", encoding="utf-8"
+        ) as stream:
+            trace_row = next(row for row in csv.DictReader(stream) if row["requirement_id"] == requirement_id)
+
+        self.assertEqual(trace_row["status"], "deferred")
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", trace_row["implementation_location"].split("; "))
+        self.assertIn(test_id, trace_row["test_ids"].split("; "))
+        self.assertIn("Device Credential only", trace_row["statement"])
 
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))

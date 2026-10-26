@@ -3227,6 +3227,7 @@ fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
             "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
             &[
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
             ],
         ),
         (
