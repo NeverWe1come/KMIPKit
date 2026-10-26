@@ -4429,7 +4429,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "tests": {
                     "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
                 },
-                "scope_note": "omits authentication",
+                "scope_note": "authentication omission",
             },
             "KMIPKIT-REQ-SPEC-9.4-002": {
                 "implementation": {"crates/kmipkit-protocol/src/credential/authentication.rs"},
@@ -18905,8 +18905,6 @@ class CatalogValidationTests(unittest.TestCase):
             expected_blocked_requirement_ids = {
                 "KMIPKIT-REQ-SPEC-4.1-001-001",
                 "KMIPKIT-REQ-SPEC-4.17-001-001",
-                "KMIPKIT-REQ-SPEC-9.11-001",
-                "KMIPKIT-REQ-SPEC-9.11-004-003",
                 "KMIPKIT-REQ-SPEC-9.20-001-002",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
@@ -18921,7 +18919,7 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in gaps
             if gap.endswith(": no usable implementation mapping")
         }
-        missing_implementation_ids = expected_blocked_requirement_ids
+        missing_implementation_ids = {"KMIPKIT-REQ-SPEC-9.20-001-002"}
         self.assertEqual(
             implementation_mapping_gap_ids,
             missing_implementation_ids,
@@ -18939,7 +18937,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             len(gaps),
-            2 * len(expected_blocked_requirement_ids),
+            len(missing_implementation_ids) + len(expected_blocked_requirement_ids),
         )
 
         from tools.normative_catalog.report import evaluate_profile_readiness

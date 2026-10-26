@@ -7232,3 +7232,11 @@ Exact-head CI run 40411394527 on a59c1dc5 failed the Ubuntu script-contract job 
 | Pinned-source evidence wording | Four review notes lack explicit pinned-source wording for KMIPKIT-REQ-SPEC-9.11-001, KMIPKIT-REQ-SPEC-9.11-004-002, KMIPKIT-REQ-SPEC-9.11-010-002, and KMIPKIT-REQ-SPEC-9.12-001-002. |
 
 The upstream OASIS source remains immutable. No catalog, test, or generated-file correction is included in this Red record.
+
+## KMIPKIT-0010 T056 Credential authentication capability — Red (2026-10-27)
+
+The pinned KMIP Specification v2.1 §9.11 defines Credential as a structure used for client identification, then separately says it MAY be used for authentication as indicated by KMIP Profiles. KMIP Profiles v2.1 §3.1.3 describes server identity handling when a request contains Authentication. The existing optional-capability mapping was named and constrained as identification representation, which did not identify the normative MAY accurately. KMIPKIT-0008 OD-004 still limits that feature to in-memory Credential/Authentication models; this correction claims typed TTLV representation only and does not add a Credential send path or server authentication behavior.
+
+| Red evidence | Command and result |
+|---|---|
+| Profile mapping source alignment | DCO Red test change; `cargo test -p kmipkit-protocol --lib profile_maps_profile_indicated_credential_authentication_model_capability -- --nocapture` | Expected Red: failed because the registry still declared `credential_identification_representation`; the test now requires the source-aligned `credential_authentication_representation`. |

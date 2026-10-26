@@ -6183,9 +6183,10 @@ fn profile_maps_hashed_password_sha256_default_as_required_behavior() {
 }
 
 #[test]
-fn profile_maps_credential_identification_model_capability() {
-    // KMIP Specification v2.1 §9.11 defines Credential for client identification;
-    // profile-specific authentication applicability remains outside this model evidence.
+fn profile_maps_profile_indicated_credential_authentication_model_capability() {
+    // KMIP Specification v2.1 §9.11 permits Credentials for authentication as
+    // indicated by KMIP Profiles; Profiles v2.1 §3.1.3 defines server use.
+    // This verifies model serialization, not profile mechanism selection or acceptance.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -6193,24 +6194,24 @@ fn profile_maps_credential_identification_model_capability() {
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Credential identification has a typed profile mapping");
+        .expect("profile-indicated Credential authentication has a typed model mapping");
     let requirement = CLIENT_REQUIREMENTS
         .iter()
         .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("Credential identification resolves to generated normative metadata");
+        .expect("Credential authentication resolves to generated normative metadata");
     assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("Credential identification has category-matched model evidence");
+        .expect("Credential authentication has category-matched model evidence");
     assert!(mapping.evaluator.is_none());
     assert_eq!(
         mapping.constraints,
         &[RuleConstraint {
             key: "client_profile_capability",
-            value: "credential_identification_representation",
+            value: "credential_authentication_representation",
         }]
     );
 }

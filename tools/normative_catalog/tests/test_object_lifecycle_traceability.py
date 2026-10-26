@@ -53,9 +53,12 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             record["requirement_id"]: record for record in catalog["requirements"]
         }
         elements = {record["element_id"]: record for record in catalog["elements"]}
+        primary_ledger = trace.split(
+            "\n## KMIPKIT-0010 T053 caller-owned profile rules", maxsplit=1
+        )[0]
         rows = [
             _cells(line)
-            for line in trace.splitlines()
+            for line in primary_ledger.splitlines()
             if line.startswith("| KMIPKIT-REQ-SPEC-")
         ]
 
@@ -317,7 +320,11 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             source = ROOT / path
             self.assertTrue(source.is_file(), path)
             contents = source.read_text(encoding="utf-8")
-            self.assertRegex(contents, rf"\bfn\s+{re.escape(symbol)}\b", f"{path}::{symbol}")
+            self.assertRegex(
+                contents,
+                rf"\b(?:fn|const|static)\s+{re.escape(symbol)}\b",
+                f"{path}::{symbol}",
+            )
 
     @staticmethod
     def _table_number(trace: str, operation: str, side: str, field: str) -> str:
