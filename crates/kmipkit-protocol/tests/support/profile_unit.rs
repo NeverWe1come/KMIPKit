@@ -1791,7 +1791,8 @@ fn profile_maps_required_derive_key_unique_identifier() {
 
 #[test]
 fn profile_maps_optional_repeated_derive_key_unique_identifiers() {
-    // KMIP Specification v2.1 §6.1.14 Table 205 permits repeated source IDs.
+    // KMIP Specification v2.1 §6.1.14 Table 205 permits repeated source IDs;
+    // §4.58 Table 145 permits Text String, Enumeration, and Integer encodings.
     let mapping = derive_key_repeated_identifiers_mapping();
     let requirement = CLIENT_REQUIREMENTS
         .iter()
@@ -1835,6 +1836,17 @@ fn profile_maps_optional_repeated_derive_key_unique_identifiers() {
     result
         .validate_request(&repeated_identifiers)
         .expect("repeated explicit source identifiers remain valid");
+
+    let repeated_enumeration_and_integer_identifiers = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(0xF123_4567)),
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(23)),
+        ]),
+    );
+    result
+        .validate_request(&repeated_enumeration_and_integer_identifiers)
+        .expect("Table 145 Enumeration and Integer Unique Identifiers remain representable");
 }
 
 #[test]
@@ -2539,7 +2551,8 @@ fn profile_maps_derive_key_prf_parameters_with_source_condition() {
 
 #[test]
 fn profile_maps_optional_derive_key_input_forms() {
-    // KMIP Specification v2.1 §7.12 permits explicit data or a Secret Data object identifier.
+    // KMIP Specification v2.1 §7.12 permits either input form; §4.58 Table 145
+    // permits Text String, Enumeration, and Integer Unique Identifier encodings.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -2599,6 +2612,29 @@ fn profile_maps_optional_derive_key_input_forms() {
         result
             .validate_request(&request)
             .expect("the optional input forms remain caller-controlled and representable");
+    }
+
+    for identifier in [
+        Value::enumeration(0xF123_4567),
+        Value::integer(23),
+    ] {
+        let request = request_message_with_operation_payload(
+            DERIVE_KEY_OPERATION,
+            structure([
+                tagged(
+                    DERIVE_KEY_DERIVATION_METHOD_TAG,
+                    Value::enumeration(HMAC_METHOD),
+                ),
+                tagged(UNIQUE_IDENTIFIER_TAG, identifier),
+                tagged(
+                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                    Value::structure(Structure::new()),
+                ),
+            ]),
+        );
+        result
+            .validate_request(&request)
+            .expect("Table 145 Enumeration and Integer Unique Identifiers are valid");
     }
 
     let malformed_data = request_message_with_operation_payload(
