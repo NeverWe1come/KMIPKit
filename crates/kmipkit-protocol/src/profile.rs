@@ -1687,6 +1687,25 @@ fn client_check_additional_attributes_are_limited_to_listed_set(
     })
 }
 
+fn client_check_requires_multi_item_batch_when_check_is_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let mut check_present = false;
+    for batch_item in request.batch_items() {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        check_present |= operation == CHECK_OPERATION;
+    }
+
+    !check_present || request.batch_items().len() >= 2
+}
+
 fn client_check_batch_order_option_is_true_when_check_is_present(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7927,6 +7946,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(client_check_requires_multi_item_batch_when_check_is_present),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_check_only_in_a_multi_item_batch_without_ordering",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

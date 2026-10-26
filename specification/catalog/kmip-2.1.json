@@ -97996,7 +97996,7 @@
       "source_keyword": "SHOULD",
       "normative_strength": "recommended",
       "subject": "Check operation",
-      "summary": "A client should use Check in a batch, generally after locating or creating an object and before Get.",
+      "summary": "A client should use Check in a multi-operation batch; the source's cited operation sequence is usual, not mandatory.",
       "role": "client",
       "direction": "client_to_server",
       "condition": "When using Check.",
@@ -98009,16 +98009,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/check.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_check_requires_multi_item_batch_when_check_is_present"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/check_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_leaves_recommended_batch_options_explicitly_selected_by_the_caller",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_check_only_in_a_multi_item_batch_without_ordering",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::singleton_check_profile_rule_rejection_is_not_sent_and_skips_the_exchange"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. No official Test Cases are linked to this requirement in the pinned OASIS source; this is not a full profile conformance claim."
+      "review_note": "Caller-facing behavior is verified within KMIPKit scope; see specs/022-object-lifecycle/traceability.md for the server/application boundary. For the selected Baseline Client profile, KMIP Specification v2.1 §6.1.7 opening paragraph is mapped to require at least two Batch Items when Check is present. Its later sequence is described as usual and is not enforced. Profile request-rule failures retain NotSent delivery semantics; the separate client test uses a stable source-backed error fixture because remaining Baseline mappings still prevent real profile selection. The unprofiled execute path remains unchanged. The pinned OASIS Test Cases inventory has no requirement-specific test ID; no official case pass or full profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-001",

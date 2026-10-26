@@ -9,9 +9,10 @@ use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    GetAttributesRequest, ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
-    ProfileValidationSelection, QueryFunction, QueryRequest, RequestMessage, ResponseMessage,
-    SetDefaultsRequest, profiles_generated::CLIENT_PROFILES,
+    CheckRequest, GetAttributesRequest, ProfileTransport, ProfileValidationError,
+    ProfileValidationErrorCode, ProfileValidationSelection, QueryFunction, QueryRequest,
+    RequestMessage, ResponseMessage, SetDefaultsRequest, UniqueIdentifier,
+    profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -698,6 +699,56 @@ fn request_profile_rejection_is_not_sent_and_skips_the_exchange() {
             .map(ProfileValidationError::code),
         Some(ProfileValidationErrorCode::RequestRuleRejected)
     );
+}
+
+#[test]
+fn singleton_check_profile_rule_rejection_is_not_sent_and_skips_the_exchange() {
+    const CHECK_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-6.1.7-001";
+    const CHECK_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-001";
+
+    let exchanges = Rc::new(Cell::new(0));
+    let request_checks = Rc::new(Cell::new(0));
+    let error = ProfileValidationError::for_test(
+        ProfileValidationErrorCode::RequestRuleRejected,
+        BASELINE,
+        CHECK_REQUIREMENT,
+        CHECK_CLAUSE,
+    );
+    let validator = TestProfileValidator {
+        error: error.clone(),
+        request_checks: Some(Rc::clone(&request_checks)),
+        transport_error: None,
+        request_error: Some(error),
+    };
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let singleton_check = ClientBatch::new(ClientBatchItem::new(ClientRequest::check(
+        CheckRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+            "profile-check-singleton".to_owned(),
+        )),
+    )));
+
+    let error = client
+        .execute_inner(
+            singleton_check,
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect_err("a singleton Check rejected by profile preflight is not exchanged");
+
+    assert_eq!(request_checks.get(), 1);
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let profile_error = error
+        .profile_validation_error()
+        .expect("the profile rejection preserves its stable source identifiers");
+    assert_eq!(
+        profile_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(profile_error.profile_id(), Some(BASELINE));
+    assert_eq!(profile_error.requirement_id(), Some(CHECK_REQUIREMENT));
+    assert_eq!(profile_error.source_clause_id(), Some(CHECK_CLAUSE));
 }
 
 #[test]
