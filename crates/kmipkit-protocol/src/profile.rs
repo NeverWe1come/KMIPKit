@@ -752,12 +752,6 @@ const LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const CREDENTIAL: u32 = 0x0042_0023;
 const CREDENTIAL_VALUE: u32 = 0x0042_0025;
 const ATTESTATION_CREDENTIAL_TYPE: u32 = 3;
-const DEVICE_CREDENTIAL_IDENTIFIER_FIELDS: [u32; 4] = [
-    0x0042_00B0, // Device Serial Number
-    0x0042_00AB, // Network Identifier
-    0x0042_00A9, // Machine Identifier
-    0x0042_00AA, // Media Identifier
-];
 const DEVICE_CREDENTIAL_PASSWORD: u32 = 0x0042_00A1;
 const DELEGATED_LOGIN_OPERATION: u32 = 0x0000_002F;
 const LOGOUT_OPERATION: u32 = 0x0000_002E;
@@ -3272,15 +3266,8 @@ fn client_device_credential_has_identifier_if_present(
                             .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
                             .is_some_and(|child| {
                                 child.with_value(|value| match value {
-                                    ValueView::Structure(structure) => {
-                                        structure.children().iter().any(|child| {
-                                            DEVICE_CREDENTIAL_IDENTIFIER_FIELDS
-                                                .contains(&child.tag().raw())
-                                                && child.with_value(|value| {
-                                                    matches!(value, ValueView::TextString(_))
-                                                })
-                                        })
-                                    }
+                                    ValueView::Structure(structure) => crate::credential::
+                                        validate_device_credential_value_view(&structure).is_ok(),
                                     _ => false,
                                 })
                             })

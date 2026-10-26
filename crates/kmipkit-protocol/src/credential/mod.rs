@@ -38,6 +38,12 @@ pub(crate) fn validate_attestation_value_view(
     attestation::AttestationCredential::validate_view(view)
 }
 
+pub(crate) fn validate_device_credential_value_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<(), CredentialValidationError> {
+    DeviceCredential::validate_view(view)
+}
+
 pub(crate) fn credential_type_from_view(
     view: &kmipkit_ttlv::StructureView<'_>,
 ) -> Result<CredentialType, CredentialValidationError> {

@@ -314,6 +314,14 @@ fn validate(
     validation::validate_fields(&tree.view(), rules, at_least_one)
 }
 
+impl DeviceCredential {
+    pub(super) fn validate_view(
+        view: &StructureView<'_>,
+    ) -> Result<(), CredentialValidationError> {
+        validation::validate_fields(view, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)
+    }
+}
+
 fn validate_ticket(tree: &Structure) -> Result<(), CredentialValidationError> {
     for field in tree.view().children() {
         if field.tag().raw() != TICKET {
