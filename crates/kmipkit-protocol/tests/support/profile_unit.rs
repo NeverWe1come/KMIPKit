@@ -1009,7 +1009,10 @@ fn register_request_with_key_value_location(
     )
 }
 
-fn register_wrapped_key_value_request(encoding_option: Value) -> crate::RequestMessage {
+fn register_wrapped_key_value_request(
+    encoding_option: Option<Value>,
+    iv_counter_nonce: Option<Value>,
+) -> crate::RequestMessage {
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const OBJECT_TYPE: u32 = 0x0042_0057;
     const ATTRIBUTES: u32 = 0x0042_0125;
@@ -1022,8 +1025,26 @@ fn register_wrapped_key_value_request(encoding_option: Value) -> crate::RequestM
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const ENCODING_OPTION: u32 = 0x0042_00A3;
+    const IV_COUNTER_NONCE: u32 = 0x0042_00A0;
     const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
     const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+
+    let mut wrapping_fields = vec![
+        tagged(WRAPPING_METHOD, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ];
+    if let Some(value) = iv_counter_nonce {
+        wrapping_fields.push(tagged(IV_COUNTER_NONCE, value));
+    }
+    if let Some(value) = encoding_option {
+        wrapping_fields.push(tagged(ENCODING_OPTION, value));
+    }
 
     request_message_with_operation_payload(
         REGISTER_OPERATION,
@@ -1048,17 +1069,7 @@ fn register_wrapped_key_value_request(encoding_option: Value) -> crate::RequestM
                         ),
                         tagged(
                             KEY_WRAPPING_DATA,
-                            Value::structure(structure([
-                                tagged(WRAPPING_METHOD, Value::enumeration(1)),
-                                tagged(
-                                    ENCRYPTION_KEY_INFORMATION,
-                                    Value::structure(structure([tagged(
-                                        UNIQUE_IDENTIFIER,
-                                        Value::text_string("wrapping-key".to_owned()),
-                                    )])),
-                                ),
-                                tagged(ENCODING_OPTION, encoding_option),
-                            ])),
+                            Value::structure(structure(wrapping_fields)),
                         ),
                     ])),
                 )])),
@@ -15309,7 +15320,7 @@ fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
 
     let requests = [
         register_request_with_key_value_location(None, true),
-        register_wrapped_key_value_request(Value::enumeration(2)),
+        register_wrapped_key_value_request(Some(Value::enumeration(2)), None),
         secret_data_import_request(Value::structure(Structure::new()), None),
         secret_data_import_request(
             Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -15337,7 +15348,10 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
     };
 
     result
-        .validate_request(&register_wrapped_key_value_request(Value::enumeration(2)))
+        .validate_request(&register_wrapped_key_value_request(
+            Some(Value::enumeration(2)),
+            None,
+        ))
         .expect("the client can Register wrapped key data with key information");
     result
         .validate_request(&secret_data_import_request(
@@ -15403,6 +15417,56 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
     );
+}
+
+#[test]
+fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
+    // KMIP Specification v2.1 §3.3 Table 14 conditions IV/Counter/Nonce on
+    // the wrapping method; Table 15 requires TTLV when Encoding Option is absent.
+    const REQUIREMENT_IDS: [(&str, &str); 2] = [
+        (
+            "KMIPKIT-REQ-SPEC-3.3-002",
+            "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-3.3-006",
+            "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
+        ),
+    ];
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations";
+
+    for (requirement_id, capability) in REQUIREMENT_IDS {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("caller-owned wrapping obligation has a typed profile mapping");
+        assert_eq!(mapping.verification_category, GeneratedVerificationCategory::RequiredBehavior);
+        assert!(mapping.evaluator.is_none());
+        assert!(mapping.test_evidence.contains(&RuleTestEvidence {
+            test_id: TEST_ID,
+            kind: RuleTestKind::PositiveBehavior,
+        }));
+        assert_eq!(mapping.constraints, &[RuleConstraint {
+            key: "client_profile_capability",
+            value: capability,
+        }]);
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: REQUIREMENT_IDS
+            .iter()
+            .map(|(requirement_id, _)| (*requirement_id).to_owned())
+            .collect(),
+    };
+    let request = register_wrapped_key_value_request(
+        None,
+        Some(Value::byte_string(b"synthetic-wrapping-iv".to_vec())),
+    );
+    result
+        .validate_request(&request)
+        .expect("the caller can supply IV metadata and omit Encoding Option for TTLV");
 }
 
 #[test]
@@ -16625,7 +16689,8 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
         .validate_request(&without_key_block)
         .expect("objects without Key Block do not acquire a Key Value requirement here");
 
-    let wrapped_key_value = register_wrapped_key_value_request(Value::enumeration(2));
+    let wrapped_key_value =
+        register_wrapped_key_value_request(Some(Value::enumeration(2)), None);
     assert!(evaluate(Some(&wrapped_key_value), None));
     result
         .validate_request(&wrapped_key_value)
@@ -18887,7 +18952,10 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     result
-        .validate_request(&register_wrapped_key_value_request(Value::enumeration(2)))
+        .validate_request(&register_wrapped_key_value_request(
+            Some(Value::enumeration(2)),
+            None,
+        ))
         .expect(
             "caller-supplied TTLV-encoded wrapped Key Value with embedded attributes is usable",
         );
@@ -18895,7 +18963,7 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
         .validate_request(&register_request_with_key_value_location(None, true))
         .expect("wrapping remains optional for a Register request");
 
-    let malformed = register_wrapped_key_value_request(Value::integer(2));
+    let malformed = register_wrapped_key_value_request(Some(Value::integer(2)), None);
     let error = result
         .validate_request(&malformed)
         .expect_err("Encoding Option must use its source-defined Enumeration wire type");

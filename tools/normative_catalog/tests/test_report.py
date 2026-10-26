@@ -375,6 +375,14 @@ class CoverageReportTests(unittest.TestCase):
                 key: "client_profile_capability",
                 value: "name_unique_within_target_server_caller_asserted",
             },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
+            },
         ],
     },
 ];
