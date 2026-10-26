@@ -100494,20 +100494,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0007",
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/message/header.rs",
-        "crates/kmipkit-protocol/src/profile.rs",
-        "crates/kmipkit-ttlv/src/value.rs"
-      ],
-      "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
-        "crates/kmipkit-ttlv/tests/value_model.rs::date_time_preserves_signed_i64_boundaries"
-      ],
+      "implementation_refs": [],
+      "verification_refs": [],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §9.20 paragraph 1 permits a client with a countdown timer but no real-time clock to derive relative seconds from Date attributes by subtraction. The response Header Time Stamp accessor and generic TTLV Date-Time value are exposed, and the profile test demonstrates caller-side subtraction using Activation Date (Specification §4.1 Table 29). The sentence does not explicitly identify request versus response direction; the required server response Time Stamp is used as the current-time anchor. KMIPKit provides no countdown timer or automatic conversion. This does not authorize generating a countdown-derived outgoing request Time Stamp, which remains deferred by KMIPKIT-0007 OD-004. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "deferred",
+      "review_note": "KMIPKIT-0007 OD-004 defers implementation of countdown-derived outgoing Time Stamp generation, so the owning KMIPKIT-0007 record remains deferred with no implementation or verification references. KMIPKIT-0010 separately maps the caller-facing response Time Stamp and generic TTLV Date-Time values as an optional profile capability; it does not claim that the library runs a countdown timer, performs Date subtraction, or generates an outgoing timestamp. KMIP Specification v2.1 §9.20 paragraph 1 does not expressly identify request versus response direction; the profile capability uses the required server response Time Stamp as its current-time anchor. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.21-001-001",
