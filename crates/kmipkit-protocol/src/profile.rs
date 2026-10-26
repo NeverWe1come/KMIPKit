@@ -796,6 +796,13 @@ const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
 const DERIVE_KEY_OBJECT_TYPE: u32 = 0x0042_0057;
 const DERIVE_KEY_DERIVATION_METHOD: u32 = 0x0042_0031;
 const DERIVE_KEY_DERIVATION_PARAMETERS: u32 = 0x0042_0032;
+const DERIVE_KEY_HASH_METHOD: u32 = 2;
+const HASHING_ALGORITHM: u32 = 0x0042_0038;
+const DERIVATION_DATA: u32 = 0x0042_0030;
+const ASYNCHRONOUS_INDICATOR_MANDATORY: u32 = 1;
+const ASYNCHRONOUS_INDICATOR_PROHIBITED: u32 = 3;
+const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
+const ENUMERATION_EXTENSION_MAX: u32 = 0x8FFF_FFFF;
 const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const PGP_KEY_OBJECT_TYPE: u32 = 9;
 const SECRET_DATA_OBJECT_TYPE: u32 = 7;
@@ -4150,6 +4157,135 @@ fn derive_key_includes_required_derivation_parameters(
             })
             .unwrap_or(false)
     })
+}
+
+fn derive_key_hash_method_selects_explicit_prf(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(method) =
+                    field_presence(&payload, DERIVE_KEY_DERIVATION_METHOD)
+                else {
+                    // The separate §6.1.14 method rule owns missing, duplicate, or malformed method fields.
+                    return true;
+                };
+                method.with_value(|value| match value {
+                    ValueView::Enumeration(method) if *method == DERIVE_KEY_HASH_METHOD => {
+                        derive_key_hash_method_has_explicit_prf(&payload)
+                    }
+                    // §7.12's AES-CBC condition depends on the server-held derivation key; do not
+                    // infer that condition from the requested result attributes or ENCRYPT method.
+                    _ => true,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn derive_key_hash_method_has_explicit_prf(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(parameters) =
+        field_presence(payload, DERIVE_KEY_DERIVATION_PARAMETERS)
+    else {
+        return false;
+    };
+    parameters.with_value(|value| {
+        let ValueView::Structure(parameters) = value else {
+            return false;
+        };
+        let FieldPresence::Unique(cryptographic_parameters) =
+            field_presence(&parameters, CRYPTOGRAPHIC_PARAMETERS)
+        else {
+            return false;
+        };
+        cryptographic_parameters.with_value(|value| {
+            let ValueView::Structure(cryptographic_parameters) = value else {
+                return false;
+            };
+            let FieldPresence::Unique(hashing_algorithm) =
+                field_presence(&cryptographic_parameters, HASHING_ALGORITHM)
+            else {
+                return false;
+            };
+            hashing_algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        })
+    })
+}
+
+fn derive_key_optional_input_forms_are_representable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let identifiers_are_text = payload.children().iter().all(|field| {
+                    field.tag().raw() != UNIQUE_IDENTIFIER
+                        || field.with_value(|value| matches!(value, ValueView::TextString(_)))
+                });
+                if !identifiers_are_text {
+                    return false;
+                }
+
+                match field_presence(&payload, DERIVE_KEY_DERIVATION_PARAMETERS) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(parameters) => parameters.with_value(|value| {
+                        let ValueView::Structure(parameters) = value else {
+                            return false;
+                        };
+                        parameters.children().iter().all(|field| {
+                            field.tag().raw() != DERIVATION_DATA
+                                || field
+                                    .with_value(|value| matches!(value, ValueView::ByteString(_)))
+                        })
+                    }),
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_can_signal_asynchronous_response_support(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    match request.header().asynchronous_indicator() {
+        None
+        | Some(
+            ASYNCHRONOUS_INDICATOR_MANDATORY..=ASYNCHRONOUS_INDICATOR_PROHIBITED
+            | ENUMERATION_EXTENSION_MIN..=ENUMERATION_EXTENSION_MAX,
+        ) => true,
+        Some(_) => false,
+    }
 }
 
 fn derive_key_includes_required_attributes(
@@ -10736,6 +10872,54 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
             kind: RuleTestKind::NegativeBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.12-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.12-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_hash_method_selects_explicit_prf),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_prf_parameters_with_source_condition",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.12-005-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.12-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(derive_key_optional_input_forms_are_representable),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_derive_key_input_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8-003-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_signal_asynchronous_response_support),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_asynchronous_indicator_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
