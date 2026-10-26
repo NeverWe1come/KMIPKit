@@ -90409,7 +90409,7 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Application Specific Information request",
-      "summary": "The client may request this attribute with Application Namespace while omitting Application Data.",
+      "summary": "The client may request this attribute with a required Application Namespace and optional Application Data.",
       "role": "client",
       "direction": "client_to_server",
       "condition": "Any operation that creates new Managed Object(s), or adds/modifies the attribute of an existing Managed Object; Query can discover namespace support but is not a mandatory client preflight.",
@@ -90439,17 +90439,36 @@
       "implementation_refs": [
         "crates/kmipkit-protocol/src/add_attribute.rs::AddAttributeRequest::to_ttlv_payload",
         "crates/kmipkit-protocol/src/attribute.rs::NewAttribute",
+        "crates/kmipkit-protocol/src/certify.rs::CertifyRequest::into_ttlv_payload",
         "crates/kmipkit-protocol/src/create.rs::CreateRequest::into_ttlv_payload",
-        "crates/kmipkit-protocol/src/profile.rs::client_add_application_specific_information_can_omit_data"
+        "crates/kmipkit-protocol/src/create_key_pair.rs::CreateKeyPairRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/create_split_key.rs::CreateSplitKeyRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/derive_key.rs::DeriveKeyRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
+        "crates/kmipkit-protocol/src/profile.rs::client_application_specific_information_can_omit_data",
+        "crates/kmipkit-protocol/src/recertify.rs::RecertifyRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/rekey.rs::RekeyRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/rekey_key_pair.rs::RekeyKeyPairRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/register.rs::RegisterRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_add_attribute_application_namespace_without_application_data",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_application_specific_information_request_shapes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_application_namespace_for_every_supported_route",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_text_application_data",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_application_namespace_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_application_data_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_multiple_application_specific_information_values_in_one_new_attribute",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_multiple_direct_attributes_in_new_attribute",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_omitting_application_specific_information",
         "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.4, Tables 35–36, and §11.56 permit a client to submit Application Specific Information with a required Application Namespace (Text String, tag 0x420003) while omitting optional Application Data (Text String, tag 0x420002). The client MAY do so in operations that create Managed Objects or add/modify the attribute of an existing Managed Object. Query can discover namespace support but §4.4 does not mandate a client preflight; the response or error requirement belongs to the server. Scoped evidence covers the Add Attribute request and existing Create serialization case; the other permitted routes remain unverified. No requirement-specific official Test Case is linked, and no server behavior or profile-conformance claim is made."
+      "review_note": "KMIP Specification v2.1 §4.4, Tables 35–36, §5.7 Table 163, and §11.56 permit a client to submit Application Specific Information with a required Application Namespace (Text String, tag 0x420003) and optional Application Data (Text String, tag 0x420002). Table 36 permits multiple such attribute instances in object Attributes groups. Table 163 defines each mutation New Attribute as a Structure containing exactly one direct §4 attribute Item, so Add Attribute (§6.1.2), Modify Attribute (§6.1.34), and Set Attribute (§6.1.51) carry one Application Specific Information item per mutation request. The evaluator covers the 14 operations in §§6.1.2, 6.1.6, 6.1.8–6.1.10, 6.1.14, 6.1.25, 6.1.27, 6.1.34, 6.1.43, 6.1.45–6.1.47, and 6.1.51, including all key-pair attribute groups. Query can discover namespace support but §4.4 does not mandate a client preflight; generation of Data or an error for unsupported namespaces is server behavior and is not evaluated. No requirement-specific official Test Case is linked, and no server behavior or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-002",

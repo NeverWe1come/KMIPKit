@@ -5843,7 +5843,7 @@ fn client_add_attribute_random_number_generator_is_well_formed(
     })
 }
 
-fn client_add_application_specific_information_can_omit_data(
+fn client_application_specific_information_can_omit_data(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -5889,15 +5889,13 @@ fn client_add_application_specific_information_can_omit_data(
 
         batch_item
             .with_request_payload(|payload| {
-                attribute_groups
-                    .iter()
-                    .all(|group| {
-                        application_attribute_group_is_well_formed(
-                            &payload,
-                            *group,
-                            *group != NEW_ATTRIBUTE,
-                        )
-                    })
+                attribute_groups.iter().all(|group| {
+                    application_attribute_group_is_well_formed(
+                        &payload,
+                        *group,
+                        *group != NEW_ATTRIBUTE,
+                    )
+                })
             })
             .unwrap_or(false)
     })
@@ -5912,12 +5910,10 @@ fn application_attribute_group_is_well_formed(
         FieldPresence::Missing => true,
         FieldPresence::Duplicate => false,
         FieldPresence::Unique(group) => group.with_value(|value| match value {
-            ValueView::Structure(attributes) => {
-                application_specific_information_is_well_formed(
-                    &attributes,
-                    allow_multiple_instances,
-                )
-            }
+            ValueView::Structure(attributes) => application_specific_information_is_well_formed(
+                &attributes,
+                allow_multiple_instances,
+            ),
             _ => false,
         }),
     }
@@ -5938,16 +5934,15 @@ fn application_specific_information_is_well_formed(
         return false;
     }
 
-    let mut instance_count = 0;
-    for application_information in attributes
+    for (instance_index, application_information) in attributes
         .children()
         .iter()
         .filter(|field| field.tag().raw() == APPLICATION_SPECIFIC_INFORMATION)
+        .enumerate()
     {
-        if !allow_multiple_instances && instance_count > 0 {
+        if !allow_multiple_instances && instance_index > 0 {
             return false;
         }
-        instance_count += 1;
 
         let is_well_formed = application_information.with_value(|value| match value {
             ValueView::Structure(fields) => application_namespace_is_well_formed(&fields),
@@ -7594,9 +7589,9 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.4-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_add_application_specific_information_can_omit_data),
+        evaluator: Some(client_application_specific_information_can_omit_data),
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_add_attribute_application_namespace_without_application_data",
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_application_specific_information_request_shapes",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],

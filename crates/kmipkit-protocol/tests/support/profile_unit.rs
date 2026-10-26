@@ -2958,127 +2958,255 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
 }
 
 #[test]
-fn profile_maps_add_attribute_application_namespace_without_application_data() {
+fn profile_maps_application_specific_information_request_shapes() {
     // KMIP Specification v2.1 §4.4, Tables 35–36, and §6.1.2 Table 167 allow
-    // a client to provide multiple Application Specific Information instances
-    // without their Data on object-creating requests and attribute mutations.
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.4-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.4-001";
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const CREATE_OPERATION: u32 = 0x0000_0001;
-    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
-    const REGISTER_OPERATION: u32 = 0x0000_0003;
-    const REKEY_OPERATION: u32 = 0x0000_0004;
-    const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
-    const CERTIFY_OPERATION: u32 = 0x0000_0006;
-    const RECERTIFY_OPERATION: u32 = 0x0000_0007;
-    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
-    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
-    const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
-    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
-    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
-    const IMPORT_OPERATION: u32 = 0x0000_002A;
-    const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
-    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
-    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
-    const PRIVATE_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0127;
-    const PUBLIC_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0128;
-    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    // a client to provide Application Specific Information without its Data.
+    // Table 36 permits multiple attribute instances in object Attributes
+    // groups; §5.7 Table 163 limits each mutation's New Attribute to one item.
+    // Relevant request contexts are §§6.1.2, 6.1.6, 6.1.8–6.1.10, 6.1.14,
+    // 6.1.25, 6.1.27, 6.1.34, 6.1.43, 6.1.45–6.1.47, and 6.1.51.
     const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
     const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
 
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Application Specific Information omission has a typed profile rule");
+    let mapping = application_specific_information_mapping();
     let requirement = CLIENT_REQUIREMENTS
         .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .find(|requirement| requirement.requirement_id == "KMIPKIT-REQ-SPEC-4.4-001")
         .expect("Application Specific Information omission resolves to metadata");
-    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.4-001");
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
     );
-    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+    validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
         .expect("the optional capability has positive executable evidence");
-
     let evaluate = mapping
         .evaluator
         .expect("the optional capability has a request evaluator");
     assert!(!evaluate(None, None));
-    let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
-    };
 
-    let operation_groups: &[(u32, &[u32])] = &[
-        (CREATE_OPERATION, &[ATTRIBUTES_TAG]),
-        (
-            CREATE_KEY_PAIR_OPERATION,
-            &[
-                COMMON_ATTRIBUTES_TAG,
-                PRIVATE_KEY_ATTRIBUTES_TAG,
-                PUBLIC_KEY_ATTRIBUTES_TAG,
-            ],
-        ),
-        (REGISTER_OPERATION, &[ATTRIBUTES_TAG]),
-        (REKEY_OPERATION, &[ATTRIBUTES_TAG]),
-        (DERIVE_KEY_OPERATION, &[ATTRIBUTES_TAG]),
-        (CERTIFY_OPERATION, &[ATTRIBUTES_TAG]),
-        (RECERTIFY_OPERATION, &[ATTRIBUTES_TAG]),
-        (ADD_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
-        (MODIFY_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
-        (REKEY_KEY_PAIR_OPERATION, &[COMMON_ATTRIBUTES_TAG, PRIVATE_KEY_ATTRIBUTES_TAG, PUBLIC_KEY_ATTRIBUTES_TAG]),
-        (CREATE_SPLIT_KEY_OPERATION, &[ATTRIBUTES_TAG]),
-        (JOIN_SPLIT_KEY_OPERATION, &[ATTRIBUTES_TAG]),
-        (IMPORT_OPERATION, &[ATTRIBUTES_TAG]),
-        (SET_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
-    ];
-    for (operation, groups) in operation_groups {
+    for &(operation, groups) in APPLICATION_SPECIFIC_INFORMATION_OPERATIONS {
         let request = request_with_application_specific_information_groups(
-            *operation,
+            operation,
             groups,
             APPLICATION_SPECIFIC_INFORMATION_TAG,
             APPLICATION_NAMESPACE_TAG,
-            !groups.contains(&NEW_ATTRIBUTE_TAG),
+            groups.iter().all(|group| *group != 0x0042_013D),
         );
         assert!(evaluate(Some(&request), None), "operation {operation:#x}");
-        result
+        application_information_profile_result()
             .validate_request(&request)
             .expect("the request may omit Application Data when its Namespace is present");
+    }
 
-        for group in *groups {
-            let malformed_request =
-                request_with_malformed_application_specific_information_groups(
-                    *operation,
-                    &[*group],
-                    APPLICATION_SPECIFIC_INFORMATION_TAG,
-                    APPLICATION_NAMESPACE_TAG,
-                );
-            assert!(!evaluate(Some(&malformed_request), None), "operation {operation:#x}, group {group:#x}");
-            assert_request_rejected_for_requirement(
-                &result,
+    let add_attribute_payload = crate::AddAttributeRequest::new(
+        None,
+        crate::NewAttribute::new(tagged(
+            APPLICATION_SPECIFIC_INFORMATION_TAG,
+            Value::structure(structure([tagged(
+                APPLICATION_NAMESPACE_TAG,
+                Value::text_string("com.example.kmipkit".to_owned()),
+            )])),
+        )),
+    )
+    .to_ttlv_payload()
+    .expect("Add Attribute preserves a generic Application Specific Information item");
+    let add_attribute_request =
+        request_message_with_operation_payload(0x0000_000D, add_attribute_payload);
+    assert!(evaluate(Some(&add_attribute_request), None));
+    application_information_profile_result()
+        .validate_request(&add_attribute_request)
+        .expect("the typed Add Attribute request can omit Application Data");
+}
+
+#[test]
+fn profile_rejects_malformed_application_namespace_for_every_supported_route() {
+    // KMIP Specification v2.1 §4.4 Table 35 requires Application Namespace
+    // to use the Text String encoding in every supported request context.
+    const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
+    const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+
+    for &(operation, groups) in APPLICATION_SPECIFIC_INFORMATION_OPERATIONS {
+        for group in groups {
+            let malformed_request = request_with_malformed_application_specific_information_groups(
+                operation,
+                &[*group],
+                APPLICATION_SPECIFIC_INFORMATION_TAG,
+                APPLICATION_NAMESPACE_TAG,
+            );
+            assert!(
+                !evaluate(Some(&malformed_request), None),
+                "operation {operation:#x}, group {group:#x}"
+            );
+            assert_application_information_request_rejected(
                 &malformed_request,
-                REQUIREMENT_ID,
-                SOURCE_CLAUSE_ID,
                 "Application Namespace uses the Table 35 Text String encoding",
             );
         }
     }
+}
 
-    let no_attribute_request = request_message_with_operation_payload(
-        CREATE_OPERATION,
+#[test]
+fn profile_rejects_non_text_application_data() {
+    // KMIP Specification v2.1 §4.4 Table 35 defines optional Application Data
+    // as a Text String when present.
+    let malformed_data_request = request_message_with_operation_payload(
+        0x0000_000D,
         structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(Structure::new()),
+            0x0042_013D,
+            Value::structure(structure([tagged(
+                0x0042_0004,
+                Value::structure(structure([
+                    tagged(
+                        0x0042_0003,
+                        Value::text_string("com.example.kmipkit".to_owned()),
+                    ),
+                    tagged(0x0042_0002, Value::integer(1)),
+                ])),
+            )])),
         )]),
     );
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+    assert!(!evaluate(Some(&malformed_data_request), None));
+    assert_application_information_request_rejected(
+        &malformed_data_request,
+        "Application Data uses the Table 35 Text String encoding when present",
+    );
+}
+
+#[test]
+fn profile_rejects_duplicate_application_namespace_fields() {
+    // KMIP Specification v2.1 §4.4 Table 35 defines one required Application
+    // Namespace member in each Application Specific Information structure.
+    let duplicate_namespace_request = request_message_with_operation_payload(
+        0x0000_000D,
+        structure([tagged(
+            0x0042_013D,
+            Value::structure(structure([tagged(
+                0x0042_0004,
+                Value::structure(structure([
+                    tagged(
+                        0x0042_0003,
+                        Value::text_string("com.example.kmipkit".to_owned()),
+                    ),
+                    tagged(
+                        0x0042_0003,
+                        Value::text_string("com.example.other".to_owned()),
+                    ),
+                ])),
+            )])),
+        )]),
+    );
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+    assert!(!evaluate(Some(&duplicate_namespace_request), None));
+    assert_application_information_request_rejected(
+        &duplicate_namespace_request,
+        "each Application Specific Information Structure has one Application Namespace",
+    );
+}
+
+#[test]
+fn profile_rejects_duplicate_application_data_fields() {
+    // KMIP Specification v2.1 §4.4 Table 35 defines one optional Application
+    // Data Text String field within an Application Specific Information item.
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+
+    for (operation, group) in [(0x0000_0001, 0x0042_0125), (0x0000_000D, 0x0042_013D)] {
+        let duplicate_data_request = request_message_with_operation_payload(
+            operation,
+            structure([tagged(
+                group,
+                Value::structure(structure([tagged(
+                    0x0042_0004,
+                    Value::structure(structure([
+                        tagged(
+                            0x0042_0003,
+                            Value::text_string("com.example.kmipkit".to_owned()),
+                        ),
+                        tagged(0x0042_0002, Value::text_string("first".to_owned())),
+                        tagged(0x0042_0002, Value::text_string("second".to_owned())),
+                    ])),
+                )])),
+            )]),
+        );
+
+        assert!(!evaluate(Some(&duplicate_data_request), None));
+        assert!(
+            application_information_profile_result()
+                .validate_request(&duplicate_data_request)
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn profile_allows_omitting_application_specific_information() {
+    // KMIP Specification v2.1 §4.4 Table 35 does not require this attribute;
+    // Table 36 permits multiple instances but does not make one mandatory.
+    let no_attribute_request = request_message_with_operation_payload(
+        0x0000_0001,
+        structure([tagged(0x0042_0125, Value::structure(Structure::new()))]),
+    );
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
     assert!(evaluate(Some(&no_attribute_request), None));
-    result
+    application_information_profile_result()
         .validate_request(&no_attribute_request)
         .expect("the optional Application Specific Information attribute may be absent");
+}
 
+const APPLICATION_SPECIFIC_INFORMATION_OPERATIONS: &[(u32, &[u32])] = &[
+    (0x0000_0001, &[0x0042_0125]),
+    (0x0000_0002, &[0x0042_0126, 0x0042_0127, 0x0042_0128]),
+    (0x0000_0003, &[0x0042_0125]),
+    (0x0000_0004, &[0x0042_0125]),
+    (0x0000_0005, &[0x0042_0125]),
+    (0x0000_0006, &[0x0042_0125]),
+    (0x0000_0007, &[0x0042_0125]),
+    (0x0000_000D, &[0x0042_013D]),
+    (0x0000_000E, &[0x0042_013D]),
+    (0x0000_001D, &[0x0042_0126, 0x0042_0127, 0x0042_0128]),
+    (0x0000_0028, &[0x0042_0125]),
+    (0x0000_0029, &[0x0042_0125]),
+    (0x0000_002A, &[0x0042_0125]),
+    (0x0000_0031, &[0x0042_013D]),
+];
+
+fn application_specific_information_mapping() -> &'static TypedRuleMapping {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-4.4-001")
+        .expect("Application Specific Information has a typed profile rule")
+}
+
+fn application_information_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-4.4-001".to_owned()],
+    }
+}
+
+fn assert_application_information_request_rejected(
+    request: &crate::RequestMessage,
+    expected_reason: &str,
+) {
+    assert_request_rejected_for_requirement(
+        &application_information_profile_result(),
+        request,
+        "KMIPKIT-REQ-SPEC-4.4-001",
+        "KMIPKIT-CLAUSE-SPEC-4.4-001",
+        expected_reason,
+    );
 }
 
 fn request_with_application_specific_information_groups(
@@ -3114,10 +3242,7 @@ fn request_with_application_specific_information_groups(
                     ])),
                 ));
             }
-            tagged(
-                *group,
-                Value::structure(structure(instances)),
-            )
+            tagged(*group, Value::structure(structure(instances)))
         })),
     )
 }
@@ -21687,9 +21812,11 @@ fn profile_rejects_multiple_application_specific_information_values_in_one_new_a
             !evaluate(Some(&malformed_request), None),
             "New Attribute must contain one Application Specific Information item for operation {operation:#x}"
         );
-        assert!(application_information_profile_result()
-            .validate_request(&malformed_request)
-            .is_err());
+        assert!(
+            application_information_profile_result()
+                .validate_request(&malformed_request)
+                .is_err()
+        );
     }
 }
 
