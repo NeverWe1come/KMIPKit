@@ -121,6 +121,25 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
     ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
     ("client_profile_capability", "derive_key_source_usage_mask_caller_asserted"),
+    (
+        "client_profile_capability",
+        "target_usage_mask_allows_requested_function_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "target_usage_mask_excludes_requested_function_caller_asserted",
+    ),
+    ("client_profile_capability", "lease_not_expired_or_renewed_caller_asserted"),
+    (
+        "client_profile_capability",
+        "usage_allocation_obtained_before_protection_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "usage_allocation_requested_within_object_date_window_caller_asserted",
+    ),
+    ("client_profile_capability", "usage_allocation_remains_available_caller_asserted"),
+    ("client_profile_capability", "lease_not_expired_caller_asserted"),
     ("client_profile_capability", "recertify_once_per_existing_certificate_caller_asserted"),
     ("client_profile_capability", "rekey_once_per_existing_key_caller_asserted"),
     ("client_profile_capability", "rekey_key_pair_once_per_existing_pair_caller_asserted"),

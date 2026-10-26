@@ -9334,6 +9334,51 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "target_usage_mask_allows_requested_function_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "target_usage_mask_excludes_requested_function_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.30-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.30-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "lease_not_expired_or_renewed_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
         source_gap_id: None,
@@ -9376,6 +9421,66 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
         ],
         constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "usage_allocation_obtained_before_protection_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "usage_allocation_requested_within_object_date_window_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "usage_allocation_remains_available_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "lease_not_expired_caller_asserted",
+        }],
     },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-001",
@@ -12530,6 +12635,13 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
                     | "derive_key_source_usage_mask_caller_asserted"
+                    | "target_usage_mask_allows_requested_function_caller_asserted"
+                    | "target_usage_mask_excludes_requested_function_caller_asserted"
+                    | "lease_not_expired_or_renewed_caller_asserted"
+                    | "usage_allocation_obtained_before_protection_caller_asserted"
+                    | "usage_allocation_requested_within_object_date_window_caller_asserted"
+                    | "usage_allocation_remains_available_caller_asserted"
+                    | "lease_not_expired_caller_asserted"
                     | "recertify_once_per_existing_certificate_caller_asserted"
                     | "rekey_once_per_existing_key_caller_asserted"
                     | "rekey_key_pair_once_per_existing_pair_caller_asserted"
@@ -12572,6 +12684,13 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
                     | "derive_key_source_usage_mask_caller_asserted"
+                    | "target_usage_mask_allows_requested_function_caller_asserted"
+                    | "target_usage_mask_excludes_requested_function_caller_asserted"
+                    | "lease_not_expired_or_renewed_caller_asserted"
+                    | "usage_allocation_obtained_before_protection_caller_asserted"
+                    | "usage_allocation_requested_within_object_date_window_caller_asserted"
+                    | "usage_allocation_remains_available_caller_asserted"
+                    | "lease_not_expired_caller_asserted"
                     | "recertify_once_per_existing_certificate_caller_asserted"
                     | "rekey_once_per_existing_key_caller_asserted"
                     | "rekey_key_pair_once_per_existing_pair_caller_asserted"
