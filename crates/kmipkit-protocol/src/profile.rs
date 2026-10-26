@@ -6554,11 +6554,15 @@ fn client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons(
                     }),
                     FieldPresence::Missing | FieldPresence::Duplicate => false,
                 };
-                !is_compromise_reason
-                    || matches!(
-                        field_presence(&payload, COMPROMISE_OCCURRENCE_DATE),
-                        FieldPresence::Unique(_)
-                    )
+                if !is_compromise_reason {
+                    return true;
+                }
+                let FieldPresence::Unique(date) =
+                    field_presence(&payload, COMPROMISE_OCCURRENCE_DATE)
+                else {
+                    return false;
+                };
+                date.with_value(|value| matches!(value, ValueView::DateTime(_)))
             })
             .unwrap_or(false)
     })
@@ -8910,11 +8914,19 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
+        evaluator: Some(
+            client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons,
+        ),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_compromise_occurrence_date_for_compromise_reasons",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
