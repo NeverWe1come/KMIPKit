@@ -96593,6 +96593,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
@@ -96747,6 +96748,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
@@ -96858,6 +96860,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation"
       ],
       "negative_verification_required": false,
@@ -97051,6 +97054,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior"
       ],
       "negative_verification_required": false,

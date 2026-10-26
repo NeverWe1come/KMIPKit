@@ -70,6 +70,15 @@ bit (KMIP Specification v2.1 §6.1.14). That mask belongs to server-held object
 state. Profile preflight does not fetch or attest it, and does not make a
 Derive Key request eligible by itself.
 
+KMIP Specification v2.1 §§6.1.45–6.1.47 recommends performing Re-certify,
+Re-key, and Re-key Key Pair at most once for the same existing certificate,
+key, or key pair. KMIPKit does not keep cross-call object history, so the
+application remains responsible for avoiding repeated replacement operations.
+When an application needs new client credentials, it must explicitly issue
+Re-Provision under §6.1.48. KMIPKit does not infer credential expiry or invoke
+Re-Provision automatically. These caller-directed mappings do not establish
+server acceptance or profile conformance.
+
 ## Reading profile status
 
 The [generated coverage report](../../../specification/catalog/coverage-report.md)

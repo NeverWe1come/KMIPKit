@@ -77,6 +77,15 @@ pertenece al estado del objeto en el servidor. El preflight del perfil no la
 consulta ni la certifica, y no vuelve elegible por sí solo una petición
 Derive Key.
 
+KMIP Specification v2.1 §§6.1.45–6.1.47 recomienda ejecutar Re-certify,
+Re-key y Re-key Key Pair como máximo una vez para el mismo certificado, clave o
+par de claves existente. KMIPKit no conserva historial de objetos entre
+llamadas; la aplicación debe evitar repetir esas operaciones de sustitución.
+Cuando la aplicación necesite credenciales nuevas, debe invocar explícitamente
+Re-Provision conforme a §6.1.48. KMIPKit no deduce la caducidad de las
+credenciales ni invoca Re-Provision automáticamente. Estos mapeos a cargo de
+la aplicación no demuestran aceptación del servidor ni conformidad del perfil.
+
 ## Cómo leer el estado de un perfil
 
 El [informe de cobertura generado](../../../specification/catalog/coverage-report.md)
