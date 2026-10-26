@@ -834,6 +834,9 @@ const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
 const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
 const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const APPLICATION_DATA: u32 = 0x0042_0002;
+const APPLICATION_NAMESPACE: u32 = 0x0042_0003;
+const APPLICATION_SPECIFIC_INFORMATION: u32 = 0x0042_0004;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
 const REVOKE_OPERATION: u32 = 0x0000_0013;
 const VALIDATE_OPERATION: u32 = 0x0000_0017;
@@ -5840,6 +5843,68 @@ fn client_add_attribute_random_number_generator_is_well_formed(
     })
 }
 
+fn client_add_application_specific_information_can_omit_data(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != ADD_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, NEW_ATTRIBUTE) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(new_attribute) => {
+                    new_attribute.with_value(|value| match value {
+                        ValueView::Structure(attributes) => {
+                            application_specific_information_is_well_formed(&attributes)
+                        }
+                        _ => false,
+                    })
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn application_specific_information_is_well_formed(attributes: &StructureView<'_>) -> bool {
+    match field_presence(attributes, APPLICATION_SPECIFIC_INFORMATION) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(application_information) => {
+            application_information.with_value(|value| match value {
+                ValueView::Structure(fields) => application_namespace_is_well_formed(&fields),
+                _ => false,
+            })
+        }
+    }
+}
+
+fn application_namespace_is_well_formed(fields: &StructureView<'_>) -> bool {
+    let namespace_is_valid = matches!(
+        field_presence(fields, APPLICATION_NAMESPACE),
+        FieldPresence::Unique(namespace)
+            if namespace.with_value(|value| matches!(value, ValueView::TextString(_)))
+    );
+    let data_is_valid = match field_presence(fields, APPLICATION_DATA) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(data) => {
+            data.with_value(|value| matches!(value, ValueView::TextString(_)))
+        }
+    };
+    namespace_is_valid && data_is_valid
+}
+
 fn rng_parameters_attribute_is_well_formed(attributes: &StructureView<'_>) -> bool {
     match field_presence(attributes, RANDOM_NUMBER_GENERATOR) {
         FieldPresence::Missing => true,
@@ -7392,6 +7457,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.4-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_add_application_specific_information_can_omit_data),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_add_attribute_application_namespace_without_application_data",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
