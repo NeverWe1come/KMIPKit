@@ -2059,6 +2059,11 @@ mod unrelated {
                     # and response Message Extension profile mappings.
                     "KMIPKIT-REQ-SPEC-9.4-001-002",
                     "KMIPKIT-REQ-SPEC-9.4-001-002",
+                    "KMIPKIT-REQ-SPEC-9.4-001-001",
+                    "KMIPKIT-REQ-SPEC-9.4-001-001",
+                    "KMIPKIT-REQ-SPEC-9.4-002",
+                    "KMIPKIT-REQ-SPEC-9.4-002",
+                    "KMIPKIT-REQ-SPEC-9.4-002",
                     "KMIPKIT-REQ-SPEC-9.11-004-001",
                     "KMIPKIT-REQ-SPEC-9.11-004-001",
                     "KMIPKIT-REQ-SPEC-9.13-001-004",
