@@ -110,8 +110,9 @@ fn wrapper_round_trip(value: CredentialValue, raw_type: u32, expected_fields: us
     }
 }
 
-// KMIP Specification v2.1 §9.11 defines Credential for client identification;
-// this verifies lossless representation, not profile-specific authentication.
+// KMIP Specification v2.1 §9.11 permits Credentials for authentication as
+// indicated by KMIP Profiles; this verifies model serialization and redaction,
+// not mechanism selection or server acceptance.
 #[test]
 fn credential_and_authentication_public_views_preserve_order_and_redact() {
     let raw_type = 0xF123_4567;

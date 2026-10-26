@@ -88028,8 +88028,8 @@
       "condition": "Encoding Option is not present.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE"
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99761,7 +99761,7 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "Credential",
-      "summary": "A client may use Credential for identification; it may also use Credential for authentication when the selected profile indicates that use.",
+      "summary": "A Credential is used for client identification; it MAY be used for authentication as indicated by the applicable KMIP Profile.",
       "role": "client",
       "direction": "client_to_server",
       "condition": "Authentication use is as indicated by the applicable profile.",
@@ -99780,13 +99780,13 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/credential_public_api.rs::credential_and_authentication_public_views_preserve_order_and_redact",
         "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_credential_identification_model_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_profile_indicated_credential_authentication_model_capability",
         "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_does_not_claim_server_satisfaction"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKit's protocol model provides lossless typed Credential representation for client identification. This mapping is model capability evidence only: it does not select profile-specific Authentication mechanisms, transmit credentials, claim server acceptance, or claim an official OASIS Test Case pass."
+      "review_note": "The pinned KMIP Specification v2.1 §9.11 defines Credential as a structure for client identification and states that it MAY be used for authentication as indicated by KMIP Profiles. KMIP Profiles v2.1 §3.1.3 specifies server identity handling when a request contains Authentication. KMIPKit exposes typed Credential and ordered Authentication structures with lossless TTLV conversions; the positive tests cover model construction, conversion, and redaction. Under KMIPKIT-0008 OD-004, this evidence is in-memory only: KMIPKit does not add a Credential send path, select a profile-specific authentication mechanism, or claim server acceptance. No requirement-specific official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-001",
@@ -99829,7 +99829,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Table 410 defines the required outer Credential Type and Credential Value members. The Baseline evaluator validates that envelope, then implements the conservative typed Device interpretation selected by KMIPKIT-0008 OD-002: require at least one of the four §9.11 identifiers named in the preceding uniqueness sentence. This is a project interpretation of the source phrase “at least one field,” not wording stated verbatim by KMIP. A present-empty Text String still counts as field presence. The caller remains responsible for actual uniqueness under KMIPKIT-REQ-SPEC-9.11-004-002; KMIPKit does not infer a comparison scope or verify uniqueness. Tests cover each identifier, Password-only and Device-Identifier-only rejection, malformed outer Credential members, and absence of Authentication. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Table 410 defines the required outer Credential Type and Credential Value members. The Baseline evaluator validates that envelope, then implements the conservative typed Device interpretation selected by KMIPKIT-0008 OD-002: require at least one of the four §9.11 identifiers named in the preceding uniqueness sentence. KMIPKIT-DISC-042 remains open because the source phrase “at least one field” does not identify a specific minimum field set; the four-identifier interpretation is a project decision, not wording stated verbatim by KMIP. A present-empty Text String still counts as field presence. The caller remains responsible for actual uniqueness under KMIPKIT-REQ-SPEC-9.11-004-002; KMIPKit does not infer a comparison scope or verify uniqueness. Tests cover each identifier, Password-only and Device-Identifier-only rejection, malformed outer Credential members, and absence of Authentication. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-002",
@@ -99873,7 +99873,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §9.11 and Table 412 require one or a combination of the four Device identifier fields to be unique and require the client to provide at least one field. Approved KMIPKIT-0008 OD-002 assigns actual uniqueness to the caller because the source does not define a comparison scope. KMIPKit exposes and preserves the caller-supplied fields; it does not verify uniqueness or claim a client-side uniqueness test. No official OASIS Test Case is linked."
+      "review_note": "The pinned KMIP Specification v2.1 §9.11 and Table 412 require one or a combination of the four Device identifier fields to be unique and require the client to provide at least one field. Approved KMIPKIT-0008 OD-002 assigns actual uniqueness to the caller because the source does not define a comparison scope. KMIPKit exposes and preserves the caller-supplied fields; it does not verify uniqueness or claim a client-side uniqueness test. No official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-003",
@@ -100018,7 +100018,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The KMIPKit typed model exposes SHA-256 (raw Enumeration value 6) as the effective Hashing Algorithm when omitted while preserving field absence; explicit assigned and unknown raw values remain unchanged. This is model-level evidence only: KMIPKit does not calculate hashes or claim credential transmission, server behavior, or an official OASIS Test Case pass."
+      "review_note": "The pinned KMIP Specification v2.1 §9.11 paragraph immediately before Table 415 sets SHA-256 (raw Enumeration value 6) as the effective Hashing Algorithm default when omitted. The typed model preserves field absence while exposing that effective value; explicit assigned and unknown raw values remain unchanged. This is model-level evidence only: KMIPKit does not calculate hashes or claim credential transmission, server behavior, or an official OASIS Test Case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-001",
@@ -100103,7 +100103,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "For Create Split Key, the client advertises its configured local byte cap when representable as the signed Integer, clamped to i32::MAX otherwise, and passes the full configured cap to transport. Tests cover the clamp, a valid response exactly at the local cap, and rejection of one byte over before decoding. Discover Versions omits the peer-visible field. This derived evidence is not an official Test Case and does not claim server acceptance or profile conformance."
+      "review_note": "The pinned KMIP Specification v2.1 §9.12 and Table 417 require a client to handle responses up to the Maximum Response Size it declares. For Create Split Key, the client advertises its configured local byte cap as a signed Integer (clamped to i32::MAX when needed), passes the full local cap to transport, accepts a valid response exactly at the cap, and rejects one byte over before decoding. Discover Versions omits the peer-visible field. This derived evidence is not an official Test Case and does not claim server acceptance or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-003",

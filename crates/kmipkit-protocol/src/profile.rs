@@ -10423,7 +10423,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         ],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
-            value: "credential_identification_representation",
+            value: "credential_authentication_representation",
         }],
     },
     TypedRuleMapping {
@@ -12741,7 +12741,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_poll_caller_directed"
                     | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
-                    | "credential_identification_representation"
+                    | "credential_authentication_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
@@ -12791,7 +12791,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_poll_caller_directed"
                     | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
-                    | "credential_identification_representation"
+                    | "credential_authentication_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"

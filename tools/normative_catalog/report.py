@@ -120,7 +120,7 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
     ),
-    ("client_profile_capability", "credential_identification_representation"),
+    ("client_profile_capability", "credential_authentication_representation"),
     ("client_profile_capability", "declared_response_capacity"),
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
     ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
@@ -1162,6 +1162,85 @@ def _unresolved_profile_scope_blockers(
     return sorted(set(blockers))
 
 
+def _open_profile_discrepancy_blockers(
+    catalog: dict[str, Any],
+    profile: dict[str, Any],
+) -> list[str]:
+    """Name open source discrepancies linked to this profile or its requirements."""
+    profile_id = profile.get("profile_id")
+    requirement_ids = {
+        value
+        for value in profile.get("requirement_ids") or []
+        if isinstance(value, str)
+    }
+    blockers: list[str] = []
+    for discrepancy in catalog.get("discrepancies", []):
+        if not isinstance(discrepancy, dict) or discrepancy.get("state") != "open":
+            continue
+        discrepancy_id = discrepancy.get("discrepancy_id")
+        if not isinstance(discrepancy_id, str):
+            continue
+        affected_requirements = sorted(
+            value
+            for value in discrepancy.get("affected_requirement_ids") or []
+            if isinstance(value, str) and value in requirement_ids
+        )
+        for requirement_id in affected_requirements:
+            blockers.append(
+                f"unresolved source discrepancy: {discrepancy_id} affects requirement {requirement_id}"
+            )
+        affected_profile_ids = discrepancy.get("affected_profile_ids") or []
+        if isinstance(profile_id, str) and profile_id in affected_profile_ids:
+            blockers.append(
+                f"unresolved source discrepancy: {discrepancy_id} affects profile {profile_id}"
+            )
+    return sorted(set(blockers))
+
+
+def _optional_client_source_mapping_blockers(
+    catalog: dict[str, Any],
+    profile: dict[str, Any],
+) -> list[str]:
+    """Fail closed when selected client MAY/OPTIONAL context is unresolved."""
+    requirement_ids = {
+        value
+        for value in profile.get("requirement_ids") or []
+        if isinstance(value, str)
+    }
+    blockers: list[str] = []
+    for requirement in catalog.get("requirements", []):
+        if not isinstance(requirement, dict):
+            continue
+        requirement_id = requirement.get("requirement_id")
+        if requirement_id not in requirement_ids:
+            continue
+        if requirement.get("source_keyword") not in {"MAY", "OPTIONAL"}:
+            continue
+        if requirement.get("role") != "client":
+            continue
+        if requirement.get("scope_state") not in {"client_1_0", "profile_conditional"}:
+            continue
+
+        scope_state = requirement.get("scope_state")
+        direction = requirement.get("direction")
+        condition = requirement.get("condition")
+        has_condition = isinstance(condition, str) and bool(condition.strip())
+        supported_direction = direction in {
+            "client_to_server",
+            "server_to_client",
+            "both",
+        }
+        if scope_state == "profile_conditional":
+            source_context_complete = supported_direction and has_condition
+        else:
+            source_context_complete = supported_direction or has_condition
+        if not source_context_complete:
+            blockers.append(
+                f"optional client capability source mapping incomplete: {requirement_id}"
+            )
+    return sorted(set(blockers))
+
+
 def _effective_catalog_evidence_state(
     catalog_state: str,
     blockers: list[str],
@@ -1233,6 +1312,8 @@ def _evaluate_profile_readiness(
 
     blockers.extend(_profile_applicability_blockers(profile))
     blockers.extend(_unresolved_profile_scope_blockers(catalog, profile))
+    blockers.extend(_open_profile_discrepancy_blockers(catalog, profile))
+    blockers.extend(_optional_client_source_mapping_blockers(catalog, profile))
 
     requirement_rows, runtime_by_profile = _profile_requirement_coverage(
         catalog,
