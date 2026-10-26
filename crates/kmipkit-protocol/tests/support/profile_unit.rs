@@ -24266,7 +24266,8 @@ fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability(
     );
 
     let server_timestamp = response_message().header().time_stamp();
-    let relative_date = tagged(0x0042_0173, Value::date_time(10)).with_value(|value| {
+    // OASIS KMIP Specification v2.1 §4.1 Table 29 defines Activation Date as Date-Time.
+    let relative_date = tagged(0x0042_0001, Value::date_time(10)).with_value(|value| {
         match value {
             ValueView::DateTime(seconds) => Some(*seconds - server_timestamp),
             _ => None,
