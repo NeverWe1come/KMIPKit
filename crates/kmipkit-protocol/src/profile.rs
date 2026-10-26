@@ -750,8 +750,8 @@ const LOGIN_OPERATION: u32 = 0x0000_002D;
 const LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const CREDENTIAL: u32 = 0x0042_0023;
-const CREDENTIAL_TYPE: u32 = 0x0042_0024;
 const CREDENTIAL_VALUE: u32 = 0x0042_0025;
+const ATTESTATION_CREDENTIAL_TYPE: u32 = 3;
 const DEVICE_CREDENTIAL_IDENTIFIER_FIELDS: [u32; 4] = [
     0x0042_00B0, // Device Serial Number
     0x0042_00AB, // Network Identifier
@@ -3256,17 +3256,12 @@ fn client_device_credential_has_identifier_if_present(
 
                 field.with_value(|value| match value {
                     ValueView::Structure(credential) => {
-                        let credential_type = credential
-                            .children()
-                            .iter()
-                            .find(|child| child.tag().raw() == CREDENTIAL_TYPE)
-                            .and_then(|child| {
-                                child.with_value(|value| match value {
-                                    ValueView::Enumeration(raw) => Some(*raw),
-                                    _ => None,
-                                })
-                            });
-                        if credential_type != Some(CredentialType::Device.raw()) {
+                        let Ok(credential_type) =
+                            crate::credential::credential_type_from_view(&credential)
+                        else {
+                            return false;
+                        };
+                        if credential_type != CredentialType::Device {
                             return true;
                         }
 
@@ -3284,6 +3279,56 @@ fn client_device_credential_has_identifier_if_present(
                                                     matches!(value, ValueView::TextString(_))
                                                 })
                                         })
+                                    }
+                                    _ => false,
+                                })
+                            })
+                    }
+                    _ => false,
+                })
+            })
+        })
+        .unwrap_or(true)
+}
+
+fn client_attestation_credential_has_evidence_if_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request
+        .header()
+        .with_authentication(|authentication| {
+            authentication.children().iter().all(|field| {
+                if field.tag().raw() != CREDENTIAL {
+                    return true;
+                }
+
+                field.with_value(|value| match value {
+                    ValueView::Structure(credential) => {
+                        let Ok(credential_type) =
+                            crate::credential::credential_type_from_view(&credential)
+                        else {
+                            return false;
+                        };
+                        if credential_type.raw() != ATTESTATION_CREDENTIAL_TYPE {
+                            return true;
+                        }
+
+                        credential
+                            .children()
+                            .iter()
+                            .find(|child| child.tag().raw() == CREDENTIAL_VALUE)
+                            .is_some_and(|child| {
+                                child.with_value(|value| match value {
+                                    ValueView::Structure(attestation) => {
+                                        crate::credential::validate_attestation_value_view(
+                                            &attestation,
+                                        )
+                                        .is_ok()
                                     }
                                     _ => false,
                                 })
@@ -9897,6 +9942,32 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-006",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-006",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_attestation_credential_has_evidence_if_present),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],

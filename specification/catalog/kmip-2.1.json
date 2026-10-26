@@ -99691,9 +99691,11 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/mod.rs",
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_device_credential_envelopes",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials"
       ],
       "negative_verification_required": false,
@@ -99791,12 +99793,22 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/attestation.rs",
+        "crates/kmipkit-protocol/src/credential/mod.rs",
+        "crates/kmipkit-protocol/src/credential/nonce.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attestation_credential_envelopes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "The typed Attestation Credential model validates the Table 413 Attestation Type and Nonce fields and requires at least one correctly typed Attestation Measurement or Attestation Assertion; the Baseline evaluator applies the same validation to each Attestation Credential present in Authentication. This is request-structure evidence only and does not claim attestation evidence generation, verification, or server acceptance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-001",

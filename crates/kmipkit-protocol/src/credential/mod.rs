@@ -32,6 +32,18 @@ pub use variants::{
     UsernameAndPasswordCredential,
 };
 
+pub(crate) fn validate_attestation_value_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<(), CredentialValidationError> {
+    attestation::AttestationCredential::validate_view(view)
+}
+
+pub(crate) fn credential_type_from_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<CredentialType, CredentialValidationError> {
+    validation::credential_type_from_view(view)
+}
+
 use std::error::Error;
 use std::fmt;
 
