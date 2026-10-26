@@ -2959,12 +2959,31 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
 
 #[test]
 fn profile_maps_add_attribute_application_namespace_without_application_data() {
-    // KMIP Specification v2.1 §4.4, Table 35, and §6.1.2 Table 167 allow a
-    // client to add Application Specific Information with its Data omitted.
+    // KMIP Specification v2.1 §4.4, Tables 35–36, and §6.1.2 Table 167 allow
+    // a client to provide multiple Application Specific Information instances
+    // without their Data on object-creating requests and attribute mutations.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.4-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const REKEY_OPERATION: u32 = 0x0000_0004;
+    const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
+    const CERTIFY_OPERATION: u32 = 0x0000_0006;
+    const RECERTIFY_OPERATION: u32 = 0x0000_0007;
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
+    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMON_ATTRIBUTES_TAG: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES_TAG: u32 = 0x0042_0128;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
     const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
     const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
 
@@ -2988,27 +3007,132 @@ fn profile_maps_add_attribute_application_namespace_without_application_data() {
         .evaluator
         .expect("the optional capability has a request evaluator");
     assert!(!evaluate(None, None));
-    let application_information = tagged(
-        APPLICATION_SPECIFIC_INFORMATION_TAG,
-        Value::structure(structure([tagged(
-            APPLICATION_NAMESPACE_TAG,
-            Value::text_string("com.example.kmipkit".to_owned()),
-        )])),
-    );
-    let payload =
-        crate::AddAttributeRequest::new(None, crate::NewAttribute::new(application_information))
-            .to_ttlv_payload()
-            .expect("Add Attribute preserves a generic Application Specific Information item");
-    let request = request_message_with_operation_payload(ADD_ATTRIBUTE_OPERATION, payload);
-    assert!(evaluate(Some(&request), None));
-
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+
+    let operation_groups: &[(u32, &[u32])] = &[
+        (CREATE_OPERATION, &[ATTRIBUTES_TAG]),
+        (
+            CREATE_KEY_PAIR_OPERATION,
+            &[
+                COMMON_ATTRIBUTES_TAG,
+                PRIVATE_KEY_ATTRIBUTES_TAG,
+                PUBLIC_KEY_ATTRIBUTES_TAG,
+            ],
+        ),
+        (REGISTER_OPERATION, &[ATTRIBUTES_TAG]),
+        (REKEY_OPERATION, &[ATTRIBUTES_TAG]),
+        (DERIVE_KEY_OPERATION, &[ATTRIBUTES_TAG]),
+        (CERTIFY_OPERATION, &[ATTRIBUTES_TAG]),
+        (RECERTIFY_OPERATION, &[ATTRIBUTES_TAG]),
+        (ADD_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
+        (MODIFY_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
+        (REKEY_KEY_PAIR_OPERATION, &[COMMON_ATTRIBUTES_TAG, PRIVATE_KEY_ATTRIBUTES_TAG, PUBLIC_KEY_ATTRIBUTES_TAG]),
+        (CREATE_SPLIT_KEY_OPERATION, &[ATTRIBUTES_TAG]),
+        (JOIN_SPLIT_KEY_OPERATION, &[ATTRIBUTES_TAG]),
+        (IMPORT_OPERATION, &[ATTRIBUTES_TAG]),
+        (SET_ATTRIBUTE_OPERATION, &[NEW_ATTRIBUTE_TAG]),
+    ];
+    for (operation, groups) in operation_groups {
+        let request = request_with_application_specific_information_groups(
+            *operation,
+            groups,
+            APPLICATION_SPECIFIC_INFORMATION_TAG,
+            APPLICATION_NAMESPACE_TAG,
+        );
+        assert!(evaluate(Some(&request), None), "operation {operation:#x}");
+        result
+            .validate_request(&request)
+            .expect("the request may omit Application Data when its Namespace is present");
+
+        for group in *groups {
+            let malformed_request =
+                request_with_malformed_application_specific_information_groups(
+                    *operation,
+                    &[*group],
+                    APPLICATION_SPECIFIC_INFORMATION_TAG,
+                    APPLICATION_NAMESPACE_TAG,
+                );
+            assert!(!evaluate(Some(&malformed_request), None), "operation {operation:#x}, group {group:#x}");
+            assert_request_rejected_for_requirement(
+                &result,
+                &malformed_request,
+                REQUIREMENT_ID,
+                SOURCE_CLAUSE_ID,
+                "Application Namespace uses the Table 35 Text String encoding",
+            );
+        }
+    }
+
+    let no_attribute_request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(Structure::new()),
+        )]),
+    );
+    assert!(evaluate(Some(&no_attribute_request), None));
     result
-        .validate_request(&request)
-        .expect("Add Attribute can omit Application Data when supplying its Namespace");
+        .validate_request(&no_attribute_request)
+        .expect("the optional Application Specific Information attribute may be absent");
+
+}
+
+fn request_with_application_specific_information_groups(
+    operation: u32,
+    groups: &[u32],
+    application_specific_information_tag: u32,
+    application_namespace_tag: u32,
+) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        operation,
+        structure(groups.iter().map(|group| {
+            tagged(
+                *group,
+                Value::structure(structure([
+                    tagged(
+                        application_specific_information_tag,
+                        Value::structure(structure([tagged(
+                            application_namespace_tag,
+                            Value::text_string("com.example.kmipkit".to_owned()),
+                        )])),
+                    ),
+                    tagged(
+                        application_specific_information_tag,
+                        Value::structure(structure([tagged(
+                            application_namespace_tag,
+                            Value::text_string("com.example.other".to_owned()),
+                        )])),
+                    ),
+                ])),
+            )
+        })),
+    )
+}
+
+fn request_with_malformed_application_specific_information_groups(
+    operation: u32,
+    groups: &[u32],
+    application_specific_information_tag: u32,
+    application_namespace_tag: u32,
+) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        operation,
+        structure(groups.iter().map(|group| {
+            tagged(
+                *group,
+                Value::structure(structure([tagged(
+                    application_specific_information_tag,
+                    Value::structure(structure([tagged(
+                        application_namespace_tag,
+                        Value::integer(1),
+                    )])),
+                )])),
+            )
+        })),
+    )
 }
 
 #[test]
