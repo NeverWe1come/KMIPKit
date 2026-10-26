@@ -5630,6 +5630,55 @@ fn profile_requires_a_credential_when_request_authentication_is_present() {
 }
 
 #[test]
+fn profile_maps_optional_authentication_and_repeated_credentials() {
+    // KMIP Specification v2.1 §§9.4 and 9.11: client authentication and
+    // repeated Credentials are optional capabilities whose use is caller-led.
+    const AUTHENTICATION_OPTIONAL: &str = "KMIPKIT-REQ-SPEC-9.4-001-001";
+    const CREDENTIAL_REPEATED: &str = "KMIPKIT-REQ-SPEC-9.4-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    for (requirement_id, source_clause_id) in [
+        (AUTHENTICATION_OPTIONAL, "KMIPKIT-CLAUSE-SPEC-9.4-001"),
+        (CREDENTIAL_REPEATED, "KMIPKIT-CLAUSE-SPEC-9.4-002"),
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("optional authentication and credential capabilities have typed mappings");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the optional credential requirement resolves to metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::OptionalCapability
+        );
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("optional credential behavior has category-matched evidence");
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![
+            AUTHENTICATION_OPTIONAL.to_owned(),
+            CREDENTIAL_REPEATED.to_owned(),
+        ],
+    };
+    let omitted = request_message_with_authentication(None);
+    result
+        .validate_request(&omitted)
+        .expect("Authentication may be omitted when caller policy does not require it");
+
+    for credential_count in [1, 2] {
+        let request = request_message_with_authentication(Some(credential_count));
+        result
+            .validate_request(&request)
+            .expect("the request model can represent repeated Credential structures");
+    }
+}
+
+#[test]
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
     // KMIP Specification v2.1 §9.11 and Table 412; the typed Device policy
     // follows KMIPKIT-0008 OD-002 and keeps field presence separate from text.
