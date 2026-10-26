@@ -1697,6 +1697,39 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
         "Derive Key must specify a source identifier instead of using the ID Placeholder",
     );
 
+    let explicit_id_placeholder = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::enumeration(1),
+        )]),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &explicit_id_placeholder,
+        DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID,
+        "Table 205 prohibits the ID Placeholder enumeration as a Derive Key identifier",
+    );
+
+    let repeated_identifier_with_id_placeholder = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key".to_owned()),
+            ),
+            tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1)),
+        ]),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &repeated_identifier_with_id_placeholder,
+        DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID,
+        "Table 205 prohibits the ID Placeholder in every repeated source identifier",
+    );
+
     let unrelated_operation = request_message_with_operation_payload(0x0000_000A, Structure::new());
     result
         .validate_request(&unrelated_operation)
