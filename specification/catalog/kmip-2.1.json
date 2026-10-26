@@ -95511,16 +95511,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/obtain_lease.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_obtain_lease_response_values_are_typed"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The client preserves and exposes a zero Lease Time to its caller; evidence does not assert server lease decisions or client timekeeping. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves a zero value and the Baseline profile evaluator accepts the complete successful response. This demonstrates caller-visible zero semantics only; it does not enforce later object use, server lease decisions, or timekeeping. No official Test Case is linked and no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-001-002",
@@ -95587,16 +95590,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/obtain_lease.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_obtain_lease_response_values_are_typed"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
-        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once"
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The client preserves and exposes Last Change Date for caller comparison; evidence does not assert automatic cache refresh. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Last Change Date. The typed response preserves its exact Date-Time value and the Baseline profile evaluator accepts the complete successful response, so the caller can compare it with caller-owned prior state. No cache or automatic refresh is asserted. No official Test Case is linked and no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.35-005",
@@ -95625,15 +95631,18 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/obtain_lease.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_obtain_lease_response_values_are_typed"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval"
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The client exposes a positive Lease Time interval through the response getter; evidence does not assert timers, automatic renewal, or server behavior. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.35 Table 269 exposes Lease Time as an Interval. The typed response preserves positive values and the Baseline profile evaluator accepts the complete successful response. This supports caller-controlled use of the interval only; it does not add timers, automatic renewal, or server behavior. No official Test Case is linked and no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-001",
