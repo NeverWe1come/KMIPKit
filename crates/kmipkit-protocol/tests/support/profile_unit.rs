@@ -6066,6 +6066,71 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
 }
 
 #[test]
+fn profile_maps_optional_device_password_authentication_capability() {
+    // KMIP Specification v2.1 §9.11/Table 412 defines Password as an optional Text String.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Device Password has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    let evaluate = mapping
+        .evaluator
+        .expect("Device Password shape is checked in the request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let omitted = request_message_with_device_credential([tagged(
+        DEVICE_SERIAL_NUMBER_TAG,
+        Value::text_string("serial".to_owned()),
+    )]);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("Device Password may be omitted");
+
+    let supplied = request_message_with_device_credential([
+        tagged(
+            DEVICE_SERIAL_NUMBER_TAG,
+            Value::text_string("serial".to_owned()),
+        ),
+        tagged(
+            PASSWORD_TAG,
+            Value::text_string("credential-secret".to_owned()),
+        ),
+    ]);
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("Password is accepted with a Device identifier");
+
+    let malformed = request_message_with_device_credential([
+        tagged(
+            DEVICE_SERIAL_NUMBER_TAG,
+            Value::text_string("serial".to_owned()),
+        ),
+        tagged(PASSWORD_TAG, Value::boolean(true)),
+    ]);
+    assert!(!evaluate(Some(&malformed), None));
+    assert_eq!(
+        result
+            .validate_request(&malformed)
+            .expect_err("Table 412 encodes Password as Text String")
+            .code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
 fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
     // KMIP Specification v2.1 §9.12; Discover Versions is not likely-large,
     // while Create Split Key can return repeated key material (§6.1.10).
