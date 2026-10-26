@@ -1174,6 +1174,35 @@ mod unrelated {
             readiness["blockers"],
         )
 
+    def test_profile_readiness_names_open_discrepancy_linked_to_profile(self) -> None:
+        from tools.normative_catalog.report import evaluate_profile_readiness
+
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        discrepancy = next(
+            row
+            for row in catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-042"
+        )
+        discrepancy["affected_requirement_ids"] = []
+        discrepancy["affected_profile_ids"] = [profile_id]
+
+        readiness = evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIn(
+            f"unresolved source discrepancy: KMIPKIT-DISC-042 affects profile {profile_id}",
+            readiness["blockers"],
+        )
+
     def test_readiness_cli_reports_missing_current_run_manifest_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module
 

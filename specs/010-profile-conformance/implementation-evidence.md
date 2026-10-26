@@ -7256,3 +7256,11 @@ Independent QA found that readiness did not name an open discrepancy affecting a
 | Red evidence | Command and result |
 |---|---|
 | Linked open discrepancy blocker | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_for_linked_requirement -v` | Expected Red: the assertion for `unresolved source discrepancy: KMIPKIT-DISC-042 affects requirement KMIPKIT-REQ-SPEC-9.11-004-001` fails because readiness omits this blocker. |
+
+## KMIPKIT-0010 readiness direct-profile discrepancy link — Red (2026-10-27)
+
+The first discrepancy regression covered `affected_requirement_ids`. QA also identified the separate catalog linkage through `affected_profile_ids`; an open discrepancy with only that direct profile link must block readiness as well.
+
+| Red evidence | Command and result |
+|---|---|
+| Direct profile discrepancy link | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_linked_to_profile -v` | Expected Red: the assertion for `unresolved source discrepancy: KMIPKIT-DISC-042 affects profile KMIPKIT-PROFILE-BASELINE-CLIENT` fails because readiness does not consider `affected_profile_ids`. |
