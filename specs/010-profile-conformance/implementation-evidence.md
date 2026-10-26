@@ -7264,3 +7264,24 @@ The first discrepancy regression covered `affected_requirement_ids`. QA also ide
 | Red evidence | Command and result |
 |---|---|
 | Direct profile discrepancy link | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_linked_to_profile -v` | Expected Red: the assertion for `unresolved source discrepancy: KMIPKIT-DISC-042 affects profile KMIPKIT-PROFILE-BASELINE-CLIENT` fails because readiness does not consider `affected_profile_ids`. |
+
+## KMIPKIT-0010 exact-head script-contract corrections and readiness — Green (2026-10-27)
+
+DCO Red commits `5321e9a78` and `89dab3f18` added regressions for the exact CI script-contract failures and optional-capability readiness gaps. QA then identified the missing readiness blocker for open discrepancies; `efc124be0` and `bee65925e` add Red coverage for requirement-linked and direct-profile discrepancy links. DCO Green commit `ed8ae2e4d` corrects the catalog/report/test contracts, aligns the §9.11 Credential MAY mapping with KMIP Specification v2.1 §9.11 and Profiles §3.1.3, and makes readiness fail closed with named blockers for unresolved optional source context and open discrepancies affecting a profile or its requirements.
+
+| Verification | Command and result |
+|---|---|
+| Object-lifecycle script contracts | `py -3 -B -m unittest tools.normative_catalog.tests.test_object_lifecycle_traceability -v` | PASS: 3 tests; table scoping and Rust `const` source-symbol resolution pass. |
+| Credential typed capability | `cargo test -p kmipkit-protocol --lib profile_maps_profile_indicated_credential_authentication_model_capability -- --nocapture` | PASS: 1 test. |
+| Readiness discrepancy regressions | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_for_linked_requirement tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_readiness_names_open_discrepancy_linked_to_profile -v` | PASS: 2 tests; both requirement and direct profile links block readiness. |
+| Reviewed MAY/OPTIONAL evidence and readiness | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_every_reviewed_client_may_or_optional_has_usable_positive_evidence -v` | PASS: 1 test in 111.662 seconds; unresolved capabilities remain named blockers. |
+| Full profile report inventory | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | PASS: 1 test in 71.596 seconds; Baseline remains ineligible. |
+| Full typed-profile traceability | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v` | PASS: 1 test in 388.723 seconds; all 487 typed mappings resolve to their clauses, code, and executable evidence. |
+| Rust protocol suite | `cargo test -p kmipkit-protocol --all-features` | PASS: 1,133 unit tests, all integration targets, and 3 doctests. |
+| Rust lint and format | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check` | PASS. |
+| Catalog, generated metadata, report, and immutable sources | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4` | PASS: catalog has 4 sources, 1,411 clauses, and 4,125 records; generated profile and coverage reports are current; pinned OASIS copies match the release base. |
+| Independent QA | Read-only review and scoped re-review of readiness changes | PASS: the linked-discrepancy finding and direct-profile test-coverage gap are addressed; no new findings. |
+| Independent security review | Manual read-only review and scoped re-review of readiness discrepancy handling | PASS: no actionable security or correctness findings; validated catalog fields constrain the discrepancy matching inputs. No automated Codex Security scan was created for this local range. |
+| Current Baseline state | Typed profile registry and generated report | 264/265 typed mappings; `KMIPKIT-REQ-SPEC-9.11-010-001` remains unmapped under OD-003. Baseline remains `evidence_incomplete`; no official Test Case pass or profile-conformance claim is made. T056 remains partial. |
+
+Exact-head hosted CI remains pending publication; no hosted pass is claimed for these local changes.
