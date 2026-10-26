@@ -18337,6 +18337,7 @@ const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const REVOCATION_MESSAGE: u32 = 0x0042_0080;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
+const REVOKE_SHOULD_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-001";
 const REVOKE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-002";
 const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.44-003";
 const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] = [
@@ -18367,6 +18368,13 @@ fn revoke_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
         requirement_ids: vec![REVOKE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn revoke_compromise_date_recommended_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: vec![REVOKE_SHOULD_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -18420,6 +18428,74 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
                 )
         }));
     }
+}
+
+#[test]
+// Normative source: KMIP Specification v2.1 §6.1.44 paragraph 1 and Table 295.
+fn profile_maps_revoke_compromise_occurrence_date_recommendation() {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REVOKE_SHOULD_REQUIREMENT_ID);
+    assert!(
+        mapping.is_some(),
+        "the Revoke SHOULD has a typed profile mapping"
+    );
+    if let Some(mapping) = mapping {
+        assert_eq!(mapping.source_clause_id, REVOKE_SOURCE_CLAUSE_ID);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+        );
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.kind == RuleTestKind::RecommendedBehavior
+                && evidence.test_id.ends_with(
+                    "profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+                )
+        }));
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §6.1.44 paragraph 1 and Table 295 recommend a
+// caller-supplied date for Key Compromise and CA Compromise Revoke requests.
+fn profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons() {
+    let result = revoke_compromise_date_recommended_profile_result();
+    for reason in [2, 3] {
+        let request =
+            revoke_profile_request([revoke_reason_item(Value::enumeration(reason))], false);
+        let error = result
+            .validate_request(&request)
+            .expect_err("the selected profile rejects omission of the recommended date");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REVOKE_SHOULD_REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(REVOKE_SOURCE_CLAUSE_ID));
+
+        let request =
+            revoke_profile_request([revoke_reason_item(Value::enumeration(reason))], true);
+        assert!(
+            result.validate_request(&request).is_ok(),
+            "the supplied date is preserved for compromise reason {reason}"
+        );
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §6.1.44 Table 295 scopes the recommendation to Revoke.
+fn profile_revoke_compromise_date_recommendation_is_operation_specific_in_mixed_batch() {
+    let request = request_message_with_two_operation_payloads(
+        REVOKE_OPERATION,
+        structure([
+            revoke_reason_item(Value::enumeration(2)),
+            tagged(COMPROMISE_OCCURRENCE_DATE, Value::date_time(0)),
+        ]),
+        GET_OPERATION,
+        Structure::new(),
+    );
+    assert!(
+        revoke_compromise_date_recommended_profile_result()
+            .validate_request(&request)
+            .is_ok()
+    );
 }
 
 #[test]
