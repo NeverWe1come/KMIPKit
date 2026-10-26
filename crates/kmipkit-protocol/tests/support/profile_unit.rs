@@ -49,6 +49,9 @@ const AUTHENTICATION_TAG: u32 = 0x0042_000C;
 const CREDENTIAL_TAG: u32 = 0x0042_0023;
 const CREDENTIAL_TYPE_TAG: u32 = 0x0042_0024;
 const CREDENTIAL_VALUE_TAG: u32 = 0x0042_0025;
+const NONCE_TAG: u32 = 0x0042_00C8;
+const NONCE_ID_TAG: u32 = 0x0042_00C9;
+const NONCE_VALUE_TAG: u32 = 0x0042_00CA;
 const DEVICE_IDENTIFIER_TAG: u32 = 0x0042_00A2;
 const PASSWORD_TAG: u32 = 0x0042_00A1;
 const MACHINE_IDENTIFIER_TAG: u32 = 0x0042_00A9;
@@ -57,6 +60,8 @@ const NETWORK_IDENTIFIER_TAG: u32 = 0x0042_00AB;
 const DEVICE_SERIAL_NUMBER_TAG: u32 = 0x0042_00B0;
 const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
+const ATTESTATION_MEASUREMENT_TAG: u32 = 0x0042_00CB;
+const ATTESTATION_ASSERTION_TAG: u32 = 0x0042_00CC;
 const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
 const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
 const VENDOR_EXTENSION_TAG: u32 = 0x0042_009C;
@@ -354,6 +359,50 @@ fn request_message_with_device_credential(
         ),
     ]))
     .expect("test Request Message has a structurally valid Device Credential")
+}
+
+fn request_message_with_attestation_credential(
+    attestation_fields: impl IntoIterator<Item = Item>,
+) -> crate::RequestMessage {
+    let mut credential_value_fields = vec![
+        tagged(
+            NONCE_TAG,
+            Value::structure(structure([
+                tagged(NONCE_ID_TAG, Value::byte_string(vec![0x01])),
+                tagged(NONCE_VALUE_TAG, Value::byte_string(vec![0x02])),
+            ])),
+        ),
+        tagged(ATTESTATION_TYPE_TAG, Value::enumeration(0xF123_4567)),
+    ];
+    credential_value_fields.extend(attestation_fields);
+    let credential = structure([
+        tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(3)),
+        tagged(
+            CREDENTIAL_VALUE_TAG,
+            Value::structure(structure(credential_value_fields)),
+        ),
+    ]);
+    let authentication = structure([tagged(CREDENTIAL_TAG, Value::structure(credential))]);
+    let header = structure([
+        test_protocol_version(),
+        tagged(AUTHENTICATION_TAG, Value::structure(authentication)),
+        tagged(BATCH_COUNT_TAG, Value::integer(1)),
+    ]);
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(REQUEST_HEADER_TAG, Value::structure(header)),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has a structurally valid Attestation Credential")
 }
 
 fn request_message_with_attestation_capable_indicator(
@@ -5676,6 +5725,80 @@ fn profile_maps_optional_authentication_and_repeated_credentials() {
             .validate_request(&request)
             .expect("the request model can represent repeated Credential structures");
     }
+}
+
+#[test]
+fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_used() {
+    // KMIP Specification v2.1 §9.11 and Table 413 require one evidence field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Attestation evidence has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Attestation evidence rule resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("Attestation evidence has category-matched executable coverage");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Attestation credentials use a typed request evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let omitted_authentication = request_message_with_authentication(None);
+    assert!(evaluate(Some(&omitted_authentication), None));
+    result
+        .validate_request(&omitted_authentication)
+        .expect("the rule does not require an Attestation Credential");
+
+    for evidence in [
+        tagged(ATTESTATION_MEASUREMENT_TAG, Value::byte_string(vec![0x01])),
+        tagged(ATTESTATION_ASSERTION_TAG, Value::byte_string(vec![0x02])),
+    ] {
+        let request = request_message_with_attestation_credential([evidence]);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("either Attestation Measurement or Assertion satisfies §9.11");
+    }
+
+    let both = request_message_with_attestation_credential([
+        tagged(ATTESTATION_MEASUREMENT_TAG, Value::byte_string(vec![0x01])),
+        tagged(ATTESTATION_ASSERTION_TAG, Value::byte_string(vec![0x02])),
+    ]);
+    assert!(evaluate(Some(&both), None));
+    result
+        .validate_request(&both)
+        .expect("both Attestation evidence forms may be retained");
+
+    let missing_evidence = request_message_with_attestation_credential([]);
+    assert!(!evaluate(Some(&missing_evidence), None));
+    assert_eq!(
+        result
+            .validate_request(&missing_evidence)
+            .expect_err("an Attestation Credential requires evidence")
+            .code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let malformed_evidence = request_message_with_attestation_credential([tagged(
+        ATTESTATION_MEASUREMENT_TAG,
+        Value::boolean(true),
+    )]);
+    assert!(!evaluate(Some(&malformed_evidence), None));
 }
 
 #[test]
