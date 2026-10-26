@@ -10210,6 +10210,31 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "declared_response_capacity",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
         source_gap_id: None,
@@ -12279,6 +12304,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_before_use_caller_controlled"
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
+                    | "declared_response_capacity"
             )
     )
 }
@@ -12308,6 +12334,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_before_use_caller_controlled"
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
+                    | "declared_response_capacity"
             )
     )
 }

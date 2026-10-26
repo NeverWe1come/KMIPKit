@@ -99963,16 +99963,21 @@
       "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-transport/src/lib.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer",
+        "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
+        "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry",
         "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::client_accepts_a_valid_transport_response_exactly_at_the_limit",
-        "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::client_rejects_oversized_transport_response_before_decoder_entry"
+        "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::client_rejects_oversized_transport_response_before_decoder_entry",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_declared_response_capacity_as_required_behavior"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The configured local response cap is enforced. Discover Versions declares no peer-visible Maximum Response Size, so the client does not claim handling a peer-declared value; an operation that declares one must verify that exact declaration. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "For Create Split Key, the client advertises its configured local byte cap when representable as the signed Integer, clamped to i32::MAX otherwise, and passes the full configured cap to transport. Tests cover the clamp, a valid response exactly at the local cap, and rejection of one byte over before decoding. Discover Versions omits the peer-visible field. This derived evidence is not an official Test Case and does not claim server acceptance or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-003",

@@ -6162,6 +6162,7 @@ fn profile_maps_declared_response_capacity_as_required_behavior() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CLAMP_TEST_ID: &str = "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer";
     const CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6182,6 +6183,9 @@ fn profile_maps_declared_response_capacity_as_required_behavior() {
     assert!(mapping.evaluator.is_none());
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.test_id == CLIENT_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == CLAMP_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
     }));
     assert_eq!(
         mapping.constraints,
