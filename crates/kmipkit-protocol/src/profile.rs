@@ -825,6 +825,7 @@ const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const NO_ENCODING_OPTION: u32 = 1;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
 const RESULT_STATUS_SUCCESS: u32 = 0;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
@@ -3428,6 +3429,93 @@ fn client_response_preserves_x509_optional_values(
         })
 }
 
+fn client_obtain_lease_response_values_are_typed(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((request, response)) = response else {
+        return true;
+    };
+
+    let request_items = request.batch_items().collect::<Vec<_>>();
+    let response_items = response.batch_items().collect::<Vec<_>>();
+    if response_items.is_empty() || response_items.len() > request_items.len() {
+        return false;
+    }
+
+    let mut consumed_requests = vec![false; request_items.len()];
+    let mut request_indices_by_id = HashMap::new();
+    for (index, request_item) in request_items.iter().copied().enumerate() {
+        if let Some(request_id) = request_item.with_unique_batch_item_id(<[u8]>::to_vec)
+            && request_indices_by_id.insert(request_id, index).is_some()
+        {
+            return false;
+        }
+    }
+
+    for (response_index, response_item) in response_items.into_iter().enumerate() {
+        let Some(response_operation) = response_item.operation() else {
+            return false;
+        };
+        let Some(result_status) = response_item.result_status() else {
+            return false;
+        };
+
+        let response_id = response_item.with_unique_batch_item_id(<[u8]>::to_vec);
+        let request_index = if let Some(response_id) = response_id {
+            let Some(request_index) = request_indices_by_id.get(&response_id).copied() else {
+                return false;
+            };
+            request_index
+        } else if request_items.len() == 1
+            && response.batch_items().count() == 1
+            && request_items[0]
+                .with_unique_batch_item_id(<[u8]>::to_vec)
+                .is_none()
+        {
+            0
+        } else if request.header().effective_batch_order_option() {
+            let Some(request_item) = request_items.get(response_index).copied() else {
+                return false;
+            };
+            if request_item
+                .with_unique_batch_item_id(<[u8]>::to_vec)
+                .is_some()
+            {
+                return false;
+            }
+            response_index
+        } else {
+            return false;
+        };
+
+        if consumed_requests
+            .get(request_index)
+            .copied()
+            .unwrap_or(true)
+        {
+            return false;
+        }
+        consumed_requests[request_index] = true;
+        let Some(request_operation) = request_items[request_index].operation() else {
+            return false;
+        };
+        if request_operation != response_operation {
+            return false;
+        }
+        if request_operation != OBTAIN_LEASE_OPERATION
+            || result_status.raw() != RESULT_STATUS_SUCCESS
+        {
+            continue;
+        }
+
+        if crate::ObtainLeaseResponse::try_from_response_item(response_item).is_err() {
+            return false;
+        }
+    }
+
+    true
+}
 fn client_accepts_rng_seed_zero_data_length(
     _request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -9230,6 +9318,60 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_obtain_lease_response_values_are_typed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_obtain_lease_response_values_are_typed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_obtain_lease_response_values_are_typed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

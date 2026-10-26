@@ -21993,12 +21993,8 @@ fn profile_obtain_lease_response_capabilities_reject_malformed_success() {
         ProfileValidationErrorCode::ResponseRuleRejected
     );
 
-    let mismatched_operation = response_message_with_operation_status(
-        Some(0x0000_000A),
-        0,
-        None,
-        Some(Structure::new()),
-    );
+    let mismatched_operation =
+        response_message_with_operation_status(Some(0x0000_000A), 0, None, Some(Structure::new()));
     assert_eq!(
         selected
             .validate_response(&request, &mismatched_operation)
@@ -22007,8 +22003,12 @@ fn profile_obtain_lease_response_capabilities_reject_malformed_success() {
         ProfileValidationErrorCode::ResponseRuleRejected
     );
 
-    let server_failure =
-        response_message_with_operation_status(Some(OBTAIN_LEASE_OPERATION), 1, None, None);
+    let server_failure = response_message_with_operation_status(
+        Some(OBTAIN_LEASE_OPERATION),
+        1,
+        Some(0x0000_000A),
+        None,
+    );
     selected
         .validate_response(&request, &server_failure)
         .expect("a server failure response has no successful lease fields to evaluate");
