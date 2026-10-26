@@ -87,13 +87,15 @@ credenciales ni invoca Re-Provision automáticamente. Estos mapeos a cargo de
 la aplicación no demuestran aceptación del servidor ni conformidad del perfil.
 
 Otros mapeos de Baseline registran responsabilidades de la aplicación que
-dependen del estado remoto del objeto: el Cryptographic Usage Mask efectivo
-(§4.17), la caducidad del lease (§§4.30 y 6.1.35) y la asignación de uso con
-su ventana de fechas (§6.1.23). El preflight no consulta ese estado, no lo
-conserva entre llamadas ni aplica estas condiciones a peticiones normales o
-TTLV genéricas. La aplicación debe usar contexto fiable del servidor y de su
-propia lógica. Estos mapeos estáticos no demuestran aceptación del servidor,
-un caso oficial aprobado ni conformidad del perfil.
+dependen del estado remoto del objeto o del tiempo: Activation Date (§4.1),
+Deactivation Date (§4.18), el Cryptographic Usage Mask efectivo (§4.17), la
+caducidad del lease (§§4.30 y 6.1.35) y la asignación de uso con su ventana de
+fechas (§6.1.23). El preflight no consulta ese estado, no lo conserva entre
+llamadas ni aplica estas condiciones a peticiones normales o TTLV genéricas.
+Para las excepciones de Deactivation Date, la aplicación también debe comprobar
+que existen circunstancias extraordinarias y permiso especial. Estos mapeos
+estáticos registran obligaciones del llamador; no demuestran aceptación del
+servidor, un caso oficial aprobado ni conformidad del perfil.
 
 ## Cómo leer el estado de un perfil
 

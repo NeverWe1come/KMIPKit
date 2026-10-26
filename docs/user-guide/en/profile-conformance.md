@@ -80,12 +80,15 @@ Re-Provision automatically. These caller-directed mappings do not establish
 server acceptance or profile conformance.
 
 Other Baseline mappings record caller responsibilities that depend on remote
-object state: the effective Cryptographic Usage Mask (§4.17), lease expiry
+object state or application time: Activation Date (§4.1), Deactivation Date
+(§4.18), the effective Cryptographic Usage Mask (§4.17), lease expiry
 (§§4.30 and 6.1.35), and Usage Allocation and its date window (§6.1.23).
 Profile preflight does not retrieve that state, track it across calls, or
-enforce these conditions for ordinary or raw requests. The caller must use
-trusted application and server context. These static mappings do not establish
-server acceptance, an official Test Case pass, or profile conformance.
+enforce these conditions for ordinary or raw requests. For Deactivation Date,
+the caller must also establish any extraordinary circumstance and special
+permission before using the stated exceptions. These static mappings record
+caller duties; they do not establish server acceptance, an official Test Case
+pass, or profile conformance.
 
 ## Reading profile status
 
