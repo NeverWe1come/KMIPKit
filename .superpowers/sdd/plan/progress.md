@@ -294,3 +294,9 @@ Task T050 — T040 Baseline optional Archive request: mapped `KMIPKIT-REQ-SPEC-6
 
 
 T050 traceability correction: CI run 40231111620 identified a missing executable Archive test reference in the requirement record. Added the exact test symbol to the normative catalog, KMIPKIT-0018 traceability, and generated coverage report. The focused mapping contract and full traceability suite pass locally (21 tests, 1 Windows symlink test skipped); catalog and generated artifact checks pass. New exact-head CI is pending publication.
+
+## Continuation 2026-10-26 — T054 Check batching rule
+- Current PR #90 head at start: d4267780e3d0abd6ed216794450e36a7ae96373c; exact-head workflow 40266287974 is in progress, no failures observed at last poll.
+- T054 source audit identified `KMIPKIT-REQ-SPEC-6.1.7-001` as an actionable request-local recommendation. Pinned KMIP Specification v2.1 §6.1.7 says Check SHOULD only be used in a batched set and describes surrounding operation order as “usually”; no ordering is inferred.
+- Ruling: selected Baseline profile rejects a Check-only Request Message, while allowing Check in any message with at least one additional Batch Item. This gives “batched set of operations” a plural interpretation without turning “usually” into a mandatory workflow. Generic unprofiled serialization/execution is unaffected. Cost if wrong: profile users who intentionally send singleton Check requests will get a local rejection; the rule remains only recommended profile behavior and can be refined if pinned OASIS context contradicts the interpretation.
+- Active bounded implementation: `/root/t054_check_batch_mapping_high`, GPT-6-Luna high for protocol work; read-only source audit completed with no edits. Required TDD commits and traceability/generated evidence updates are in the agent brief. No push or conformance claim.
