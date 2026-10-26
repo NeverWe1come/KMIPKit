@@ -204,6 +204,8 @@ fn authentication_roundtrip_preserves_unknown_fields_and_credential_order() {
     assert_authentication_tree_preserves_unknown_fields_and_order(&roundtrip);
 }
 
+// KMIP Specification v2.1 §9.11 limits this evidence to Credential representation;
+// it does not establish profile-specific Authentication or server satisfaction.
 #[test]
 fn authentication_does_not_claim_server_satisfaction() {
     let authentication = structure([
