@@ -6515,6 +6515,55 @@ fn client_compromise_occurrence_date_only_for_key_or_ca_compromise(
     })
 }
 
+fn client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REVOKE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let is_compromise_reason = match field_presence(&payload, REVOCATION_REASON) {
+                    FieldPresence::Unique(reason) => reason.with_value(|value| {
+                        let ValueView::Structure(reason) = value else {
+                            return false;
+                        };
+                        let FieldPresence::Unique(reason_code) =
+                            field_presence(&reason, REVOCATION_REASON_CODE)
+                        else {
+                            return false;
+                        };
+                        reason_code.with_value(|value| {
+                            matches!(
+                                value,
+                                ValueView::Enumeration(value)
+                                    if *value == KEY_COMPROMISE_REASON
+                                        || *value == CA_COMPROMISE_REASON
+                            )
+                        })
+                    }),
+                    FieldPresence::Missing | FieldPresence::Duplicate => false,
+                };
+                !is_compromise_reason
+                    || matches!(
+                        field_presence(&payload, COMPROMISE_OCCURRENCE_DATE),
+                        FieldPresence::Unique(_)
+                    )
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_revoke_revocation_message_is_text_when_used(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8854,6 +8903,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
