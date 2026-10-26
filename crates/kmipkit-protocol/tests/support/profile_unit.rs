@@ -1848,6 +1848,45 @@ fn profile_maps_required_discover_versions_preference_order_for_single_supported
 }
 
 #[test]
+fn profile_maps_derive_key_source_eligibility_as_caller_responsibility() {
+    // KMIP Specification v2.1 §6.1.14 requires the source Managed Object's
+    // Cryptographic Usage Mask to include Derive Key. The request model only
+    // carries caller-selected source identifiers and cannot inspect server state.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DERIVE_KEY_REQUEST_TEST_ID: &str = "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key source eligibility has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key source eligibility resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the caller-selected Derive Key source has typed identifier evidence");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == DERIVE_KEY_REQUEST_TEST_ID
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "derive_key_source_usage_mask_caller_asserted",
+        }]
+    );
+}
+
+#[test]
 fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     // KMIP Specification v2.1 §6.1.14 Table 205 prohibits using the current
     // ID Placeholder in place of a Derive Key Unique Identifier.
