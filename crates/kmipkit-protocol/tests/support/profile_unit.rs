@@ -6583,6 +6583,78 @@ fn profile_recommends_batch_order_true_when_check_is_present() {
 }
 
 #[test]
+fn profile_recommends_check_only_in_a_multi_item_batch_without_ordering() {
+    // KMIP Specification v2.1 §6.1.7's opening paragraph recommends that
+    // Check appear in a batched set. Its later operation sequence is only
+    // “usually” followed, so this rule does not impose operation order.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Check's batch recommendation has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Check's batch recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHOULD mapping has recommended-behavior evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Check's batch recommendation has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let singleton_check =
+        request_message_with_operation_payload(CHECK_OPERATION_TAG, Structure::new());
+    assert!(!evaluate(Some(&singleton_check), None));
+    let error = result
+        .validate_request(&singleton_check)
+        .expect_err("a selected Baseline Check recommendation rejects a singleton Check");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let singleton_locate =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&singleton_locate)
+        .expect("a request without Check is outside this recommendation");
+
+    for operations in [
+        [
+            (CHECK_OPERATION_TAG, Structure::new()),
+            (LOCATE_OPERATION_TAG, Structure::new()),
+        ],
+        [
+            (LOCATE_OPERATION_TAG, Structure::new()),
+            (CHECK_OPERATION_TAG, Structure::new()),
+        ],
+    ] {
+        let request = request_message_with_batch_operations(operations);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("a multi-item Check batch follows the recommendation in either order");
+    }
+}
+
+#[test]
 fn profile_maps_get_usage_allocation_required_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.23 Table 232 marks Usage Limits Count
     // required; §7.40 Table 392 defines its TTLV type as Long Integer.
