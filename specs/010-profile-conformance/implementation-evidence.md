@@ -6835,6 +6835,8 @@ Mapped `KMIPKIT-REQ-SPEC-9.11-004-001` from KMIP Specification v2.1 §9.11/Table
 | Stage | Evidence | Result |
 |---|---|---|
 | Red | Existing hosted PR run `40290546961`, Ubuntu job `121464462904` and macOS job `121464462959`; local `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | Expected failure: the hand-maintained typed-mapping inventory omitted all six T055 test references even though those mappings were implemented. On the local T056 worktree it also omitted the newly added authentication, Device Credential, and response-extension mapping test references. The report behavior was consistent; the test snapshot was stale. |
+| Green | DCO-signed commit `fa4bf2819f45f225a9b13b8f5a4675cbe5cf8316`; same focused Python command | PASS: the manual inventory now includes the exact test-reference multiplicity for T055 and T056; the report regression passes locally (1 test, 61.622 seconds). |
+| Hosted CI follow-up | Run `40290546961` evaluates the older PR head, before the fixture correction | The old Ubuntu/macOS failures do not verify the fix; current-head hosted CI must be checked after publishing the feature branch. |
 
 ### KMIPKIT-0010 T056 — Response Message Extension handling (2026-10-26)
 
