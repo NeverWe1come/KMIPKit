@@ -375,13 +375,16 @@ fn request_message_with_attestation_credential(
         tagged(ATTESTATION_TYPE_TAG, Value::enumeration(0xF123_4567)),
     ];
     credential_value_fields.extend(attestation_fields);
-    let credential = structure([
+    request_message_with_raw_credential(structure([
         tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(3)),
         tagged(
             CREDENTIAL_VALUE_TAG,
             Value::structure(structure(credential_value_fields)),
         ),
-    ]);
+    ]))
+}
+
+fn request_message_with_raw_credential(credential: Structure) -> crate::RequestMessage {
     let authentication = structure([tagged(CREDENTIAL_TAG, Value::structure(credential))]);
     let header = structure([
         test_protocol_version(),
@@ -402,7 +405,7 @@ fn request_message_with_attestation_credential(
             ])),
         ),
     ]))
-    .expect("test Request Message has a structurally valid Attestation Credential")
+    .expect("test Request Message has a structurally valid outer message")
 }
 
 fn request_message_with_attestation_capable_indicator(
@@ -5799,6 +5802,110 @@ fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_use
         Value::boolean(true),
     )]);
     assert!(!evaluate(Some(&malformed_evidence), None));
+}
+
+#[test]
+fn profile_rejects_malformed_attestation_credential_envelopes() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Attestation evidence has a typed profile rule");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_attestation_value = || {
+        structure([
+            tagged(
+                NONCE_TAG,
+                Value::structure(structure([
+                    tagged(NONCE_ID_TAG, Value::byte_string(vec![0x01])),
+                    tagged(NONCE_VALUE_TAG, Value::byte_string(vec![0x02])),
+                ])),
+            ),
+            tagged(ATTESTATION_TYPE_TAG, Value::enumeration(0xF123_4567)),
+            tagged(ATTESTATION_MEASUREMENT_TAG, Value::byte_string(vec![0x03])),
+        ])
+    };
+
+    let malformed_credentials = [
+        (
+            "missing Credential Type",
+            structure([tagged(
+                CREDENTIAL_VALUE_TAG,
+                Value::structure(valid_attestation_value()),
+            )]),
+        ),
+        (
+            "wrong Credential Type item type",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::boolean(true)),
+                tagged(
+                    CREDENTIAL_VALUE_TAG,
+                    Value::structure(valid_attestation_value()),
+                ),
+            ]),
+        ),
+        (
+            "duplicate Credential Type hiding Attestation",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(1)),
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(3)),
+                tagged(
+                    CREDENTIAL_VALUE_TAG,
+                    Value::structure(valid_attestation_value()),
+                ),
+            ]),
+        ),
+        (
+            "duplicate Credential Value after valid Attestation",
+            structure([
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(3)),
+                tagged(
+                    CREDENTIAL_VALUE_TAG,
+                    Value::structure(valid_attestation_value()),
+                ),
+                tagged(CREDENTIAL_VALUE_TAG, Value::structure(Structure::new())),
+            ]),
+        ),
+        (
+            "Credential Value before Credential Type",
+            structure([
+                tagged(
+                    CREDENTIAL_VALUE_TAG,
+                    Value::structure(valid_attestation_value()),
+                ),
+                tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(3)),
+            ]),
+        ),
+    ];
+
+    for (case, credential) in malformed_credentials {
+        let request = request_message_with_raw_credential(credential);
+        assert!(
+            result.validate_request(&request).is_err(),
+            "profile validation must reject {case}"
+        );
+    }
+
+    let valid_unknown_credential = request_message_with_raw_credential(structure([
+        tagged(CREDENTIAL_TYPE_TAG, Value::enumeration(0xF123_4567)),
+        tagged(CREDENTIAL_VALUE_TAG, Value::structure(Structure::new())),
+        tagged(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string("opaque".to_owned()),
+        ),
+    ]));
+    let evaluator = mapping
+        .evaluator
+        .expect("Attestation uses a typed request evaluator");
+    assert!(evaluator(Some(&valid_unknown_credential), None));
+    result
+        .validate_request(&valid_unknown_credential)
+        .expect("valid unknown credentials remain opaque and accepted");
 }
 
 #[test]
