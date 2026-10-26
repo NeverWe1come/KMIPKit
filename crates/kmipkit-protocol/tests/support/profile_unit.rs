@@ -5997,8 +5997,8 @@ fn profile_rejects_malformed_attestation_credential_envelopes() {
 
 #[test]
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
-    // KMIP Specification v2.1 §9.11 and Table 412; the typed Device policy
-    // follows KMIPKIT-0008 OD-002 and keeps field presence separate from text.
+    // KMIP Specification v2.1 §9.11/Table 412 and §10.1.2; the typed Device
+    // policy follows KMIPKIT-0008 OD-002 and keeps field presence separate from text.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -6063,6 +6063,25 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
     }
+
+    let misordered_device_fields = request_message_with_device_credential([
+        tagged(PASSWORD_TAG, Value::text_string("caller-password".to_owned())),
+        tagged(
+            DEVICE_SERIAL_NUMBER_TAG,
+            Value::text_string("serial".to_owned()),
+        ),
+    ]);
+    let misordered_fields_are_rejected = result
+        .validate_request(&misordered_device_fields)
+        .is_err_and(|error| {
+            error.code() == ProfileValidationErrorCode::RequestRuleRejected
+                && error.requirement_id() == Some(REQUIREMENT_ID)
+                && error.source_clause_id() == Some(SOURCE_CLAUSE_ID)
+        });
+    assert!(
+        misordered_fields_are_rejected,
+        "Device Credential members must follow Table 412 order"
+    );
 }
 
 #[test]
