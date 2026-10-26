@@ -99,8 +99,13 @@ const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const DERIVE_KEY_DERIVATION_METHOD_TAG: u32 = 0x0042_0031;
 const DERIVE_KEY_DERIVATION_PARAMETERS_TAG: u32 = 0x0042_0032;
+const DERIVE_KEY_DERIVATION_DATA_TAG: u32 = 0x0042_0030;
+const DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+const DERIVE_KEY_HASHING_ALGORITHM_TAG: u32 = 0x0042_0038;
+const DERIVE_KEY_BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
 const DERIVE_KEY_SALT_TAG: u32 = 0x0042_0084;
 const DERIVE_KEY_ITERATION_COUNT_TAG: u32 = 0x0042_003C;
+const ASYNCHRONOUS_INDICATOR_TAG: u32 = 0x0042_0007;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
@@ -299,6 +304,35 @@ fn request_message_with_attestation_capable_indicator(
         ),
     ]))
     .expect("test Request Message has an optional Attestation Capable Indicator")
+}
+
+fn request_message_with_asynchronous_indicator(indicator: Option<u32>) -> crate::RequestMessage {
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(indicator) = indicator {
+        header_items.push(tagged(
+            ASYNCHRONOUS_INDICATOR_TAG,
+            Value::enumeration(indicator),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure(header_items)),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(
+                    OPERATION_TAG,
+                    Value::enumeration(DISCOVER_VERSIONS_OPERATION),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has a valid optional Asynchronous Indicator")
 }
 
 fn request_message_with_unique_batch_item_id(
@@ -2358,6 +2392,296 @@ fn profile_maps_required_derive_key_parameters() {
     result
         .validate_request(&unrelated_operation)
         .expect("the Derivation Parameters rule does not inspect other operations");
+}
+
+#[test]
+fn profile_maps_derive_key_prf_parameters_with_source_condition() {
+    // KMIP Specification v2.1 §7.12 explicitly requires a Hashing Algorithm for HASH.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const HASH_METHOD: u32 = 2;
+    const HMAC_METHOD: u32 = 3;
+    const ENCRYPT_METHOD: u32 = 4;
+    const SHA_256: u32 = 6;
+    const CBC_MODE: u32 = 1;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the Derive Key PRF requirement has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Derive Key PRF requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the profile mapping has category-appropriate positive evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let hash_with_explicit_prf = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(
+            HASH_METHOD,
+            Value::structure(structure([tagged(
+                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    DERIVE_KEY_HASHING_ALGORITHM_TAG,
+                    Value::enumeration(SHA_256),
+                )])),
+            )])),
+        ),
+    );
+    result
+        .validate_request(&hash_with_explicit_prf)
+        .expect("HASH carries its caller-selected Hashing Algorithm");
+
+    let hash_without_prf = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(HASH_METHOD, Value::structure(Structure::new())),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &hash_without_prf,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "HASH requires one Cryptographic Parameters Hashing Algorithm",
+    );
+
+    let malformed_prf = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(
+            HASH_METHOD,
+            Value::structure(structure([tagged(
+                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    DERIVE_KEY_HASHING_ALGORITHM_TAG,
+                    Value::integer(SHA_256 as i32),
+                )])),
+            )])),
+        ),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &malformed_prf,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Hashing Algorithm is an Enumeration",
+    );
+
+    let duplicate_prf = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(
+            HASH_METHOD,
+            Value::structure(structure([tagged(
+                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure([
+                    tagged(
+                        DERIVE_KEY_HASHING_ALGORITHM_TAG,
+                        Value::enumeration(SHA_256),
+                    ),
+                    tagged(
+                        DERIVE_KEY_HASHING_ALGORITHM_TAG,
+                        Value::enumeration(SHA_256),
+                    ),
+                ])),
+            )])),
+        ),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &duplicate_prf,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "HASH Cryptographic Parameters have one Hashing Algorithm field",
+    );
+
+    let hmac_parameters_are_ignored = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(HMAC_METHOD, Value::structure(Structure::new())),
+    );
+    result
+        .validate_request(&hmac_parameters_are_ignored)
+        .expect("§7.12 says HMAC uses the derivation key attributes and ignores these parameters");
+
+    let aes_cbc_with_caller_selected_mode = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(
+            ENCRYPT_METHOD,
+            Value::structure(structure([tagged(
+                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    DERIVE_KEY_BLOCK_CIPHER_MODE_TAG,
+                    Value::enumeration(CBC_MODE),
+                )])),
+            )])),
+        ),
+    );
+    result
+        .validate_request(&aes_cbc_with_caller_selected_mode)
+        .expect("caller-selected AES-CBC mode is represented without a default");
+
+    let unknown_method = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(0xF123_4567, Value::structure(Structure::new())),
+    );
+    result
+        .validate_request(&unknown_method)
+        .expect("the profile rule does not infer PRF requirements for an unknown method");
+}
+
+#[test]
+fn profile_maps_optional_derive_key_input_forms() {
+    // KMIP Specification v2.1 §7.12 permits explicit data or a Secret Data object identifier.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const HMAC_METHOD: u32 = 3;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key exposes both optional derivation input forms");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Derive Key input capability resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the profile mapping has category-appropriate capability evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request_with_inputs = |identifiers: &[&str], data: &[&[u8]]| {
+        let mut fields = vec![tagged(
+            DERIVE_KEY_DERIVATION_METHOD_TAG,
+            Value::enumeration(HMAC_METHOD),
+        )];
+        fields.extend(identifiers.iter().map(|identifier| {
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string((*identifier).to_owned()),
+            )
+        }));
+        fields.push(tagged(
+            DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+            Value::structure(structure(data.iter().map(|value| {
+                tagged(
+                    DERIVE_KEY_DERIVATION_DATA_TAG,
+                    Value::byte_string(value.to_vec()),
+                )
+            }))),
+        ));
+        request_message_with_operation_payload(DERIVE_KEY_OPERATION, structure(fields))
+    };
+
+    for request in [
+        request_with_inputs(&["source-key"], &[b"explicit input"]),
+        request_with_inputs(&["source-key", "secret-data"], &[]),
+        request_with_inputs(&["source-key"], &[]),
+        request_with_inputs(&["source-key"], &[b"first", b"second"]),
+        // §7.12 assigns the both-inputs error to the server; profile preflight does not invent it.
+        request_with_inputs(&["source-key", "secret-data"], &[b"explicit input"]),
+    ] {
+        result
+            .validate_request(&request)
+            .expect("the optional input forms remain caller-controlled and representable");
+    }
+
+    let malformed_data = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(HMAC_METHOD),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key".to_owned()),
+            ),
+            tagged(
+                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    DERIVE_KEY_DERIVATION_DATA_TAG,
+                    Value::integer(1),
+                )])),
+            ),
+        ]),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &malformed_data,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Derivation Data is a Byte String when supplied",
+    );
+}
+
+#[test]
+fn profile_maps_optional_asynchronous_indicator_capability() {
+    // KMIP Specification v2.1 §8 permits capable clients to signal asynchronous-response support.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-003-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the asynchronous-response capability has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the asynchronous-response capability resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional indicator has category-appropriate positive evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let absent = request_message_with_asynchronous_indicator(None);
+    result
+        .validate_request(&absent)
+        .expect("omission remains valid and §9.2 applies the Prohibited default");
+    assert_eq!(absent.header().asynchronous_indicator(), None);
+    assert_eq!(absent.header().effective_asynchronous_indicator(), 3);
+
+    for indicator in [1, 2, 3, 0x8000_0001] {
+        let request = request_message_with_asynchronous_indicator(Some(indicator));
+        result
+            .validate_request(&request)
+            .expect("assigned and allocated extension indicators are preserved");
+        assert_eq!(request.header().asynchronous_indicator(), Some(indicator));
+    }
+
+    for unassigned in [0, 4, 0x9000_0000] {
+        let request = request_message_with_asynchronous_indicator(Some(unassigned));
+        assert_request_rejected_for_requirement(
+            &result,
+            &request,
+            REQUIREMENT_ID,
+            SOURCE_CLAUSE_ID,
+            "only assigned or extension Asynchronous Indicator values are accepted",
+        );
+    }
 }
 
 #[test]
