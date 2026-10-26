@@ -1699,10 +1699,7 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
 
     let explicit_id_placeholder = request_message_with_operation_payload(
         DERIVE_KEY_OPERATION,
-        structure([tagged(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::enumeration(1),
-        )]),
+        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1))]),
     );
     assert_request_rejected_for_requirement(
         &result,
@@ -2488,13 +2485,60 @@ fn profile_maps_derive_key_prf_parameters_with_source_condition() {
         .validate_request(&hash_with_explicit_prf)
         .expect("HASH carries its caller-selected Hashing Algorithm");
 
-    let hash_without_prf = request_message_with_operation_payload(
+    let hmac_parameters_are_ignored = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(HMAC_METHOD, Value::structure(Structure::new())),
+    );
+    result
+        .validate_request(&hmac_parameters_are_ignored)
+        .expect("§7.12 says HMAC uses the derivation key attributes and ignores these parameters");
+
+    let aes_cbc_with_caller_selected_mode = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(
+            ENCRYPT_METHOD,
+            Value::structure(structure([tagged(
+                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    DERIVE_KEY_BLOCK_CIPHER_MODE_TAG,
+                    Value::enumeration(CBC_MODE),
+                )])),
+            )])),
+        ),
+    );
+    result
+        .validate_request(&aes_cbc_with_caller_selected_mode)
+        .expect("caller-selected AES-CBC mode is represented without a default");
+
+    let unknown_method = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        derive_key_parameters_payload(0xF123_4567, Value::structure(Structure::new())),
+    );
+    result
+        .validate_request(&unknown_method)
+        .expect("the profile rule does not infer PRF requirements for an unknown method");
+}
+
+#[test]
+fn profile_rejects_hash_derivation_without_one_hashing_algorithm() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const HASH_METHOD: u32 = 2;
+    const SHA_256: u32 = 6;
+    const SHA_256_INTEGER: i32 = 6;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let missing_prf = request_message_with_operation_payload(
         DERIVE_KEY_OPERATION,
         derive_key_parameters_payload(HASH_METHOD, Value::structure(Structure::new())),
     );
     assert_request_rejected_for_requirement(
         &result,
-        &hash_without_prf,
+        &missing_prf,
         REQUIREMENT_ID,
         SOURCE_CLAUSE_ID,
         "HASH requires one Cryptographic Parameters Hashing Algorithm",
@@ -2508,7 +2552,7 @@ fn profile_maps_derive_key_prf_parameters_with_source_condition() {
                 DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
                 Value::structure(structure([tagged(
                     DERIVE_KEY_HASHING_ALGORITHM_TAG,
-                    Value::integer(SHA_256 as i32),
+                    Value::integer(SHA_256_INTEGER),
                 )])),
             )])),
         ),
@@ -2547,39 +2591,6 @@ fn profile_maps_derive_key_prf_parameters_with_source_condition() {
         SOURCE_CLAUSE_ID,
         "HASH Cryptographic Parameters have one Hashing Algorithm field",
     );
-
-    let hmac_parameters_are_ignored = request_message_with_operation_payload(
-        DERIVE_KEY_OPERATION,
-        derive_key_parameters_payload(HMAC_METHOD, Value::structure(Structure::new())),
-    );
-    result
-        .validate_request(&hmac_parameters_are_ignored)
-        .expect("§7.12 says HMAC uses the derivation key attributes and ignores these parameters");
-
-    let aes_cbc_with_caller_selected_mode = request_message_with_operation_payload(
-        DERIVE_KEY_OPERATION,
-        derive_key_parameters_payload(
-            ENCRYPT_METHOD,
-            Value::structure(structure([tagged(
-                DERIVE_KEY_CRYPTOGRAPHIC_PARAMETERS_TAG,
-                Value::structure(structure([tagged(
-                    DERIVE_KEY_BLOCK_CIPHER_MODE_TAG,
-                    Value::enumeration(CBC_MODE),
-                )])),
-            )])),
-        ),
-    );
-    result
-        .validate_request(&aes_cbc_with_caller_selected_mode)
-        .expect("caller-selected AES-CBC mode is represented without a default");
-
-    let unknown_method = request_message_with_operation_payload(
-        DERIVE_KEY_OPERATION,
-        derive_key_parameters_payload(0xF123_4567, Value::structure(Structure::new())),
-    );
-    result
-        .validate_request(&unknown_method)
-        .expect("the profile rule does not infer PRF requirements for an unknown method");
 }
 
 #[test]
@@ -2647,29 +2658,6 @@ fn profile_maps_optional_derive_key_input_forms() {
             .expect("the optional input forms remain caller-controlled and representable");
     }
 
-    for identifier in [
-        Value::enumeration(0xF123_4567),
-        Value::integer(23),
-    ] {
-        let request = request_message_with_operation_payload(
-            DERIVE_KEY_OPERATION,
-            structure([
-                tagged(
-                    DERIVE_KEY_DERIVATION_METHOD_TAG,
-                    Value::enumeration(HMAC_METHOD),
-                ),
-                tagged(UNIQUE_IDENTIFIER_TAG, identifier),
-                tagged(
-                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
-                    Value::structure(Structure::new()),
-                ),
-            ]),
-        );
-        result
-            .validate_request(&request)
-            .expect("Table 145 Enumeration and Integer Unique Identifiers are valid");
-    }
-
     let malformed_data = request_message_with_operation_payload(
         DERIVE_KEY_OPERATION,
         structure([
@@ -2696,6 +2684,76 @@ fn profile_maps_optional_derive_key_input_forms() {
         REQUIREMENT_ID,
         SOURCE_CLAUSE_ID,
         "Derivation Data is a Byte String when supplied",
+    );
+}
+
+#[test]
+fn profile_maps_table_145_unique_identifier_encodings_for_derive_key() {
+    // KMIP Specification v2.1 §4.58 Table 145 permits Text String, Enumeration,
+    // or Integer for Unique Identifier. The preceding test covers Text String.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const HMAC_METHOD: u32 = 3;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for identifier in [Value::enumeration(0xF123_4567), Value::integer(23)] {
+        let request = request_message_with_operation_payload(
+            DERIVE_KEY_OPERATION,
+            structure([
+                tagged(
+                    DERIVE_KEY_DERIVATION_METHOD_TAG,
+                    Value::enumeration(HMAC_METHOD),
+                ),
+                tagged(UNIQUE_IDENTIFIER_TAG, identifier),
+                tagged(
+                    DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                    Value::structure(Structure::new()),
+                ),
+            ]),
+        );
+        result
+            .validate_request(&request)
+            .expect("Table 145 Enumeration and Integer Unique Identifiers are valid");
+    }
+}
+
+#[test]
+fn profile_rejects_non_table_145_unique_identifier_encoding() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const HMAC_METHOD: u32 = 3;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_identifier = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(
+                DERIVE_KEY_DERIVATION_METHOD_TAG,
+                Value::enumeration(HMAC_METHOD),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::byte_string(b"not-an-identifier".to_vec()),
+            ),
+            tagged(
+                DERIVE_KEY_DERIVATION_PARAMETERS_TAG,
+                Value::structure(Structure::new()),
+            ),
+        ]),
+    );
+    assert_request_rejected_for_requirement(
+        &result,
+        &malformed_identifier,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Unique Identifier uses a Table 145 encoding",
     );
 }
 

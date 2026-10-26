@@ -93338,7 +93338,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.14 Table 205 permits repeated Unique Identifier values for Derive Key. The typed Baseline profile rule preserves repeated Text String identifiers; the paired §6.1.14-006-002 rule separately requires an explicit source identifier and prevents ID Placeholder substitution. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "KMIP Specification v2.1 §6.1.14 Table 205 permits repeated Unique Identifier values for Derive Key, and §4.58 Table 145 allows Text String, Enumeration, or Integer encodings. The typed Baseline profile rule preserves those encodings, including repeated occurrences; the paired §6.1.14-006-002 rule separately requires an explicit source identifier and prevents ID Placeholder substitution. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-002",
@@ -93378,7 +93378,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The typed Baseline preflight mapping enforces KMIP Specification v2.1 §6.1.14 Table 205 by requiring at least one explicit Unique Identifier in Derive Key requests, preserving its allowed repeats and preventing omission from invoking the ID Placeholder; other operations are unaffected. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The typed Baseline preflight mapping enforces KMIP Specification v2.1 §6.1.14 Table 205 by requiring at least one explicit Unique Identifier in Derive Key requests, preserving allowed repeats, and rejecting the ID Placeholder Enumeration (value 1) in every occurrence; omission also cannot invoke the ID Placeholder. Other operations are unaffected. The profile test covers omitted, explicit placeholder, and repeated identifiers containing the placeholder. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -98501,15 +98501,18 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_prf_parameters_with_source_condition",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_hash_derivation_without_one_hashing_algorithm"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIPKit preserves caller-selected Cryptographic Parameters, including AES-CBC Block Cipher Mode, without inferring server-held derivation-key properties; the KMIP server evaluates context-dependent conditions. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The Baseline profile rule enforces the request-observable §7.12 HASH condition by requiring exactly one Cryptographic Parameters Hashing Algorithm Enumeration. It preserves future Enumeration values and does not select a default. The AES-CBC example is covered as a caller-supplied mode representation, but the rule does not infer AES-CBC from ENCRYPT, result Attributes, or server-held derivation-key properties; that applicability remains a caller/server context boundary. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests are source-derived and do not establish full profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-005-001",
@@ -98540,16 +98543,20 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally",
-        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once"
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_derive_key_input_forms",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_table_145_unique_identifier_encodings_for_derive_key",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_table_145_unique_identifier_encoding"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The Baseline profile rule preserves explicit Derivation Data and Unique Identifier values encoded as Text String, Enumeration, or Integer under §4.58 Table 145; it permits omission under this MAY and does not reject both forms locally. In Derive Key, §6.1.14 Table 205 separately prohibits the ID Placeholder Enumeration (value 1); the paired 6.1.14-006-002 mapping rejects it even when other valid identifiers are repeated. The profile evidence does not assert that an identifier resolves to a Secret Data object or that the server accepts the request. The adjacent §7.12-005-002 server-error actor remains unassigned; its existing fake-transport evidence shows the server result is surfaced without claiming client-side rejection. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.12-005-002",
@@ -99358,15 +99365,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0007",
       "implementation_refs": [
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value"
+        "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_asynchronous_indicator_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Verified for the typed client's supported request options. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "The Baseline profile exposes the caller-controlled Asynchronous Indicator capability, accepts omission with the §9.2 effective Prohibited default, and preserves assigned and extension values while rejecting unassigned values. This expresses client capability only; it does not predict asynchronous server execution or responses. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-003-002",

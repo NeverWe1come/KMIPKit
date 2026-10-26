@@ -4076,13 +4076,15 @@ fn derive_key_repeated_unique_identifiers_are_usable(
                     .children()
                     .iter()
                     .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
-                    .all(|field| field.with_value(unique_identifier_has_supported_encoding))
+                    .all(|field| {
+                        field.with_value(|value| unique_identifier_has_supported_encoding(&value))
+                    })
             })
             .unwrap_or(false)
     })
 }
 
-fn unique_identifier_has_supported_encoding(value: ValueView<'_>) -> bool {
+fn unique_identifier_has_supported_encoding(value: &ValueView<'_>) -> bool {
     matches!(
         value,
         ValueView::TextString(_) | ValueView::Enumeration(_) | ValueView::Integer(_)
@@ -4265,7 +4267,8 @@ fn derive_key_optional_input_forms_are_representable(
             .with_request_payload(|payload| {
                 let identifiers_have_supported_encodings = payload.children().iter().all(|field| {
                     field.tag().raw() != UNIQUE_IDENTIFIER
-                        || field.with_value(unique_identifier_has_supported_encoding)
+                        || field
+                            .with_value(|value| unique_identifier_has_supported_encoding(&value))
                 });
                 if !identifiers_have_supported_encodings {
                     return false;
@@ -10915,6 +10918,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_derive_key_input_forms",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_table_145_unique_identifier_encodings_for_derive_key",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
