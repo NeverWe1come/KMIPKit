@@ -4061,12 +4061,17 @@ fn derive_key_repeated_unique_identifiers_are_usable(
                     .children()
                     .iter()
                     .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
-                    .all(|field| {
-                        field.with_value(|value| matches!(value, ValueView::TextString(_)))
-                    })
+                    .all(|field| field.with_value(unique_identifier_has_supported_encoding))
             })
             .unwrap_or(false)
     })
+}
+
+fn unique_identifier_has_supported_encoding(value: ValueView<'_>) -> bool {
+    matches!(
+        value,
+        ValueView::TextString(_) | ValueView::Enumeration(_) | ValueView::Integer(_)
+    )
 }
 
 fn derive_key_output_object_type(payload: &StructureView<'_>) -> Option<u32> {
@@ -4243,11 +4248,11 @@ fn derive_key_optional_input_forms_are_representable(
 
         batch_item
             .with_request_payload(|payload| {
-                let identifiers_are_text = payload.children().iter().all(|field| {
+                let identifiers_have_supported_encodings = payload.children().iter().all(|field| {
                     field.tag().raw() != UNIQUE_IDENTIFIER
-                        || field.with_value(|value| matches!(value, ValueView::TextString(_)))
+                        || field.with_value(unique_identifier_has_supported_encoding)
                 });
-                if !identifiers_are_text {
+                if !identifiers_have_supported_encodings {
                     return false;
                 }
 
