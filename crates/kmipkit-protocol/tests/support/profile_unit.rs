@@ -21650,3 +21650,34 @@ fn profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alte
     )
     .expect("a different Key Format Type is outside the RSA private-key rule");
 }
+
+#[test]
+fn profile_rejects_multiple_application_specific_information_values_in_one_new_attribute() {
+    // KMIP Specification v2.1 §4.4 Table 36 permits multiple attribute values
+    // in object Attributes groups. §5.7 Table 163 and §§6.1.2, 6.1.34, and
+    // 6.1.51 represent each mutation's New Attribute as one Attribute item.
+    const APPLICATION_SPECIFIC_INFORMATION_TAG: u32 = 0x0042_0004;
+    const APPLICATION_NAMESPACE_TAG: u32 = 0x0042_0003;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+
+    let evaluate = application_specific_information_mapping()
+        .evaluator
+        .expect("the optional capability has a request evaluator");
+
+    for operation in [0x0000_000D, 0x0000_000E, 0x0000_0031] {
+        let malformed_request = request_with_application_specific_information_groups(
+            operation,
+            &[NEW_ATTRIBUTE_TAG],
+            APPLICATION_SPECIFIC_INFORMATION_TAG,
+            APPLICATION_NAMESPACE_TAG,
+        );
+
+        assert!(
+            !evaluate(Some(&malformed_request), None),
+            "New Attribute must contain one Application Specific Information item for operation {operation:#x}"
+        );
+        assert!(application_information_profile_result()
+            .validate_request(&malformed_request)
+            .is_err());
+    }
+}
