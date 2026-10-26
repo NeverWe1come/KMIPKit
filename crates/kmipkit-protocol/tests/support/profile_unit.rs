@@ -24174,3 +24174,68 @@ fn profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition() {
         RuleTestKind::NegativeBehavior,
     );
 }
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.1 paragraph 1.
+fn profile_maps_activation_date_use_as_caller_owned_optional_capability() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "activation_date_reached_before_use_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.1 paragraph 1.
+fn profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "no_cryptographic_use_before_activation_date_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.1 paragraph 1.
+fn profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.18 paragraph 1.
+fn profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.18 paragraph 1.
+fn profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.18-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}

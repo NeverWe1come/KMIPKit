@@ -431,6 +431,26 @@ class CoverageReportTests(unittest.TestCase):
                 key: "client_profile_capability",
                 value: "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
             },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "activation_date_reached_before_use_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "no_cryptographic_use_before_activation_date_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
+            },
         ],
     },
 ];

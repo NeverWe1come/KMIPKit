@@ -7146,3 +7146,13 @@ The follow-up audit distinguishes caller-observable metadata from obligations th
 | Independent QA review | Read-only review of the Red/Green commits and current T053 catalog, tests, generated report, bilingual docs, and traceability | PASS: no blocking findings. QA confirmed category-matched evidence, exact source links, caller-owned limits, generated report consistency, and unchanged pinned OASIS sources. The tests establish rule representation only, not enforcement of remote state. |
 | Independent normative review of the remaining five | Read-only review of `4.1-001-001/002/003` and `4.18-001-001/002` against KMIP Specification v2.1 §§4.1 and 4.18 and the approved profile-validation contract | PASS: all five can be recorded as static caller-owned mappings with no evaluator; MUST NOT rules use negative evidence and the MAY rule uses usable optional-capability evidence. The mappings must not claim local enforcement or conformance. |
 | Refactor and final verification | DCO-signed evidence commit to be created after this review | PASS: corrected full traceability, report check, catalog validation, generator check, source-integrity check, and diff check all pass. Implement the five remaining mappings in a separate Red/Green/Refactor cycle. |
+
+### KMIPKIT-0010 T053 follow-up — Activation and Deactivation Date (in progress, 2026-10-26)
+
+KMIP Specification v2.1 §4.1 paragraph 1 defines the Activation Date use and mutation rules; §4.18 paragraph 1 defines the Deactivation Date exceptions and mutation rule. KMIP Profiles v2.1 §5.1.1 item 3 selects both attributes for Baseline Client. The approved profile-validation contract permits static caller-owned mappings when trusted date or server lifecycle state is absent from the per-exchange API. These mappings will have no evaluator and will not claim local enforcement or profile conformance.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red — Rust registry | `cargo test -p kmipkit-protocol --lib profile_maps_ -- --nocapture` | Expected failure: 183 mapping tests passed and the five new Activation/Deactivation Date tests failed because their typed mappings are absent. |
+| Red — report parser | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints -v` | Expected failure: the parser rejects the five new caller-owned date constraints as unsupported. |
+| Green and Refactor | Pending | Add the five static mappings, parser allowlists, catalog links, truthful caller-boundary notes, generated report, and traceability evidence; then run focused and full required checks and obtain independent reviews. |
