@@ -100525,15 +100525,17 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
         "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived local positive evidence is limited to a successful unauthenticated Discover Versions request that omits Authentication and Credential from the outbound TTLV. It does not establish profile-based credential selection or authenticated send behavior. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
+      "review_note": "The Baseline typed profile exposes Authentication omission as an optional capability. Derived local positive evidence includes an unauthenticated Discover Versions request and an attestation request that omit Authentication and Credential from outbound TTLV. This does not infer when server policy requires authentication or establish authenticated send behavior. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.4-001-002",
@@ -100630,16 +100632,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/credential/authentication.rs"
+        "crates/kmipkit-protocol/src/credential/authentication.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
         "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
         "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_roundtrip_preserves_unknown_fields_and_credential_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Derived local positive evidence is limited to the in-memory Authentication model preserving repeated Credential structures and their order during parsing and roundtrip. It does not demonstrate profile-based selection, Client::execute transmission, or server-side credential satisfaction. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
+      "review_note": "The Baseline typed profile represents Credential repetition as an optional capability. Derived local evidence shows that the in-memory Authentication model preserves repeated Credential structures and their order during parsing and roundtrip. It does not demonstrate Client::execute transmission or server-side credential satisfaction. No official Test Cases ID is explicitly linked by the pinned OASIS sources; this derived local evidence is not an OASIS test-case pass."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.5-001-001",
