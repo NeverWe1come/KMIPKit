@@ -1,0 +1,60 @@
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [master, 'release/**']
+  pull_request:
+    branches: [master, 'release/**']
+  schedule:
+    - cron: '17 4 * * 0'
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: c-cpp
+            build-mode: manual
+          - language: java-kotlin
+            build-mode: none
+          - language: python
+            build-mode: none
+          - language: rust
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # github/codeql-action v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Set up CMake
+        if: matrix.language == 'c-cpp'
+        uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # lukka/get-cmake v4.4.2
+
+      - name: Build C/C++ FFI
+        if: matrix.language == 'c-cpp'
+        run: |
+          cargo build --locked -p kmipkit-ffi
+          cmake -G Ninja -S bindings/c -B build/c-consumer
+          cmake --build build/c-consumer --config Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # github/codeql-action v4.39.1
+        with:
+          category: "/language:${{ matrix.language }}"
