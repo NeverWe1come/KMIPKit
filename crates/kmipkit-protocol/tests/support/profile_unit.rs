@@ -6090,7 +6090,8 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
 
 #[test]
 fn profile_maps_hashed_password_sha256_default_as_required_behavior() {
-    // KMIP Specification v2.1 §9.11, Table 415 defaults an omitted Hashing Algorithm to SHA-256.
+    // KMIP Specification v2.1 §9.11 before Table 415 defaults an omitted Hashing
+    // Algorithm to SHA-256; Table 415 marks Hashing Algorithm as an optional Enumeration.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-010-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-010";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
