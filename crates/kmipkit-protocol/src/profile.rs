@@ -10002,6 +10002,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "device_identifiers_caller_asserted_unique",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
         source_gap_id: None,
@@ -12305,6 +12326,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
                     | "declared_response_capacity"
+                    | "device_identifiers_caller_asserted_unique"
             )
     )
 }
@@ -12335,6 +12357,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "hashed_password_sha256_default"
                     | "credential_identification_representation"
                     | "declared_response_capacity"
+                    | "device_identifiers_caller_asserted_unique"
             )
     )
 }

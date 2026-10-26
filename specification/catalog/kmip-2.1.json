@@ -99742,12 +99742,21 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/variants.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "specs/008-credentials-attestation/contracts/rust-credentials.md",
+        "specs/008-credentials-attestation/spec.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+        "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_device_identifier_uniqueness_as_caller_responsibility"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "Implementation and executable verification are assigned to KMIPKIT-0008; KMIPKIT-0006 records this ownership transfer and does not claim the deferred client behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §9.11 and Table 412 require one or a combination of the four Device identifier fields to be unique and require the client to provide at least one field. Approved KMIPKIT-0008 OD-002 assigns actual uniqueness to the caller because the source does not define a comparison scope. KMIPKit exposes and preserves the caller-supplied fields; it does not verify uniqueness or claim a client-side uniqueness test. No official OASIS Test Case is linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-003",

@@ -1772,6 +1772,9 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-9.3-001-001",
                 "KMIPKIT-REQ-SPEC-9.11-004-003",
                 "KMIPKIT-REQ-SPEC-9.11-004-003",
+                # KMIPKIT-0010 T056: caller-responsible Device uniqueness.
+                "KMIPKIT-REQ-SPEC-9.11-004-002",
+                "KMIPKIT-REQ-SPEC-9.11-004-002",
                 # KMIPKIT-0010 T056: model-only Credential identification.
                 "KMIPKIT-REQ-SPEC-9.11-001",
                 "KMIPKIT-REQ-SPEC-9.11-001",
