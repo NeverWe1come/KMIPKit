@@ -1687,6 +1687,16 @@ fn client_check_additional_attributes_are_limited_to_listed_set(
     })
 }
 
+/// Returns `None` when any Batch Item operation is unavailable.
+fn client_request_contains_check(request: &RequestMessage) -> Option<bool> {
+    let mut check_present = false;
+    for batch_item in request.batch_items() {
+        let operation = batch_item.operation()?;
+        check_present |= operation == CHECK_OPERATION;
+    }
+    Some(check_present)
+}
+
 fn client_check_requires_multi_item_batch_when_check_is_present(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1694,15 +1704,9 @@ fn client_check_requires_multi_item_batch_when_check_is_present(
     let Some(request) = request else {
         return false;
     };
-
-    let mut check_present = false;
-    for batch_item in request.batch_items() {
-        let Some(operation) = batch_item.operation() else {
-            return false;
-        };
-        check_present |= operation == CHECK_OPERATION;
-    }
-
+    let Some(check_present) = client_request_contains_check(request) else {
+        return false;
+    };
     !check_present || request.batch_items().len() >= 2
 }
 
@@ -1713,15 +1717,9 @@ fn client_check_batch_order_option_is_true_when_check_is_present(
     let Some(request) = request else {
         return false;
     };
-
-    let mut check_present = false;
-    for batch_item in request.batch_items() {
-        let Some(operation) = batch_item.operation() else {
-            return false;
-        };
-        check_present |= operation == CHECK_OPERATION;
-    }
-
+    let Some(check_present) = client_request_contains_check(request) else {
+        return false;
+    };
     !check_present || request.header().effective_batch_order_option()
 }
 
@@ -1732,15 +1730,9 @@ fn client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_pr
     let Some(request) = request else {
         return false;
     };
-
-    let mut check_present = false;
-    for batch_item in request.batch_items() {
-        let Some(operation) = batch_item.operation() else {
-            return false;
-        };
-        check_present |= operation == CHECK_OPERATION;
-    }
-
+    let Some(check_present) = client_request_contains_check(request) else {
+        return false;
+    };
     !check_present
         || matches!(
             request.header().effective_batch_error_continuation_option(),
