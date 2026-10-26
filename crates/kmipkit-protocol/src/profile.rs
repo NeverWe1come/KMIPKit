@@ -9018,6 +9018,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.32-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.32-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "name_unique_within_target_server_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
         source_gap_id: None,
@@ -12327,6 +12342,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "credential_identification_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
+                    | "name_unique_within_target_server_caller_asserted"
             )
     )
 }
@@ -12358,6 +12374,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "credential_identification_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
+                    | "name_unique_within_target_server_caller_asserted"
             )
     )
 }

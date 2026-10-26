@@ -108,6 +108,13 @@ pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
 /// this type does not infer attribute names or synthesize tags. A Table 150
 /// Vendor Attribute remains a distinct structure and is checked for its
 /// required fields and source order.
+///
+/// For the standard Name attribute, callers are responsible for choosing a
+/// Name Value that is unique within the target key management server and for
+/// following any server-specific naming rules communicated out of band.
+/// KMIPKit preserves the supplied Name and cannot detect collisions with
+/// existing or concurrent server objects; global uniqueness is not required
+/// by KMIP v2.1 §4.32.
 pub struct AttributeSet {
     items: Vec<Item>,
 }

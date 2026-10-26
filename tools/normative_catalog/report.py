@@ -113,6 +113,7 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "credential_identification_representation"),
     ("client_profile_capability", "declared_response_capacity"),
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
+    ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),

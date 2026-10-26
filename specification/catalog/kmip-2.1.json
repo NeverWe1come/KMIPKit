@@ -89938,16 +89938,26 @@
       "direction": "unclear",
       "condition": "Global uniqueness is not required by the source.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-NAME",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-32-NAME-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-32-NAME-VALUE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_name_uniqueness_as_caller_responsibility"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "BLOCKER: KMIP Specification v2.1 §4.32 requires client-assigned Names to be unique within a given key management server, but not globally, and allows server-specific naming rules conveyed through an unspecified mechanism. A request-local evaluator cannot observe existing or concurrent server Names or those comparison rules. A local or same-message duplicate check cannot prove server-wide uniqueness. Keep this requirement unassigned until the client API has a defensible caller-visible uniqueness contract; do not claim global uniqueness. No requirement-specific official Test Case ID is linked by the pinned sources."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.32 and Table 93 define Name as a Structure with required Name Value (Text String) and Name Type (Enumeration). Client-assigned Names SHALL be unique within the target key management server; global uniqueness is not required. KMIPKit's public AttributeSet contract assigns uniqueness and compliance with any server-specific naming rules to the caller because the library cannot observe existing or concurrent server Names or the unspecified rules mechanism. The typed model preserves the supplied Name structure; no runtime or server-wide uniqueness verification is claimed. The pinned OASIS Test Cases inventory has no requirement-specific official Test Case ID linked to this row."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-002",
