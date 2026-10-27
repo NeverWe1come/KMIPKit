@@ -181,7 +181,7 @@ fn query_accepts_the_empty_response_payload_form_and_preserves_common_failure_re
 #[test]
 fn query_response_requires_both_profile_version_parts_when_version_is_present() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-    const PROFILE_NAME: u32 = 0x0042_0140;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
     const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
@@ -214,7 +214,7 @@ fn query_response_requires_both_profile_version_parts_when_version_is_present() 
 #[test]
 fn query_response_requires_profile_name_in_profile_information() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-    const PROFILE_NAME: u32 = 0x0042_0140;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
 
     let invalid_profile_information = [
         structure([]),
@@ -238,7 +238,7 @@ fn query_response_requires_profile_name_in_profile_information() {
 #[test]
 fn query_response_rejects_non_integer_profile_version_parts() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-    const PROFILE_NAME: u32 = 0x0042_0140;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
     const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
@@ -306,7 +306,12 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         item(
             QUERY_RESPONSE_TAGS[8],
             Value::structure(structure([
-                item(0x0042_0140, Value::enumeration(0x8000_0042)),
+                item(0x0042_00ec, Value::enumeration(0x8000_0042)),
+                item(
+                    0x0042_00ed,
+                    Value::text_string("kmip://kms.example.test".to_owned()),
+                ),
+                item(0x0042_00ee, Value::integer(5696)),
                 item(
                     0x0042_0142,
                     Value::structure(structure([
@@ -420,7 +425,13 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
                     .iter()
                     .map(|field| field.tag().raw())
                     .collect::<Vec<_>>(),
-                [0x0042_0140, 0x0042_0142, 0x0054_0001]
+                [
+                    0x0042_00ec,
+                    0x0042_00ed,
+                    0x0042_00ee,
+                    0x0042_0142,
+                    0x0054_0001
+                ]
             );
             profile_information.children()[0]
                 .with_value(|value| assert!(matches!(value, ValueView::Enumeration(&0x8000_0042))));

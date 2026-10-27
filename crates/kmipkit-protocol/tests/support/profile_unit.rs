@@ -7558,7 +7558,7 @@ fn profile_requires_complete_version_in_query_profile_responses() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-    const PROFILE_NAME: u32 = 0x0042_0140;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
     const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
