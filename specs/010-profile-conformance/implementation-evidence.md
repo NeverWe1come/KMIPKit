@@ -7311,3 +7311,14 @@ KMIP Specification v2.1 Section 9.11 requires Hashed Password Timestamps to mono
 Exact-head PR run `40431019041` (`73b8ac02c823197a09831e4235f7dc98b35afe2a`), Windows coverage job `121948525812`, failed while executing `cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json`. The workspace test `retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` failed at `crates/kmipkit-test-support/tests/unit/dns_tests.rs:169`: it expected exactly 2 UDP bind attempts but observed 3. The injected first bind error is followed by real ephemeral-port binding, which can encounter another transient collision and use the helper's bounded retry. The adjacent TCP retry test already checks the valid range `2..=MAX_SOCKET_PAIR_BIND_ATTEMPTS`.
 
 This is a brittle test assertion, not an LLVM installation failure or a production UDP-helper failure. Coverage report production correctly failed, so the coverage gate rejected the missing Windows producer report; the temporary PR threshold waiver skipped threshold enforcement only. No coverage result is claimed for this run. This exact-head failure is the Red evidence for the focused test correction that follows.
+
+## PR #90 Windows coverage retry — Green and Refactor (2026-10-27)
+
+The UDP retry test now checks the bounded attempt interval `2..=MAX_SOCKET_PAIR_BIND_ATTEMPTS`, matching the adjacent TCP test and the helper's contract. Production retry behavior and Windows coverage collection are unchanged.
+
+| Verification | Command and result |
+|---|---|
+| Focused UDP retry regression | `cargo test -p kmipkit-test-support retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` | PASS on Windows: 1 test; the other targets were filtered out. |
+| Hosted Windows coverage rerun | Exact-head CI after the fix | Pending publication; the prior failed run does not validate this correction. |
+
+The first invocation used `--exact` without the module-qualified test name and ran zero matching tests; it is not counted as verification. The subsequent substring-filtered invocation above ran the intended test and passed. No generated files or OASIS sources changed.
