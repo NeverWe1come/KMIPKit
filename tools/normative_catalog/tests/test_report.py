@@ -437,6 +437,14 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "request_response_fields_follow_kmip_specified_order",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "request_response_include_one_or_more_batch_items",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
             },
             RuleConstraint {
