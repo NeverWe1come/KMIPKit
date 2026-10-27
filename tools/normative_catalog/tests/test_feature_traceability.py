@@ -448,9 +448,14 @@ def _python_expression_has_skip_marker(
 
 def _python_node_has_skip_decorator(node: ast.AST, aliases: set[str]) -> bool:
     return any(
-        _python_expression_has_skip_marker(decorator, aliases)
+        _python_decorator_is_skip_marker(decorator, aliases)
         for decorator in getattr(node, "decorator_list", [])
     )
+
+
+def _python_decorator_is_skip_marker(node: ast.AST, aliases: set[str]) -> bool:
+    callable_node = node.func if isinstance(node, ast.Call) else node
+    return _python_callable_is_skip_marker(callable_node, aliases)
 
 
 def _python_module_has_skip_marker(module: ast.Module, aliases: set[str]) -> bool:
@@ -461,6 +466,8 @@ def _python_module_has_skip_marker(module: ast.Module, aliases: set[str]) -> boo
                 for target in node.targets
                 if isinstance(target, ast.Name) and target.id == "pytestmark"
             ]
+            if pytestmark_targets and isinstance(node.value, ast.Name):
+                return True
             if pytestmark_targets and _python_expression_has_skip_marker(
                 node.value, aliases, allow_alias_values=True
             ):
