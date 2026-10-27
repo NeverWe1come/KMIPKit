@@ -7323,3 +7323,13 @@ The UDP retry test now checks the bounded attempt interval `2..=MAX_SOCKET_PAIR_
 
 The first invocation used `--exact` without the module-qualified test name and ran zero matching tests; it is not counted as verification. The subsequent substring-filtered invocation above ran the intended test and passed. No generated files or OASIS sources changed.
 | Full `kmipkit-test-support` suite | `cargo test -p kmipkit-test-support` | PASS on Windows: 32 unit, 17 OASIS crypto fixture, 8 profile fixture parser, and 7 transport fixture tests; 64 passed, 0 failed. |
+
+## PR #90 feature traceability ownership correction — Red (2026-10-27)
+
+The exact-head PR run `40432910322` (`b2e0ba40f2f0bd15d87f8742e07dfdb7a57c72ed`) failed `Documentation contracts / traceability` in `test_message_model_csv_maps_requirements_and_executable_evidence`. The same mismatch was reproduced locally with:
+
+```text
+py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.MessageModelTraceabilityTests.test_message_model_csv_maps_requirements_and_executable_evidence -v
+```
+
+Expected Red: the KMIPKIT-0006 CSV marks `KMIPKIT-REQ-SPEC-9.11-010-001` as `verified` even though its scope assigns implementation and executable verification to KMIPKIT-0008 and the normative catalog associates it with KMIPKIT-0008. The assertion failed with `KMIPKIT-0008 != KMIPKIT-0006`. This is a stale ownership status in the 0006 inventory row; the requirement remains verified by its owning feature. The full local traceability suite is also running independently; this focused regression completed with 1 failure in 2.561 seconds.
