@@ -14,6 +14,8 @@ use std::time::{Duration, Instant};
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
 
+// Keep loopback socket tests serialized; concurrent test listeners overlapped
+// when hosted Windows coverage hit WinSock 10013.
 fn lock_network_fixture() -> MutexGuard<'static, ()> {
     match NETWORK_FIXTURE_LOCK.lock() {
         Ok(guard) => guard,
@@ -344,10 +346,10 @@ fn loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame() {
 
 #[test]
 fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
-    let _guard = lock_network_fixture();
     const WRITER_DELAY: Duration = Duration::from_secs(1);
     const MINIMUM_BLOCKING_WAIT: Duration = Duration::from_millis(250);
 
+    let _guard = lock_network_fixture();
     let listener =
         TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback TCP listener should bind");
     let mut writer = TcpStream::connect(listener.local_addr().expect("listener address exists"))
