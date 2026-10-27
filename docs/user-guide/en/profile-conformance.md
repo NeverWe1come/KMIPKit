@@ -113,13 +113,15 @@ circumstance and special permission before using the stated exceptions. These
 static mappings do not establish server acceptance, an official Test Case
 pass, or profile conformance.
 
-KMIP Specification v2.1 §4.57 also prohibits using a Pre-Active object for any
-cryptographic purpose. The source does not identify an actor or message
-direction. KMIPKit does not track remote State or perform local cryptography,
-so the application remains responsible for this restriction. The profile
-mapping records the caller duty but does not enforce it; until category-valid
-negative behavioral evidence exists, Baseline profile validation remains
-unavailable.
+KMIP Specification v2.1 §4.57 paragraph 2 prohibits using a Pre-Active object
+for any cryptographic purpose but does not identify an actor or message
+direction. KMIPKIT-DEC-020 interprets this as server-only for the KMIPKit 1.0
+client: §4.57 says State is known to and changed only by the server, and
+§6.1.17 defines Encrypt as a client request for the server to perform
+encryption. The source clause remains in client profile clause closures, but
+the requirement is excluded from client requirement closures and runtime
+rules. KMIPKit does not query remote State, perform local cryptography, or
+claim to enforce this server-side restriction.
 
 ## Reading profile status
 

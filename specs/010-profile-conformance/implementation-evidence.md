@@ -7613,3 +7613,23 @@ The DCO-signed Green commits `e979bf328`, `c20185bd9`, `2afe0ee74`, and `477d05b
 | Current profile readiness | Baseline remains 283/283 typed mappings and 282/283 category-test references. Readiness remains `evidence_incomplete`: the §4.57-002 category-test gap, optional source mappings, unresolved applicability and source-discrepancy blockers, unavailable runtime validation, and protected-run evidence remain open. No public profile claim is made. |
 
 The DCO-signed Refactor and evidence update is recorded separately from the Red and Green commits. T040 remains open; this change only prevents unavailable tests from satisfying the evidence gate.
+
+
+## T040 §4.57 Pre-Active use server-only disposition — Red, Green, and Refactor (2026-10-27)
+
+Pinned KMIP Specification v2.1 §4.57 paragraph 2 says a Pre-Active object SHALL NOT be used for any cryptographic purpose but leaves the actor and message direction unstated. Section 4.57 says the server knows object State and is the only party that changes it; §6.1.17 defines Encrypt as a client request for the server to perform encryption. Under the maintainer's standing instruction to use KMIP 2.1 as the source of truth and apply the best-supported project interpretation where it is silent, `KMIPKIT-DEC-020` classifies `KMIPKIT-REQ-SPEC-4.57-002` as server-only for the 1.0 client. Source actor and direction remain unresolved/unclear. The normative §4.57 clause remains in each client source-clause closure, while the requirement is excluded from client requirement closures, generated runtime requirements, typed Rust rules, client negative-test expectations, and client conformance claims. No server-enforcement claim is made.
+
+DCO-signed Red `802fc13c4` adds applicability, source-closure, oracle, report, and runtime-registry regressions; before Green, the test required an adjudicated crosswalk and failed because the ID was still client scope. DCO-signed Red `024bf6b15` adds a report-parser regression; before Green it failed because the report allowlist still accepted the server-only caller-owned constraint. DCO-signed Green `8bf7f4cc8` records decision `KMIPKIT-DEC-020`, retains the source clause with its normative requirement link, removes the requirement from every client requirement closure and typed mapping, removes the unsupported client constraint, and regenerates profile metadata and the report.
+
+| Verification | Command and result |
+|---|---|
+| T002 applicability and decision | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` — PASS: 10 tests. |
+| Source coverage | `py -3 -B -m unittest tools.normative_catalog.tests.test_source_coverage_sections2_to5 -v` — PASS: 7 tests; §4.57-002 is not treated as a client obligation. |
+| Report contracts | `py -3 -B -m unittest tools.normative_catalog.tests.test_report -v` — PASS: 67 tests; 1 expected POSIX symlink-only skip. Includes the negative parser regression. |
+| Full profile traceability | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v` — PASS: 1 test in 433.219 seconds across the profile closures and typed mapping evidence. |
+| Protocol suite | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,142 library unit tests and all selected integration and doctest targets. |
+| Rust quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — PASS. |
+| Inventory and generation | `validate.py --repo-root .`, `generate_profiles.py --check --repo-root .`, and `report.py --check --repo-root .` — PASS; 4 sources, 1,411 source clauses, 4,126 catalog records, generated artifacts current. |
+| Pinned OASIS integrity | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; exact upstream source copies remain unchanged. |
+
+The validation contract, research record, bilingual profile guide, and task ledger now describe the accepted interpretation; earlier evidence entries remain historical and are superseded here. Baseline readiness remains fail-closed and no profile conformance is claimed. Independent QA and security re-review, exact-head hosted CI, and the remaining T040 work are still open.

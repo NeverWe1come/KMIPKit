@@ -117,13 +117,16 @@ del llamador cuando las fechas y el Cryptographic Usage Mask sean pertinentes;
 dependen de la hora actual, del uso criptográfico local y del estado del objeto.
 KMIPKit no realiza esas operaciones criptográficas, no lee el reloj ni recupera
 atributos remotos, por lo que el mapeo no las aplica automáticamente.
-KMIP Specification v2.1 §4.57 también prohíbe usar un objeto Pre-Active con
-cualquier fin criptográfico. La fuente no identifica un actor ni una dirección
-de mensaje. KMIPKit no sigue el State remoto ni realiza criptografía local, por
-lo que la aplicación sigue siendo responsable de esta restricción. El mapeo
-documenta la obligación del llamador, pero no la aplica; hasta contar con
-evidencia negativa de comportamiento adecuada a la categoría, la validación
-del perfil Baseline sigue bloqueada.
+KMIP Specification v2.1 §4.57, párrafo 2, prohíbe usar un objeto Pre-Active
+con cualquier fin criptográfico, pero no identifica un actor ni una dirección
+de mensaje. KMIPKIT-DEC-020 interpreta esta regla como exclusiva del servidor
+para el cliente KMIPKit 1.0: §4.57 dice que el servidor conoce el State y es el
+único que lo modifica, y §6.1.17 define Encrypt como una petición del cliente
+para que el servidor realice el cifrado. La cláusula fuente permanece en el
+cierre de cláusulas de los perfiles cliente, pero el requisito se excluye de
+su cierre de requisitos y de las reglas de ejecución. KMIPKit no consulta el
+State remoto, no realiza criptografía local ni afirma aplicar esta restricción
+del servidor.
 Para las excepciones de Deactivation Date, la aplicación también debe comprobar
 que existen circunstancias extraordinarias y permiso especial. Estos mapeos
 estáticos registran obligaciones del llamador; no demuestran aceptación del
