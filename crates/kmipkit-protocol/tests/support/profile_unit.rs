@@ -4676,13 +4676,108 @@ fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
     }
     .validate_request(&request)
     .expect_err("profile validation rejects a raw Create with duplicate Comment");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
+fn profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_requests() {
+    // KMIP Specification v2.1 §4 and Table 46 limit Comment to one instance.
+    // The operation tables carry object attributes in each listed request.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const COMMENT: u32 = 0x0042_00FD;
+    const ATTRIBUTE_REQUEST_GROUPS: [(u32, u32); 18] = [
+        (0x0000_0001, ATTRIBUTES),
+        (0x0000_0002, COMMON_ATTRIBUTES),
+        (0x0000_0002, PRIVATE_KEY_ATTRIBUTES),
+        (0x0000_0002, PUBLIC_KEY_ATTRIBUTES),
+        (0x0000_0003, ATTRIBUTES),
+        (0x0000_0004, ATTRIBUTES),
+        (0x0000_0005, ATTRIBUTES),
+        (0x0000_0006, ATTRIBUTES),
+        (0x0000_0007, ATTRIBUTES),
+        (0x0000_002A, ATTRIBUTES),
+        (0x0000_000D, NEW_ATTRIBUTE),
+        (0x0000_000E, NEW_ATTRIBUTE),
+        (0x0000_001D, COMMON_ATTRIBUTES),
+        (0x0000_001D, PRIVATE_KEY_ATTRIBUTES),
+        (0x0000_001D, PUBLIC_KEY_ATTRIBUTES),
+        (0x0000_0028, ATTRIBUTES),
+        (0x0000_0029, ATTRIBUTES),
+        (0x0000_0031, NEW_ATTRIBUTE),
+    ];
+
+    for (operation, group_tag) in ATTRIBUTE_REQUEST_GROUPS {
+        let payload = if group_tag == NEW_ATTRIBUTE {
+            structure([
+                tagged(
+                    NEW_ATTRIBUTE,
+                    Value::structure(structure([tagged(
+                        COMMENT,
+                        Value::text_string("first".to_owned()),
+                    )])),
+                ),
+                tagged(
+                    NEW_ATTRIBUTE,
+                    Value::structure(structure([tagged(
+                        COMMENT,
+                        Value::text_string("second".to_owned()),
+                    )])),
+                ),
+            ])
+        } else {
+            structure([tagged(
+                group_tag,
+                Value::structure(structure([
+                    tagged(COMMENT, Value::text_string("first".to_owned())),
+                    tagged(COMMENT, Value::text_string("second".to_owned())),
+                ])),
+            )])
+        };
+        let request = request_message_with_operation_payload(operation, payload);
+        let error = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        }
+        .validate_request(&request)
+        .unwrap_err();
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "operation {operation:#010x}, attribute group {group_tag:#010x}"
+        );
+    }
+
+    let locate_predicate = request_message_with_operation_payload(
+        0x0000_0008,
+        structure([tagged(
+            ATTRIBUTES,
+            Value::structure(structure([
+                tagged(COMMENT, Value::text_string("first".to_owned())),
+                tagged(COMMENT, Value::text_string("second".to_owned())),
+            ])),
+        )]),
+    );
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_request(&locate_predicate)
+    .expect("Locate Attributes are query predicates, not object attributes to create");
 }
 
 #[test]
 fn profile_rejects_repeated_conditional_dsa_without_object_context() {
-    // KMIP Specification v2.1 §4 Table 72 applies to Certificates and PGP keys;
-    // a Certificate without Certificate Type does not establish either branch.
+    // KMIP Specification v2.1 §4 Table 72 permits repeated values only for
+    // PGP Key Object Type; a Certificate without X.509 context is undecided.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
@@ -4708,7 +4803,47 @@ fn profile_rejects_repeated_conditional_dsa_without_object_context() {
     }
     .validate_response(&request, &response)
     .expect_err("profile evidence cannot treat unresolved Table 72 cardinality as valid");
-    assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
+fn profile_rejects_repeated_dsa_for_pgp_certificate_context() {
+    // Table 41 scopes Certificate Type to Certificate objects; Table 72's
+    // repeated-value exception names PGP Key Object Type only.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_attributes(
+        crate::AttributeSet::try_new([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(2)),
+            tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(1)),
+            tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(2)),
+        ])
+        .expect("the generic AttributeSet preserves unresolved conditional values"),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &response)
+    .expect_err("Certificate Type PGP does not select Table 72's PGP Key exception");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
 }
 
 #[test]
