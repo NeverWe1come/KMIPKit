@@ -16,6 +16,7 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const OFFSET: u32 = 0x0042_0058;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const SUCCESS: u32 = 0;
 
 /// A KMIP 2.1 Re-key request from §6.1.46, Table 305.
@@ -82,9 +83,20 @@ impl RekeyRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error if the generic TTLV model cannot
+    /// Returns a sanitized protocol error if source-defined Attribute
+    /// cardinality rules are violated or the generic TTLV model cannot
     /// represent the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(SYMMETRIC_KEY_OBJECT_TYPE),
+                true,
+            )
+            .map_err(|_| common::request_error())?;
+        }
+
         let mut payload = Structure::new();
         if let Some(identifier) = self.unique_identifier {
             common::push(

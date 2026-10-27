@@ -18,6 +18,7 @@ const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const SUCCESS: u32 = 0;
 
 /// A KMIP 2.1 Certify request from §6.1.6, Table 179.
@@ -90,9 +91,20 @@ impl CertifyRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized error when local conditional requirements are not
-    /// met or a generic Structure cannot be represented.
+    /// Returns a sanitized error when local conditional requirements or
+    /// source-defined Attribute cardinality rules are not met, or a generic
+    /// Structure cannot be represented.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(CERTIFICATE_OBJECT_TYPE),
+                true,
+            )
+            .map_err(|_| common::request_error())?;
+        }
+
         let has_request_value = self.certificate_request_value.is_some();
         if has_request_value && self.certificate_request_type.is_none() {
             return Err(invalid_request());
