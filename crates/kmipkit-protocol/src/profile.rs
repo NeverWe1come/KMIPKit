@@ -8985,6 +8985,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "single_cryptographic_usage_per_key_object_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.31-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.31-002",
         source_gap_id: None,
@@ -12863,6 +12878,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
                     | "vendor_identification_is_caller_assigned_unique_text"
+                    | "single_cryptographic_usage_per_key_object_caller_asserted"
             )
     );
     is_known_constraint || is_caller_owned_temporal_constraint(constraint)
@@ -12917,6 +12933,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
                     | "vendor_identification_is_caller_assigned_unique_text"
+                    | "single_cryptographic_usage_per_key_object_caller_asserted"
             )
     );
     is_configuration_only || is_caller_owned_temporal_constraint(constraint)

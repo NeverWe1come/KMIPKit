@@ -183,6 +183,10 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
     ),
+    (
+        "client_profile_capability",
+        "single_cryptographic_usage_per_key_object_caller_asserted",
+    ),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),
