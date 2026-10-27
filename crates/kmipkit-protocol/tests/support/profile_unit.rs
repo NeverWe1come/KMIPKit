@@ -4876,6 +4876,15 @@ fn profile_maps_optional_message_payloads_and_extensions_for_client_messages() {
             ),
         ],
     );
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the message envelope requirement has a typed profile rule");
+    assert!(mapping.constraints.iter().any(|constraint| {
+        constraint.key == "client_profile_capability"
+            && constraint.value == "optional_failure_response_payload_and_message_extensions"
+    }));
 }
 
 #[test]
