@@ -11,8 +11,8 @@ use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, DestroyRequest, RecoverRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::Value;
+use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
@@ -124,7 +124,7 @@ fn lifecycle_request_debug_assertion_failure_does_not_print_request_details() {
     const TEST_NAME: &str = "lifecycle_redaction_tests::lifecycle_request_debug_assertion_failure_does_not_print_request_details";
 
     if std::env::var_os(CHILD_MODE).is_some() {
-        let request = ClientRequest::Activate(ActivateRequest::new(None));
+        let request = lifecycle_request_for_debug_assertion();
         crate::execute_test_support::assert_lifecycle_request_debug(
             &request,
             "ExpectedDifferentRequest",
@@ -132,7 +132,7 @@ fn lifecycle_request_debug_assertion_failure_does_not_print_request_details() {
         return;
     }
 
-    let request = ClientRequest::Activate(ActivateRequest::new(None));
+    let request = lifecycle_request_for_debug_assertion();
     let request_debug = format!("{request:?}");
     let output = Command::new(std::env::current_exe().expect("test executable is available"))
         .args(["--exact", TEST_NAME, "--nocapture"])
@@ -146,6 +146,10 @@ fn lifecycle_request_debug_assertion_failure_does_not_print_request_details() {
         !stderr.contains(&request_debug),
         "request Debug details must not appear in assertion diagnostics"
     );
+}
+
+fn lifecycle_request_for_debug_assertion() -> ClientRequest {
+    ClientRequest::Activate(ActivateRequest::new(None))
 }
 
 fn operation_for(request: &ClientRequest) -> u32 {
