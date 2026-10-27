@@ -7322,3 +7322,4 @@ The UDP retry test now checks the bounded attempt interval `2..=MAX_SOCKET_PAIR_
 | Hosted Windows coverage rerun | Exact-head CI after the fix | Pending publication; the prior failed run does not validate this correction. |
 
 The first invocation used `--exact` without the module-qualified test name and ran zero matching tests; it is not counted as verification. The subsequent substring-filtered invocation above ran the intended test and passed. No generated files or OASIS sources changed.
+| Full `kmipkit-test-support` suite | `cargo test -p kmipkit-test-support` | PASS on Windows: 32 unit, 17 OASIS crypto fixture, 8 profile fixture parser, and 7 transport fixture tests; 64 passed, 0 failed. |
