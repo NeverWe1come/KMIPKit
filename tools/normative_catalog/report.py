@@ -160,6 +160,12 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
     ),
+    ("client_profile_capability", "caller_selects_message_extension_presence_and_processing"),
+    (
+        "client_profile_capability",
+        "message_extension_fields_and_vendor_data_validated_by_message_model",
+    ),
+    ("client_profile_capability", "vendor_identification_is_caller_assigned_unique_text"),
     ("client_profile_capability", "activation_date_reached_before_use_caller_asserted"),
     (
         "client_profile_capability",

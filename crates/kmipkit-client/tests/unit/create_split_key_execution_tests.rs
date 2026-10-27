@@ -55,7 +55,7 @@ const RESPONSE_SENTINEL: &str = "KMIP_CREATE_SPLIT_KEY_RESPONSE_SENTINEL_8432";
 const PENDING_CORRELATION: &[u8] = b"CREATE_SPLIT_KEY_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateSplitKeyFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create_split_key-fixture-v1";
-const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)

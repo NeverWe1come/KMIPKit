@@ -142,7 +142,7 @@ class BaselineServerScopeTests(unittest.TestCase):
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertIn("project interpretation", requirement["review_note"].lower())
-                self.assertIn("source does not identify the sender", requirement["review_note"].lower())
+                self.assertIn("does not identify the sender", requirement["review_note"].lower())
                 self.assertIn(requirement_id, closure.requirement_ids)
                 self.assertNotIn(requirement_id, unresolved_ids)
 

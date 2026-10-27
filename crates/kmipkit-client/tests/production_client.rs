@@ -601,7 +601,7 @@ const VENDOR_IDENTIFIER: &str = "extension.vendor.sentinel";
 const EXTENSION_NAME: &str = "registry.identity.sentinel";
 const EXTENSION_VERSION: &str = "1";
 const EXTENSION_PAYLOAD: &str = "request.payload.sentinel";
-const EXTENSION_DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const EXTENSION_DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn extension_client_configuration() -> ClientConfiguration {
     let identity =

@@ -2202,7 +2202,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         expected_mapping = {
             "item": "Message Extension",
             "element_id": element_id,
-            "requirement_ids": requirement_ids,
+            "requirement_ids": [
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
+            ],
             "source_clause_ids": clause_ids,
             "mapping_status": "reviewed",
         }
@@ -2312,28 +2319,36 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(extension_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"])
         self.assertEqual(re.sub(r"\s+([.,;:])", r"\1", extension_text), extension_review["source_excerpt"])
-        self.assertEqual(extension_review["expected_client_requirement_ids"], requirement_ids[1:])
+        self.assertEqual(
+            extension_review["expected_client_requirement_ids"],
+            [
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                *requirement_ids[1:],
+            ],
+        )
         obligations = extension_review["source_obligations"]
-        unresolved_shape_ids = {
+        sender_shape_ids = {
             "KMIPKIT-REQ-SPEC-9.13-001-001",
             "KMIPKIT-REQ-SPEC-9.13-001-002",
             "KMIPKIT-REQ-SPEC-9.13-001-003",
         }
-        unresolved_shape_obligations = [
-            item for item in obligations if item["candidate_requirement_id"] in unresolved_shape_ids
+        sender_shape_obligations = [
+            item for item in obligations if item["candidate_requirement_id"] in sender_shape_ids
         ]
         self.assertEqual(
-            {item["candidate_requirement_id"] for item in unresolved_shape_obligations}, unresolved_shape_ids
+            {item["candidate_requirement_id"] for item in sender_shape_obligations}, sender_shape_ids
         )
         self.assertTrue(
             all(
                 item["actor"] == "unspecified"
                 and item["direction"] == "unspecified"
-                and item["scope_disposition"] == "unresolved"
-                for item in unresolved_shape_obligations
+                and item["scope_disposition"] == "client_1_0"
+                for item in sender_shape_obligations
             )
         )
-        self.assertTrue(unresolved_shape_ids.isdisjoint(expected_mapping["requirement_ids"]))
+        self.assertTrue(sender_shape_ids.issubset(expected_mapping["requirement_ids"]))
 
         receiver_obligations = {
             item["candidate_requirement_id"]: item

@@ -4936,14 +4936,21 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
 
 #[test]
 fn profile_maps_vendor_extension_structure_and_optional_capability() {
-    // KMIP Specification v2.1 §9.13 defines the optional extension and its required fields.
+    assert_vendor_extension_typed_mappings();
+    assert_baseline_contains_vendor_extension_requirements();
+    assert_vendor_extension_ttlv_behavior();
+}
+
+fn assert_vendor_extension_typed_mappings() {
+    // KMIP Specification v2.1 §§9.13 and 11.56 define the extension fields and tag range.
     const OPTIONAL_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-001";
     const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-002";
     const VENDOR_ID_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability";
-    const VALIDATION_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::message_extension_validation_checks_required_fields_order_and_values";
+    const VALIDATION_TEST_ID: &str = "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields";
+    const NEGATIVE_VALIDATION_TEST_ID: &str = "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected";
 
     let mappings = [
         (
@@ -4985,9 +4992,35 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
                 evidence.test_id == VALIDATION_TEST_ID
                     && evidence.kind == RuleTestKind::PositiveBehavior
             }));
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.test_id == NEGATIVE_VALIDATION_TEST_ID
+                    && evidence.kind == RuleTestKind::NegativeBehavior
+            }));
         }
     }
+}
 
+fn assert_baseline_contains_vendor_extension_requirements() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let requirement_ids = [
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002",
+        "KMIPKIT-REQ-SPEC-9.13-001-003",
+    ];
+    let baseline = crate::profiles_generated::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE_PROFILE_ID)
+        .expect("generated metadata includes Baseline Client");
+    for requirement_id in requirement_ids {
+        assert!(baseline.requirement_ids.contains(&requirement_id));
+    }
+}
+
+fn assert_vendor_extension_ttlv_behavior() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const OPTIONAL_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-001";
+    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-002";
+    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-003";
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![
@@ -4996,17 +5029,6 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
             VENDOR_ID_REQUIREMENT_ID.to_owned(),
         ],
     };
-    let baseline = crate::profiles_generated::CLIENT_PROFILES
-        .iter()
-        .find(|profile| profile.profile_id == BASELINE_PROFILE_ID)
-        .expect("generated metadata includes Baseline Client");
-    for requirement_id in [
-        OPTIONAL_REQUIREMENT_ID,
-        REQUIRED_FIELDS_REQUIREMENT_ID,
-        VENDOR_ID_REQUIREMENT_ID,
-    ] {
-        assert!(baseline.requirement_ids.contains(&requirement_id));
-    }
     let request_without_extension = request_message_with_extensions(std::iter::empty());
     result
         .validate_request(&request_without_extension)
@@ -5042,7 +5064,11 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
         .next()
         .and_then(|item| item.message_extension(0))
         .expect("the response extension is available through the typed API");
-    assert!(response_extension.with_vendor_identification(str::to_owned).is_some());
+    assert!(
+        response_extension
+            .with_vendor_identification(str::to_owned)
+            .is_some()
+    );
     assert_eq!(
         response_extension.with_vendor_extension(|extension| extension.children().len()),
         Some(1)
@@ -5129,7 +5155,7 @@ fn profile_maps_noncritical_response_extension_as_optional_capability() {
     );
     assert_eq!(
         extension.with_vendor_extension(|extension| extension.children().len()),
-        Some(0)
+        Some(1)
     );
 }
 

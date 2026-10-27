@@ -1,5 +1,5 @@
 //! OASIS KMIP Specification v2.1: §§6.1.38, 8.3, 8.6, 9.1–9.2, 9.9–9.10,
-//! 9.13, 9.19, 9.21; Tables 276, 396, 399, 400, 408–409, and 418.
+//! 9.13, 9.19, 9.21, 11.56; Tables 276, 396, 399, 400, 408–409, and 418.
 //!
 //! Traceability: KMIPKIT-0006-FR-004, FR-008, FR-010, FR-011, FR-014, FR-020,
 //! FR-021; SC-002, SC-003, SC-004, SC-006.
@@ -128,7 +128,13 @@ fn message_extension(vendor: &str, criticality: bool) -> Structure {
     structure([
         item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
         item(CRITICALITY_INDICATOR, Value::boolean(criticality)),
-        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+        item(
+            VENDOR_EXTENSION,
+            Value::structure(structure([item(
+                0x0054_0001,
+                Value::text_string("opaque vendor value".to_owned()),
+            )])),
+        ),
     ])
 }
 
@@ -290,10 +296,9 @@ fn repeated_request_extensions_preserve_order_and_expose_typed_fields() {
         Some("Vendor.B".to_owned())
     );
     assert_eq!(second.criticality_indicator(), Some(true));
-    assert!(
-        second
-            .with_vendor_extension(|extension| extension.children().is_empty())
-            .unwrap_or_default()
+    assert_eq!(
+        second.with_vendor_extension(|extension| extension.children().len()),
+        Some(1)
     );
     assert!(batch_item.message_extension(2).is_none());
 }
@@ -322,6 +327,17 @@ fn malformed_request_message_extension_is_rejected() {
         item(CRITICALITY_INDICATOR, Value::boolean(false)),
         item(VENDOR_EXTENSION, Value::structure(Structure::new())),
     ]);
+    let empty_vendor_extension = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+    ]);
+    let error = RequestMessage::try_from_ttlv(request_with_extensions([empty_vendor_extension]))
+        .expect_err("§9.13 and §11.56 require vendor-specific extension data");
+    assert_eq!(error.kind(), MessageValidationErrorKind::InvalidFieldValue);
 
     for extension in [
         missing_vendor_extension,

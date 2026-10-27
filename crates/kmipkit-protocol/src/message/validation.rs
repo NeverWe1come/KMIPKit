@@ -676,6 +676,25 @@ fn validate_message_extension(view: &StructureView<'_>) -> Result<(), MessageVal
             None,
         ));
     }
+    // §9.13 requires vendor-specific contents; §11.56 allocates extension tags in 0x54xxxx.
+    let vendor_extension_is_populated = required_child(view.children(), VENDOR_EXTENSION, 0)?
+        .with_value(|value| match value {
+            ValueView::Structure(structure) => Some(
+                structure
+                    .children()
+                    .iter()
+                    .any(|child| (0x0054_0000..=0x0054_FFFF).contains(&child.tag().raw())),
+            ),
+            _ => None,
+        })
+        .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
+    if !vendor_extension_is_populated {
+        return Err(error(
+            MessageValidationErrorKind::InvalidFieldValue,
+            None,
+            None,
+        ));
+    }
     Ok(())
 }
 

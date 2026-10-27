@@ -10708,6 +10708,77 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "caller_selects_message_extension_presence_and_processing",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "message_extension_fields_and_vendor_data_validated_by_message_model",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "vendor_identification_is_caller_assigned_unique_text",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
         source_gap_id: None,
@@ -12789,6 +12860,9 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
+                    | "caller_selects_message_extension_presence_and_processing"
+                    | "message_extension_fields_and_vendor_data_validated_by_message_model"
+                    | "vendor_identification_is_caller_assigned_unique_text"
             )
     );
     is_known_constraint || is_caller_owned_temporal_constraint(constraint)
@@ -12840,6 +12914,9 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "reprovision_when_credentials_are_required_caller_directed"
                     | "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted"
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
+                    | "caller_selects_message_extension_presence_and_processing"
+                    | "message_extension_fields_and_vendor_data_validated_by_message_model"
+                    | "vendor_identification_is_caller_assigned_unique_text"
             )
     );
     is_configuration_only || is_caller_owned_temporal_constraint(constraint)

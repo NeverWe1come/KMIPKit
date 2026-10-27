@@ -530,13 +530,20 @@ mod tests {
 
     #[test]
     fn message_extension_validation_checks_required_fields_order_and_values() {
+        // KMIP Specification v2.1 §§9.13 and 11.56 require vendor-specific extension data.
         let valid = structure([
             item(
                 VENDOR_IDENTIFICATION,
                 Value::text_string("Vendor_1".to_owned()),
             ),
             item(CRITICALITY_INDICATOR, Value::boolean(false)),
-            item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+            item(
+                VENDOR_EXTENSION,
+                Value::structure(structure([item(
+                    0x0054_0001,
+                    Value::text_string("opaque vendor value".to_owned()),
+                )])),
+            ),
         ]);
         assert!(validate_message_extension(&valid.view()).is_ok());
 
@@ -550,6 +557,25 @@ mod tests {
         ]);
         assert_kind(
             validate_message_extension(&empty_vendor_extension.view()),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        let standard_tag_in_vendor_extension = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(
+                VENDOR_EXTENSION,
+                Value::structure(structure([item(
+                    OPERATION,
+                    Value::enumeration(1),
+                )])),
+            ),
+        ]);
+        assert_kind(
+            validate_message_extension(&standard_tag_in_vendor_extension.view()),
             MessageValidationErrorKind::InvalidFieldValue,
         );
 
