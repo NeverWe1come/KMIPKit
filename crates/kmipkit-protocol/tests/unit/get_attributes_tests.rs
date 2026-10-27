@@ -15,6 +15,10 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const COMMENT: u32 = 0x0042_00FD;
+const CERTIFICATE_TYPE: u32 = 0x0042_001D;
+const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
+const OBJECT_TYPE: u32 = 0x0042_0057;
 const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
@@ -415,6 +419,48 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
             (0x0042_002F, ItemType::DateTime),
             (0x0042_0057, ItemType::Enumeration),
         ]
+    );
+}
+
+#[test]
+fn response_rejects_repeated_unconditional_single_instance_attributes() {
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(COMMENT, Value::text_string("first".to_owned())),
+            item(COMMENT, Value::text_string("second".to_owned())),
+        ])),
+    );
+
+    let result = GetAttributesResponse::try_from_response_item(response_item(&message));
+    assert!(
+        result.is_err(),
+        "KMIP v2.1 §4 and Comment Table 46 make Comment single-instance"
+    );
+}
+
+#[test]
+fn response_rejects_repeated_digital_signature_algorithm_for_x509_certificate() {
+    // Table 72 permits repeated Digital Signature Algorithm only for PGP keys;
+    // it is single-instance for X.509 certificates when that context is present.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(1)),
+            item(CERTIFICATE_TYPE, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let result = GetAttributesResponse::try_from_response_item(response_item(&message));
+    assert!(
+        result.is_err(),
+        "Table 72 forbids duplicate values for an X.509 certificate"
     );
 }
 
