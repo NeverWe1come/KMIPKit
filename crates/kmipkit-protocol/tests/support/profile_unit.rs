@@ -7551,6 +7551,122 @@ fn profile_maps_client_query_function_repetition_as_optional_capability() {
 }
 
 #[test]
+fn profile_requires_complete_version_in_query_profile_responses() {
+    // KMIP Specification v2.1 §7.32 and Table 384 require both Integer parts.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.32-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const QUERY_OPERATION: u32 = 0x0000_0018;
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_0140;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+    const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Profile Version has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Profile Version has generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has category-appropriate executable evidence");
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        QUERY_OPERATION,
+        crate::QueryRequest::new([crate::QueryFunction::PROFILES])
+            .to_ttlv_payload()
+            .expect("Query Profiles request has one Query Function"),
+    );
+    let complete_response = get_attributes_response_with_payload(
+        QUERY_OPERATION,
+        structure([
+            tagged(
+                PROFILE_INFORMATION,
+                Value::structure(structure([
+                    tagged(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    tagged(
+                        PROFILE_VERSION,
+                        Value::structure(structure([
+                            tagged(PROFILE_VERSION_MAJOR, Value::integer(2)),
+                            tagged(PROFILE_VERSION_MINOR, Value::integer(1)),
+                        ])),
+                    ),
+                ])),
+            ),
+            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
+        ]),
+    );
+    validation
+        .validate_response(&request, &complete_response)
+        .expect("Profile Information with both version parts satisfies §7.32");
+
+    let incomplete_response = get_attributes_response_with_payload(
+        QUERY_OPERATION,
+        structure([
+            tagged(
+                PROFILE_INFORMATION,
+                Value::structure(structure([
+                    tagged(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    tagged(
+                        PROFILE_VERSION,
+                        Value::structure(structure([tagged(
+                            PROFILE_VERSION_MAJOR,
+                            Value::integer(2),
+                        )])),
+                    ),
+                ])),
+            ),
+            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
+        ]),
+    );
+    let error = validation
+        .validate_response(&request, &incomplete_response)
+        .expect_err("Profile Version cannot omit its Minor part");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let without_optional_version = get_attributes_response_with_payload(
+        QUERY_OPERATION,
+        structure([
+            tagged(
+                PROFILE_INFORMATION,
+                Value::structure(structure([tagged(
+                    PROFILE_NAME,
+                    Value::enumeration(0x0000_012a),
+                )])),
+            ),
+            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
+        ]),
+    );
+    validation
+        .validate_response(&request, &without_optional_version)
+        .expect("Profile Version is optional in Table 383");
+
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    validation
+        .validate_response(&unrelated_request, &incomplete_response)
+        .expect("the Query Profiles rule does not constrain another operation");
+}
+
+#[test]
 fn profile_requires_at_least_one_client_query_function() {
     // KMIP Specification v2.1 §6.1.40 paragraph 14 requires one or more.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-014";
