@@ -1231,6 +1231,7 @@ def _pinned_attribute_mutation_policies() -> dict[str, dict[str, str]]:
             "Initially set by",
             "Modifiable by client",
             "Deletable by client",
+            "Multiple instances permitted",
         }
         required_cells = {cell.casefold() for cell in required_cells}
         if not required_cells.issubset(cells):
@@ -1248,6 +1249,7 @@ def _pinned_attribute_mutation_policies() -> dict[str, dict[str, str]]:
             "source_initially_set_by": cells["initially set by"],
             "source_modifiable_by_client": cells["modifiable by client"],
             "source_deletable_by_client": cells["deletable by client"],
+            "source_multiple_instances_permitted": cells["multiple instances permitted"],
         }
     return result
 
@@ -3238,6 +3240,7 @@ class CatalogValidationTests(unittest.TestCase):
             "source_initially_set_by",
             "source_modifiable_by_client",
             "source_deletable_by_client",
+            "source_multiple_instances_permitted",
         )
         policy_list_fields = ("source_operation_restrictions", "source_conditional_rules")
         mismatches: list[str] = []
