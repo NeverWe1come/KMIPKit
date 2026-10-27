@@ -7387,3 +7387,17 @@ Independent QA found no additional scope or generated-output issue after the not
 ## T040 PKCS#11-only field applicability — Red (2026-10-27)
 
 Added a regression for Specification v2.1 §§7.26–7.30 requiring the five PKCS#11-specific field records to remain actor- and direction-unspecified, have conditional scope with no selected profile IDs, and stay out of Baseline Client closure and unresolved blockers. The pinned source says those fields may pertain only to certain profile types; each catalog condition already limits its row to the PKCS#11 profile. The first focused run failed all five subcases because their `scope_state` remained `unclear`. This is the Red evidence for resolving that profile condition without assigning it to Baseline.
+
+## T040 PKCS#11-only field applicability — Green and Refactor (2026-10-27)
+
+DCO Green commit `a520d405` updates the five requirement rows and linked source-clause summaries for §§7.26–7.30 to `profile_conditional`. It retains `role=unspecified`, `direction=unclear`, and empty `profile_ids`, since KMIPKit's selected Baseline Client is not a PKCS#11 profile target. The existing condition text, “Applicable PKCS#11 profile only,” is preserved; each review note now cites the corresponding OASIS section and explains the Baseline exclusion.
+
+| Verification | Command and result |
+|---|---|
+| Focused profile-scope regressions | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` — PASS: 2 tests covering 15 subcases. |
+| Catalog validation | `py -3 -B tools/normative_catalog/validate.py` — PASS: 4 sources, 1,411 clauses, 4,125 records. |
+| Generated profile metadata | `py -3 -B tools/normative_catalog/generate_profiles.py --check` — PASS. |
+| Coverage report | `py -3 -B tools/normative_catalog/report.py --write`; serial `py -3 -B tools/normative_catalog/report.py --check` — PASS. |
+| Baseline scope result | Direct `compute_profile_closure` evaluation — 265 assigned requirements remain; 40 unique unresolved applicability IDs remain, down from 45. Readiness remains `evidence_incomplete`. |
+
+Independent QA confirmed that the pinned Profiles source defines separate PKCS#11 Client profiles in §§5.18 and 6.34, and found no scope issue. The adjacent table-row candidates remain `non_applicable/out_of_scope` with their source-extractor rationale; the five requirement records remain actor/direction-unspecified and outside Baseline closure. No client role, profile membership, implementation mapping, or conformance claim was inferred for the PKCS#11-specific fields.
