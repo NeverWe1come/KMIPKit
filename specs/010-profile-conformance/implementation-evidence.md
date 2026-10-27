@@ -7347,3 +7347,7 @@ DCO Green commit `68532f6f` changes only the non-owning KMIPKIT-0006 inventory s
 | Exact-head hosted CI | Run `40432910322` validated the prior published head `b2e0ba40`; it failed this traceability regression. It does not validate the correction. Exact-head CI for the corrected commits is pending publication. |
 
 The status correction is the complete fix for the reported ownership mismatch. T040 profile applicability work is unaffected and remains open; Baseline readiness and all conformance-claim boundaries are unchanged.
+
+## T040 server-only profile applicability — Red (2026-10-27)
+
+Added `tools/normative_catalog/tests/test_baseline_server_scope.py` to assert that ten reviewed server-produced or server-controlled requirements are excluded from the Baseline Client requirement and unresolved-scope closures. The test preserves explicit project-interpretation notes where the pinned source does not name the actor. The initial run `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` failed all ten subtests because each catalog row still had `role=unspecified`, `scope_state=unclear`, or both. This is the Red evidence for the first T040 applicability correction; no profile-conformance claim is made.
