@@ -387,6 +387,68 @@ def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
     return True
 
 
+def _python_ast_dotted_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Call):
+        return _python_ast_dotted_name(node.func)
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        prefix = _python_ast_dotted_name(node.value)
+        return f"{prefix}.{node.attr}" if prefix else node.attr
+    return None
+
+
+def _python_skip_decorator_aliases(module: ast.Module) -> set[str]:
+    skip_decorators = {"skip", "skipif", "skipunless"}
+    aliases: set[str] = set()
+    for node in module.body:
+        if not isinstance(node, ast.ImportFrom) or node.module not in {"unittest", "unittest.case"}:
+            continue
+        for imported in node.names:
+            if imported.name.casefold() in skip_decorators:
+                aliases.add(imported.asname or imported.name)
+    return aliases
+
+
+def _python_expression_has_skip_marker(node: ast.AST, aliases: set[str]) -> bool:
+    skip_decorators = {"skip", "skipif", "skipunless"}
+    for child in ast.walk(node):
+        name = _python_ast_dotted_name(child)
+        if name is None:
+            continue
+        if name in aliases:
+            return True
+        if any(part.casefold() in skip_decorators for part in name.split(".")):
+            return True
+    return False
+
+
+def _python_node_has_skip_decorator(node: ast.AST, aliases: set[str]) -> bool:
+    return any(
+        _python_expression_has_skip_marker(decorator, aliases)
+        for decorator in getattr(node, "decorator_list", [])
+    )
+
+
+def _python_module_has_skip_marker(module: ast.Module, aliases: set[str]) -> bool:
+    for node in module.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "pytestmark"
+            for target in node.targets
+        ):
+            if _python_expression_has_skip_marker(node.value, aliases):
+                return True
+        if (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "pytestmark"
+            and node.value is not None
+            and _python_expression_has_skip_marker(node.value, aliases)
+        ):
+            return True
+    return False
+
+
 def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
     """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
     if path.suffix == ".rs":
@@ -445,6 +507,9 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
             module = ast.parse(source)
         except SyntaxError:
             return False
+        skip_aliases = _python_skip_decorator_aliases(module)
+        if _python_module_has_skip_marker(module, skip_aliases):
+            return False
         class_name, separator, function_name = test_name.rpartition(".")
         if separator:
             if not function_name.startswith("test_"):
@@ -458,15 +523,21 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
                     or isinstance(base, ast.Attribute) and base.attr == "TestCase"
                     for base in node.bases
                 )
-                return (is_pytest_class or is_unittest_class) and any(
+                if not (is_pytest_class or is_unittest_class) or _python_node_has_skip_decorator(
+                    node, skip_aliases
+                ):
+                    return False
+                return any(
                     isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef))
                     and method.name == function_name
+                    and not _python_node_has_skip_decorator(method, skip_aliases)
                     for method in node.body
                 )
             return False
         return test_name.startswith("test_") and any(
             isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
             and node.name == test_name
+            and not _python_node_has_skip_decorator(node, skip_aliases)
             for node in module.body
         )
 
