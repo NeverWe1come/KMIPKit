@@ -25495,10 +25495,12 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
     );
     assert!(mapping.evaluator.is_none());
-    assert!(mapping
-        .test_evidence
-        .iter()
-        .all(|evidence| evidence.kind != RuleTestKind::RecommendedBehavior));
+    assert!(
+        mapping
+            .test_evidence
+            .iter()
+            .all(|evidence| evidence.kind != RuleTestKind::RecommendedBehavior)
+    );
     validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
         .expect("the accepted caller-owned SHOULD deviation has no behavior claim");
     assert_eq!(
@@ -25538,8 +25540,17 @@ fn profile_maps_multiple_derive_key_inputs_as_optional_capability() {
         "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
         GeneratedVerificationCategory::OptionalCapability,
         "derive_key_multiple_inputs_caller_selected",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_derive_key_inputs_as_optional_capability",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
         RuleTestKind::OptionalCapabilityUsable,
+    );
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-6.1.14-002")
+        .expect("multiple Derive Key inputs have a typed profile mapping");
+    assert_eq!(
+        mapping.test_evidence.len(),
+        1,
+        "only the real serializer test is category evidence"
     );
 }
 
@@ -25576,10 +25587,12 @@ fn assert_caller_owned_prohibition_has_no_behavior_evidence(
         GeneratedVerificationCategory::ProhibitedBehavior
     );
     assert!(mapping.evaluator.is_none());
-    assert!(mapping
-        .test_evidence
-        .iter()
-        .all(|evidence| evidence.kind != RuleTestKind::NegativeBehavior));
+    assert!(
+        mapping
+            .test_evidence
+            .iter()
+            .all(|evidence| evidence.kind != RuleTestKind::NegativeBehavior)
+    );
     assert_eq!(
         validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
             .expect_err("metadata-only evidence cannot satisfy a SHALL NOT")
