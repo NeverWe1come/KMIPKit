@@ -121,6 +121,7 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
 
 #[test]
 fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
         || {
@@ -151,6 +152,7 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 
 #[test]
 fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
         || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
@@ -181,6 +183,7 @@ fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
 
 #[test]
 fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
     let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
@@ -205,6 +208,7 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
 
 #[test]
 fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
         || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
