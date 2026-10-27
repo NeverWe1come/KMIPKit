@@ -26,6 +26,9 @@ const EXTENSION_INFORMATION: u32 = 0x0042_00a4;
 const ATTESTATION_TYPE: u32 = 0x0042_00c7;
 const RNG_PARAMETERS: u32 = 0x0042_00d9;
 const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+const PROFILE_VERSION: u32 = 0x0042_0142;
+const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
 const VALIDATION_INFORMATION: u32 = 0x0042_00df;
 const CAPABILITY_INFORMATION: u32 = 0x0042_00f7;
 const CLIENT_REGISTRATION_METHOD: u32 = 0x0042_00f6;
@@ -584,6 +587,9 @@ fn parse_known_response_field(
         }
         PROFILE_INFORMATION => {
             structure()?;
+            if !profile_information_has_complete_versions(&value) {
+                return Err(invalid());
+            }
             Ok(QueryResponseField::ProfileInformation(clone_item(
                 tag, value,
             )?))
@@ -617,6 +623,46 @@ fn parse_known_response_field(
         }
         _ => unreachable!("only assigned response field tags are parsed"),
     }
+}
+
+fn profile_information_has_complete_versions(value: &ValueView<'_>) -> bool {
+    let ValueView::Structure(profile_information) = value else {
+        return false;
+    };
+
+    profile_information.children().iter().all(|field| {
+        if field.tag().raw() != PROFILE_VERSION {
+            return true;
+        }
+
+        field.with_value(|value| {
+            let ValueView::Structure(version) = value else {
+                return false;
+            };
+            let mut has_major = false;
+            let mut has_minor = false;
+
+            for component in version.children() {
+                match component.tag().raw() {
+                    PROFILE_VERSION_MAJOR => {
+                        if !component.with_value(|value| matches!(value, ValueView::Integer(_))) {
+                            return false;
+                        }
+                        has_major = true;
+                    }
+                    PROFILE_VERSION_MINOR => {
+                        if !component.with_value(|value| matches!(value, ValueView::Integer(_))) {
+                            return false;
+                        }
+                        has_minor = true;
+                    }
+                    _ => {}
+                }
+            }
+
+            has_major && has_minor
+        })
+    })
 }
 
 fn query_response_field_index(tag: u32) -> Option<usize> {
