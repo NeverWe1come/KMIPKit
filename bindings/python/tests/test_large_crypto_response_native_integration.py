@@ -9,10 +9,9 @@ import threading
 from pathlib import Path
 
 import pytest
-
 from _test_support import require_tls13_mtls_peer
-from kmipkit import client, errors, extensions, ttlv
 
+from kmipkit import client, errors, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _DEFAULT_MAX_MESSAGE_BYTES = 16 * 1024 * 1024

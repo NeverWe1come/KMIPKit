@@ -10,8 +10,8 @@ import threading
 from pathlib import Path
 
 from _test_support import require_tls13_mtls_peer
-from kmipkit import client, extensions, ttlv
 
+from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"item-0", b"item-1", b"item-2")

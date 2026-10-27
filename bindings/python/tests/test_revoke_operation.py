@@ -11,11 +11,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from _test_support import require_tls13_mtls_peer
+
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
-
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _REVOKE_ID = b"revoke-item"
