@@ -4559,6 +4559,93 @@ fn profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior
 }
 
 #[test]
+fn profile_maps_single_instance_attributes_as_required_behavior() {
+    // KMIP Specification v2.1 §4 defines single-instance attributes; Table 46
+    // marks Comment as single-instance, and §6.1.20 Table 224 returns attributes.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior";
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("single-instance attributes have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the single-instance requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required single-instance behavior has executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let singleton_response = get_attributes_response_with_attributes(
+        crate::AttributeSet::try_new([tagged(
+            COMMENT_TAG,
+            Value::text_string("one comment".to_owned()),
+        )])
+        .expect("one Comment is a valid single-instance attribute"),
+    );
+    assert!(mapping
+        .evaluator
+        .expect("single-instance mapping evaluates typed responses")(
+            Some(&request),
+            Some((&request, &singleton_response)),
+        ));
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &singleton_response)
+    .expect("Baseline accepts one instance of a single-instance attribute");
+}
+
+#[test]
+fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_response() {
+    // KMIP Specification v2.1 §4 and Table 46 limit Comment to one instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let repeated_response = get_attributes_response_with_attributes(
+        crate::AttributeSet::try_new([
+            tagged(COMMENT_TAG, Value::text_string("first".to_owned())),
+            tagged(COMMENT_TAG, Value::text_string("second".to_owned())),
+        ])
+        .expect("the generic attribute collection preserves source values losslessly"),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &repeated_response)
+    .expect_err("profile validation rejects repeated Comment instances");
+    assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
+}
+
+#[test]
 fn profile_requires_get_and_export_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
