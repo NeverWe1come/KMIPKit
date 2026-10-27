@@ -1452,6 +1452,16 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "def test_capability():\n"
                 "    assert True\n",
             ),
+            (
+                "mutated aliased pytest module skip marker",
+                "test_capability",
+                "import pytest\n"
+                "skip_marks = []\n"
+                "pytestmark = skip_marks\n"
+                "skip_marks.append(pytest.mark.skip(reason='module unavailable'))\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
         )
         for label, test_name, source in cases:
             with self.subTest(label=label):
@@ -1471,6 +1481,21 @@ class FeatureTraceabilityTests(unittest.TestCase):
         self.assertTrue(
             _is_discoverable_positive_test(
                 Path("tests/evidence.py"), "test_capability", source
+            )
+        )
+        source_with_attribute = (
+            "def custom_marker(**kwargs):\n"
+            "    return lambda function: function\n"
+            "class Config:\n"
+            "    skip = False\n"
+            "config = Config()\n"
+            "@custom_marker(option=config.skip)\n"
+            "def test_capability():\n"
+            "    assert True\n"
+        )
+        self.assertTrue(
+            _is_discoverable_positive_test(
+                Path("tests/evidence.py"), "test_capability", source_with_attribute
             )
         )
 
