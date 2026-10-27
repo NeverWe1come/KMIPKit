@@ -7332,4 +7332,18 @@ The exact-head PR run `40432910322` (`b2e0ba40f2f0bd15d87f8742e07dfdb7a57c72ed`)
 py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.MessageModelTraceabilityTests.test_message_model_csv_maps_requirements_and_executable_evidence -v
 ```
 
-Expected Red: the KMIPKIT-0006 CSV marks `KMIPKIT-REQ-SPEC-9.11-010-001` as `verified` even though its scope assigns implementation and executable verification to KMIPKIT-0008 and the normative catalog associates it with KMIPKIT-0008. The assertion failed with `KMIPKIT-0008 != KMIPKIT-0006`. This is a stale ownership status in the 0006 inventory row; the requirement remains verified by its owning feature. The full local traceability suite is also running independently; this focused regression completed with 1 failure in 2.561 seconds.
+Expected Red: the KMIPKIT-0006 CSV marks `KMIPKIT-REQ-SPEC-9.11-010-001` as `verified` even though its scope assigns implementation and executable verification to KMIPKIT-0008 and the normative catalog associates it with KMIPKIT-0008. The assertion failed with `KMIPKIT-0008 != KMIPKIT-0006`. This is a stale ownership status in the 0006 inventory row; the requirement remains verified by its owning feature. The focused regression completed with 1 failure in 2.561 seconds. A concurrent full local traceability-suite run later exited without its result being captured, so it is not counted as verification.
+
+## PR #90 feature traceability ownership correction — Green and Refactor (2026-10-27)
+
+DCO Green commit `68532f6f` changes only the non-owning KMIPKIT-0006 inventory status for `KMIPKIT-REQ-SPEC-9.11-010-001` from `verified` to `deferred`. The KMIPKIT-0008 owning record remains verified with its implementation and executable references; no normative assignment or runtime behavior changed.
+
+| Verification | Command and result |
+|---|---|
+| Focused ownership traceability regression | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.MessageModelTraceabilityTests.test_message_model_csv_maps_requirements_and_executable_evidence -v` — PASS: 1 test in 9.167 seconds. |
+| Normative catalog validation | `py -3 -B tools/normative_catalog/validate.py` — PASS: 4 sources, 1,411 clauses, 4,125 records. |
+| Generated profile metadata | `py -3 -B tools/normative_catalog/generate_profiles.py --check` — PASS. |
+| Generated coverage report | `py -3 -B tools/normative_catalog/report.py --check` — PASS; report matches its catalog inputs. |
+| Exact-head hosted CI | Run `40432910322` validated the prior published head `b2e0ba40`; it failed this traceability regression. It does not validate the correction. Exact-head CI for the corrected commits is pending publication. |
+
+The status correction is the complete fix for the reported ownership mismatch. T040 profile applicability work is unaffected and remains open; Baseline readiness and all conformance-claim boundaries are unchanged.
