@@ -211,6 +211,44 @@ fn query_response_requires_both_profile_version_parts_when_version_is_present() 
 }
 
 #[test]
+fn query_response_rejects_non_integer_profile_version_parts() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let malformed_versions = [
+        structure([
+            item(PROFILE_VERSION_MAJOR, Value::enumeration(2)),
+            item(PROFILE_VERSION_MINOR, Value::integer(1)),
+        ]),
+        structure([
+            item(PROFILE_VERSION_MAJOR, Value::integer(2)),
+            item(PROFILE_VERSION_MINOR, Value::enumeration(1)),
+        ]),
+    ];
+
+    for version in malformed_versions {
+        let payload = structure([
+            item(
+                PROFILE_INFORMATION,
+                Value::structure(structure([item(
+                    PROFILE_VERSION,
+                    Value::structure(version),
+                )])),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     let response_fields = vec![
