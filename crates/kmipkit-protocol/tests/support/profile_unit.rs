@@ -4349,6 +4349,83 @@ fn profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_cap
         .expect("the optional capability does not require wrapping on every Get");
 }
 
+fn multi_instance_name_attribute(value: &str) -> Item {
+    const NAME_TAG: u32 = 0x0042_0053;
+    const NAME_TYPE_TAG: u32 = 0x0042_0054;
+    const NAME_VALUE_TAG: u32 = 0x0042_0055;
+
+    tagged(
+        NAME_TAG,
+        Value::structure(structure([
+            tagged(NAME_VALUE_TAG, Value::text_string(value.to_owned())),
+            tagged(NAME_TYPE_TAG, Value::enumeration(1)),
+        ])),
+    )
+}
+
+fn get_attributes_response_with_attributes(
+    attributes: crate::AttributeSet,
+) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("object-id".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure(attributes.into_items())),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("Get Attributes response can preserve repeated Name values")
+}
+
+fn get_attributes_response_name_count(response: &crate::ResponseMessage) -> Option<usize> {
+    const NAME_TAG: u32 = 0x0042_0053;
+
+    response
+        .batch_items()
+        .next()
+        .and_then(|item| {
+            item.with_response_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == ATTRIBUTES_TAG)
+                    .map(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::Structure(attributes) => attributes
+                                .children()
+                                .iter()
+                                .filter(|attribute| attribute.tag().raw() == NAME_TAG)
+                                .count(),
+                            _ => 0,
+                        })
+                    })
+            })
+        })
+        .flatten()
+}
+
 #[test]
 fn profile_maps_multi_instance_attribute_representation_as_optional_capability() {
     // KMIP Specification v2.1 §4 permits multiple instances for attributes
@@ -4358,8 +4435,6 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability";
     const NAME_TAG: u32 = 0x0042_0053;
-    const NAME_TYPE_TAG: u32 = 0x0042_0054;
-    const NAME_VALUE_TAG: u32 = 0x0042_0055;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -4381,18 +4456,9 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
             && evidence.kind == RuleTestKind::OptionalCapabilityUsable
     }));
 
-    let name_attribute = |value: &str| {
-        tagged(
-            NAME_TAG,
-            Value::structure(structure([
-                tagged(NAME_VALUE_TAG, Value::text_string(value.to_owned())),
-                tagged(NAME_TYPE_TAG, Value::enumeration(1)),
-            ])),
-        )
-    };
     let attributes = crate::AttributeSet::try_new([
-        name_attribute("primary-name"),
-        name_attribute("secondary-name"),
+        multi_instance_name_attribute("primary-name"),
+        multi_instance_name_attribute("secondary-name"),
     ])
     .expect("§4.32 Table 94 permits multiple Name instances");
     assert_eq!(attributes.len(), 2);
@@ -4413,60 +4479,8 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
             Value::text_string("object-id".to_owned()),
         )]),
     );
-    let response = crate::ResponseMessage::try_from_ttlv(structure([
-        tagged(
-            RESPONSE_HEADER_TAG,
-            Value::structure(structure([
-                test_protocol_version(),
-                tagged(TIME_STAMP_TAG, Value::date_time(1)),
-                tagged(BATCH_COUNT_TAG, Value::integer(1)),
-            ])),
-        ),
-        tagged(
-            BATCH_ITEM_TAG,
-            Value::structure(structure([
-                tagged(OPERATION_TAG, Value::enumeration(0x0000_000B)),
-                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
-                tagged(
-                    RESPONSE_PAYLOAD_TAG,
-                    Value::structure(structure([
-                        tagged(
-                            UNIQUE_IDENTIFIER_TAG,
-                            Value::text_string("object-id".to_owned()),
-                        ),
-                        tagged(
-                            ATTRIBUTES_TAG,
-                            Value::structure(structure(attributes.into_items())),
-                        ),
-                    ])),
-                ),
-            ])),
-        ),
-    ]))
-    .expect("Get Attributes response can preserve repeated Name values");
-    let repeated_name_count = response
-        .batch_items()
-        .next()
-        .and_then(|item| {
-            item.with_response_payload(|payload| {
-                payload
-                    .children()
-                    .iter()
-                    .find(|field| field.tag().raw() == ATTRIBUTES_TAG)
-                    .map(|field| {
-                        field.with_value(|value| match value {
-                            ValueView::Structure(attributes) => attributes
-                                .children()
-                                .iter()
-                                .filter(|attribute| attribute.tag().raw() == NAME_TAG)
-                                .count(),
-                            _ => 0,
-                        })
-                    })
-            })
-        })
-        .flatten();
-    assert_eq!(Some(2), repeated_name_count);
+    let response = get_attributes_response_with_attributes(attributes);
+    assert_eq!(Some(2), get_attributes_response_name_count(&response));
     assert!(evaluator(Some(&request), Some((&request, &response))));
     ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
