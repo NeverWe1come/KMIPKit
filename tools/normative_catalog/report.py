@@ -228,6 +228,24 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "single_cryptographic_usage_per_key_object_caller_asserted",
     ),
+    (
+        "client_profile_capability",
+        "original_creation_date_immutable_after_set_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "compromised_object_protected_information_only_trusted_client_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+    ),
+    ("client_profile_capability", "derive_key_multiple_inputs_caller_selected"),
+    ("client_profile_capability", "modify_attribute_existing_instance_named"),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),

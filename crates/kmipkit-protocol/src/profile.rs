@@ -9321,6 +9321,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.57-005-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_compromised_object_processing_as_caller_owned_recommendation",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "compromised_object_protected_information_only_trusted_client_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-005",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
         source_gap_id: None,
@@ -9379,6 +9394,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+        }],
     },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
@@ -9707,6 +9752,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             kind: RuleTestKind::RecommendedBehavior,
         }],
         constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.38-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "original_creation_date_immutable_after_set_caller_asserted",
+        }],
     },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-001",
@@ -11966,6 +12026,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_existing_instance_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "modify_attribute_existing_instance_named",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
         source_gap_id: None,
@@ -12379,6 +12454,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "derive_key_source_usage_mask_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_derive_key_inputs_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "derive_key_multiple_inputs_caller_selected",
         }],
     },
     TypedRuleMapping {
@@ -13586,6 +13682,12 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "profile_specific_query_information_preserved"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
+                    | "original_creation_date_immutable_after_set_caller_asserted"
+                    | "compromised_object_protected_information_only_trusted_client_caller_asserted"
+                    | "usage_limits_total_immutable_after_protection_begins_caller_asserted"
+                    | "usage_limits_total_immutable_after_count_allocation_caller_asserted"
+                    | "derive_key_multiple_inputs_caller_selected"
+                    | "modify_attribute_existing_instance_named"
             )
     );
     is_known_constraint || is_caller_owned_temporal_constraint(constraint)
@@ -13646,6 +13748,12 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "profile_specific_query_information_preserved"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
+                    | "original_creation_date_immutable_after_set_caller_asserted"
+                    | "compromised_object_protected_information_only_trusted_client_caller_asserted"
+                    | "usage_limits_total_immutable_after_protection_begins_caller_asserted"
+                    | "usage_limits_total_immutable_after_count_allocation_caller_asserted"
+                    | "derive_key_multiple_inputs_caller_selected"
+                    | "modify_attribute_existing_instance_named"
             )
     );
     is_configuration_only || is_caller_owned_temporal_constraint(constraint)
