@@ -7712,4 +7712,21 @@ The generated report now includes 294 Baseline requirements; 282 have typed-rule
 | Catalog and generated metadata | `py -3 -B tools/normative_catalog/validate.py --repo-root .` — PASS: 4 sources, 1,411 clauses, 4,137 records; `generate_profiles.py --repo-root . --check` — PASS; `report.py --repo-root . --check` — PASS when run serially. |
 | Immutable sources and diff | `py -3 -B tools/normative_catalog/check_immutable_sources.py --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4 --repo-root .` — PASS; `git diff --check` and `git diff --check 963666c76946139c38909f975b7d3b868d923617..HEAD` — PASS. |
 
+### Reproduced Red runs
+
+The Red runs below were executed in detached worktrees at the named test commits. The commands omit the local `--target-dir` argument used to share Cargo build artifacts.
+
+| Red commit | Focused command | Observed Red result |
+|---|---|---|
+| `2cdedba41` | `cargo test -p kmipkit-protocol --all-features query_response_requires_both_profile_version_parts_when_version_is_present` | Failed: `QueryResponse` accepted a Profile Version missing Major or Minor instead of returning `MalformedResponsePayload`. |
+| `23f906b3c` | `cargo test -p kmipkit-protocol --all-features query_response_rejects_non_integer_profile_version_parts` | Failed: Enumeration-valued Major/Minor parts were accepted instead of returning `MalformedResponsePayload`. |
+| `86a1f776e` | `cargo test -p kmipkit-protocol --all-features query_response_requires_profile_name_in_profile_information` | Failed: missing or wrongly typed Profile Name was accepted instead of returning `MalformedResponsePayload`. |
+| `4f3821b98` | `cargo test -p kmipkit-protocol --all-features profile_requires_complete_version_in_query_profile_responses` | Failed at `Profile Version has a typed profile rule`; §7.32 had no typed profile mapping yet. |
+| `ff630c7f1` | `cargo test -p kmipkit-protocol --all-features profile_maps_optional_profile_specific_query_fields` | Failed at `profile-specific Query fields have a typed capability mapping`; §7.31 had no typed profile mapping yet. |
+| `1c4c73de0` | `cargo test -p kmipkit-protocol --all-features query_response_exposes_all_table_283_members_and_unknown_nested_items` | Failed: a valid Profile Information using the pinned OASIS Profile Name tag was rejected because the parser still used the incorrect tag. |
+| `d032c21db` | `cargo test -p kmipkit-protocol --all-features query_response_rejects_wrong_types_for_optional_profile_information_fields` | Failed after isolating the corrected OASIS Profile Name tag while leaving the URI/Port type checks absent: wrong optional-field types were accepted. The test-only commit by itself used the corrected test tag while the parser still had the stale tag, so this isolated setup was necessary to exercise the intended Red condition. |
+| `8965f75b7` | `cargo test -p kmipkit-protocol --all-features compatible_profile_constraints_accumulate_without_false_conflicts -- --nocapture` | Failed with `ConflictingConstraints` on `TEST-CAPABILITY-B`; distinct capability labels were incorrectly treated as mutually exclusive. |
+
+Green commits `e087f23a9`, `25d2f686c`, `b7f173532`, `fef1050fd`, and `a17f02324` implement the corresponding parser, typed mapping, and compatible-constraint behavior. The current full protocol suite passes after those changes; Refactor `8c22f2e23` extracts the Query response fixture builder and keeps the tests under the Clippy line limit.
+
 The feature branch has not yet been pushed at this evidence point; exact-head hosted CI and independent review of this follow-up are pending. The existing PR remains a draft.
