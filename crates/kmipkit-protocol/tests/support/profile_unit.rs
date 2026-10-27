@@ -158,6 +158,22 @@ static CONSTRAINTS_TLS13: [RuleConstraint; 1] = [RuleConstraint {
     key: "transport_security",
     value: "tls13",
 }];
+static CONSTRAINTS_PROFILE_CAPABILITY_A: [RuleConstraint; 1] = [RuleConstraint {
+    key: "client_profile_capability",
+    value: "profile_specific_query_information_preserved",
+}];
+static CONSTRAINTS_PROFILE_CAPABILITY_B: [RuleConstraint; 1] = [RuleConstraint {
+    key: "client_profile_capability",
+    value: "request_response_include_one_or_more_batch_items",
+}];
+static CONSTRAINTS_CONFORMANCE_EVIDENCE_A: [RuleConstraint; 1] = [RuleConstraint {
+    key: "client_profile_conformance_evidence",
+    value: "profiles_4_1_2_test_variations",
+}];
+static CONSTRAINTS_CONFORMANCE_EVIDENCE_B: [RuleConstraint; 1] = [RuleConstraint {
+    key: "client_profile_conformance_evidence",
+    value: "kmip_specification_v2_1",
+}];
 static CONSTRAINTS_TTLV: [RuleConstraint; 1] = [RuleConstraint {
     key: "encoding",
     value: "ttlv",
@@ -14364,6 +14380,103 @@ fn dependency_cycles_and_constraint_conflicts_fail_deterministically() {
         error.code(),
         ProfileValidationErrorCode::ConflictingConstraints
     );
+}
+
+#[test]
+fn compatible_profile_constraints_accumulate_without_false_conflicts() {
+    let profiles = [
+        profile("TEST-TLS", &["REQ-TLS"], &[]),
+        profile("TEST-TLS13", &["REQ-TLS13"], &[]),
+        profile("TEST-CAPABILITY-A", &["REQ-CAPABILITY-A"], &[]),
+        profile("TEST-CAPABILITY-B", &["REQ-CAPABILITY-B"], &[]),
+        profile("TEST-EVIDENCE-A", &["REQ-EVIDENCE-A"], &[]),
+        profile("TEST-EVIDENCE-B", &["REQ-EVIDENCE-B"], &[]),
+    ];
+    let requirements = [
+        requirement(
+            "REQ-TLS",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+        requirement(
+            "REQ-TLS13",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+        requirement(
+            "REQ-CAPABILITY-A",
+            GeneratedVerificationCategory::OptionalCapability,
+            false,
+        ),
+        requirement(
+            "REQ-CAPABILITY-B",
+            GeneratedVerificationCategory::OptionalCapability,
+            false,
+        ),
+        requirement(
+            "REQ-EVIDENCE-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+        requirement(
+            "REQ-EVIDENCE-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+    ];
+    let mappings = [
+        mapping(
+            "REQ-TLS",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_TLS,
+        ),
+        mapping(
+            "REQ-TLS13",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_TLS13,
+        ),
+        mapping(
+            "REQ-CAPABILITY-A",
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+            &CONSTRAINTS_PROFILE_CAPABILITY_A,
+        ),
+        mapping(
+            "REQ-CAPABILITY-B",
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+            &CONSTRAINTS_PROFILE_CAPABILITY_B,
+        ),
+        mapping(
+            "REQ-EVIDENCE-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_CONFORMANCE_EVIDENCE_A,
+        ),
+        mapping(
+            "REQ-EVIDENCE-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_CONFORMANCE_EVIDENCE_B,
+        ),
+    ];
+
+    validate_selection_with_registry(
+        &ProfileValidationSelection::new([
+            "TEST-TLS",
+            "TEST-TLS13",
+            "TEST-CAPABILITY-A",
+            "TEST-CAPABILITY-B",
+            "TEST-EVIDENCE-A",
+            "TEST-EVIDENCE-B",
+        ]),
+        &profiles,
+        &requirements,
+        &mappings,
+    )
+    .expect("TLS 1.3 refines TLS and capability/evidence labels accumulate independently");
 }
 
 #[test]
