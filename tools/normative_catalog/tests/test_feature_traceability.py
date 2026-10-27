@@ -1366,12 +1366,45 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "def test_capability():\n"
                 "    assert True\n",
             ),
+            (
+                "aliased pytest module skip marker",
+                "test_capability",
+                "import pytest\n"
+                "skip_marker = pytest.mark.skip(reason='module unavailable')\n"
+                "pytestmark = [skip_marker]\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+            (
+                "mutated pytest module skip marker",
+                "test_capability",
+                "import pytest\n"
+                "pytestmark = []\n"
+                "pytestmark.append(pytest.mark.skip(reason='module unavailable'))\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
         )
         for label, test_name, source in cases:
             with self.subTest(label=label):
                 self.assertFalse(
                     _is_discoverable_positive_test(Path("tests/evidence.py"), test_name, source)
                 )
+
+    def test_non_skip_decorator_keyword_named_skip_remains_discoverable(self) -> None:
+        source = (
+            "skip = False\n"
+            "def custom_marker(**kwargs):\n"
+            "    return lambda function: function\n"
+            "@custom_marker(skip=skip)\n"
+            "def test_capability():\n"
+            "    assert True\n"
+        )
+        self.assertTrue(
+            _is_discoverable_positive_test(
+                Path("tests/evidence.py"), "test_capability", source
+            )
+        )
 
 
 class MessageModelTraceabilityTests(unittest.TestCase):
