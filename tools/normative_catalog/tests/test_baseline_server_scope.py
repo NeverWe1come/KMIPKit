@@ -30,6 +30,11 @@ PKCS11_CONDITIONAL_REQUIREMENT_IDS = {
     f"KMIPKIT-REQ-SPEC-7.{section}-001" for section in range(26, 31)
 }
 
+PROCESS_DATE_REQUIREMENT_IDS = {
+    *(f"KMIPKIT-REQ-SPEC-4.40-001-{ordinal:03}" for ordinal in range(1, 6)),
+    *(f"KMIPKIT-REQ-SPEC-4.41-001-{ordinal:03}" for ordinal in range(1, 5)),
+}
+
 
 def load_catalog() -> dict[str, Any]:
     """Load the checked-in normative catalog used by profile generation."""
@@ -219,6 +224,38 @@ class BaselineServerScopeTests(unittest.TestCase):
         self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["scope_disposition"], "client_1_0")
         self.assertEqual(obligation["project_actor_interpretation"], "client")
+
+    def test_process_start_and_protect_stop_date_requirements_are_client_scope(self) -> None:
+        catalog = load_catalog()
+        requirements = {
+            item["requirement_id"]: item
+            for item in catalog["requirements"]
+            if item["requirement_id"] in PROCESS_DATE_REQUIREMENT_IDS
+        }
+        self.assertEqual(set(requirements), PROCESS_DATE_REQUIREMENT_IDS)
+        profile = next(
+            item
+            for item in catalog["profiles"]
+            if item["profile_id"] == BASELINE_PROFILE_ID
+        )
+        closure = compute_profile_closure(
+            catalog,
+            profile["direct_source_clause_ids"],
+            profile_id=BASELINE_PROFILE_ID,
+        )
+        unresolved_ids = {
+            item.requirement_id for item in closure.unresolved_scope_obligations
+        }
+
+        for requirement_id, requirement in requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "unclear")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertEqual(requirement["status"], "scoped_verified")
+                self.assertIn(requirement_id, closure.requirement_ids)
+                self.assertNotIn(requirement_id, unresolved_ids)
 
 
 if __name__ == "__main__":

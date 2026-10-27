@@ -24431,6 +24431,85 @@ fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior(
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §§4.40–4.41.
+fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
+    const TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned";
+
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "process_start_date_use_after_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "no_cryptographic_use_before_process_start_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "process_start_date_must_not_precede_activation_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-005",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "process_start_date_immutable_after_occurrence_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "protect_stop_date_immutable_after_occurrence_caller_asserted",
+        TEST_ID,
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
 // OASIS KMIP Specification v2.1 §9.20 paragraph 1.
 fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
