@@ -4923,6 +4923,104 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_vendor_extension_structure_and_optional_capability() {
+    // KMIP Specification v2.1 §9.13 defines the optional extension and its required fields.
+    const OPTIONAL_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-001";
+    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-002";
+    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability";
+    const VALIDATION_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::message_extension_validation_checks_required_fields_order_and_values";
+
+    let mappings = [
+        (
+            OPTIONAL_REQUIREMENT_ID,
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+        ),
+        (
+            REQUIRED_FIELDS_REQUIREMENT_ID,
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+        ),
+        (
+            VENDOR_ID_REQUIREMENT_ID,
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+        ),
+    ];
+
+    for (requirement_id, category, evidence_kind) in mappings {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("each Vendor Extension requirement has a typed profile mapping");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("each Vendor Extension requirement resolves to generated metadata");
+        assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+        assert_eq!(mapping.verification_category, category);
+        assert!(mapping.evaluator.is_none());
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the static mapping has category-matched executable evidence");
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == PROFILE_TEST_ID && evidence.kind == evidence_kind
+        }));
+        if requirement_id != OPTIONAL_REQUIREMENT_ID {
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.test_id == VALIDATION_TEST_ID
+                    && evidence.kind == RuleTestKind::PositiveBehavior
+            }));
+        }
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![
+            OPTIONAL_REQUIREMENT_ID.to_owned(),
+            REQUIRED_FIELDS_REQUIREMENT_ID.to_owned(),
+            VENDOR_ID_REQUIREMENT_ID.to_owned(),
+        ],
+    };
+    let request_without_extension = request_message_with_extensions(std::iter::empty());
+    result
+        .validate_request(&request_without_extension)
+        .expect("the extension remains optional for an outbound request");
+
+    let request_with_extension = request_message_with_extensions([("Vendor_A", false)]);
+    result
+        .validate_request(&request_with_extension)
+        .expect("a client can send a structurally valid Vendor Extension");
+    let request_item = request_with_extension
+        .batch_items()
+        .next()
+        .expect("the request has one Batch Item");
+    let request_extension = request_item
+        .message_extension(0)
+        .expect("the request extension is available through the typed API");
+    assert_eq!(
+        request_extension.with_vendor_identification(str::to_owned),
+        Some("Vendor_A".to_owned())
+    );
+    assert_eq!(request_extension.criticality_indicator(), Some(false));
+    assert!(request_extension.with_vendor_extension(|_| ()).is_some());
+
+    let response = response_message_with_extension_criticality(false);
+    result
+        .validate_response(&request_with_extension, &response)
+        .expect("the client accepts and preserves a structurally valid response extension");
+    let response_extension = response
+        .batch_items()
+        .next()
+        .and_then(|item| item.message_extension(0))
+        .expect("the response extension is available through the typed API");
+    assert!(response_extension.with_vendor_identification(str::to_owned).is_some());
+    assert!(response_extension.with_vendor_extension(|_| ()).is_some());
+}
+
+#[test]
 fn profile_rejects_response_with_critical_message_extension() {
     // KMIP Specification v2.1 §9.13 requires rejection of unknown critical extensions.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-004";

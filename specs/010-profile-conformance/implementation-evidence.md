@@ -7401,3 +7401,7 @@ DCO Green commit `a520d405` updates the five requirement rows and linked source-
 | Baseline scope result | Direct `compute_profile_closure` evaluation — 265 assigned requirements remain; 40 unique unresolved applicability IDs remain, down from 45. Readiness remains `evidence_incomplete`. |
 
 Independent QA confirmed that the pinned Profiles source defines separate PKCS#11 Client profiles in §§5.18 and 6.34, and found no scope issue. The adjacent table-row candidates remain `non_applicable/out_of_scope` with their source-extractor rationale; the five requirement records remain actor/direction-unspecified and outside Baseline closure. No client role, profile membership, implementation mapping, or conformance claim was inferred for the PKCS#11-specific fields.
+
+## T040 Vendor Extension profile mapping — Red (2026-10-27)
+
+Added `profile_maps_vendor_extension_structure_and_optional_capability` to require explicit typed mappings and executable evidence for the optional Message Extension and its required fields. The focused run `cargo test -p kmipkit-protocol --lib profile_maps_vendor_extension_structure_and_optional_capability -- --nocapture` compiled and failed as expected because `KMIPKIT-REQ-SPEC-9.13-001-001` had no typed profile mapping. The test also specifies omission, valid request/response preservation, Vendor Identification, Criticality Indicator, and opaque Vendor Extension representation. This is the Red evidence before the 9.13 catalog scope and typed mappings are added.
