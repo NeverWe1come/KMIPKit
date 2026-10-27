@@ -486,6 +486,36 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_pre_active_caller_mapping_without_behavioral_evidence_blocks_readiness(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-002"
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        mappings = report_module.load_typed_rule_mappings(ROOT)
+        mapping = next(row for row in mappings if row["requirement_id"] == requirement_id)
+
+        self.assertIsNone(mapping["test_id"])
+        self.assertIsNone(mapping["test_kind"])
+
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=mappings,
+        )
+        requirement_row = next(
+            row
+            for row in report.splitlines()
+            if row.startswith(f"| {requirement_id} |") and "Typed rule mapping:" in row
+        )
+        baseline_row = next(
+            row
+            for row in report.splitlines()
+            if row.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+            and len(row.split("|")) == 8
+        )
+        self.assertIn("Category test reference: missing", requirement_row)
+        self.assertIn("category test references missing: 1", baseline_row)
+
     def test_typed_rule_registry_accepts_archived_retrieval_workflow_capability(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
