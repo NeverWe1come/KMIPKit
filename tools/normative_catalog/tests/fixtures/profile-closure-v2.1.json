@@ -22277,10 +22277,14 @@
       "source_keyword": "SHALL NOT",
       "role": "client",
       "scope_state": "profile_conditional",
-      "applies_to": [],
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.38, source atom 1: The source says Original Creation Date must not be deleted or updated once set but does not name the enforcing endpoint. Client attribution is the project interpretation for a selected profile that supports and uses the attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4.38 and Tables 105–106 permit the client to set Original Creation Date initially and prohibit changing or deleting it after it is set. Because remote object state is not retained by KMIPKit, the rule is a caller-owned condition for the selected Baseline optional attribute capability.",
       "source_obligation_order": 1,
-      "source_actor": "unresolved"
+      "source_actor": "unresolved",
+      "decision_id": "KMIPKIT-DEC-024",
+      "source_direction": "preserve Original Creation Date after set"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
@@ -22532,10 +22536,14 @@
       "source_keyword": "SHALL NOT",
       "role": "client",
       "scope_state": "profile_conditional",
-      "applies_to": [],
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.59, source atom 1: After cryptographic protection use begins, the source prohibits changing Usage Limits Total. Because the source permits protection use on either client or server, client scope is a project interpretation limited to client-side use of this attribute in a selected profile. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4.59 prose prohibits changing Usage Limits Total after protection use begins, while Table 149 permits client modification only before Get Usage Allocation. Under DEC-024, the client applies the conservative intersection: either condition prohibits mutation. The source tension is recorded in KMIPKIT-DISC-055.",
       "source_obligation_order": 1,
-      "source_actor": "source does not name an enforcing actor; protection use may occur on the client or server"
+      "source_actor": "source does not name an enforcing actor; protection use may occur on the client or server",
+      "decision_id": "KMIPKIT-DEC-024",
+      "source_direction": "preserve Usage Limits Total after protection use begins"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001",
@@ -22549,10 +22557,14 @@
       "source_keyword": "SHALL NOT",
       "role": "client",
       "scope_state": "profile_conditional",
-      "applies_to": [],
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.59, source atom 2: After Get Usage Allocation changes Usage Limits Count, the source prohibits changing Usage Limits Total. It does not identify whether client or server enforces that restriction; client attribution is the project interpretation for profiles using this allocation flow. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit client changes to Usage Limits Total after Get Usage Allocation changes Count. This is a caller-owned remote-state condition; KMIPKIT-DISC-055 records the related prose/table tension.",
       "source_obligation_order": 2,
-      "source_actor": "source does not state whether the prohibited Total correction is enforced by client or server"
+      "source_actor": "source does not state whether the prohibited Total correction is enforced by client or server",
+      "decision_id": "KMIPKIT-DEC-024",
+      "source_direction": "preserve Usage Limits Total after a Get Usage Allocation changes Count"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-002",
@@ -24044,10 +24056,14 @@
       "source_keyword": "MAY",
       "role": "client",
       "scope_state": "profile_conditional",
-      "applies_to": [],
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §6.1.34, source atom 4: Modify Attribute is a client-to-server operation (§6.1.34, lines 30605–30616). The existing MAY requirement ID describes that only existing attributes may be changed through the operation; the adjacent SHALL about modifying only the specified instance remains separately mapped to its existing ID. Client scope is conditional on a selected profile supporting the operation; no new ID is introduced. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §6.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise.",
       "source_obligation_order": 4,
-      "source_actor": "unspecified"
+      "source_actor": "unspecified",
+      "decision_id": "KMIPKIT-DEC-027",
+      "source_direction": "Modify Attribute operation semantics"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-004",
@@ -27396,6 +27412,162 @@
       "source_obligation_order": 1,
       "source_actor": "unresolved",
       "source_direction": "unresolved"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-PROF-4.1.2-005",
+      "source_clause_id": "KMIPKIT-CLAUSE-PROF-4.1.2-005",
+      "source_id": "KMIPKIT-SRC-profiles",
+      "source_section": "4.1.2",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "list_item"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: Profiles v2.1 §4.1.2 item 4 permits Authentication in each request. KMIP Specification v2.1 §6.1.1 identifies the client Request Message in the 1.0 client-initiated flow. This is an optional client capability; it does not require authentication or claim that credentials are transmitted.",
+      "source_obligation_order": 1,
+      "source_actor": "unresolved",
+      "source_direction": "unresolved",
+      "decision_id": "KMIPKIT-DEC-022"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4-001-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "mixed",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. The client model preserves permitted repeated attribute instances in request and response structures; server storage remains server-owned.",
+      "source_obligation_order": 1,
+      "source_actor": "unresolved",
+      "source_direction": "The sentence defines a property of an object and names no endpoint action.",
+      "decision_id": "KMIPKIT-DEC-023"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "mixed",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4 recommends distinct values for multi-instance attributes but names no enforcing endpoint. KMIPKit records this as caller-owned recommended behavior and does not rewrite or deduplicate caller values.",
+      "source_obligation_order": 2,
+      "source_actor": "unresolved",
+      "source_direction": "The recommendation states a value relation and names no endpoint action.",
+      "decision_id": "KMIPKIT-DEC-023"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4-001-003",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "mixed",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4 defines single-instance attributes as having at most one instance and the surrounding text names client attribute operations. The client request representation must not create duplicate instances for a source-defined single-instance attribute; the server remains authoritative for the stored object.",
+      "source_obligation_order": 3,
+      "source_actor": "unresolved",
+      "source_direction": "The sentence defines a single-instance attribute and names no endpoint action.",
+      "decision_id": "KMIPKIT-DEC-023"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4.57-005",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4.57",
+      "source_locator": {
+        "ordinal": 5,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §4.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements.",
+      "source_obligation_order": 2,
+      "source_actor": "unresolved",
+      "source_direction": "The source predicate constrains object state/use; no message direction is stated.",
+      "decision_id": "KMIPKIT-DEC-025"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "6.1.14",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Project interpretation: KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally.",
+      "source_obligation_order": 1,
+      "source_actor": "unresolved",
+      "source_direction": "unresolved",
+      "decision_id": "KMIPKIT-DEC-026"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-7.31-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-7.31-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "7.31",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "MAY",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: KMIP Specification v2.1 §7.31 allows fields that apply only to some profile types. For the 1.0 client-initiated Query response, §6.1.40 introduction and Table 283 identify the profiles as server-supported. Nearby prose says client-supported profiles; this source conflict is recorded and resolved for this exchange by KMIPKIT-DEC-028 and KMIPKIT-DISC-056.",
+      "source_obligation_order": 1,
+      "source_actor": "unspecified",
+      "source_direction": "unspecified",
+      "decision_id": "KMIPKIT-DEC-028"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-7.32-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-7.32-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "7.32",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": "all_client_profiles",
+      "review_note": "Project interpretation: KMIP Specification v2.1 §7.32 requires Profile Version to contain major and minor parts. The 1.0 client receives server Profile Information in response to client-initiated Query Profiles; KMIPKit preserves the generic TTLV structure and does not infer profile-specific meaning. The §6.1.40 server/client wording is recorded in KMIPKIT-DISC-056.",
+      "source_obligation_order": 1,
+      "source_actor": "unspecified",
+      "source_direction": "unspecified",
+      "decision_id": "KMIPKIT-DEC-028"
     }
   ],
   "profiles": [
@@ -28641,6 +28813,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.13.1-001",
         "KMIPKIT-REQ-PROF-5.13.1-002",
@@ -28693,6 +28866,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -28885,6 +29061,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -30409,6 +30587,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.8.1-001",
         "KMIPKIT-REQ-PROF-5.8.1-002",
@@ -30461,6 +30640,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -30653,6 +30835,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -32187,6 +32371,7 @@
         "KMIPKIT-REQ-PROF-3.1.2-002",
         "KMIPKIT-REQ-PROF-3.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6-001",
         "KMIPKIT-REQ-PROF-6.1-001",
@@ -32231,6 +32416,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -32264,6 +32452,7 @@
         "KMIPKIT-REQ-SPEC-4.38-001-001",
         "KMIPKIT-REQ-SPEC-4.38-001-002",
         "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-REQ-SPEC-4.38-003",
         "KMIPKIT-REQ-SPEC-4.39-002-001",
         "KMIPKIT-REQ-SPEC-4.4-001",
         "KMIPKIT-REQ-SPEC-4.40-001-001",
@@ -32280,6 +32469,9 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
+        "KMIPKIT-REQ-SPEC-4.57-005-002",
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-REQ-SPEC-4.59-003-001",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -32309,6 +32501,7 @@
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
         "KMIPKIT-REQ-SPEC-6.1.14-006-001",
         "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -32356,6 +32549,7 @@
         "KMIPKIT-REQ-SPEC-6.1.33-001-001",
         "KMIPKIT-REQ-SPEC-6.1.33-001-002",
         "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.34-001-003",
         "KMIPKIT-REQ-SPEC-6.1.35-001-001",
         "KMIPKIT-REQ-SPEC-6.1.35-001-002",
         "KMIPKIT-REQ-SPEC-6.1.35-002",
@@ -32423,6 +32617,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -33922,6 +34118,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.2-001",
         "KMIPKIT-REQ-PROF-5.9.2-002",
@@ -33975,6 +34172,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -34167,6 +34367,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -35902,6 +36104,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.1-001",
         "KMIPKIT-REQ-PROF-5.9.1-002",
@@ -35955,6 +36158,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -36147,6 +36353,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -37921,6 +38129,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.9.3-001",
         "KMIPKIT-REQ-PROF-5.9.3-002",
@@ -37974,6 +38183,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -38166,6 +38378,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -39766,6 +39980,7 @@
         "KMIPKIT-REQ-PROF-3.2.3-001",
         "KMIPKIT-REQ-PROF-3.2.4-002",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.3.1-001",
         "KMIPKIT-REQ-PROF-5.3.1-002",
@@ -39823,6 +40038,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -40015,6 +40233,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -41525,6 +41745,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6-001",
         "KMIPKIT-REQ-PROF-6.1-001",
@@ -41563,6 +41784,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -41755,6 +41979,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -43266,6 +43492,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.10.1-001",
         "KMIPKIT-REQ-PROF-5.10.1-002",
@@ -43318,6 +43545,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -43510,6 +43740,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -45035,6 +45267,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6-001",
         "KMIPKIT-REQ-PROF-6.1-001",
@@ -45078,6 +45311,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -45270,6 +45506,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -46792,6 +47030,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.15-001",
         "KMIPKIT-REQ-PROF-5.15-002",
@@ -46846,6 +47085,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -47038,6 +47280,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -48565,6 +48809,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.11.1-001",
         "KMIPKIT-REQ-PROF-5.11.1-002",
@@ -48618,6 +48863,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -48810,6 +49058,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -50353,6 +50603,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.1-001",
         "KMIPKIT-REQ-PROF-5.7.1-002",
@@ -50407,6 +50658,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -50599,6 +50853,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -52180,6 +52436,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.1-001",
         "KMIPKIT-REQ-PROF-5.7.1-002",
@@ -52232,6 +52489,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -52424,6 +52684,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -53980,6 +54242,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.7.1-001",
         "KMIPKIT-REQ-PROF-5.7.1-002",
@@ -54034,6 +54297,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -54226,6 +54492,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -55807,6 +56075,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.6.1-001",
         "KMIPKIT-REQ-PROF-5.6.1-002",
@@ -55859,6 +56128,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -56051,6 +56323,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -57632,6 +57906,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-5.12.2-002",
         "KMIPKIT-REQ-PROF-5.12.2-003",
@@ -57708,6 +57983,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -57900,6 +58178,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -59561,6 +59841,7 @@
       "requirement_ids": [
         "KMIPKIT-REQ-PROF-3.1-001",
         "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-REQ-PROF-4.1.2-005",
         "KMIPKIT-REQ-PROF-4.1.2-007",
         "KMIPKIT-REQ-PROF-6-001",
         "KMIPKIT-REQ-PROF-6.1-001",
@@ -59599,6 +59880,9 @@
         "KMIPKIT-REQ-SPEC-3.3-006",
         "KMIPKIT-REQ-SPEC-3.3-009",
         "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005",
         "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -59791,6 +60075,8 @@
         "KMIPKIT-REQ-SPEC-7.18-004",
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-REQ-SPEC-7.32-001",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -60696,14 +60982,17 @@
           "actor": "unresolved",
           "direction": "unresolved",
           "condition": "The optional Authentication structure may appear within each request.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-PROF-4.1.2-005"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-PROF-4.1.2-005",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-PROF-4.1.2-005"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Profiles v2.1 section 4.1.2, locator 5; The source says \"a request\" without naming its sender; client actor and direction are not inferred."
+      "review_note": "Profiles v2.1 section 4.1.2, locator 5; The source says \"a request\" without naming its sender; client actor and direction are not inferred. Profiles v2.1 §4.1.2 item 4 permits Authentication in each request. KMIP Specification v2.1 §6.1.1 identifies the client Request Message in the 1.0 client-initiated flow. This is an optional client capability; it does not require authentication or claim that credentials are transmitted."
     },
     {
       "source_id": "KMIPKIT-SRC-profiles",
@@ -68664,8 +68953,9 @@
           "actor": "unresolved",
           "direction": "The sentence defines a property of an object and names no endpoint action.",
           "condition": "An object has multiple instances of an attribute.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-001"
+          "scope_disposition": "mixed",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -68674,8 +68964,9 @@
           "actor": "unresolved",
           "direction": "The recommendation states a value relation and names no endpoint action.",
           "condition": "An attribute has multiple instances.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-002"
+          "scope_disposition": "mixed",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -68684,8 +68975,9 @@
           "actor": "unresolved",
           "direction": "The sentence defines a single-instance attribute and names no endpoint action.",
           "condition": "The attribute is single-instance.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-003"
+          "scope_disposition": "mixed",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4-001-003",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 4,
@@ -68710,11 +69002,14 @@
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-REQ-SPEC-4-001-003",
         "KMIPKIT-REQ-SPEC-4-001-004",
         "KMIPKIT-REQ-SPEC-4-001-005"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "Pinned Specification v2.1 §4, paragraph 1, lines 9594-9605: the first three atoms define object/attribute properties without naming an endpoint actor. The read-only modification prohibition names either server or client; the deletion prohibition expressly names a client."
+      "review_note": "Pinned Specification v2.1 §4, paragraph 1, lines 9594-9605: the first three atoms define object/attribute properties without naming an endpoint actor. The read-only modification prohibition names either server or client; the deletion prohibition expressly names a client. KMIP Specification v2.1 §4 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. The client model preserves permitted repeated attribute instances in request and response structures; server storage remains server-owned. KMIP Specification v2.1 §4 recommends distinct values for multi-instance attributes but names no enforcing endpoint. KMIPKit records this as caller-owned recommended behavior and does not rewrite or deduplicate caller values. KMIP Specification v2.1 §4 defines single-instance attributes as having at most one instance and the surrounding text names client attribute operations. The client request representation must not create duplicate instances for a source-defined single-instance attribute; the server remains authoritative for the stored object."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -70810,8 +71105,10 @@
       "expected_client_requirement_ids": [
         "KMIPKIT-REQ-SPEC-4.38-003"
       ],
-      "applies_to": "all_client_profiles",
-      "review_note": "The passive SHALL NOT does not identify which endpoint enforces immutability; preserve the existing candidate label but mark source actor and scope unresolved.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "The passive SHALL NOT does not identify which endpoint enforces immutability; preserve the existing candidate label but mark source actor and scope unresolved.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed. KMIP Specification v2.1 §4.38 and Tables 105–106 permit the client to set Original Creation Date initially and prohibit changing or deleting it after it is set. Because remote object state is not retained by KMIPKit, the rule is a caller-owned condition for the selected Baseline optional attribute capability."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -72344,8 +72641,9 @@
           "actor": "unresolved",
           "direction": "The source predicate constrains object state/use; no message direction is stated.",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-002",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -72360,9 +72658,13 @@
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20243–20251. The cryptographic protection and Cryptographic Usage Mask restrictions are classified server-only under KMIPKIT-DEC-021 because the server owns authoritative State and performs managed-object cryptographic operations. The separate SHOULD for processing protected information in a trusted client explicitly names client context and remains unresolved; it is not covered by this decision."
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.57-005-002"
+      ],
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20243–20251. The cryptographic protection and Cryptographic Usage Mask restrictions are classified server-only under KMIPKIT-DEC-021 because the server owns authoritative State and performs managed-object cryptographic operations. The separate SHOULD for processing protected information in a trusted client explicitly names client context and remains unresolved; it is not covered by this decision. KMIP Specification v2.1 §4.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -72597,8 +72899,10 @@
       "expected_client_requirement_ids": [
         "KMIPKIT-REQ-SPEC-4.59-002"
       ],
-      "applies_to": "all_client_profiles",
-      "review_note": "The source prohibits changing Total after protection use begins but does not identify the enforcing actor.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "The source prohibits changing Total after protection use begins but does not identify the enforcing actor.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed. KMIP Specification v2.1 §4.59 prose prohibits changing Usage Limits Total after protection use begins, while Table 149 permits client modification only before Get Usage Allocation. Under DEC-024, the client applies the conservative intersection: either condition prohibits mutation. The source tension is recorded in KMIPKIT-DISC-055."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -72653,8 +72957,10 @@
         "KMIPKIT-REQ-SPEC-4.59-003-001",
         "KMIPKIT-REQ-SPEC-4.59-003-002"
       ],
-      "applies_to": "all_client_profiles",
-      "review_note": "The paragraph mixes a server ignore rule, actor-ambiguous Total immutability, and an explicit client Count restriction.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "The paragraph mixes a server ignore rule, actor-ambiguous Total immutability, and an explicit client Count restriction.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed. KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit client changes to Usage Limits Total after Get Usage Allocation changes Count. This is a caller-owned remote-state condition; KMIPKIT-DISC-055 records the related prose/table tension."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -74762,8 +75068,9 @@
           "actor": "unresolved",
           "direction": "unresolved",
           "condition": "The selected derivation method accepts multiple keys or Secret Data inputs.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [
@@ -74774,9 +75081,13 @@
           "expected_disposition": "reject_client_actor_inference"
         }
       ],
-      "expected_client_requirement_ids": [],
-      "applies_to": "all_client_profiles",
-      "review_note": "The MAY modifies some derivation methods, not an expressly identified endpoint. Preserve the candidate as unresolved and exclude it from the client profile closure pending source interpretation."
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.14-002"
+      ],
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "The MAY modifies some derivation methods, not an expressly identified endpoint. Preserve the candidate as unresolved and exclude it from the client profile closure pending source interpretation. KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -80499,8 +80810,10 @@
         "KMIPKIT-REQ-SPEC-6.1.34-001-001",
         "KMIPKIT-REQ-SPEC-6.1.34-001-003"
       ],
-      "applies_to": "all_client_profiles",
-      "review_note": "OPTIONAL describes the request field; omission does not require exactly one instance as a client precondition. With omission, the server selects the sole instance or returns an error for multiple instances. Candidate 6.1.34-001-002 and 6.1.34-001-004 remain server_only. KMIP 2.1 leaves the actor of the MAY unstated; this project recommends client attribution in the client-to-server Modify Attribute request context, preserving source actor unspecified.",
+      "applies_to": [
+        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+      ],
+      "review_note": "OPTIONAL describes the request field; omission does not require exactly one instance as a client precondition. With omission, the server selects the sole instance or returns an error for multiple instances. Candidate 6.1.34-001-002 and 6.1.34-001-004 remain server_only. KMIP 2.1 leaves the actor of the MAY unstated; this project recommends client attribution in the client-to-server Modify Attribute request context, preserving source actor unspecified. KMIP Specification v2.1 §6.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise.",
       "source_request_rows": [],
       "source_payload_rows": []
     },
@@ -91427,14 +91740,17 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": "A Profile Information field is profile-specific.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-7.31-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-7.31-001",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
+      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk. KMIP Specification v2.1 §7.31 allows fields that apply only to some profile types. For the 1.0 client-initiated Query response, §6.1.40 introduction and Table 283 identify the profiles as server-supported. Nearby prose says client-supported profiles; this source conflict is recorded and resolved for this exchange by KMIPKIT-DEC-028 and KMIPKIT-DISC-056."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -91459,14 +91775,17 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": "A Profile Version is represented.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-7.32-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-7.32-001",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.32-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
+      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk. KMIP Specification v2.1 §7.32 requires Profile Version to contain major and minor parts. The 1.0 client receives server Profile Information in response to client-initiated Query Profiles; KMIPKit preserves the generic TTLV structure and does not infer profile-specific meaning. The §6.1.40 server/client wording is recorded in KMIPKIT-DISC-056."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

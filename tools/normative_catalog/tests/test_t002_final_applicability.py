@@ -69,6 +69,23 @@ MESSAGE_ENVELOPE_REQUIREMENTS = {
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
     BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
 )
+T040_ALL_CLIENT_PROFILE_REQUIREMENTS = {
+    "KMIPKIT-REQ-PROF-4.1.2-005",
+    "KMIPKIT-REQ-SPEC-4-001-001",
+    "KMIPKIT-REQ-SPEC-4-001-002",
+    "KMIPKIT-REQ-SPEC-4-001-003",
+    "KMIPKIT-REQ-SPEC-7.31-001",
+    "KMIPKIT-REQ-SPEC-7.32-001",
+}
+T040_BASELINE_PROFILE_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-4.38-003",
+    "KMIPKIT-REQ-SPEC-4.57-005-002",
+    "KMIPKIT-REQ-SPEC-4.59-002",
+    "KMIPKIT-REQ-SPEC-4.59-003-001",
+    "KMIPKIT-REQ-SPEC-6.1.14-002",
+    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+}
+ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS |= T040_ALL_CLIENT_PROFILE_REQUIREMENTS
 FINAL_DISPOSITIONS = {
     **{requirement_id: "profile_conditional" for requirement_id in CONDITIONAL_REQUIREMENTS},
     **{requirement_id: "client_1_0" for requirement_id in CLIENT_SCOPE_REQUIREMENTS},
@@ -146,7 +163,10 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             expected_role = "server" if requirement_id in SERVER_ONLY_REQUIREMENTS else "client"
             expected_profiles = (
                 client_profile_ids
-                if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
+                if requirement_id
+                in (BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | T040_ALL_CLIENT_PROFILE_REQUIREMENTS)
+                else [T040_BASELINE_PROFILE_ID]
+                if requirement_id in T040_BASELINE_PROFILE_REQUIREMENTS
                 else []
             )
             actual = (
@@ -160,6 +180,8 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             expected_applies_to = (
                 "all_client_profiles"
                 if requirement_id in ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS
+                else [T040_BASELINE_PROFILE_ID]
+                if requirement_id in T040_BASELINE_PROFILE_REQUIREMENTS
                 else []
             )
             expected = (
@@ -632,6 +654,21 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 self.assertIn("KMIP Specification v2.1", decision["interpretation"])
                 self.assertIn(T040_BASELINE_PROFILE_ID, catalog_profiles)
                 self.assertIn("project", crosswalk["review_note"].casefold())
+
+    def test_usage_limits_discrepancy_and_requirements_resolve_to_typed_member(self) -> None:
+        element_id = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL"
+        discrepancy = next(
+            row
+            for row in self.catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-055"
+        )
+        self.assertEqual(discrepancy["affected_element_ids"], [element_id])
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-4.59-002",
+            "KMIPKIT-REQ-SPEC-4.59-003-001",
+        ):
+            with self.subTest(requirement_id=requirement_id):
+                self.assertIn(element_id, self.requirements[requirement_id]["element_ids"])
 
 
 if __name__ == "__main__":

@@ -210,16 +210,16 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         self.assertEqual(requirements[requirement_id]["decision_id"], "KMIPKIT-DEC-021")
         self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
 
-    def test_unresolved_object_state_atoms_are_not_client_obligations(self) -> None:
+    def test_project_adjudications_preserve_source_silence_and_client_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        # Keep only actor/scope atoms still unresolved by T002; state-use rules in §4.57
-        # are server-only under DEC-020/DEC-021 except the trusted-client SHOULD.
-        unresolved_ids = {
+        # Source actor/direction stay unresolved for these three §4 definitions.
+        # DEC-023 assigns only their client request/response representation scope.
+        attribute_definition_ids = {
             *(f"KMIPKIT-REQ-SPEC-4-001-{ordinal:03d}" for ordinal in range(1, 4)),
-            "KMIPKIT-REQ-SPEC-4.57-005-002",
         }
+        trusted_client_id = "KMIPKIT-REQ-SPEC-4.57-005-002"
         review_by_requirement = {
             atom["candidate_requirement_id"]: (review, atom)
             for review in fixture["source_requirement_reviews"]
@@ -230,21 +230,39 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             row["requirement_id"] for row in fixture["requirement_crosswalk"]
         }
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
+        crosswalk_by_id = {
+            row["requirement_id"]: row for row in fixture["requirement_crosswalk"]
+        }
 
-        self.assertTrue(unresolved_ids.issubset(review_by_requirement))
-        self.assertFalse(unresolved_ids & crosswalk_ids)
-        for requirement_id in unresolved_ids:
+        self.assertTrue(attribute_definition_ids.issubset(review_by_requirement))
+        self.assertTrue((attribute_definition_ids | {trusted_client_id}) <= crosswalk_ids)
+        for requirement_id in attribute_definition_ids:
             requirement = requirements[requirement_id]
             review, atom = review_by_requirement[requirement_id]
-            self.assertEqual(requirement["role"], "unspecified", requirement_id)
-            self.assertEqual(requirement["scope_state"], "unclear", requirement_id)
+            crosswalk = crosswalk_by_id[requirement_id]
+            self.assertEqual(requirement["role"], "client", requirement_id)
+            self.assertEqual(requirement["scope_state"], "mixed", requirement_id)
+            self.assertEqual(requirement["profile_ids"], sorted(profile["profile_id"] for profile in client_profiles))
             self.assertEqual(atom["actor"], "unresolved", requirement_id)
-            self.assertEqual(atom["scope_disposition"], "unresolved", requirement_id)
-            self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+            self.assertEqual(atom["scope_disposition"], "mixed", requirement_id)
+            self.assertEqual(atom["project_actor_interpretation"], "client", requirement_id)
+            self.assertIn(requirement_id, review["expected_client_requirement_ids"])
+            self.assertEqual(crosswalk["decision_id"], "KMIPKIT-DEC-023")
             for profile in client_profiles:
-                self.assertNotIn(requirement_id, profile["requirement_ids"], profile["profile_id"])
+                self.assertIn(requirement_id, profile["requirement_ids"], profile["profile_id"])
 
-    def test_attribute_intro_maps_only_the_explicit_server_or_client_actors(self) -> None:
+        requirement = requirements[trusted_client_id]
+        review, atom = review_by_requirement[trusted_client_id]
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["profile_ids"], ["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        self.assertEqual(atom["actor"], "unresolved")
+        self.assertEqual(atom["project_actor_interpretation"], "client")
+        self.assertEqual(atom["scope_disposition"], "profile_conditional")
+        self.assertIn(trusted_client_id, review["expected_client_requirement_ids"])
+        self.assertEqual(crosswalk_by_id[trusted_client_id]["decision_id"], "KMIPKIT-DEC-025")
+
+    def test_attribute_intro_separates_source_actor_from_project_client_scope(self) -> None:
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         reviews = {
             row["source_clause_id"]: row
@@ -273,15 +291,33 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         )
         self.assertEqual(
             set(review["expected_client_requirement_ids"]),
-            {"KMIPKIT-REQ-SPEC-4-001-004", "KMIPKIT-REQ-SPEC-4-001-005"},
+            {
+                "KMIPKIT-REQ-SPEC-4-001-001",
+                "KMIPKIT-REQ-SPEC-4-001-002",
+                "KMIPKIT-REQ-SPEC-4-001-003",
+                "KMIPKIT-REQ-SPEC-4-001-004",
+                "KMIPKIT-REQ-SPEC-4-001-005",
+            },
         )
         self.assertEqual(
             {requirement_id: row["role"] for requirement_id, row in crosswalk.items()},
             {
+                "KMIPKIT-REQ-SPEC-4-001-001": "client",
+                "KMIPKIT-REQ-SPEC-4-001-002": "client",
+                "KMIPKIT-REQ-SPEC-4-001-003": "client",
                 "KMIPKIT-REQ-SPEC-4-001-004": "both",
                 "KMIPKIT-REQ-SPEC-4-001-005": "client",
             },
         )
+        for requirement_id in (
+            "KMIPKIT-REQ-SPEC-4-001-001",
+            "KMIPKIT-REQ-SPEC-4-001-002",
+            "KMIPKIT-REQ-SPEC-4-001-003",
+        ):
+            self.assertEqual(crosswalk[requirement_id]["source_actor"], "unresolved")
+            self.assertEqual(crosswalk[requirement_id]["scope_state"], "mixed")
+            self.assertEqual(crosswalk[requirement_id]["applies_to"], "all_client_profiles")
+            self.assertEqual(crosswalk[requirement_id]["decision_id"], "KMIPKIT-DEC-023")
 
     def test_existing_sections_three_to_five_header_notes_explain_source_and_case_gap(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
