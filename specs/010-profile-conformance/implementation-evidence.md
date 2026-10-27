@@ -7351,3 +7351,18 @@ The status correction is the complete fix for the reported ownership mismatch. T
 ## T040 server-only profile applicability — Red (2026-10-27)
 
 Added `tools/normative_catalog/tests/test_baseline_server_scope.py` to assert that ten reviewed server-produced or server-controlled requirements are excluded from the Baseline Client requirement and unresolved-scope closures. The test preserves explicit project-interpretation notes where the pinned source does not name the actor. The initial run `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` failed all ten subtests because each catalog row still had `role=unspecified`, `scope_state=unclear`, or both. This is the Red evidence for the first T040 applicability correction; no profile-conformance claim is made.
+
+## T040 server-only profile applicability — Green and Refactor (2026-10-27)
+
+DCO Green commit `5cb05a17` classifies ten server-produced or server-controlled requirements from KMIP Specification v2.1 §§4.57, 6.1.25, 7.12, 7.18, 7.36, 8, and 9.21 as `server_only`. It assigns `server` roles and response directions where appropriate, keeps lifecycle-only behavior `not_applicable`, leaves `profile_ids` empty, and records each project interpretation in `review_note`. The §6.1.25 note now states that its actor is ambiguous in the sentence and the server-only assignment is inferred from surrounding Import processing; the separate Attributes Required request-table gap remains open. Linked source-clause scope summaries were synchronized. No server obligation was represented as client conformance.
+
+| Verification | Command and result |
+|---|---|
+| Applicability regression | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` — PASS: 1 test, including all ten requirement subcases. |
+| Catalog validation | `py -3 -B tools/normative_catalog/validate.py` — PASS: 4 sources, 1,411 clauses, 4,125 records. |
+| Generated profile metadata | `py -3 -B tools/normative_catalog/generate_profiles.py --check` — PASS after the scope changes. |
+| Generated coverage report | `py -3 -B tools/normative_catalog/report.py --check` — PASS after regenerating the report with the final review note. |
+| Baseline scope result | Direct `compute_profile_closure` evaluation — 265 assigned requirements remain; unresolved applicability is 45 unique IDs, down from 55. Readiness remains `evidence_incomplete`. |
+| Hosted CI for the preceding traceability fix | Run `40435304475` on head `ed859448` passed `Documentation contracts / traceability` and `Coverage / windows`; other jobs were still in progress at the last check. This run predates the T040 commits and does not validate them. |
+
+The independent QA audit of this batch is pending. The ten server-only records no longer block client applicability; the remaining 45 unresolved IDs and all typed implementation/evidence gaps remain open. No official OASIS Test Case pass or profile-conformance claim is made.
