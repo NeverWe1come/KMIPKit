@@ -1728,6 +1728,9 @@ def render_report(
             tested_count = sum(
                 requirement_rule_status.get(requirement_id, ("", ""))[1]
                 == "Category test reference: present"
+                or requirement_rule_status.get(requirement_id, ("", ""))[1].startswith(
+                    "Accepted deviation: "
+                )
                 for requirement_id in requirement_ids
             )
             blockers = []

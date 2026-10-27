@@ -1,10 +1,10 @@
 # KMIP 2.1 client profile evidence
 
 This guide explains how to read KMIPKit's client profile evidence and use its
-explicit profile-validation entry point. Runtime selection fails closed today:
-the typed-rule registry contains a mapping for Wrapped Secret Data under §2.7,
-but Baseline still lacks complete applicable rule and test coverage, so no
-profile is yet available for a successful exchange.
+explicit profile-validation entry point. Baseline Client runtime selection is
+currently unavailable: three caller-owned `SHALL NOT` requirements lack
+category-appropriate negative behavior tests. Typed mappings alone do not
+prove those prohibitions are enforced.
 
 ## Explicit per-exchange selection
 
@@ -30,27 +30,29 @@ fn execute_for_profile(
 ```
 
 The method validates applicability, dependencies, and complete typed rule
-coverage before any transport write. With the current catalog and rule
-registry, Baseline Client fails closed and the error reports stable profile,
-requirement, and source-clause IDs with `NotSent` delivery state. Inspect the
-structured error with `ClientError::profile_validation_error()`. The ordinary
-`Client::execute` method remains unprofiled and does not select a hidden
-default. A successful profiled exchange will become available only after the
-applicable typed rules and their verification tests are registered.
+coverage before any transport write. Baseline selection fails closed while the
+three negative behavior tests are missing. Once selectable, requests can still
+fail a rule check before transport I/O; inspect structured failures with
+`ClientError::profile_validation_error()`. The ordinary `Client::execute`
+method remains unprofiled and does not select a hidden default. Passing local
+checks does not establish server interoperability, official test-suite
+success, or profile conformance.
 
 ## Current status
 
 KMIP Specification v2.1 §14.1 requires a client to conform to one or more
-client profiles. KMIPKit records Baseline Client as the initial 1.0 target for
-future evidence work. Target membership is a project planning choice; it does
-not establish profile support or satisfy the specification requirement.
+client profiles. KMIPKit records Baseline Client as the initial 1.0 evidence
+target. Target membership is a project planning choice. Runtime validation is
+currently unavailable while category-appropriate evidence is incomplete; it
+does not establish profile support or satisfy the specification's conformance
+requirement.
 
 The Baseline Client catalog state is `evidence_incomplete`. All 16 mandatory
 official fixtures are pinned. T036 records 13 full deterministic client
-replays and 3 typed preflight blockers. The replays do not establish server
-interoperability or profile conformance; the blocked cases and other evidence
-gaps remain open. Seventy-seven other linked profile cases have no local
-fixture. KMIPKit does not recreate or infer absent fixture contents.
+replays and 3 typed preflight blockers. The three negative-test gaps are
+separate from those official-case blockers. Seventy-seven other linked profile
+cases have no local fixture. KMIPKit does not recreate or infer absent fixture
+contents.
 
 The typed mapping for archived Locate retrieval records a caller-directed
 workflow only. Profile preflight checks one exchange at a time; it does not

@@ -4650,7 +4650,7 @@ pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[
         source_clause_ids: &["KMIPKIT-CLAUSE-SPEC-4.57-005"],
         profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         official_test_case_ids: &[],
-        has_accepted_deviation: false,
+        has_accepted_deviation: true,
     },
     GeneratedClientRequirement {
         requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",

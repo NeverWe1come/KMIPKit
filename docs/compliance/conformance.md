@@ -60,12 +60,15 @@ For each KMIP 2.1 client profile, record:
 
 Inventory records keep profile applicability, selected target, runtime
 validation availability, catalog evidence state, fixture availability, and
-public claims separate. Baseline Client is the selected 1.0 evidence target,
-but its catalog `claim_state` is `evidence_incomplete`. Its 16 mandatory
-official XML fixtures are pinned in the repository. T036 records 13 full
-deterministic client replays and 3 typed preflight blockers; replay evidence
-does not establish server interoperability or profile conformance. No profile
-conformance claim is published by KMIPKIT-0010.
+public claims separate. Baseline Client is the selected 1.0 evidence target;
+its 294-requirement closure has typed mappings, but explicit runtime selection
+remains unavailable because three caller-owned `SHALL NOT` requirements lack
+category-appropriate negative behavior tests. Its catalog `claim_state`
+remains `evidence_incomplete`. The 16 mandatory official XML fixtures are
+pinned in the repository. T036 records 13 full deterministic client replays
+and 3 typed preflight blockers; replay evidence does not establish server
+interoperability or profile conformance. No profile conformance claim is
+published by KMIPKIT-0010.
 Other profile records retain their own catalog states; none of these fields is
 itself a public claim.
 
@@ -80,7 +83,8 @@ Use the following stages independently:
 
 1. **Applicability and target**: check the profile's scope and the fixed
    `profile-targets.json` manifest. Baseline target membership records the
-   project plan; it does not enable runtime selection or assert conformance.
+   project plan; it neither enables runtime selection by itself nor asserts
+   conformance.
 2. **Runtime validation**: require an explicit typed rule mapping and
    category-appropriate executable verification for every applicable
    requirement. Missing, incomplete, or untested mappings keep profile
@@ -108,11 +112,11 @@ Use the following stages independently:
    A catalog state advances only after its required human review, and any
    public claim remains a separate reviewed release decision.
 
-Baseline remains ineligible while three mandatory cases are blocked before a
-full replay, its typed rules do not cover the complete applicable requirement
-and test set, and
-current protected-branch policy and app-token evidence have not been
-established. The registry includes a mapping for Wrapped Secret Data under
+Baseline remains ineligible for a formal profile claim because T036 still has
+three mandatory cases blocked before full replay and current protected-branch
+and app-token evidence has not been established. Runtime selection also stays
+blocked until the three missing negative behavior tests are implemented.
+The registry also includes a mapping for Wrapped Secret Data under
 KMIPKIT-REQ-SPEC-2.7-001. See the
 [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for
 its exact scope and acceptance criteria.

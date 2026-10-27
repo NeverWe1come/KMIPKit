@@ -1,11 +1,11 @@
 # Evidencia de perfiles cliente KMIP 2.1
 
 Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
-usar su punto de entrada explícito de validación. La selección en tiempo de
-ejecución falla de forma cerrada por ahora: el registro tipado incluye una
-regla para Wrapped Secret Data según §2.7, pero Baseline aún no tiene la
-cobertura completa de reglas y pruebas aplicables para completar un intercambio
-validado.
+usar su punto de entrada explícito de validación. La selección runtime de
+Baseline Client todavía no está disponible: tres requisitos `SHALL NOT`
+dependientes del llamador carecen de pruebas negativas de comportamiento de la
+categoría adecuada. Los mappings tipados por sí solos no prueban que se hagan
+cumplir esas prohibiciones.
 
 ## Selección explícita por intercambio
 
@@ -31,31 +31,30 @@ fn execute_for_profile(
 ```
 
 El método valida aplicabilidad, dependencias y cobertura tipada completa antes
-de escribir en el transporte. Con el catálogo y registro de reglas actuales,
-Baseline Client falla de forma cerrada y el error devuelve identificadores
-estables del perfil, requisito y cláusula de origen, junto con el estado de
-envío `NotSent`. El error estructurado se consulta con
+de escribir en el transporte. La selección de Baseline falla de forma cerrada
+mientras falten esas tres pruebas negativas. Cuando vuelva a estar disponible,
+una petición aún podrá fallar una regla antes de acceder al transporte;
+consulta los errores estructurados con
 `ClientError::profile_validation_error()`. `Client::execute` sigue sin perfil y
-no selecciona un valor predeterminado oculto. Un intercambio perfilado que
-termine correctamente estará disponible cuando se registren las reglas
-tipadas aplicables y sus pruebas de verificación.
+no selecciona un valor predeterminado oculto. Superar las comprobaciones
+locales no demuestra interoperabilidad con servidores, éxito en las pruebas
+oficiales ni conformidad del perfil.
 
 ## Estado actual
 
 KMIP Specification v2.1 §14.1 exige que un cliente cumpla uno o más perfiles
 cliente. KMIPKit registra Baseline Client como objetivo inicial de 1.0 para el
-trabajo futuro de evidencia. Esa selección es una decisión de planificación;
-no demuestra que el perfil esté implementado ni satisface el requisito del
-estándar.
+trabajo de evidencia. Esa selección es una decisión de planificación. La
+validación runtime sigue deshabilitada mientras falte evidencia de categoría;
+no demuestra conformidad ni satisface por sí sola el requisito del estándar.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales obligatorios están fijados en el repositorio. T036 registra
 13 reproducciones deterministas completas del cliente y 3 bloqueos previos al
-envío causados por la validación tipada. Las reproducciones no demuestran
-interoperabilidad con servidores ni conformidad del perfil; esos bloqueos y
-las demás brechas de evidencia siguen abiertos. Otros 77 casos vinculados a
-perfiles no tienen fixture local. KMIPKit no reconstruye ni deduce el contenido
-de fixtures ausentes.
+envío causados por la validación tipada. Las tres carencias de pruebas
+negativas son independientes de esos bloqueos oficiales. Otros 77 casos
+vinculados a perfiles no tienen fixture local. KMIPKit no reconstruye ni deduce
+el contenido de fixtures ausentes.
 
 El mapping tipado para recuperar resultados archivados de Locate solo registra
 un flujo dirigido por la aplicación. El preflight del perfil comprueba un

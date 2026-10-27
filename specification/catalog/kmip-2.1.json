@@ -83425,7 +83425,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. The current Baseline closure remains incomplete, so this mapping does not establish a Profile conformance claim."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. The three blocked mandatory official case replays and other evidence requirements also remain incomplete; this mapping does not establish a Profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-001",
@@ -83478,7 +83478,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. Baseline still has unmapped requirements; no full Specification support or Profile conformance claim is made."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. Baseline's 294-requirement closure has typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Mandatory official-case evidence also remains incomplete; this does not establish full Specification support or Profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-002",
@@ -83584,7 +83584,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. The normative closure is still incomplete; no Profile conformance claim is made."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 typed mappings and 291 category-test references; three prohibited rules lack negative behavior tests, so runtime selection remains unavailable. T036 also has three mandatory official-case blockers; no Profile conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
@@ -86716,7 +86716,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and test evidence. This verifies the readiness gate only; the Baseline Client profile still has unmapped requirements, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and test evidence. This verifies the readiness gate only; Baseline Client has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Official evidence also remains incomplete, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
@@ -86769,7 +86769,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; the Baseline Client closure remains incomplete, so no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; Baseline Client has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Official conformance evidence also remains incomplete, so no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.1-001",
@@ -90945,12 +90945,16 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition"
+      ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4.38 and Tables 105–106 permit the client to set Original Creation Date initially and prohibit changing or deleting it after it is set. Because remote object state is not retained by KMIPKit, the rule is a caller-owned condition for the selected Baseline optional attribute capability."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.38 and Tables 105–106 permit the client to set Original Creation Date initially and prohibit changing or deleting it after it is set. Because remote object state is not retained by KMIPKit, the rule is a caller-owned condition for the selected Baseline optional attribute capability. The profile mapping test verifies the caller-owned disposition only; it does not inspect remote object state or enforce immutability locally."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
@@ -91950,12 +91954,16 @@
       ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_compromised_object_processing_as_caller_owned_recommendation"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-025",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements."
+      "status": "deviated",
+      "review_note": "KMIP Specification v2.1 §4.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements. KMIPKIT-DEC-025 is an accepted deviation from local runtime behavior: the profile exposes caller-owned guidance, and this record makes no behavior-test or enforcement claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-003",
@@ -92127,11 +92135,13 @@
         "crates/kmipkit-protocol/src/attribute_reference.rs",
         "crates/kmipkit-protocol/src/delete_attribute.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/set_attribute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
@@ -92142,8 +92152,8 @@
       ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4.59 prose prohibits changing Usage Limits Total after protection use begins, while Table 149 permits client modification only before Get Usage Allocation. Under DEC-024, the client applies the conservative intersection: either condition prohibits mutation. The source tension is recorded in KMIPKIT-DISC-055."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.59 prose prohibits changing Usage Limits Total after protection use begins, while Table 149 permits client modification only before Get Usage Allocation. Under DEC-024, the client applies the conservative intersection: either condition prohibits mutation. The source tension is recorded in KMIPKIT-DISC-055. The profile mapping test verifies the caller-owned state condition only; KMIPKit does not track remote protection use or allocation state."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001",
@@ -92186,11 +92196,13 @@
         "crates/kmipkit-protocol/src/attribute_reference.rs",
         "crates/kmipkit-protocol/src/delete_attribute.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/set_attribute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
@@ -92201,8 +92213,8 @@
       ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit client changes to Usage Limits Total after Get Usage Allocation changes Count. This is a caller-owned remote-state condition; KMIPKIT-DISC-055 records the related prose/table tension."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit client changes to Usage Limits Total after Get Usage Allocation changes Count. This is a caller-owned remote-state condition; KMIPKIT-DISC-055 records the related prose/table tension. The profile mapping test verifies the caller-owned state condition only; KMIPKit does not track remote Count allocation state."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-002",
@@ -93973,16 +93985,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/derive_key.rs"
+        "crates/kmipkit-protocol/src/derive_key.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_derive_key_inputs_as_optional_capability",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::method_conditional_fields_are_checked_without_selecting_defaults",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-026",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally."
+      "review_note": "KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally. The profile mapping and Derive Key serializer tests verify that callers can provide multiple input identifiers; derivation remains server-side."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
@@ -96123,19 +96137,22 @@
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
-        "crates/kmipkit-protocol/src/modify_attribute.rs"
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_existing_instance_as_optional_capability",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-027",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §6.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §6.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise. The profile mapping test verifies the optional request capability only; server state remains authoritative for whether the named attribute instance exists."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-004",

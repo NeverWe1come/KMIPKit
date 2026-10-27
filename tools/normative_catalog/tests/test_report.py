@@ -2042,6 +2042,7 @@ mod unrelated {
             and len(row.split("|")) == 9
         )
         self.assertNotIn("category test references missing: 1", baseline_blocker_row)
+        self.assertIn("category test references missing: 3", baseline_blocker_row)
 
     def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -2702,6 +2703,16 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-7.31-001",
                     "KMIPKIT-REQ-SPEC-7.32-001",
                     "KMIPKIT-REQ-SPEC-7.32-001",
+                    # KMIPKIT-0010 T040: final Baseline mappings; the three
+                    # SHALL NOT rules intentionally remain without false
+                    # category evidence until state-aware enforcement exists.
+                    *["KMIPKIT-REQ-SPEC-4-001-003"] * 11,
+                    "KMIPKIT-REQ-SPEC-4.38-003",
+                    "KMIPKIT-REQ-SPEC-4.57-005-002",
+                    "KMIPKIT-REQ-SPEC-4.59-002",
+                    "KMIPKIT-REQ-SPEC-4.59-003-001",
+                    "KMIPKIT-REQ-SPEC-6.1.14-002",
+                    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
                 ],
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],
