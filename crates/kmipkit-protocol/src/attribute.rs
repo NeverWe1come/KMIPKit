@@ -116,6 +116,12 @@ pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
 /// `KMIPKit` preserves the supplied Name and cannot detect collisions with
 /// existing or concurrent server objects; global uniqueness is not required
 /// by KMIP v2.1 §4.32.
+///
+/// When an attribute permits multiple instances, callers SHOULD supply
+/// different values for those instances as recommended by KMIP v2.1 §4.
+/// `KMIPKit` preserves the caller's values and order without deduplicating or
+/// rewriting them; choosing distinct values remains the caller's
+/// responsibility.
 pub struct AttributeSet {
     items: Vec<Item>,
 }

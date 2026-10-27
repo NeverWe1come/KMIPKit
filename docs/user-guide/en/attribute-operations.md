@@ -95,6 +95,8 @@ fn build_attribute_payloads() -> Result<(), Box<dyn std::error::Error>> {
 
 `AttributeSet` retains direct Items, repeated values, and wire order. Unknown tags and enumeration values remain available through the generic TTLV model when allowed by the tag allocation policy. Adjustment Type supports the assigned values Increment, Decrement, and Negate plus its KMIP extension range; Reserved values are rejected for outbound typed requests.
 
+KMIP v2.1 §4 recommends different values for multiple instances of the same attribute. The caller chooses those values; KMIPKit preserves them as supplied and does not rewrite or deduplicate them.
+
 Response models expose the server's `KmipOperationResult`, including Result Status, optional Result Reason, and optional Result Message. Successful response payload accessors expose the operation's Unique Identifier and, for reads, the returned attributes or references. KMIPKit does not apply Adjust Attribute locally and does not maintain a local copy of server attributes.
 
 Mutation policy checks reject only source-backed, unconditional prohibitions that can be determined from the supplied request. Those failures have delivery state `NotSent` and do not call the transport. State-dependent or unrecognized cases are sent to the server. Requests are not automatically retried. A `Pending` result retains its typed response and asynchronous correlation value; use the asynchronous workflow described in [Client execution](client-execution.md).
