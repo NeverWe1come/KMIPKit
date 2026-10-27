@@ -12,7 +12,6 @@ use kmipkit_protocol::{
     CheckRequest, GetAttributesRequest, ProfileTransport, ProfileValidationError,
     ProfileValidationErrorCode, ProfileValidationSelection, QueryFunction, QueryRequest,
     RequestMessage, ResponseMessage, SetDefaultsRequest, UniqueIdentifier,
-    profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -229,7 +228,7 @@ fn explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaul
         after_query
             .profile_validation_error()
             .map(ProfileValidationError::code),
-        Some(ProfileValidationErrorCode::UnresolvedRequirementScope)
+        Some(ProfileValidationErrorCode::MissingRuleMapping)
     );
     assert_eq!(exchanges.get(), 1);
 
@@ -262,7 +261,7 @@ fn explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaul
         after_discover_versions
             .profile_validation_error()
             .map(ProfileValidationError::code),
-        Some(ProfileValidationErrorCode::UnresolvedRequirementScope)
+        Some(ProfileValidationErrorCode::MissingRuleMapping)
     );
     assert_eq!(exchanges.get(), 3);
 }
@@ -271,15 +270,6 @@ fn explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaul
 fn incomplete_profile_selection_fails_before_transport_with_stable_source_ids() {
     let exchanges = Rc::new(Cell::new(0));
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
-    let profile = CLIENT_PROFILES
-        .iter()
-        .find(|profile| profile.profile_id == BASELINE)
-        .expect("Baseline Client exists in generated profile metadata");
-    let obligation = profile
-        .unresolved_scope_obligations
-        .first()
-        .expect("Baseline contains a reviewed applicability gap");
-
     let error = client
         .execute_with_profiles(
             discover_versions_batch(),
@@ -295,17 +285,24 @@ fn incomplete_profile_selection_fails_before_transport_with_stable_source_ids() 
         .expect("profile validation keeps its stable structured source error");
     assert_eq!(
         profile_error.code(),
-        ProfileValidationErrorCode::UnresolvedRequirementScope
+        ProfileValidationErrorCode::MissingRuleMapping
     );
     assert_eq!(profile_error.profile_id(), Some(BASELINE));
-    assert_eq!(
-        profile_error.requirement_id(),
-        Some(obligation.requirement_id)
-    );
-    assert_eq!(
+    let requirement_id = profile_error
+        .requirement_id()
+        .expect("a missing mapping identifies its source-backed requirement");
+    assert!(requirement_id.starts_with("KMIPKIT-REQ-"));
+    match (
         profile_error.source_clause_id(),
-        Some(obligation.source_clause_id)
-    );
+        profile_error.source_gap_id(),
+    ) {
+        (Some(source_clause_id), None) => assert!(source_clause_id.starts_with("KMIPKIT-CLAUSE-")),
+        (None, Some(source_gap_id)) => {
+            assert!(source_gap_id.starts_with("KMIPKIT-SOURCE-GAP-"));
+            assert!(profile_error.source_gap_locator().is_some());
+        }
+        _ => panic!("the missing mapping exposes exactly one stable source identifier"),
+    }
     assert_eq!(exchanges.get(), 0);
 }
 
