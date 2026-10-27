@@ -174,6 +174,106 @@ fn request_rejects_id_placeholder_and_missing_symmetric_key_attributes() {
 }
 
 #[test]
+fn request_rejects_repeated_singletons_and_undetermined_dsa_but_allows_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.14 Table 205.
+    let duplicate_singleton = DeriveKeyRequest::new(
+        ObjectType::from_raw(2),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(1),
+        DerivationParameters::new()
+            .with_salt(crate::SecretBytes::new(b"salt".to_vec()))
+            .with_iteration_count(120_000),
+        AttributeSet::try_new([
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(0x0042_00FD, Value::text_string("first".to_owned())),
+            item(0x0042_00FD, Value::text_string("second".to_owned())),
+        ])
+        .expect("the fixture contains catalogued, correctly encoded attributes"),
+    );
+    assert!(duplicate_singleton.into_ttlv_payload().is_err());
+
+    let parameters = || {
+        DerivationParameters::new()
+            .with_salt(crate::SecretBytes::new(b"salt".to_vec()))
+            .with_iteration_count(120_000)
+    };
+    let unresolved = DeriveKeyRequest::new(
+        ObjectType::from_raw(2),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(1),
+        parameters(),
+        AttributeSet::try_new([
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+            item(0x0042_00AE, Value::enumeration(1)),
+            item(0x0042_00AE, Value::enumeration(2)),
+        ])
+        .expect("all fixture attributes have catalogued TTLV types"),
+    );
+    assert!(unresolved.into_ttlv_payload().is_err());
+
+    let explicit_pgp_key = DeriveKeyRequest::new(
+        ObjectType::from_raw(9),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(1),
+        parameters(),
+        AttributeSet::try_new([
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            item(0x0042_00AE, Value::enumeration(1)),
+            item(0x0042_00AE, Value::enumeration(2)),
+        ])
+        .expect("all fixture attributes have catalogued TTLV types"),
+    );
+    assert!(explicit_pgp_key.into_ttlv_payload().is_ok());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_for_symmetric_key_output_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.14 Table 205.
+    let attributes = AttributeSet::try_new([
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("all fixture attributes have catalogued TTLV types");
+    let request = DeriveKeyRequest::new(
+        ObjectType::from_raw(2),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(1),
+        DerivationParameters::new()
+            .with_salt(crate::SecretBytes::new(b"salt".to_vec()))
+            .with_iteration_count(120_000),
+        attributes,
+    );
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_allows_repeated_dsa_for_explicit_pgp_key_output_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.14 Table 205.
+    let attributes = AttributeSet::try_new([
+        item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("all fixture attributes have catalogued TTLV types");
+    let request = DeriveKeyRequest::new(
+        ObjectType::from_raw(9),
+        vec![UniqueIdentifier::TextString("source".to_owned())],
+        DerivationMethod::from_raw(1),
+        DerivationParameters::new()
+            .with_salt(crate::SecretBytes::new(b"salt".to_vec()))
+            .with_iteration_count(120_000),
+        attributes,
+    );
+
+    assert!(request.into_ttlv_payload().is_ok());
+}
+
+#[test]
 fn secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm() {
     let attributes = AttributeSet::try_new([item(CRYPTOGRAPHIC_LENGTH, Value::integer(512))])
         .expect("Secret Data length is a valid typed attribute");

@@ -134,6 +134,104 @@ fn request_can_omit_private_identifier_for_the_batch_id_placeholder() {
 }
 
 #[test]
+fn request_rejects_repeated_singletons_in_every_attribute_group() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.47 Table 310.
+    let repeated_comment = || {
+        crate::AttributeSet::try_new([
+            item(0x0042_00FD, Value::text_string("first".to_owned())),
+            item(0x0042_00FD, Value::text_string("second".to_owned())),
+        ])
+        .expect("Comment accepts valid Text String instances before typed encoding")
+    };
+
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_common_attributes(repeated_comment())
+            .into_ttlv_payload()
+            .is_err()
+    );
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_private_key_attributes(repeated_comment())
+            .into_ttlv_payload()
+            .is_err()
+    );
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_public_key_attributes(repeated_comment())
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_without_explicit_pgp_object_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.47 Table 310.
+    let repeated_dsa = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_public_key_attributes(repeated_dsa)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_in_common_attributes() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.47 Table 310.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_common_attributes(attributes)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_in_private_key_attributes() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.47 Table 310.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_private_key_attributes(attributes)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_in_public_key_attributes() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.47 Table 310.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+
+    assert!(
+        RekeyKeyPairRequest::new()
+            .with_public_key_attributes(attributes)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
 fn request_rejects_protection_mask_groups_beyond_model_depth() {
     let result = RekeyKeyPairRequest::new()
         .with_common_protection_storage_masks(deeply_nested_structure())

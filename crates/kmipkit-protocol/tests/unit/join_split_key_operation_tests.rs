@@ -191,6 +191,77 @@ fn request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire
 }
 
 #[test]
+fn request_rejects_repeated_singletons_and_unknown_dsa_context_but_allows_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let references = || vec![reference("split-a", 2), reference("split-b", 2)];
+    let repeated_comment = crate::AttributeSet::try_new([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ])
+    .expect("Comment accepts valid Text String instances before typed encoding");
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(7), references())
+            .with_attributes(repeated_comment)
+            .into_ttlv_payload()
+            .is_err()
+    );
+
+    let repeated_dsa = || {
+        crate::AttributeSet::try_new([
+            item(0x0042_00AE, Value::enumeration(1)),
+            item(0x0042_00AE, Value::enumeration(2)),
+        ])
+        .expect("Digital Signature Algorithm values have Enumeration encoding")
+    };
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(7), references())
+            .with_attributes(repeated_dsa())
+            .into_ttlv_payload()
+            .is_err()
+    );
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(9), references())
+            .with_attributes(repeated_dsa())
+            .into_ttlv_payload()
+            .is_ok()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_when_object_type_is_not_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+    let request = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![reference("split-a", 2), reference("split-b", 2)],
+    )
+    .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_allows_repeated_dsa_for_explicit_pgp_key_object_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+    let request = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(9),
+        vec![reference("split-a", 2), reference("split-b", 2)],
+    )
+    .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_ok());
+}
+
+#[test]
 fn public_request_views_preserve_local_thresholds_and_optional_fields() {
     let first = SplitKeyReference::new(UniqueIdentifier::Enumeration(0xF123_4567))
         .with_split_key_threshold(1);

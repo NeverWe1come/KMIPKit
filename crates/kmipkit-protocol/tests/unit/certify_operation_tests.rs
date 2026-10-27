@@ -166,6 +166,72 @@ fn request_without_request_value_rejects_id_placeholder_as_public_key_identifier
 }
 
 #[test]
+fn request_rejects_repeated_single_instance_attributes_and_undetermined_dsa_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.6 Table 179.
+    let repeated_comment = structure([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    let duplicate_singleton = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(b"request".to_vec()))
+        .with_attributes(repeated_comment);
+    assert!(duplicate_singleton.into_ttlv_payload().is_err());
+
+    let repeated_dsa_without_certificate_type = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let undetermined_context = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(b"request".to_vec()))
+        .with_attributes(repeated_dsa_without_certificate_type);
+    assert!(undetermined_context.into_ttlv_payload().is_err());
+
+    let repeated_dsa_for_x509 = structure([
+        item(0x0042_001D, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let x509_context = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(b"request".to_vec()))
+        .with_attributes(repeated_dsa_for_x509);
+    assert!(x509_context.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_without_certificate_type_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.6 Table 179.
+    let attributes = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(b"request".to_vec()))
+        .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_for_x509_certificate_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.6 Table 179.
+    let attributes = structure([
+        item(0x0042_001D, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(b"request".to_vec()))
+        .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
 fn successful_response_returns_required_identifier_and_keeps_unknown_fields() {
     let generated_identifier = UniqueIdentifier::TextString("generated-certificate".to_owned());
     let payload = structure([
