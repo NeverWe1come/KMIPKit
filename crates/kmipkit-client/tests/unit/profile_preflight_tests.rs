@@ -9,8 +9,10 @@ use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    CheckRequest, GetAttributesRequest, ProfileTransport, ProfileValidationError,
-    ProfileValidationErrorCode, QueryFunction, QueryRequest, RequestMessage, ResponseMessage,
+    AddAttributeRequest, CheckRequest, GetAttributesRequest, ModifyAttributeRequest,
+    NewAttribute, ProfileObjectState, ProfileTransport, ProfileValidationContext,
+    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationSelection,
+    QueryFunction, QueryRequest, RequestMessage, ResponseMessage, SetAttributeRequest,
     SetDefaultsRequest, UniqueIdentifier,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
@@ -740,6 +742,209 @@ fn server_result_has_no_local_profile_validation_error() {
     assert_eq!(error.cause_category(), None);
     assert_eq!(error.delivery_state(), None);
     assert!(Error::source(&error).is_none());
+}
+
+#[test]
+fn original_creation_date_update_with_present_bound_context_is_rejected_before_transport() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const OBJECT_ID: &str = "profile-context-object-sensitive-id";
+
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::modify_attribute(
+        ModifyAttributeRequest::new(
+            Some(OBJECT_ID.to_owned()),
+            None,
+            NewAttribute::new(test_item(
+                ORIGINAL_CREATION_DATE,
+                Value::date_time(1_700_000_001),
+            )),
+        ),
+    )));
+    let selection = ProfileValidationSelection::new([BASELINE]);
+    let context = ProfileValidationContext::new().with_object_state(
+        ProfileObjectState::new(OBJECT_ID)
+            .with_original_creation_date_present(Some(true)),
+    );
+
+    let error = client
+        .execute_with_profiles_and_context(
+            batch,
+            &selection,
+            &context,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("an Original Creation Date update after it was set is prohibited");
+
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let profile_error = error
+        .profile_validation_error()
+        .expect("the prohibited request carries a typed profile error");
+    assert_eq!(profile_error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(profile_error.requirement_id(), Some(REQUIREMENT));
+    assert_eq!(profile_error.source_clause_id(), Some(CLAUSE));
+    assert_eq!(profile_error.batch_item_index(), Some(0));
+    let display = format!("{profile_error}");
+    assert!(!display.contains(OBJECT_ID));
+}
+
+#[test]
+fn usage_limits_total_change_after_protection_use_is_rejected_with_bound_context() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-002";
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const OBJECT_ID: &str = "usage-limits-context-sensitive-id";
+
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let usage_limits = test_item(
+        USAGE_LIMITS,
+        Value::structure(test_structure([
+            test_item(TOTAL, Value::long_integer(40)),
+            test_item(COUNT, Value::long_integer(50)),
+            test_item(UNIT, Value::enumeration(1)),
+        ])),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
+        SetAttributeRequest::new(
+            Some(OBJECT_ID.to_owned()),
+            NewAttribute::new(usage_limits),
+        ),
+    )));
+    let selection = ProfileValidationSelection::new([BASELINE]);
+    let context = ProfileValidationContext::new().with_object_state(
+        ProfileObjectState::new(OBJECT_ID)
+            .with_usage_limits_present(Some(true))
+            .with_protection_use_started(Some(true))
+            .with_get_usage_allocation_performed(Some(false))
+            .with_usage_limits_total(Some(50))
+            .with_usage_limits_count(Some(50)),
+    );
+
+    let error = client
+        .execute_with_profiles_and_context(
+            batch,
+            &selection,
+            &context,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("Usage Limits Total cannot change after protection use begins");
+
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let profile_error = error
+        .profile_validation_error()
+        .expect("the prohibited request carries a typed profile error");
+    assert_eq!(profile_error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(profile_error.requirement_id(), Some(REQUIREMENT));
+    assert_eq!(profile_error.source_clause_id(), Some(CLAUSE));
+    assert_eq!(profile_error.batch_item_index(), Some(0));
+    assert!(!format!("{profile_error}").contains(OBJECT_ID));
+}
+
+#[test]
+fn usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const OBJECT_ID: &str = "allocation-context-sensitive-id";
+
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let usage_limits = test_item(
+        USAGE_LIMITS,
+        Value::structure(test_structure([
+            test_item(TOTAL, Value::long_integer(40)),
+            test_item(COUNT, Value::long_integer(50)),
+            test_item(UNIT, Value::enumeration(1)),
+        ])),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::set_attribute(
+        SetAttributeRequest::new(
+            Some(OBJECT_ID.to_owned()),
+            NewAttribute::new(usage_limits),
+        ),
+    )));
+    let selection = ProfileValidationSelection::new([BASELINE]);
+    let context = ProfileValidationContext::new().with_object_state(
+        ProfileObjectState::new(OBJECT_ID)
+            .with_usage_limits_present(Some(true))
+            .with_protection_use_started(Some(false))
+            .with_get_usage_allocation_performed(Some(true))
+            .with_get_usage_allocation_changed_count(Some(true))
+            .with_usage_limits_total(Some(50))
+            .with_usage_limits_count(Some(50)),
+    );
+
+    let error = client
+        .execute_with_profiles_and_context(
+            batch,
+            &selection,
+            &context,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("Total cannot change after allocation changed Count");
+
+    assert_eq!(exchanges.get(), 0);
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    let profile_error = error
+        .profile_validation_error()
+        .expect("the prohibited request carries a typed profile error");
+    assert_eq!(profile_error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(profile_error.requirement_id(), Some(REQUIREMENT));
+    assert_eq!(profile_error.source_clause_id(), Some(CLAUSE));
+    assert_eq!(profile_error.batch_item_index(), Some(0));
+    assert!(!format!("{profile_error}").contains(OBJECT_ID));
+}
+
+#[test]
+fn original_creation_date_can_be_added_when_the_bound_context_says_absent() {
+    const ADD_ATTRIBUTE: u32 = 0x0000_000D;
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const OBJECT_ID: &str = "profile-context-absent-attribute-id";
+
+    let exchanges = Rc::new(Cell::new(0));
+    let mut response = ResponseItemFixture::success(None);
+    response.operation = ADD_ATTRIBUTE;
+    let transport = CountingTransport::with_responses(
+        Rc::clone(&exchanges),
+        [response_bytes((2, 1), &[response])],
+    );
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::add_attribute(
+        AddAttributeRequest::new(
+            Some(OBJECT_ID.to_owned()),
+            NewAttribute::new(test_item(
+                ORIGINAL_CREATION_DATE,
+                Value::date_time(1_700_000_000),
+            )),
+        ),
+    )));
+    let selection = ProfileValidationSelection::new([BASELINE]);
+    let context = ProfileValidationContext::new().with_object_state(
+        ProfileObjectState::new(OBJECT_ID)
+            .with_original_creation_date_present(Some(false)),
+    );
+
+    client
+        .execute_with_profiles_and_context(
+            batch,
+            &selection,
+            &context,
+            &CodecLimits::defaults(),
+        )
+        .expect("§4.38 expressly permits later Add when the attribute is absent");
+
+    assert_eq!(exchanges.get(), 1);
 }
 
 #[test]
