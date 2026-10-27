@@ -187,6 +187,27 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                     "client",
                 )
 
+    def test_state_attribute_modify_prohibition_is_client_scope(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-001"
+        requirement = self.requirements[requirement_id]
+        crosswalk = self.crosswalk[requirement_id]
+        obligation = next(
+            obligation
+            for review in self.oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation.get("candidate_requirement_id") == requirement_id
+        )
+
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(crosswalk["scope_state"], "client_1_0")
+        self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+        self.assertEqual(crosswalk["source_actor"], "client")
+        self.assertEqual(crosswalk["source_direction"], "client_to_server")
+        self.assertEqual(obligation["actor"], "client")
+        self.assertEqual(obligation["scope_disposition"], "client_1_0")
+
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
         self.assertIn(

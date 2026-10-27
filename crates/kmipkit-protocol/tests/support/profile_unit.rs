@@ -18820,6 +18820,67 @@ fn profile_maps_read_only_attribute_prohibitions_as_prohibited_behavior() {
 }
 
 #[test]
+fn profile_maps_state_attribute_modify_prohibition_as_prohibited_behavior() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.57-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const TEST_NAME: &str = "profile_rejects_client_modify_attribute_for_state";
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("State mutation prohibition has generated client scope");
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("State mutation prohibition has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the client prohibition has executable negative evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::NegativeBehavior && evidence.test_id.ends_with(TEST_NAME)
+    }));
+}
+
+#[test]
+fn profile_rejects_client_modify_attribute_for_state() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const STATE_TAG: u32 = 0x0042_008D;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        MODIFY_ATTRIBUTE_OPERATION,
+        structure([tagged(
+            CURRENT_ATTRIBUTE_TAG,
+            Value::structure(structure([tagged(STATE_TAG, Value::enumeration(1))])),
+        )]),
+    );
+
+    let error = result
+        .validate_request(&request)
+        .expect_err("the client cannot change the State attribute through Modify Attribute");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.57-001")
+    );
+}
+
+#[test]
 fn profile_rejects_read_only_attribute_modification_on_all_client_routes() {
     // KMIP Specification v2.1 §4 defines read-only attributes as non-modifiable by the client or server.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-004";
