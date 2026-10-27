@@ -433,6 +433,10 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
+                value: "optional_request_response_message_payloads_and_extensions",
+            },
+            RuleConstraint {
+                key: "client_profile_capability",
                 value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
             },
             RuleConstraint {
