@@ -18905,7 +18905,6 @@ class CatalogValidationTests(unittest.TestCase):
             expected_blocked_requirement_ids = {
                 "KMIPKIT-REQ-SPEC-4.1-001-001",
                 "KMIPKIT-REQ-SPEC-4.17-001-001",
-                "KMIPKIT-REQ-SPEC-9.20-001-002",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
@@ -18919,7 +18918,7 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in gaps
             if gap.endswith(": no usable implementation mapping")
         }
-        missing_implementation_ids = {"KMIPKIT-REQ-SPEC-9.20-001-002"}
+        missing_implementation_ids: set[str] = set()
         self.assertEqual(
             implementation_mapping_gap_ids,
             missing_implementation_ids,
@@ -18963,15 +18962,13 @@ class CatalogValidationTests(unittest.TestCase):
                 f"optional client capability source mapping incomplete: {requirement_id}",
                 readiness["blockers"],
             )
-        for requirement_id in ("KMIPKIT-REQ-SPEC-9.20-001-002",):
-            self.assertIn(
-                f"missing implementation assignment: {requirement_id}",
-                readiness["blockers"],
+        self.assertFalse(
+            any(
+                blocker.endswith("KMIPKIT-REQ-SPEC-9.20-001-002")
+                and blocker.startswith(("missing implementation assignment:", "missing verification assignment:"))
+                for blocker in readiness["blockers"]
             )
-            self.assertIn(
-                f"missing verification assignment: {requirement_id}",
-                readiness["blockers"],
-            )
+        )
 
     def test_profile_omissions_report_the_oracle_stable_identifier(self) -> None:
         """A closure omission should identify the exact source or requirement ID."""

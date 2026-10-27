@@ -50,6 +50,15 @@ LIFECYCLE_TRACEABILITY_PATH = ROOT / "specs/018-managed-object-lifecycle/traceab
 LIFECYCLE_SPEC_PATH = ROOT / "specs/018-managed-object-lifecycle/spec.md"
 LIFECYCLE_TASKS_PATH = ROOT / "specs/018-managed-object-lifecycle/tasks.md"
 CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-9.20-001-002"
+CLIENT_EXECUTION_DEFERRED_PROFILE_IMPLEMENTATION_REFS = {
+    "crates/kmipkit-protocol/src/profile.rs",
+    "crates/kmipkit-protocol/src/message/header.rs",
+    "crates/kmipkit-ttlv/src/value.rs",
+}
+CLIENT_EXECUTION_DEFERRED_PROFILE_VERIFICATION_REFS = {
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
+    "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
+}
 RESULT_ELEMENT_IDS = {
     "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
     "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
@@ -1613,11 +1622,19 @@ class ClientExecutionTraceabilityTests(unittest.TestCase):
                 self.assertEqual(record["test_case_ids"], [])
                 if requirement_id == CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID:
                     self.assertEqual(record["status"], "deferred")
-                    self.assertEqual(record["implementation_refs"], [])
-                    self.assertEqual(record["verification_refs"], [])
+                    self.assertEqual(
+                        set(record["implementation_refs"]),
+                        CLIENT_EXECUTION_DEFERRED_PROFILE_IMPLEMENTATION_REFS,
+                    )
+                    self.assertEqual(
+                        set(record["verification_refs"]),
+                        CLIENT_EXECUTION_DEFERRED_PROFILE_VERIFICATION_REFS,
+                    )
                     self.assertIn("OD-004", record["review_note"])
                     self.assertIn("countdown-derived", record["review_note"])
+                    self.assertIn("KMIPKIT-0010 profile capability", record["review_note"])
                     self.assertEqual(row["status"], "deferred")
+                    self.assertEqual(row["implementation_location"], "")
                     continue
 
                 self.assertEqual(record["status"], "verified")
