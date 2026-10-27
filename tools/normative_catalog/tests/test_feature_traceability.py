@@ -1251,6 +1251,49 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     )
                 )
 
+    def test_skipped_python_tests_are_not_positive_evidence(self) -> None:
+        """Python tests excluded by standard skip markers cannot prove a capability."""
+        cases = (
+            (
+                "unittest skip decorator",
+                "test_capability",
+                "import unittest\n"
+                "@unittest.skip('requires unavailable service')\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+            (
+                "pytest skipif decorator",
+                "test_capability",
+                "import pytest\n"
+                "@pytest.mark.skipif(True, reason='not available')\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+            (
+                "unittest class skip decorator",
+                "TestSkipped.test_capability",
+                "import unittest\n"
+                "@unittest.skip('class unavailable')\n"
+                "class TestSkipped(unittest.TestCase):\n"
+                "    def test_capability(self):\n"
+                "        self.assertTrue(True)\n",
+            ),
+            (
+                "pytest module skip marker",
+                "test_capability",
+                "import pytest\n"
+                "pytestmark = pytest.mark.skip(reason='module unavailable')\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+        )
+        for label, test_name, source in cases:
+            with self.subTest(label=label):
+                self.assertFalse(
+                    _is_discoverable_positive_test(Path("tests/evidence.py"), test_name, source)
+                )
+
 
 class MessageModelTraceabilityTests(unittest.TestCase):
     @staticmethod
