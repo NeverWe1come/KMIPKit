@@ -9,7 +9,10 @@
 //! KMIPKIT-REQ-SPEC-9.11-006; KMIPKIT-0008-FR-001, FR-002, FR-004–FR-006,
 //! FR-009; SC-001, SC-002.
 
-use kmipkit_protocol::{Authentication, CredentialType, CredentialValue, Nonce, RequestMessage};
+use kmipkit_protocol::{
+    Authentication, CredentialType, CredentialValue, HashedPasswordTimestampSequence, Nonce,
+    RequestMessage,
+};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -649,6 +652,42 @@ fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
             Some(secret_bytes.clone())
         );
     }
+}
+
+// OASIS KMIP Specification v2.1 §9.11 requires Hashed Password Timestamps
+// to increase monotonically. The project policy uses one caller-owned
+// sequence per logical client and Username, with strict increase.
+#[test]
+fn hashed_password_timestamp_sequence_accepts_strictly_increasing_values() {
+    let mut sequence = HashedPasswordTimestampSequence::new(None);
+
+    assert!(sequence.record(1_800_000_000).is_ok());
+    assert!(sequence.record(1_800_000_001).is_ok());
+    assert_eq!(sequence.last_timestamp(), Some(1_800_000_001));
+}
+
+// Equality and rollback are rejected without exposing values or advancing
+// the caller-owned state.
+#[test]
+fn hashed_password_timestamp_sequence_rejects_equal_or_earlier_values() {
+    let mut sequence = HashedPasswordTimestampSequence::new(Some(1_800_000_001));
+
+    for timestamp in [1_800_000_001, 1_800_000_000] {
+        let error = sequence
+            .record(timestamp)
+            .expect_err("timestamp must strictly increase");
+        assert!(!error.to_string().contains(&timestamp.to_string()));
+        assert_eq!(sequence.last_timestamp(), Some(1_800_000_001));
+    }
+}
+
+#[test]
+fn hashed_password_timestamp_sequences_are_independent() {
+    let mut first_user = HashedPasswordTimestampSequence::new(None);
+    let mut second_user = HashedPasswordTimestampSequence::new(None);
+
+    assert!(first_user.record(1_800_000_000).is_ok());
+    assert!(second_user.record(1_800_000_000).is_ok());
 }
 
 #[test]

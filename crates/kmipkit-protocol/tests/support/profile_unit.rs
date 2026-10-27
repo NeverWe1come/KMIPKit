@@ -24243,13 +24243,25 @@ fn profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibiti
 
 #[test]
 // OASIS KMIP Specification v2.1 §9.11, Hashed Password paragraph before Table 415.
-// KMIPKIT-0008 OD-003 leaves the enforcement owner unresolved, so do not claim a mapping.
-fn profile_leaves_hashed_password_timestamp_monotonicity_unmapped_while_od003_is_open() {
-    assert!(
-        !TYPED_RULE_MAPPINGS
-            .iter()
-            .any(|mapping| { mapping.requirement_id == "KMIPKIT-REQ-SPEC-9.11-010-001" })
+fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        GeneratedVerificationCategory::RequiredBehavior,
+        "hashed_password_timestamp_monotonicity_per_username",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
+        RuleTestKind::PositiveBehavior,
     );
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-9.11-010-001")
+        .expect("Hashed Password Timestamp requirement has a typed mapping");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_rejects_equal_or_earlier_values"
+            && evidence.kind == RuleTestKind::NegativeBehavior
+    }));
 }
 
 #[test]
