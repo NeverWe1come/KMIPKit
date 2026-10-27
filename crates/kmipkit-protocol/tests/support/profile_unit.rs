@@ -4649,6 +4649,55 @@ fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_respons
 }
 
 #[test]
+fn profile_rejects_repeated_single_instance_attributes_in_export_response() {
+    // KMIP Specification v2.1 §4/Table 46 and §6.1.18 Table 219 include the
+    // returned object's Attributes in an Export response.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+    const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
+
+    let request = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("object-id".to_owned()),
+            ),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([
+                    tagged(COMMENT_TAG, Value::text_string("first".to_owned())),
+                    tagged(COMMENT_TAG, Value::text_string("second".to_owned())),
+                ])),
+            ),
+            tagged(SYMMETRIC_KEY_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &response)
+    .expect_err("profile validation rejects repeated Comment in an Export response");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
 fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
     // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
