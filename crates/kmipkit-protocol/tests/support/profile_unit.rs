@@ -4698,6 +4698,61 @@ fn profile_rejects_repeated_single_instance_attributes_in_export_response() {
 }
 
 #[test]
+fn profile_rejects_repeated_single_instance_attributes_in_export_key_value() {
+    // KMIP Specification v2.1 §3.2 Table 13 permits Attributes in Key Value;
+    // §4 Table 46 makes Comment single-instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+    const KEY_VALUE_TAG: u32 = 0x0042_0045;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+    const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
+
+    let nested_attributes = structure([
+        tagged(COMMENT_TAG, Value::text_string("first".to_owned())),
+        tagged(COMMENT_TAG, Value::text_string("second".to_owned())),
+    ]);
+    let key_value = structure([tagged(
+        ATTRIBUTES_TAG,
+        Value::structure(nested_attributes),
+    )]);
+    let key_block = structure([tagged(KEY_VALUE_TAG, Value::structure(key_value))]);
+    let object = structure([tagged(KEY_BLOCK_TAG, Value::structure(key_block))]);
+    let request = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("object-id".to_owned()),
+            ),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            tagged(SYMMETRIC_KEY_TAG, Value::structure(object)),
+        ]),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &response)
+    .expect_err("profile validation rejects duplicate KeyValue.Attributes in Export");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
 fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
     // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
