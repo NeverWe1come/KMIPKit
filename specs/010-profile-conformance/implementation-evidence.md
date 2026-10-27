@@ -7536,3 +7536,21 @@ The Green commit `90337a1ca` records the §4.57 Pre-Active prohibition as client
 | Baseline evidence state | 280/280 closure requirements have typed mappings and category-test references. Unresolved applicability blockers decreased from 26 to 25; runtime validation remains false and claim state remains `evidence_incomplete`. No conformance claim or official Test Case pass is made. |
 
 The Refactor documentation clarifies that the caller-owned mapping is metadata, not a runtime state query, assertion input, or proof of enforcement. T040 remains open; additional applicability and evidence gaps remain.
+
+## Pre-Active evidence correction — Refactor (2026-10-27)
+
+Independent QA found that the first §4.57 paragraph 2 mapping incorrectly counted a metadata-only disposition test as `NegativeBehavior`. That test checked the static caller-duty marker; it did not exercise cryptographic use, so it was not category-valid evidence. QA also confirmed error precedence: Baseline selection checks applicability first and currently returns `UnresolvedRequirementScope`; direct validation of this mapping returns `MissingCategoryTest`. The initial 280/280/280 statement above is superseded: Baseline Client has 280/280 typed mappings but only 279/280 category-test references. The report identifies one missing category test and 25 unresolved applicability conditions. Baseline remains `evidence_incomplete` and unavailable for runtime selection. No conformance claim or official OASIS Test Case pass is made. Independent QA and security re-reviews found no actionable findings. The Codex Security diff-scan launcher rejected the worktree snapshot after detecting a HEAD change and returned no scan ID or report; no automated scan result is claimed.
+
+Correction Red commit `bfb53f366` adds the regression that prevents readiness when the Pre-Active prohibition lacks category-appropriate evidence. Green commit `aefbbf0c9` removes the metadata test from the mapping's behavioral evidence, tightens traceability to allow only this one explicit missing category test, and asserts that the generated report contains the blocker. The Rust metadata test verifies the fail-closed disposition only. The English and Spanish user guides and the profile-validation contract now explain the caller responsibility, non-enforcement boundary, and selection error precedence.
+
+| Verification | Command and result |
+|---|---|
+| T002 applicability regressions | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` — PASS: 9 tests. |
+| Focused Rust disposition regression | `cargo test -p kmipkit-protocol --lib profile::tests::profile_records_pre_active_use_as_caller_owned_unverified_obligation -- --exact` — PASS: 1 test. |
+| Selection error precedence | `cargo test -p kmipkit-protocol --test profile_validation baseline_selection_reports_unresolved_applicability_before_rule_mapping -- --exact` — PASS: 1 test. |
+| Full protocol suite | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,139 unit tests plus integration targets and doctests. |
+| Rust quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — PASS. |
+| Full report contract | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` — PASS: 1 test. |
+| Full typed-profile traceability | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v` — PASS: 1 test. |
+| Catalog and generated artifacts | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check` — PASS: 4 sources, 1,411 clauses, 4,125 records; generated outputs are current. |
+| Patch and pinned-source integrity | `git diff --check`; `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS. |

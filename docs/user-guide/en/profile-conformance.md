@@ -113,6 +113,14 @@ circumstance and special permission before using the stated exceptions. These
 static mappings do not establish server acceptance, an official Test Case
 pass, or profile conformance.
 
+KMIP Specification v2.1 §4.57 also prohibits using a Pre-Active object for any
+cryptographic purpose. The source does not identify an actor or message
+direction. KMIPKit does not track remote State or perform local cryptography,
+so the application remains responsible for this restriction. The profile
+mapping records the caller duty but does not enforce it; until category-valid
+negative behavioral evidence exists, Baseline profile validation remains
+unavailable.
+
 ## Reading profile status
 
 The [generated coverage report](../../../specification/catalog/coverage-report.md)
