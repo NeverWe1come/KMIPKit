@@ -4775,6 +4775,110 @@ fn profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_r
 }
 
 #[test]
+fn profile_rejects_repeated_single_instance_attributes_in_nested_key_value_groups() {
+    // KMIP Specification v2.1 §3.2 Table 13 permits an Attributes group in
+    // Key Value; §4 Table 46 makes Comment single-instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const COMMENT: u32 = 0x0042_00FD;
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+
+    let object_with_repeated_comment = || {
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::structure(structure([tagged(
+                    KEY_VALUE,
+                    Value::structure(structure([
+                        tagged(KEY_MATERIAL, Value::byte_string(vec![0xA5])),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure([
+                                tagged(COMMENT, Value::text_string("first".to_owned())),
+                                tagged(COMMENT, Value::text_string("second".to_owned())),
+                            ])),
+                        ),
+                    ])),
+                )])),
+            )])),
+        )
+    };
+
+    for operation in [REGISTER_OPERATION_TAG, IMPORT_OPERATION] {
+        let request = request_message_with_operation_payload(
+            operation,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+                object_with_repeated_comment(),
+            ]),
+        );
+        let error = ProfileValidationResult {
+            profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+            requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        }
+        .validate_request(&request)
+        .unwrap_err();
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+    }
+
+    let get_request = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let get_response = crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("object-id".to_owned()),
+                        ),
+                        object_with_repeated_comment(),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("Get response carries the object as a generic structure");
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&get_request, &get_response)
+    .unwrap_err();
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
 fn profile_rejects_repeated_conditional_dsa_without_object_context() {
     // KMIP Specification v2.1 §4 Table 72 permits repeated values only for
     // PGP Key Object Type; a Certificate without X.509 context is undecided.
