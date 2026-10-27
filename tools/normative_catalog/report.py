@@ -128,6 +128,10 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ("client_profile_capability", "declared_response_capacity"),
     ("client_profile_capability", "device_identifiers_caller_asserted_unique"),
     ("client_profile_capability", "name_unique_within_target_server_caller_asserted"),
+    (
+        "client_profile_capability",
+        "caller_supplies_distinct_values_for_multi_instance_attributes",
+    ),
     ("client_profile_capability", "derive_key_source_usage_mask_caller_asserted"),
     (
         "client_profile_capability",
@@ -1078,7 +1082,8 @@ def _profile_requirement_coverage(
         decision = decisions_by_id.get(decision_id)
         accepted_deviation_id = (
             decision_id
-            if isinstance(decision_id, str)
+            if requirement.get("status") == "deviated"
+            and isinstance(decision_id, str)
             and decision is not None
             and decision.get("status") == "accepted"
             and requirement_id in decision.get("requirement_ids", [])

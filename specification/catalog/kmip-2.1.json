@@ -88816,7 +88816,8 @@
         "crates/kmipkit-protocol/src/attribute_reference.rs",
         "crates/kmipkit-protocol/src/delete_attribute.rs",
         "crates/kmipkit-protocol/src/get_attributes.rs",
-        "crates/kmipkit-protocol/src/modify_attribute.rs"
+        "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
@@ -88827,12 +88828,13 @@
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4 recommends distinct values for multi-instance attributes but names no enforcing endpoint. KMIPKit records this as caller-owned recommended behavior and does not rewrite or deduplicate caller values."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4 recommends distinct values for multi-instance attributes but names no enforcing endpoint. Under KMIPKIT-DEC-023, the caller owns this SHOULD: the Baseline profile maps it as recommended behavior, and the test represents two distinct Name values permitted by §4.32 Table 94. KMIPKit preserves values without rewriting or deduplicating them; no general value-comparison or server-acceptance claim is made. No official OASIS Test Case is linked to this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-003",

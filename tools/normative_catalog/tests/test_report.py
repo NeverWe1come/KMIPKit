@@ -1903,6 +1903,7 @@ mod unrelated {
         requirement["source_keyword"] = "SHOULD"
         requirement["normative_strength"] = "recommended"
         requirement["decision_id"] = "KMIPKIT-DEC-PROFILE-001"
+        requirement["status"] = "deviated"
         catalog["source_clauses"][0]["source_keywords"] = ["SHOULD"]
         catalog["decisions"] = [
             {
@@ -2596,6 +2597,14 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-9.13-001-005",
                     "KMIPKIT-REQ-SPEC-9.13-001-005",
                     "KMIPKIT-REQ-SPEC-9.13-001-005",
+                    # KMIPKIT-0010 T040: typed evidence for repeated Name,
+                    # caller-owned distinct values, and profile query replies.
+                    "KMIPKIT-REQ-SPEC-4-001-001",
+                    "KMIPKIT-REQ-SPEC-4-001-002",
+                    "KMIPKIT-REQ-PROF-4.1.2-005",
+                    "KMIPKIT-REQ-SPEC-7.31-001",
+                    "KMIPKIT-REQ-SPEC-7.32-001",
+                    "KMIPKIT-REQ-SPEC-7.32-001",
                 ],
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],

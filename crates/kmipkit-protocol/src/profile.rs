@@ -8266,6 +8266,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "caller_supplies_distinct_values_for_multi_instance_attributes",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.4-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.4-001",
         source_gap_id: None,
@@ -13288,6 +13303,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "caller_supplies_distinct_values_for_multi_instance_attributes"
                     | "derive_key_source_usage_mask_caller_asserted"
                     | "target_usage_mask_allows_requested_function_caller_asserted"
                     | "target_usage_mask_excludes_requested_function_caller_asserted"
@@ -13347,6 +13363,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
                     | "name_unique_within_target_server_caller_asserted"
+                    | "caller_supplies_distinct_values_for_multi_instance_attributes"
                     | "derive_key_source_usage_mask_caller_asserted"
                     | "target_usage_mask_allows_requested_function_caller_asserted"
                     | "target_usage_mask_excludes_requested_function_caller_asserted"
