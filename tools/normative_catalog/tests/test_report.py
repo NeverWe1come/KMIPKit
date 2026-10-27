@@ -2352,6 +2352,19 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-7.8-001",
                     "KMIPKIT-REQ-SPEC-7.8-001",
                     "KMIPKIT-REQ-SPEC-7.8-001",
+                    # KMIPKIT-0010 T040: message envelope mappings; repeats
+                    # reflect distinct category-matched test references.
+                    "KMIPKIT-REQ-SPEC-8-001",
+                    "KMIPKIT-REQ-SPEC-8-001",
+                    "KMIPKIT-REQ-SPEC-8-001",
+                    "KMIPKIT-REQ-SPEC-8-001",
+                    "KMIPKIT-REQ-SPEC-8-002",
+                    "KMIPKIT-REQ-SPEC-8-002",
+                    "KMIPKIT-REQ-SPEC-8-002",
+                    "KMIPKIT-REQ-SPEC-8-002",
+                    "KMIPKIT-REQ-SPEC-9.7-001",
+                    "KMIPKIT-REQ-SPEC-9.7-001",
+                    "KMIPKIT-REQ-SPEC-9.7-001",
                     # KMIPKIT-0010 T049 and T050: caller-supplied wrapped
                     # Import and optional Archive request evidence.
                     "KMIPKIT-REQ-SPEC-6.1.25-006",
