@@ -4396,10 +4396,84 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
     ])
     .expect("§4.32 Table 94 permits multiple Name instances");
     assert_eq!(attributes.len(), 2);
-    assert!(attributes
-        .as_items()
-        .iter()
-        .all(|attribute| attribute.tag().raw() == NAME_TAG));
+    assert!(
+        attributes
+            .as_items()
+            .iter()
+            .all(|attribute| attribute.tag().raw() == NAME_TAG)
+    );
+
+    let evaluator = mapping
+        .evaluator
+        .expect("multi-instance attributes use a typed capability evaluator");
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let response = crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x0000_000B)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("object-id".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure(attributes.into_items())),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("Get Attributes response can preserve repeated Name values");
+    let repeated_name_count = response
+        .batch_items()
+        .next()
+        .and_then(|item| {
+            item.with_response_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == ATTRIBUTES_TAG)
+                    .map(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::Structure(attributes) => attributes
+                                .children()
+                                .iter()
+                                .filter(|attribute| attribute.tag().raw() == NAME_TAG)
+                                .count(),
+                            _ => 0,
+                        })
+                    })
+            })
+        })
+        .flatten();
+    assert_eq!(Some(2), repeated_name_count);
+    assert!(evaluator(Some(&request), Some((&request, &response))));
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &response)
+    .expect("Baseline accepts a response with repeated Name attributes");
 }
 
 #[test]

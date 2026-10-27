@@ -3283,6 +3283,14 @@ fn client_can_omit_authentication_when_not_required(
     request.is_some()
 }
 
+fn client_can_represent_multi_instance_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §4 defines a client-side representation capability; object storage remains server-owned.
+    request.is_some() || response.is_some()
+}
+
 fn client_can_repeat_credentials_within_authentication(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8243,6 +8251,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_represent_multi_instance_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
