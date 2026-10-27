@@ -26006,7 +26006,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "condition": "Applicable PKCS#11 profile only."
     },
     {
@@ -26046,7 +26046,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "condition": "Applicable PKCS#11 profile only."
     },
     {
@@ -26086,7 +26086,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "condition": "Applicable PKCS#11 profile only."
     },
     {
@@ -26126,7 +26126,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "condition": "Applicable PKCS#11 profile only."
     },
     {
@@ -26185,7 +26185,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "condition": "Applicable PKCS#11 profile only."
     },
     {
@@ -98925,7 +98925,7 @@
       "role": "unspecified",
       "direction": "unclear",
       "condition": "Applicable PKCS#11 profile only.",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -98935,7 +98935,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIP Specification v2.1 §7.26 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.27-001",
@@ -98955,7 +98955,7 @@
       "role": "unspecified",
       "direction": "unclear",
       "condition": "Applicable PKCS#11 profile only.",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -98965,7 +98965,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIP Specification v2.1 §7.27 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.28-001",
@@ -98985,7 +98985,7 @@
       "role": "unspecified",
       "direction": "unclear",
       "condition": "Applicable PKCS#11 profile only.",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -98995,7 +98995,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIP Specification v2.1 §7.28 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.29-001",
@@ -99015,7 +99015,7 @@
       "role": "unspecified",
       "direction": "unclear",
       "condition": "Applicable PKCS#11 profile only.",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99025,7 +99025,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIP Specification v2.1 §7.29 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.30-001",
@@ -99045,7 +99045,7 @@
       "role": "unspecified",
       "direction": "unclear",
       "condition": "Applicable PKCS#11 profile only.",
-      "scope_state": "unclear",
+      "scope_state": "profile_conditional",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99055,7 +99055,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "KMIP Specification v2.1 §7.30 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.31-001",

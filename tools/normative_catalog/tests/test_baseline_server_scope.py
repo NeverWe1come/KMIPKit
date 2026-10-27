@@ -96,7 +96,7 @@ class BaselineServerScopeTests(unittest.TestCase):
             item.requirement_id for item in closure.unresolved_scope_obligations
         }
 
-        for requirement_id in PKCS11_CONDITIONAL_REQUIREMENT_IDS:
+        for requirement_id in sorted(PKCS11_CONDITIONAL_REQUIREMENT_IDS):
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
                 self.assertEqual(requirement["role"], "unspecified")
