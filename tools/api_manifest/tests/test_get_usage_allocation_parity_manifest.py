@@ -6,6 +6,7 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -119,26 +120,16 @@ class GetUsageAllocationParityManifestTests(unittest.TestCase):
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-        linked_requirements: set[str] = set()
-        actual_mappings = {language: set() for language in LANGUAGES}
-        for language, declaration_ids in operation["declarations"].items():
-            self.assertTrue(declaration_ids, f"Get Usage Allocation has no {language} declarations")
-            for declaration_id in declaration_ids:
-                declaration = self.declarations[declaration_id]
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                actual_mappings[language].add(
-                    declaration["languageMappings"][language]["name"]
-                )
-                linked_requirements.update(declaration["requirementIds"])
-
-        for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertTrue(REQUIREMENTS <= linked_requirements)
+        _, linked_requirements = assert_declaration_mappings(
+            self,
+            operation,
+            self.declarations,
+            operation_id=OPERATION_ID,
+            languages=LANGUAGES,
+            expected_mappings=EXPECTED_MAPPINGS,
+            required_requirements=REQUIREMENTS,
+            expected_approval_source=OWNER_SPEC,
+        )
         self.assertNotIn("KMIPKIT-0039-FR-009", linked_requirements)
 
     def test_generated_parity_inventory_contains_verified_mapping(self) -> None:

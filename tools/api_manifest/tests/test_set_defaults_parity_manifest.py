@@ -6,6 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.parity_support import assert_declaration_mappings
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS"
@@ -89,21 +91,16 @@ class SetDefaultsParityManifestTests(unittest.TestCase):
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-        actual_mappings = {language: set() for language in LANGUAGES}
-        linked_requirements: set[str] = set()
-        for language, declaration_ids in operation["declarations"].items():
-            self.assertTrue(declaration_ids, f"Set Defaults has no {language} declarations")
-            for declaration_id in declaration_ids:
-                declaration = self.declarations[declaration_id]
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                actual_mappings[language].add(declaration["languageMappings"][language]["name"])
-                linked_requirements.update(declaration["requirementIds"])
-
-        for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
+        assert_declaration_mappings(
+            self,
+            operation,
+            self.declarations,
+            operation_id=OPERATION_ID,
+            languages=LANGUAGES,
+            expected_mappings=EXPECTED_MAPPINGS,
+            required_requirements=REQUIREMENTS,
+            expected_approval_source=OWNER_SPEC,
+        )
         java_constructor = next(
             self.declarations[declaration_id]
             for declaration_id in operation["declarations"]["java"]
@@ -116,8 +113,6 @@ class SetDefaultsParityManifestTests(unittest.TestCase):
             },
             set(java_constructor["javaSignatures"]),
         )
-        self.assertTrue(REQUIREMENTS <= linked_requirements)
-
 
 if __name__ == "__main__":
     unittest.main()

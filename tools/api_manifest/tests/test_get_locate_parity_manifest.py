@@ -6,6 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.parity_support import assert_declaration_mappings
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
@@ -124,27 +126,16 @@ class GetLocateParityManifestTests(unittest.TestCase):
                 self.assertEqual(LANGUAGES, set(operation["declarations"]))
                 self.assertTrue(operation["parityEvidenceIds"])
 
-                linked_requirements: set[str] = set()
-                actual_mappings = {language: set() for language in LANGUAGES}
-                for language, declaration_ids in operation["declarations"].items():
-                    self.assertTrue(declaration_ids, f"{expected['name']} has no {language} declarations")
-                    for declaration_id in declaration_ids:
-                        declaration = self.declarations[declaration_id]
-                        self.assertEqual(operation_id, declaration["capabilityId"])
-                        self.assertEqual("verified", declaration["declarationState"])
-                        self.assertEqual("four-language", declaration["parityScope"])
-                        self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                        self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                        self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                        actual_mappings[language].add(
-                            declaration["languageMappings"][language]["name"]
-                        )
-                        linked_requirements.update(declaration["requirementIds"])
-
-                for language, required_names in expected["expected"].items():
-                    self.assertTrue(required_names <= actual_mappings[language], language)
-                self.assertTrue(OWNER_REQUIREMENTS <= linked_requirements)
-                self.assertTrue(API_REQUIREMENTS <= linked_requirements)
+                assert_declaration_mappings(
+                    self,
+                    operation,
+                    self.declarations,
+                    operation_id=operation_id,
+                    languages=LANGUAGES,
+                    expected_mappings=expected["expected"],
+                    required_requirements=OWNER_REQUIREMENTS | API_REQUIREMENTS,
+                    expected_approval_source=OWNER_SPEC,
+                )
 
     def test_generated_parity_inventory_contains_verified_get_and_locate(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

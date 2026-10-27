@@ -5,6 +5,8 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.parity_support import assert_declaration_mappings
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
@@ -95,33 +97,21 @@ class ReProvisionParityManifestTests(unittest.TestCase):
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-        mappings = {language: set() for language in LANGUAGES}
-        linked_requirements: set[str] = set()
         linked_declarations = {
             item for ids in operation["declarations"].values() for item in ids
         }
         self.assertTrue(linked_declarations)
-        for language, declaration_ids in operation["declarations"].items():
-            self.assertTrue(declaration_ids, f"Re-Provision has no {language} declarations")
-            for declaration_id in declaration_ids:
-                declaration = self.declarations[declaration_id]
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertTrue(PARITY_EVIDENCE <= set(declaration["parityEvidenceIds"]))
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                mappings[language].add(declaration["languageMappings"][language]["name"])
-                linked_requirements.update(declaration["requirementIds"])
-
-        missing = {
-            language: sorted(expected - mappings[language])
-            for language, expected in EXPECTED_MAPPINGS.items()
-            if expected - mappings[language]
-        }
-        self.assertEqual({}, missing)
-        self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
+        assert_declaration_mappings(
+            self,
+            operation,
+            self.declarations,
+            operation_id=OPERATION_ID,
+            languages=LANGUAGES,
+            expected_mappings=EXPECTED_MAPPINGS,
+            required_requirements=OWNER_REQUIREMENTS | API_REQUIREMENTS,
+            expected_approval_source=OWNER_SPEC,
+            required_parity_evidence=PARITY_EVIDENCE,
+        )
 
     def test_manifest_declares_both_mutually_exclusive_objects_and_optional_identifier(self) -> None:
         functions = {row["id"]: row for row in self.manifest["functions"]}

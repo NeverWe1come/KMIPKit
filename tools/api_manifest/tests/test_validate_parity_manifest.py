@@ -6,6 +6,7 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -96,25 +97,16 @@ class ValidateParityManifestTests(unittest.TestCase):
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-        actual_mappings = {language: set() for language in LANGUAGES}
-        linked_requirements: set[str] = set()
-        for language, declaration_ids in operation["declarations"].items():
-            self.assertTrue(declaration_ids, f"Validate has no {language} declarations")
-            for declaration_id in declaration_ids:
-                declaration = self.declarations[declaration_id]
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                actual_mappings[language].add(declaration["languageMappings"][language]["name"])
-                linked_requirements.update(declaration["requirementIds"])
-
-        for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertTrue(TRACEABILITY_IDS <= linked_requirements)
-        self.assertTrue(REQUIREMENTS <= linked_requirements)
+        assert_declaration_mappings(
+            self,
+            operation,
+            self.declarations,
+            operation_id=OPERATION_ID,
+            languages=LANGUAGES,
+            expected_mappings=EXPECTED_MAPPINGS,
+            required_requirements=TRACEABILITY_IDS | REQUIREMENTS,
+            expected_approval_source=OWNER_SPEC,
+        )
 
     def test_validate_traceability_requirements_are_registered_at_manifest_root(self) -> None:
         self.assertTrue(TRACEABILITY_IDS <= set(self.manifest["requirementIds"]))

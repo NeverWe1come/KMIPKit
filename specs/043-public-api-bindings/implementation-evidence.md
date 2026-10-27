@@ -5721,3 +5721,34 @@ tests and reported unrelated snapshot/state failures and import errors from the
 bare discovery environment. The designated CI script-test command and all
 focused T039 checks pass. This follow-up does not change dependencies or
 advisory exceptions.
+
+## T074 CI quality findings follow-up (2026-10-27)
+
+The current PR review findings identified cleartext request-debug output in a
+test assertion helper and Python S5779 findings caused by assertions inside
+peer threads whose failures were forwarded through broad exception handlers.
+The assertion helper now reports a static redacted failure message. Python
+TLS fixtures validate TLS 1.3 and client-certificate presence with explicit
+`RuntimeError` failures. The 16 approved operation parity tests now share one
+declaration-mapping assertion helper; operation-specific expected mappings,
+requirements, ownership checks, and evidence checks remain in their tests.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `c838d46e7` | `cargo test -p kmipkit-client lifecycle_redaction_tests::lifecycle_request_debug_assertion_failure_does_not_print_request_details -- --nocapture` | Expected failure: the assertion failure output included the formatted request details. |
+| Green | `4b2d30cee` | Same focused lifecycle test | Pass after removing request debug data from the assertion message. |
+| Refactor | `1f3134703` | Same focused lifecycle test; `cargo fmt --all --check`; `git diff --check` | Pass; the redaction regression uses a shared empty-request fixture. |
+| Red | `fc50c2f49` | `python -B -m pytest -p no:cacheprovider tests/test_tls_peer_support.py -q` | Expected failure: the helper raised `AssertionError`, not the explicit runtime failure required by the peer-thread contract. |
+| Green | `6a2b5c79b` | Python TLS peer support tests | Pass with explicit TLS and mTLS validation failures. |
+| Refactor | `f871f58d3` | Focused Python integration suite for the 12 migrated TLS peer tests and `test_tls_peer_support.py` | Pass, 47 tests using the current FFI library built in the external temporary target directory. |
+| Red | `a741d245b` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_parity_support -v` | Expected failure: the stub assertion helper did not reject an unexpected language mapping. |
+| Green | `7d6264686` | Same parity support test | Pass; mismatched mappings and missing requirements are rejected. |
+| Refactor | this commit | Focused parity suite across 16 operation manifest tests, including `test_parity_support` | Pass, 49 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with ruff ruff check --select I001` on changed parity test files | Pass. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass; all 12 generated API outputs are current and the patch has no whitespace errors. |
+
+The existing temporary coverage exception and all quality thresholds remain
+unchanged. The cloud SonarCloud duplication measure has not been rerun for
+these commits; the parity-test refactor addresses one identified duplication
+cluster but does not claim that the 3% duplication gate now passes. T074 and
+T085 remain open pending current-head CI and the remaining release checks.
