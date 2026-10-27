@@ -7573,12 +7573,8 @@ fn profile_requires_complete_version_in_query_profile_responses() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
-    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-    const PROFILE_NAME: u32 = 0x0042_00ec;
-    const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
-    const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -7606,48 +7602,19 @@ fn profile_requires_complete_version_in_query_profile_responses() {
             .to_ttlv_payload()
             .expect("Query Profiles request has one Query Function"),
     );
-    let complete_response = get_attributes_response_with_payload(
-        QUERY_OPERATION,
-        structure([
-            tagged(
-                PROFILE_INFORMATION,
-                Value::structure(structure([
-                    tagged(PROFILE_NAME, Value::enumeration(0x0000_012a)),
-                    tagged(
-                        PROFILE_VERSION,
-                        Value::structure(structure([
-                            tagged(PROFILE_VERSION_MAJOR, Value::integer(2)),
-                            tagged(PROFILE_VERSION_MINOR, Value::integer(1)),
-                        ])),
-                    ),
-                ])),
-            ),
-            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
-        ]),
-    );
+    let complete_response = query_profiles_response_with_optional_version(Some(structure([
+        tagged(PROFILE_VERSION_MAJOR, Value::integer(2)),
+        tagged(PROFILE_VERSION_MINOR, Value::integer(1)),
+    ])));
     validation
         .validate_response(&request, &complete_response)
         .expect("Profile Information with both version parts satisfies §7.32");
 
-    let incomplete_response = get_attributes_response_with_payload(
-        QUERY_OPERATION,
-        structure([
-            tagged(
-                PROFILE_INFORMATION,
-                Value::structure(structure([
-                    tagged(PROFILE_NAME, Value::enumeration(0x0000_012a)),
-                    tagged(
-                        PROFILE_VERSION,
-                        Value::structure(structure([tagged(
-                            PROFILE_VERSION_MAJOR,
-                            Value::integer(2),
-                        )])),
-                    ),
-                ])),
-            ),
-            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
-        ]),
-    );
+    let incomplete_response =
+        query_profiles_response_with_optional_version(Some(structure([tagged(
+            PROFILE_VERSION_MAJOR,
+            Value::integer(2),
+        )])));
     let error = validation
         .validate_response(&request, &incomplete_response)
         .expect_err("Profile Version cannot omit its Minor part");
@@ -7658,19 +7625,7 @@ fn profile_requires_complete_version_in_query_profile_responses() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 
-    let without_optional_version = get_attributes_response_with_payload(
-        QUERY_OPERATION,
-        structure([
-            tagged(
-                PROFILE_INFORMATION,
-                Value::structure(structure([tagged(
-                    PROFILE_NAME,
-                    Value::enumeration(0x0000_012a),
-                )])),
-            ),
-            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
-        ]),
-    );
+    let without_optional_version = query_profiles_response_with_optional_version(None);
     validation
         .validate_response(&request, &without_optional_version)
         .expect("Profile Version is optional in Table 383");
@@ -7680,6 +7635,31 @@ fn profile_requires_complete_version_in_query_profile_responses() {
     validation
         .validate_response(&unrelated_request, &incomplete_response)
         .expect("the Query Profiles rule does not constrain another operation");
+}
+
+fn query_profiles_response_with_optional_version(
+    version: Option<Structure>,
+) -> crate::ResponseMessage {
+    const QUERY_OPERATION: u32 = 0x0000_0018;
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
+
+    let mut profile_information = vec![tagged(PROFILE_NAME, Value::enumeration(0x0000_012a))];
+    if let Some(version) = version {
+        profile_information.push(tagged(PROFILE_VERSION, Value::structure(version)));
+    }
+    get_attributes_response_with_payload(
+        QUERY_OPERATION,
+        structure([
+            tagged(
+                PROFILE_INFORMATION,
+                Value::structure(structure(profile_information)),
+            ),
+            tagged(PROTECTION_STORAGE_MASKS, Value::structure(Structure::new())),
+        ]),
+    )
 }
 
 #[test]

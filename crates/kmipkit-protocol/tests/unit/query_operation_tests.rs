@@ -486,7 +486,7 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
                 assert!(matches!(
                     value,
                     ValueView::TextString("profile-specific extension")
-                ))
+                ));
             });
         }
         _ => panic!("Profile Information is a Structure"),
