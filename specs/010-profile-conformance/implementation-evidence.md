@@ -7840,3 +7840,49 @@ DCO-signed follow-up Red commits: `86faa31fa`, `d096c53c7`, `daf0d472f`, `b2775d
 | Independent review | QA identified the seven missing serializer references and this documentation gap; the catalog references are corrected and the expanded evidence is recorded. QA re-review is pending. Independent security review of the committed and working-tree deltas found no actionable findings; it did not run tests. |
 
 This implementation still does not establish server-side stored-object behavior, server acceptance, official OASIS Test Case success, or formal Baseline Client conformance. T040 remains open with six unmapped Baseline requirements; readiness remains `evidence_incomplete`. Exact-head hosted CI is pending publication, and PR #90 remains a draft.
+
+
+## T040 final six Baseline mappings and runtime readiness (2026-10-27)
+
+The pinned KMIP Specification v2.1 clauses and accepted decisions `KMIPKIT-DEC-024` through `KMIPKIT-DEC-027` support the six final mappings. The §4.38 and §4.59 requirements depend on remote object or usage state; §4.57 paragraph 5 depends on caller trust and protected-information use. These remain explicit caller-owned constraints with no local state discovery, trust decision, or cryptographic execution. §6.1.14 maps the optional multi-input Derive Key request, and §6.1.34 maps the optional existing-instance Modify Attribute request; server-held state remains authoritative.
+
+Red commits `2c98ee268` and `5f9b05305` added the six source-cited profile tests and a focused report-parser regression. The first Red run produced six expected missing-mapping failures; the parser Red run failed because the six exact caller-owned capability values were not yet accepted by the report registry. Green commit `6aeb64fe4` adds the six `TypedRuleMapping` entries, exact configuration-only allowlist values in Rust and Python, and the parser support. The generated report records all 294 Baseline requirements with 294 mappings and 294 category-test references.
+
+Completing those mappings makes explicit Baseline runtime rule validation available. This is separate from profile conformance evidence: the Baseline catalog state remains `evidence_incomplete`; T036's three blocked mandatory fixture replays and 77 unavailable cases remain open, and no formal conformance claim is made. The report and bilingual user guides now state that distinction.
+
+A full protocol test run initially exposed stale tests that expected Baseline to remain unselectable due to the six missing mappings. The tests were corrected to assert that the complete Baseline closure can be selected, that runtime readiness is independent from conformance evidence, and that AES-XTS still fails on its own profile-specific mapping gap.
+
+| Check | Result |
+|---|---|
+| `cargo test -p kmipkit-protocol --all-features --locked` | PASS after updating readiness expectations: 1,200 unit tests, all protocol integration targets, and 3 doctests. |
+| `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings` | PASS. |
+| `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_accepts_final_baseline_caller_owned_mappings` | PASS; six accepted values retain their exact categories and configuration-only classification. |
+| `py -3 tools/normative_catalog/validate.py` | PASS: 4 sources, 1,411 clauses, 4,137 records. |
+| `py -3 tools/normative_catalog/generate_profiles.py --check` | PASS; generated profile metadata is current. |
+| `py -3 tools/normative_catalog/report.py --write` / `--check` | PASS; generated coverage report is deterministic and current. |
+| Independent security review, `2c98ee268..6aeb64fe4` | No actionable findings; all six rules remain evaluator-free caller metadata and the report allowlist is exact. |
+
+The DCO-signed Refactor commit, complete typed-profile traceability test, final formatting check, QA review, pinned-source integrity check, and exact-head hosted CI are pending. T040 remains open until those final checks complete.
+
+## T040 correction: category evidence and report aggregation (2026-10-27)
+
+This correction supersedes the preceding section's claims that all 294 Baseline requirements had category-test references and that runtime validation was available. The initial QA review found that the references for `KMIPKIT-REQ-SPEC-4.38-003`, `KMIPKIT-REQ-SPEC-4.59-002`, and `KMIPKIT-REQ-SPEC-4.59-003-001` pointed to metadata-only tests, not negative behavior tests. DCO-signed Red commit `67a53f152` removes those false category-evidence references and makes the profile gate reject Baseline with `MissingCategoryTest`. `KMIPKIT-REQ-SPEC-4.57-005-002` is recorded as an accepted deviation under DEC-025; the deviation is not claimed as a behavior test. `KMIPKIT-REQ-SPEC-6.1.34-001-003` now points to the exact usable Modify Attribute serializer test.
+
+The first report correction exposed a second defect: the per-requirement table recognized accepted deviations, but the aggregate profile summary counted them as missing category tests. DCO-signed Red commit `712840cf6` adds a regression for that summary. DCO-signed Green `496a9f033` updates the aggregation to count accepted deviations as complete for the recommendation categories, synchronizes the report's hand-reviewed mapping inventory with the latest T040 references, and corrects the stale catalog note. The regenerated Baseline summary is 294/294 typed mappings, 291/294 category-test references, runtime unavailable, with three missing negative tests. The three requirement IDs above remain open; the deviation is not a fourth gap. T040 remains incomplete, the catalog claim remains `evidence_incomplete`, and no OASIS Test Case pass or profile-conformance claim is made.
+
+Follow-up QA found that `KMIPKIT-REQ-SPEC-6.1.14-002` also listed its metadata-only mapping test as `OptionalCapabilityUsable`, alongside the actual repeated-input serializer test. DCO-signed Red `b79fbae90` requires exactly one category-evidence entry and identifies the serializer test. Green `496a9f033` removes the metadata-only category entry and reduces the hand-reviewed registry multiset to the one behavior test; the metadata test remains general mapping-verification evidence only. The capability still has positive executable evidence, so this correction does not create another missing profile requirement.
+
+| Check | Result |
+|---|---|
+| Red — accepted deviation aggregate | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_requirement_coverage_accepts_approved_recommended_deviation -v` — failed as expected: the profile summary incorrectly reported one missing category test for an accepted deviation. |
+| Green — accepted deviation aggregate | Same focused test — PASS after the summary counts `Accepted deviation: ...` as complete. |
+| Red/Green — optional Derive Key evidence | `cargo test -p kmipkit-protocol --all-features --lib profile_maps_multiple_derive_key_inputs_as_optional_capability` — Red failed because the mapping had two category-evidence entries; Green PASS after only the serializer behavior test remains. |
+| Rust profile selection | `cargo test -p kmipkit-protocol --all-features --test profile_validation` — PASS: 7 tests, including missing-category rejection and dependency propagation. |
+| Rust protocol package | Final `cargo test -p kmipkit-protocol --all-features --locked` — PASS: 1,200 unit tests, all integration targets, and 3 doctests. |
+| Public API error surface | `cargo test -p kmipkit --test error_api --all-features --locked` — PASS: 3 tests. |
+| Quality | Protocol Clippy, `cargo fmt --all --check`, and `git diff --check` — PASS after formatting. |
+| Catalog and generated output | Catalog validation — PASS (4 sources, 1,411 clauses, 4,137 records); profile generator check and coverage-report check — PASS. Baseline is 294 mapped / 291 category-test references / runtime unavailable. |
+| Hand-reviewed registry and readiness | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` — PASS: 1 test in 89.363 seconds after the final evidence-list correction. The report lists only the repeated-input serializer as category evidence for `6.1.14-002` and exactly three missing category references for Baseline. |
+| Independent review | QA confirmed the evidence, catalog note, report count, and hand-reviewed registry are synchronized after corrections. Security review found no actionable issue in the fail-closed and evidence-classification changes, including the final test-only `6.1.14-002` correction. |
+
+The full report suite's first run executed 70 tests: 68 passed, one failed on a stale expected mapping inventory, and one was skipped. The expected multiset now includes the latest T040 mappings and the summary asserts exactly three category-test gaps; the previously failing full-report test passes in isolation after the final inventory correction. The full 70-test suite has not been rerun on the final worktree. The pinned-source integrity check passed against `origin/release/1.0.0`; exact-head hosted CI remains pending publication. No production attribute policy or caller-state contract is added by this correction; the two §4.59 conditions still need an explicit, separately reviewed state-context contract before negative behavior tests can be implemented without inventing remote state.
