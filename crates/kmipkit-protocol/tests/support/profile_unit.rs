@@ -25465,6 +25465,84 @@ fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_beh
     );
 }
 
+#[test]
+// OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
+fn profile_maps_original_creation_date_immutability_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.38-003",
+        "KMIPKIT-CLAUSE-SPEC-4.38-003",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "original_creation_date_immutable_after_set_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.57 paragraph 5.
+fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.57-005-002",
+        "KMIPKIT-CLAUSE-SPEC-4.57-005",
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        "compromised_object_protected_information_only_trusted_client_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_compromised_object_processing_as_caller_owned_recommendation",
+        RuleTestKind::RecommendedBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.59-003-001",
+        "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §6.1.14 paragraph 2 and Table 205.
+fn profile_maps_multiple_derive_key_inputs_as_optional_capability() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
+        GeneratedVerificationCategory::OptionalCapability,
+        "derive_key_multiple_inputs_caller_selected",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_derive_key_inputs_as_optional_capability",
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §6.1.34 paragraph 1 and Table 265.
+fn profile_maps_modify_attribute_existing_instance_as_optional_capability() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        GeneratedVerificationCategory::OptionalCapability,
+        "modify_attribute_existing_instance_named",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_existing_instance_as_optional_capability",
+        RuleTestKind::OptionalCapabilityUsable,
+    );
+}
+
 fn assert_static_caller_owned_profile_rule_mapping(
     requirement_id: &str,
     source_clause_id: &str,
