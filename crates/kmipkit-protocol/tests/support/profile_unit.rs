@@ -4849,6 +4849,132 @@ fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_optional_message_payloads_and_extensions_for_client_messages() {
+    // KMIP Specification v2.1 §§8, 8.1, 8.4, and 9.7: clients emit requests and consume responses.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-001";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_message_payloads_and_extensions_for_client_messages";
+
+    assert_message_envelope_mapping(
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        GeneratedVerificationCategory::OptionalCapability,
+        PROFILE_TEST_ID,
+        RuleTestKind::OptionalCapabilityUsable,
+        &[
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::response_payload_is_required_for_non_failure_and_absent_for_failure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+    );
+}
+
+#[test]
+fn profile_maps_message_field_order_for_client_requests_and_responses() {
+    // KMIP Specification v2.1 §8 requires the prescribed order for both message forms.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-002";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_message_field_order_for_client_requests_and_responses";
+
+    assert_message_envelope_mapping(
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        GeneratedVerificationCategory::RequiredBehavior,
+        PROFILE_TEST_ID,
+        RuleTestKind::PositiveBehavior,
+        &[
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::request_known_fields_and_envelope_reject_reordering",
+                RuleTestKind::NegativeBehavior,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::response_known_fields_and_envelope_reject_reordering",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+    );
+}
+
+#[test]
+fn profile_maps_required_batch_items_for_client_requests_and_responses() {
+    // KMIP Specification v2.1 §§8.1, 8.4, and 9.7 require one or more Batch Items.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.7-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.7-001";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_items_for_client_requests_and_responses";
+
+    assert_message_envelope_mapping(
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        GeneratedVerificationCategory::RequiredBehavior,
+        PROFILE_TEST_ID,
+        RuleTestKind::PositiveBehavior,
+        &[
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            (
+                "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+    );
+}
+
+fn assert_message_envelope_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    verification_category: GeneratedVerificationCategory,
+    profile_test_id: &str,
+    profile_test_kind: RuleTestKind,
+    model_tests: &[(&str, RuleTestKind)],
+) {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the message envelope requirement has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the message envelope requirement resolves to generated metadata");
+    let baseline = crate::profiles_generated::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE_PROFILE_ID)
+        .expect("generated metadata includes Baseline Client");
+
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(mapping.verification_category, verification_category);
+    assert_eq!(requirement.verification_category, verification_category);
+    assert!(baseline.requirement_ids.contains(&requirement_id));
+    assert_eq!(requirement.official_test_case_ids, &[] as &[&str]);
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the message envelope rule has category-matched executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == profile_test_id && evidence.kind == profile_test_kind
+    }));
+    for (test_id, evidence_kind) in model_tests {
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == *test_id && evidence.kind == *evidence_kind
+        }));
+    }
+}
+
+#[test]
 fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
     // KMIP Specification v2.1 §8.3 Table 396 permits repeated request Message Extensions.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-004";

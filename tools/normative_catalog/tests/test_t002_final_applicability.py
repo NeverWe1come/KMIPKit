@@ -43,6 +43,14 @@ CLIENT_SCOPE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.41-001-004",
     "KMIPKIT-REQ-SPEC-4.57-001",
     "KMIPKIT-REQ-SPEC-4.57-002",
+    "KMIPKIT-REQ-SPEC-8-001",
+    "KMIPKIT-REQ-SPEC-8-002",
+    "KMIPKIT-REQ-SPEC-9.7-001",
+}
+MESSAGE_ENVELOPE_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-8-001": "KMIPKIT-CLAUSE-SPEC-8-001",
+    "KMIPKIT-REQ-SPEC-8-002": "KMIPKIT-CLAUSE-SPEC-8-002",
+    "KMIPKIT-REQ-SPEC-9.7-001": "KMIPKIT-CLAUSE-SPEC-9.7-001",
 }
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
     BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
@@ -81,7 +89,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         }
 
     def test_final_twenty_two_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
-        self.assertEqual(len(FINAL_DISPOSITIONS), 22)
+        self.assertEqual(len(FINAL_DISPOSITIONS), 25)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
         self.assertEqual(
@@ -184,15 +192,86 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 expected_direction = (
                     "client_to_server"
                     if requirement_id == "KMIPKIT-REQ-SPEC-4.57-001"
+                    else "both"
+                    if requirement_id in MESSAGE_ENVELOPE_REQUIREMENTS
                     else "unclear"
                 )
-                self.assertEqual(self.crosswalk[requirement_id]["source_actor"], "unresolved")
+                expected_source_actor = (
+                    "unspecified"
+                    if requirement_id in MESSAGE_ENVELOPE_REQUIREMENTS
+                    else "unresolved"
+                )
+                self.assertEqual(
+                    self.crosswalk[requirement_id]["source_actor"], expected_source_actor
+                )
                 self.assertEqual(self.requirements[requirement_id]["direction"], expected_direction)
                 self.assertEqual(self.crosswalk[requirement_id]["role"], "client")
                 self.assertEqual(
                     source_obligations[requirement_id]["project_actor_interpretation"],
                     "client",
                 )
+
+    def test_message_envelope_rules_apply_to_client_requests_and_responses(self) -> None:
+        """The client profile interpretation covers both message directions, not server behavior."""
+        all_client_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.oracle["profiles"]
+            if profile["role"] == "client"
+        )
+        catalog_profiles = {
+            profile["profile_id"]: profile for profile in self.catalog["profiles"]
+        }
+        oracle_profiles = {
+            profile["profile_id"]: profile for profile in self.oracle["profiles"]
+        }
+        reviews = {
+            review["source_clause_id"]: review
+            for review in self.oracle["source_requirement_reviews"]
+        }
+
+        for requirement_id, clause_id in MESSAGE_ENVELOPE_REQUIREMENTS.items():
+            with self.subTest(requirement_id=requirement_id):
+                requirement = self.requirements[requirement_id]
+                crosswalk = self.crosswalk[requirement_id]
+                review = reviews[clause_id]
+                obligations = [
+                    obligation
+                    for obligation in review["source_obligations"]
+                    if obligation.get("candidate_requirement_id") == requirement_id
+                ]
+
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "both")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["test_case_ids"], [])
+                self.assertEqual(crosswalk["role"], "client")
+                self.assertEqual(crosswalk["scope_state"], "client_1_0")
+                self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+                self.assertEqual(crosswalk["source_actor"], "unspecified")
+                self.assertEqual(crosswalk["source_direction"], "unspecified")
+                self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+                self.assertEqual(review["applies_to"], "all_client_profiles")
+                self.assertTrue(obligations)
+                self.assertTrue(all(item["actor"] == "unspecified" for item in obligations))
+                self.assertTrue(all(item["direction"] == "unspecified" for item in obligations))
+                self.assertTrue(
+                    all(item["scope_disposition"] == "client_1_0" for item in obligations)
+                )
+                self.assertTrue(
+                    all(
+                        item["project_actor_interpretation"] == "client"
+                        for item in obligations
+                    )
+                )
+                note = crosswalk["review_note"].casefold()
+                self.assertIn("project interpretation", note)
+                self.assertIn("request", note)
+                self.assertIn("response", note)
+                self.assertNotIn("server behavior", note)
+
+                for profile_id in all_client_profile_ids:
+                    self.assertIn(requirement_id, catalog_profiles[profile_id]["requirement_ids"])
+                    self.assertIn(requirement_id, oracle_profiles[profile_id]["requirement_ids"])
 
     def test_state_attribute_modify_prohibition_is_client_scope(self) -> None:
         requirement_id = "KMIPKIT-REQ-SPEC-4.57-001"
