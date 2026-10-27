@@ -6099,6 +6099,48 @@ fn profile_maps_optional_authentication_and_repeated_credentials() {
 }
 
 #[test]
+fn profile_maps_optional_request_authentication_from_profiles_clause() {
+    // KMIP Profiles v2.1 §4.1.2 item 4 permits Authentication in a request.
+    // KMIP Specification v2.1 §§6.1.1 and 9.4 define the client request model
+    // and keep Authentication optional; this test makes no transmission claim.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-4.1.2-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-4.1.2-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the Profile Authentication capability has a typed rule mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Profiles requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional request Authentication has category-matched evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional request Authentication uses a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for credential_count in [None, Some(1), Some(2)] {
+        let request = request_message_with_authentication(credential_count);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("Profiles §4.1.2 permits omission or caller-selected Authentication");
+    }
+}
+
+#[test]
 fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_used() {
     // KMIP Specification v2.1 §9.11 and Table 413 require one evidence field.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
