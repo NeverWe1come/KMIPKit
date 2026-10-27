@@ -626,7 +626,7 @@ fn parse_known_response_field(
     }
 }
 
-fn profile_information_is_well_formed(value: &ValueView<'_>) -> bool {
+pub(crate) fn profile_information_is_well_formed(value: &ValueView<'_>) -> bool {
     let ValueView::Structure(profile_information) = value else {
         return false;
     };

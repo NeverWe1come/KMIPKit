@@ -874,6 +874,7 @@ const MAXIMUM_ITEMS: u32 = 0x0042_004F;
 const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const QUERY_FUNCTION: u32 = 0x0042_0074;
+const PROFILE_INFORMATION: u32 = 0x0042_00EB;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const CERTIFICATE_TYPE_ATTRIBUTE: u32 = 0x0042_001D;
 const LINK_ATTRIBUTE: u32 = 0x0042_004A;
@@ -3135,6 +3136,53 @@ fn client_query_contains_one_or_more_functions(
             })
             .unwrap_or(false)
     })
+}
+
+fn client_query_profile_information_is_well_formed(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((request, response)) = response else {
+        return true;
+    };
+    let query_profiles_requested = request.batch_items().any(|batch_item| {
+        if batch_item.operation() != Some(QUERY_OPERATION) {
+            return false;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload.children().iter().any(|field| {
+                    field.tag().raw() == QUERY_FUNCTION
+                        && field.with_value(
+                            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 10),
+                        )
+                })
+            })
+            .unwrap_or(false)
+    });
+    if !query_profiles_requested {
+        return true;
+    }
+
+    response
+        .batch_items()
+        .filter(|batch_item| batch_item.operation() == Some(QUERY_OPERATION))
+        .all(|batch_item| {
+            batch_item
+                .with_response_payload(|payload| {
+                    payload
+                        .children()
+                        .iter()
+                        .filter(|field| field.tag().raw() == PROFILE_INFORMATION)
+                        .all(|field| {
+                            field.with_value(|value| {
+                                crate::query::profile_information_is_well_formed(&value)
+                            })
+                        })
+                })
+                .unwrap_or(true)
+        })
 }
 
 fn client_can_repeat_query_functions(
@@ -11881,6 +11929,39 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.31-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.31-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "profile_specific_query_information_preserved",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.32-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.32-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_query_profile_information_is_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-7.8-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.8-001",
         source_gap_id: None,
@@ -13160,6 +13241,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "optional_failure_response_payload_and_message_extensions"
                     | "request_response_fields_follow_kmip_specified_order"
                     | "request_response_include_one_or_more_batch_items"
+                    | "profile_specific_query_information_preserved"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
             )
@@ -13218,6 +13300,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "optional_failure_response_payload_and_message_extensions"
                     | "request_response_fields_follow_kmip_specified_order"
                     | "request_response_include_one_or_more_batch_items"
+                    | "profile_specific_query_information_preserved"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
             )
