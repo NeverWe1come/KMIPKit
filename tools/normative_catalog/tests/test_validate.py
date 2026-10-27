@@ -28,6 +28,7 @@ from tools.normative_catalog.validate import (
 from tools.normative_catalog.audit_sources import _CandidateParser, _decode_document, audit_document
 from tools.normative_catalog.tests import test_feature_traceability
 from tools.normative_catalog.report import PROFILE_RULE_SOURCE, load_typed_rule_mappings
+from tools.normative_catalog.attribute_policy_source import expected_attribute_policies
 import tools.normative_catalog.validate as catalog_validate
 
 _is_discoverable_positive_test = test_feature_traceability._is_discoverable_positive_test
@@ -3310,6 +3311,27 @@ class CatalogValidationTests(unittest.TestCase):
             mismatches[:8],
             [],
             f"{len(mismatches)} standard attribute policy mismatches; examples: {mismatches[:8]!r}",
+        )
+
+    def test_standard_attribute_instance_policy_is_extracted_without_losing_conditions(self) -> None:
+        source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_policies, _ = expected_attribute_policies(source_path.read_bytes())
+
+        self.assertEqual(len(source_policies), 62)
+        self.assertEqual(source_policies["4.9"]["source_multiple_instances_permitted"], "No")
+        self.assertEqual(source_policies["4.32"]["source_multiple_instances_permitted"], "Yes")
+        self.assertEqual(
+            source_policies["4.22"]["source_multiple_instances_permitted"],
+            "Yes for PGP keys. No for X.509 certificates.",
+        )
+        multiplicities = [
+            policy["source_multiple_instances_permitted"] for policy in source_policies.values()
+        ]
+        self.assertEqual(multiplicities.count("No"), 51)
+        self.assertEqual(multiplicities.count("Yes"), 10)
+        self.assertEqual(
+            sum(value not in {"No", "Yes"} for value in multiplicities),
+            1,
         )
 
     def test_actionable_standard_attribute_rules_match_independent_pinned_sources(self) -> None:
