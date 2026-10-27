@@ -9454,6 +9454,141 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "process_start_date_use_after_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "no_cryptographic_use_before_process_start_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "process_start_date_must_not_precede_activation_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "process_start_date_immutable_after_occurrence_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "protect_stop_date_immutable_after_occurrence_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.30-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.30-001",
         source_gap_id: None,
@@ -12823,6 +12958,15 @@ fn is_caller_owned_temporal_constraint(constraint: &RuleConstraint) -> bool {
                 | "activation_date_immutable_after_pre_active_until_destruction_caller_asserted"
                 | "deactivation_date_exceptional_use_requires_special_permission_caller_asserted"
                 | "deactivation_date_change_only_in_pre_active_or_active_caller_asserted"
+                | "process_start_date_use_after_date_caller_asserted"
+                | "no_cryptographic_use_before_process_start_date_caller_asserted"
+                | "process_start_date_may_equal_or_follow_activation_date_caller_asserted"
+                | "process_start_date_must_not_precede_activation_date_caller_asserted"
+                | "process_start_date_immutable_after_occurrence_caller_asserted"
+                | "no_cryptographic_protection_after_protect_stop_date_caller_asserted"
+                | "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted"
+                | "protect_stop_date_must_not_follow_deactivation_date_caller_asserted"
+                | "protect_stop_date_immutable_after_occurrence_caller_asserted"
                 | "countdown_timer_relative_dates_from_server_timestamp_caller_asserted"
         )
     )

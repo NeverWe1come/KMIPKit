@@ -183,6 +183,36 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
     ),
+    ("client_profile_capability", "process_start_date_use_after_date_caller_asserted"),
+    ("client_profile_capability", "no_cryptographic_use_before_process_start_date_caller_asserted"),
+    (
+        "client_profile_capability",
+        "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "process_start_date_must_not_precede_activation_date_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "process_start_date_immutable_after_occurrence_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
+    ),
+    (
+        "client_profile_capability",
+        "protect_stop_date_immutable_after_occurrence_caller_asserted",
+    ),
     (
         "client_profile_capability",
         "single_cryptographic_usage_per_key_object_caller_asserted",
