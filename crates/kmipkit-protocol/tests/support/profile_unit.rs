@@ -4492,6 +4492,73 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
 }
 
 #[test]
+fn profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior() {
+    // KMIP Specification v2.1 §4 says instances of an attribute SHOULD have
+    // different values; §4.32 Table 94 permits multiple Name instances.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior";
+    const NAME_VALUE_TAG: u32 = 0x0042_0055;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("distinct multi-instance values have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the distinct-value recommendation resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "caller_supplies_distinct_values_for_multi_instance_attributes",
+        }]
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the caller-owned SHOULD has recommended-behavior evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::RecommendedBehavior
+    }));
+
+    let attributes = crate::AttributeSet::try_new([
+        multi_instance_name_attribute("primary-name"),
+        multi_instance_name_attribute("secondary-name"),
+    ])
+    .expect("§4.32 Table 94 permits repeated Name attributes");
+    let values = attributes
+        .as_items()
+        .iter()
+        .map(|attribute| {
+            attribute.with_value(|value| match value {
+                ValueView::Structure(name) => name
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == NAME_VALUE_TAG)
+                    .and_then(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::TextString(text) => Some(text.to_owned()),
+                            _ => None,
+                        })
+                    }),
+                _ => None,
+            })
+        })
+        .collect::<Option<Vec<_>>>();
+    assert_eq!(
+        values,
+        Some(vec!["primary-name".to_owned(), "secondary-name".to_owned()])
+    );
+}
+
+#[test]
 fn profile_requires_get_and_export_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
