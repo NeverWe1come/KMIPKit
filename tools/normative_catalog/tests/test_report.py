@@ -516,6 +516,28 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_typed_rule_registry_rejects_server_only_pre_active_use_as_client_capability(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.57-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
+        }],
+    },
+];
+"""
+
+        with self.assertRaisesRegex(ValueError, "unsupported typed profile rule mapping"):
+            _parse_typed_rule_registry(source)
+
     def test_typed_rule_registry_accepts_archived_retrieval_workflow_capability(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
