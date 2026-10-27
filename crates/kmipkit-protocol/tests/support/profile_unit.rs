@@ -4430,6 +4430,7 @@ fn get_attributes_response_name_count(response: &crate::ResponseMessage) -> Opti
 fn profile_maps_multi_instance_attribute_representation_as_optional_capability() {
     // KMIP Specification v2.1 §4 permits multiple instances for attributes
     // marked multi-instance; §4.32 Table 94 marks Name as multi-instance.
+    // §6.1.20 Tables 223–224 define the Get Attributes request/response shape.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
