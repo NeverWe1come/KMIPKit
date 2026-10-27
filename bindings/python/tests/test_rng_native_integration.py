@@ -9,6 +9,7 @@ import struct
 import threading
 from pathlib import Path
 
+from _test_support import require_tls13_mtls_peer
 from kmipkit import client, extensions, ttlv
 
 
@@ -162,8 +163,7 @@ def _start_mtls_peer(
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _address = listener.accept()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
-                assert stream.version() == "TLSv1.3"
-                assert stream.getpeercert(binary_form=True)
+                require_tls13_mtls_peer(stream)
                 received_requests.append(_read_ttlv_frame(stream))
                 stream.sendall(response_message or _rng_response_message())
         except OSError as failure:

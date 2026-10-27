@@ -10,6 +10,7 @@ import threading
 from pathlib import Path
 from typing import NamedTuple
 
+from _test_support import require_tls13_mtls_peer
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -105,8 +106,7 @@ def _start_mtls_peer(
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _ = listener.accept()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
-                assert stream.version() == "TLSv1.3"
-                assert stream.getpeercert(binary_form=True)
+                require_tls13_mtls_peer(stream)
                 received.append(_read_frame(stream))
                 stream.sendall(response)
         except Exception as error:  # noqa: BLE001 - surface peer errors in the test thread.

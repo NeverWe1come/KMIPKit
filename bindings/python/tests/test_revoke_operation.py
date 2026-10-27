@@ -11,6 +11,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+from _test_support import require_tls13_mtls_peer
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -94,8 +96,7 @@ def _start_revoke_mtls_peer() -> tuple[int, list[bytes], queue.Queue[Exception],
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _ = listener.accept()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
-                assert stream.version() == "TLSv1.3"
-                assert stream.getpeercert(binary_form=True)
+                require_tls13_mtls_peer(stream)
                 prefix = _read_exact(stream, 8)
                 message_length = int.from_bytes(prefix[4:8], "big")
                 received.append(prefix + _read_exact(stream, message_length))

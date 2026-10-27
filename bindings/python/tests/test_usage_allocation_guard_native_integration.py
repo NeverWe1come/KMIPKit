@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from _test_support import require_tls13_mtls_peer
 from kmipkit import client, errors, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -120,8 +121,7 @@ def _start_mtls_peer(
             for response in responses:
                 raw, _address = listener.accept()
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
-                    assert stream.version() == "TLSv1.3"
-                    assert stream.getpeercert(binary_form=True)
+                    require_tls13_mtls_peer(stream)
                     received_requests.append(_read_ttlv_frame(stream))
                     stream.sendall(response)
         # Forward peer assertion and socket failures to the owning test thread.

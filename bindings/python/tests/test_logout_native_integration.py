@@ -9,6 +9,7 @@ import struct
 import threading
 from pathlib import Path
 
+from _test_support import require_tls13_mtls_peer
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -109,8 +110,7 @@ def test_logout_uses_native_cffi_and_exposes_success_response_presence() -> None
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _address = listener.accept()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
-                assert stream.version() == "TLSv1.3"
-                assert stream.getpeercert(binary_form=True)
+                require_tls13_mtls_peer(stream)
                 received_requests.append(_read_ttlv_frame(stream))
                 stream.sendall(_logout_response_message())
         except (AssertionError, OSError, ssl.SSLError) as failure:
