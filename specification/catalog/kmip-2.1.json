@@ -15182,7 +15182,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -18534,7 +18534,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -25694,7 +25694,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": "When No Encoding is selected."
     },
     {
@@ -26440,7 +26440,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": "Fields depend on the RNG type."
     },
     {
@@ -26462,7 +26462,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -26483,7 +26483,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": "When those building blocks are known."
     },
     {
@@ -91183,10 +91183,10 @@
       "normative_strength": "mandatory",
       "subject": "Active state before cryptographic use",
       "summary": "The object SHALL be transitioned to the Active state prior to being used for any cryptographic purpose.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "not_applicable",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -91196,7 +91196,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: KMIP 2.1 §4.57 explicitly identifies this State transition as server-controlled. The project role is server; direction is not applicable because this is lifecycle behavior, not a message-field obligation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-002",
@@ -94350,10 +94350,10 @@
       "normative_strength": "mandatory",
       "subject": "Import attributes",
       "summary": "The Import source requires supplied attribute values instead of server-generated values; actor attribution is unresolved.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "not_applicable",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-IMPORT",
         "KMIPKIT-ELEM-TAG-420125"
@@ -94366,7 +94366,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "The pinned source review rejects this stable candidate as a client mapping because the MUST's actor is ambiguous. Its unresolved scope must block client profile readiness; the separate Attributes Required=Yes request row remains a source-only gap."
+      "review_note": "The source sentence does not name its actor. The surrounding Import processing describes server-side behavior; for KMIPKit client profile closure, this record is assigned server_only as an explicit project interpretation, not as source wording. The separate Attributes Required=Yes request row remains a client request-table source-only gap. No client implementation or profile mapping is inferred from this prose MUST."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-004",
@@ -98692,10 +98692,10 @@
       "normative_strength": "mandatory",
       "subject": "Derivation input",
       "summary": "An error is returned if both explicit Derivation Data and the Unique Identifier of a Secret Data object are provided.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When both derivation data sources are provided.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -98705,7 +98705,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "OASIS §7.12 assigns this SHALL to the server. The client specification surfaces the server result and does not impose local prevalidation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "OASIS §7.12 assigns this SHALL to the server. The client specification surfaces the server result and does not impose local prevalidation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: The SHALL describes returning an error to the client on server-side failure. Server role and response direction are project interpretation of the source context."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-001-001",
@@ -98787,10 +98787,10 @@
       "normative_strength": "prohibited",
       "subject": "Encoding Option",
       "summary": "When No Encoding is specified, Key Value SHALL NOT contain attributes before wrapping.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When No Encoding is selected.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -98800,7 +98800,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: This restriction applies to the Key Value returned by the server after the client selected No Encoding in its Key Wrapping Specification. The selector is client input; this SHALL constrains server output."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-004",
@@ -99192,10 +99192,10 @@
       "normative_strength": "permission_or_optional",
       "subject": "RNG Parameters",
       "summary": "RNG Parameters include optional fields that describe a Random Number Generator.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "Fields depend on the RNG type.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99205,7 +99205,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: RNG description data is produced in the server response. Server role and response direction are project interpretation because the source does not name the actor."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-001",
@@ -99222,10 +99222,10 @@
       "normative_strength": "mandatory",
       "subject": "RNG Algorithm",
       "summary": "The RNG Algorithm is specified in RNG Parameters.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99235,7 +99235,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: The RNG Algorithm value is response data produced by the server. Server role and response direction are project interpretation because the source does not name the actor."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-002",
@@ -99252,10 +99252,10 @@
       "normative_strength": "mandatory",
       "subject": "RNG Algorithm",
       "summary": "Use the Unspecified enumeration when the algorithm is unknown or implementation details are not provided.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When algorithm details are unknown or omitted.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99265,7 +99265,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: The Unspecified RNG Algorithm fallback is server response behavior. Server role and response direction are project interpretation because the source does not name the actor."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-003",
@@ -99282,10 +99282,10 @@
       "normative_strength": "permission_or_optional",
       "subject": "RNG Parameters",
       "summary": "Known cryptographic building blocks used within the RNG may be specified with the remaining RNG Parameters fields.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When those building blocks are known.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99295,7 +99295,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: Optional RNG building-block data is produced in the server response. Server role and response direction are project interpretation because the source does not name the actor."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.7-002",
@@ -99511,10 +99511,10 @@
       "normative_strength": "permission_or_optional",
       "subject": "batch response",
       "summary": "Batched responses may contain mixed synchronous and asynchronous responses only when the Asynchronous Indicator is present in the header.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When the client sets the indicator.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99533,7 +99533,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Project interpretation: This requirement concerns response-side Message Extension data. Server role and response direction are project interpretation; client parsing evidence does not prove server production."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.1-002",
@@ -100568,10 +100568,10 @@
       "normative_strength": "mandatory",
       "subject": "Unique Batch Item ID",
       "summary": "Responses to a request with a Unique Batch Item ID carry the same ID; the source does not name the enforcing endpoint.",
-      "role": "unspecified",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "server_to_client",
       "condition": "When the request includes this identifier.",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
       ],
@@ -100588,7 +100588,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Response items are associated by the sent Unique Batch Item ID independent of response order. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Response items are associated by the sent Unique Batch Item ID independent of response order. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Project interpretation: This requirement describes the response echo of Unique Batch Item ID. Server role and response direction are project interpretation; client-side correlation validation is separate consumer behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-001",
