@@ -7635,3 +7635,22 @@ DCO-signed Red `802fc13c4` adds applicability, source-closure, oracle, report, a
 | Pinned OASIS integrity | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; exact upstream source copies remain unchanged. |
 
 The validation contract, research record, bilingual profile guide, and task ledger now describe the accepted interpretation; earlier evidence entries remain historical and are superseded here. Baseline readiness remains fail-closed and no profile conformance is claimed. Independent QA and security re-review, exact-head hosted CI, and the remaining T040 work are still open.
+
+## T040 §4.57 state-use predicates classified server-only — Red, Green, and Refactor (2026-10-27)
+
+KMIP Specification v2.1 §4.57 makes State known to the key management server and says that only the server changes it. Applying the maintainer's standing instruction to use KMIP 2.1 as the source of truth, decision `KMIPKIT-DEC-021` treats these ten §4.57 use predicates as server-only in the client 1.0 profile: `KMIPKIT-REQ-SPEC-4.57-003-002`, `-003-003`, `-003-004`, `-004-001`, `-004-002`, `-004-003`, `-005-001`, `-005-003`, `-006`, and `-007`. The OASIS source actor and direction remain unclear; this project scope decision does not claim server enforcement. The source clauses remain in profile source closures, while the ten requirements are removed from client requirement closures and generated client-rule metadata. The trusted-client SHOULD `KMIPKIT-REQ-SPEC-4.57-005-002` remains unresolved, and `KMIPKIT-DISC-013` remains open.
+
+DCO-signed Red `e6087decd` added regressions for the ten records and their independent crosswalk. Before Green, `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` failed three assertions because the adjudicated scope and crosswalk were absent. DCO-signed Green `0b9a4d5e5` records decision `KMIPKIT-DEC-021`, updates catalog scope and the independent pinned-source oracle, adjusts the source-coverage tests, and regenerates Rust profile metadata and the coverage report. Baseline unresolved applicability blockers decreased from 22 to 12. Its report row has 282 closure records, 282 typed mappings, and 282 category-test references; readiness remains false.
+
+| Verification | Command and result |
+|---|---|
+| Applicability | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` — PASS: 11 tests. |
+| Server-owned scope | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` — PASS: 5 tests. |
+| Source coverage | `py -3 -B -m unittest tools.normative_catalog.tests.test_source_coverage_sections2_to5 -v` — PASS: 7 tests. |
+| Report contracts | `py -3 -B -m unittest tools.normative_catalog.tests.test_report -v` — PASS: 67 tests; 1 expected POSIX symlink-only skip. |
+| Catalog and generation | `py -3 tools/normative_catalog/validate.py` — PASS: 4 sources, 1,411 clauses, 4,127 records; `py -3 tools/normative_catalog/generate_profiles.py --check` — PASS; `py -3 tools/normative_catalog/report.py --check` — PASS. |
+| Rust profile selection | `cargo test -p kmipkit-protocol --all-features --test profile_validation` — PASS: 7 tests. |
+| Formatting and lint | `cargo fmt --all --check` — PASS; `cargo clippy --workspace --all-targets --all-features -- -D warnings` — PASS. |
+| Repository integrity | `git diff --check` — PASS; `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; immutable OASIS source copies unchanged. |
+
+This is a scope-mapping correction, not a profile-conformance claim. Independent QA/security review and exact-head hosted CI for this slice remain pending; T040 stays open for the 12 unresolved applicability records and the remaining evidence gaps.
