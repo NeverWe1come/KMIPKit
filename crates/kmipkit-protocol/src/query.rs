@@ -26,7 +26,9 @@ const EXTENSION_INFORMATION: u32 = 0x0042_00a4;
 const ATTESTATION_TYPE: u32 = 0x0042_00c7;
 const RNG_PARAMETERS: u32 = 0x0042_00d9;
 const PROFILE_INFORMATION: u32 = 0x0042_00eb;
-const PROFILE_NAME: u32 = 0x0042_0140;
+const PROFILE_NAME: u32 = 0x0042_00ec;
+const PROFILE_SERVER_URI: u32 = 0x0042_00ed;
+const PROFILE_SERVER_PORT: u32 = 0x0042_00ee;
 const PROFILE_VERSION: u32 = 0x0042_0142;
 const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
 const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
@@ -639,6 +641,16 @@ pub(crate) fn profile_information_is_well_formed(value: &ValueView<'_>) -> bool 
                     return false;
                 }
                 has_profile_name = true;
+            }
+            PROFILE_SERVER_URI => {
+                if !field.with_value(|value| matches!(value, ValueView::TextString(_))) {
+                    return false;
+                }
+            }
+            PROFILE_SERVER_PORT => {
+                if !field.with_value(|value| matches!(value, ValueView::Integer(_))) {
+                    return false;
+                }
             }
             PROFILE_VERSION => {
                 let complete_version = field.with_value(|value| {
