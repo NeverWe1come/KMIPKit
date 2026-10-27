@@ -4850,7 +4850,8 @@ fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
 
 #[test]
 fn profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages() {
-    // KMIP Specification v2.1 §§8, 8.1, 8.4, and 9.7: clients emit requests and consume responses.
+    // KMIP Specification v2.1 §§8, 8.1, 8.3/Table 396, 8.4, 8.6/Table 399, and 9.7.
+    // Request Payload is required; Response Payload is absent only for Failure.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-001";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages";
