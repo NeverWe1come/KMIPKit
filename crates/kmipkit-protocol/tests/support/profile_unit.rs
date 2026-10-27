@@ -4968,9 +4968,11 @@ fn assert_message_envelope_mapping(
         evidence.test_id == profile_test_id && evidence.kind == profile_test_kind
     }));
     for (test_id, evidence_kind) in model_tests {
-        assert!(mapping.test_evidence.iter().any(|evidence| {
-            evidence.test_id == *test_id && evidence.kind == *evidence_kind
-        }));
+        assert!(
+            mapping.test_evidence.iter().any(|evidence| {
+                evidence.test_id == *test_id && evidence.kind == *evidence_kind
+            })
+        );
     }
 }
 

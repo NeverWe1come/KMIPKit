@@ -88,7 +88,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             row["requirement_id"]: row for row in cls.catalog["requirements"]
         }
 
-    def test_final_twenty_two_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
+    def test_final_twenty_five_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
         self.assertEqual(len(FINAL_DISPOSITIONS), 25)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
@@ -267,7 +267,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 self.assertIn("project interpretation", note)
                 self.assertIn("request", note)
                 self.assertIn("response", note)
-                self.assertNotIn("server behavior", note)
+                self.assertIn("does not assert server behavior", note)
 
                 for profile_id in all_client_profile_ids:
                     self.assertIn(requirement_id, catalog_profiles[profile_id]["requirement_ids"])

@@ -704,7 +704,7 @@
   },
   "counts": {
     "profiles": 18,
-    "requirement_crosswalk_records": 517,
+    "requirement_crosswalk_records": 521,
     "requirement_crosswalk_complete": false,
     "source_requirement_review_records": 896,
     "source_only_requirement_gaps": 112,
@@ -25211,6 +25211,42 @@
       "source_actor": "client"
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-8-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "8",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "OPTIONAL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "The pinned KMIP Specification v2.1 §8 leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional payload and Message Extension presence; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case.",
+      "source_obligation_order": 1,
+      "source_actor": "unspecified",
+      "source_direction": "unspecified"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-8-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8-002",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "8",
+      "source_locator": {
+        "ordinal": 2,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "KMIP Specification v2.1 §8 requires fields to appear in the specified order but does not name an endpoint actor or direction. Project interpretation: the client is responsible for ordering both emitted Request Messages (§8.1) and consumed Response Messages (§8.4) in its in-memory message model, across every client profile. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources.",
+      "source_obligation_order": 2,
+      "source_actor": "unspecified",
+      "source_direction": "unspecified"
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-003-001",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8-003",
       "source_id": "KMIPKIT-SRC-spec",
@@ -25824,6 +25860,24 @@
       "review_note": "Pinned KMIP Specification v2.1 §9.6, source atom 3; actor client; scope client_1_0.",
       "source_obligation_order": 3,
       "source_actor": "client"
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-9.7-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-9.7-001",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "9.7",
+      "source_locator": {
+        "ordinal": 1,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "REQUIRED",
+      "role": "client",
+      "scope_state": "client_1_0",
+      "applies_to": "all_client_profiles",
+      "review_note": "KMIP Specification v2.1 §9.7 requires Batch Items to hold individual requests or responses and does not name an endpoint actor or direction. Project interpretation: the client is responsible for including one or more Batch Items in both emitted requests and consumed responses; §§8.1 and 8.4 define those client message forms. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources.",
+      "source_obligation_order": 1,
+      "source_actor": "unspecified",
+      "source_direction": "unspecified"
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.9-001",
@@ -28328,6 +28382,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -28363,6 +28419,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -28614,6 +28671,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -28649,6 +28708,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -30091,6 +30151,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -30126,6 +30188,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -30377,6 +30440,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -30412,6 +30477,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -31860,6 +31926,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -31895,6 +31963,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -32142,6 +32211,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -32177,6 +32248,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [],
@@ -33594,6 +33666,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -33629,6 +33703,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -33881,6 +33956,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -33916,6 +33993,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -35569,6 +35647,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -35604,6 +35684,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -35856,6 +35937,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -35891,6 +35974,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -37583,6 +37667,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -37618,6 +37704,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -37870,6 +37957,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -37905,6 +37994,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -39418,6 +39508,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -39453,6 +39545,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -39714,6 +39807,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -39749,6 +39844,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -41177,6 +41273,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -41212,6 +41310,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -41449,6 +41548,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -41484,6 +41585,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -42913,6 +43015,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -42948,6 +43052,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -43199,6 +43304,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -43234,6 +43341,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -44677,6 +44785,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -44712,6 +44822,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -44954,6 +45065,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -44989,6 +45102,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -46429,6 +46543,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -46464,6 +46580,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -46717,6 +46834,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -46752,6 +46871,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -48197,6 +48317,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -48232,6 +48354,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -48484,6 +48607,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -48519,6 +48644,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -49980,6 +50106,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -50015,6 +50143,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -50268,6 +50397,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -50303,6 +50434,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -51802,6 +51934,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -51837,6 +51971,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -52088,6 +52223,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -52123,6 +52260,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -53597,6 +53735,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -53632,6 +53772,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -53885,6 +54026,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -53920,6 +54063,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -55419,6 +55563,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -55454,6 +55600,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -55705,6 +55852,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -55740,6 +55889,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -57239,6 +57389,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -57274,6 +57426,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -57549,6 +57702,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -57584,6 +57739,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -59163,6 +59319,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -59198,6 +59356,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "requirement_ids": [
@@ -59435,6 +59594,8 @@
         "KMIPKIT-REQ-SPEC-7.18-005",
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-REQ-SPEC-8-002",
         "KMIPKIT-REQ-SPEC-8-003-001",
         "KMIPKIT-REQ-SPEC-8.1-002",
         "KMIPKIT-REQ-SPEC-8.2-002",
@@ -59470,6 +59631,7 @@
         "KMIPKIT-REQ-SPEC-9.6-001-001",
         "KMIPKIT-REQ-SPEC-9.6-001-002",
         "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-REQ-SPEC-9.7-001",
         "KMIPKIT-REQ-SPEC-9.9-001"
       ],
       "dependency_profile_ids": [
@@ -91340,7 +91502,7 @@
         42435
       ],
       "source_excerpt": "The messages in the protocol consist of a message header, one or more batch items (which contain OPTIONAL message payloads), and OPTIONAL message extensions. The message headers contain fields whose presence is determined by the protocol features used (e.g., asynchronous responses). The field contents are also determined by whether the message is a request or a response. The message payload is determined by the specific operation being requested or to which is being replied.",
-      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_context": "Pinned KMIP Specification v2.1 §8 does not name an endpoint actor or message direction. The source review preserves both as unspecified; KMIPKit separately interprets the in-memory client model obligation for emitted requests and consumed responses, without asserting server behavior.",
       "source_obligations": [
         {
           "source_order": 1,
@@ -91349,8 +91511,9 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-001"
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -91359,14 +91522,17 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-001"
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-001",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
+      "review_note": "The pinned KMIP Specification v2.1 §8 leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional payload and Message Extension presence; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -91382,7 +91548,7 @@
         42441
       ],
       "source_excerpt": "Messages contain the following objects and fields. All fields SHALL appear in the order specified.",
-      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_context": "Pinned KMIP Specification v2.1 §8 does not name an endpoint actor or message direction. The source review preserves both as unspecified; KMIPKit separately interprets the in-memory client model obligation for emitted requests and consumed responses, without asserting server behavior.",
       "source_obligations": [
         {
           "source_order": 1,
@@ -91391,14 +91557,17 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-002"
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-8-002",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-8-002"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
+      "review_note": "KMIP Specification v2.1 §8 requires fields to appear in the specified order but does not name an endpoint actor or direction. Project interpretation: the client is responsible for ordering both emitted Request Messages (§8.1) and consumed Response Messages (§8.4) in its in-memory message model, across every client profile. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -92654,7 +92823,7 @@
         43821
       ],
       "source_excerpt": "This field consists of a structure that holds the individual requests or responses in a batch, and is REQUIRED. The contents of the batch items are described in Section 12.",
-      "source_context": "Actor, direction, condition, and client-scope classifications were reviewed against the pinned KMIP Specification v2.1 text independently of profile closure arrays.",
+      "source_context": "Pinned KMIP Specification v2.1 §9.7 does not name an endpoint actor or message direction. The source review preserves both as unspecified; KMIPKit separately interprets the in-memory client model obligation for emitted requests and consumed responses, without asserting server behavior.",
       "source_obligations": [
         {
           "source_order": 1,
@@ -92663,14 +92832,17 @@
           "actor": "unspecified",
           "direction": "unspecified",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-9.7-001"
+          "scope_disposition": "client_1_0",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-9.7-001",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.7-001"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Source actors, directions, conditions, and client scope were reviewed against this exact pinned Specification v2.1 candidate. Ambiguous actors or scope remain unresolved without a client crosswalk."
+      "review_note": "KMIP Specification v2.1 §9.7 requires Batch Items to hold individual requests or responses and does not name an endpoint actor or direction. Project interpretation: the client is responsible for including one or more Batch Items in both emitted requests and consumed responses; §§8.1 and 8.4 define those client message forms. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

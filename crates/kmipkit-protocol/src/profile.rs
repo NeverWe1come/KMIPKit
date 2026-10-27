@@ -10923,6 +10923,89 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_message_payloads_and_extensions_for_client_messages",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::response_payload_is_required_for_non_failure_and_absent_for_failure",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "optional_request_response_message_payloads_and_extensions",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_message_field_order_for_client_requests_and_responses",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::request_known_fields_and_envelope_reject_reordering",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::response_known_fields_and_envelope_reject_reordering",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "request_response_fields_follow_kmip_specified_order",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.7-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.7-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_items_for_client_requests_and_responses",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "request_response_include_one_or_more_batch_items",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
         source_gap_id: None,
@@ -13086,6 +13169,9 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
+                    | "optional_request_response_message_payloads_and_extensions"
+                    | "request_response_fields_follow_kmip_specified_order"
+                    | "request_response_include_one_or_more_batch_items"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
                     | "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted"
@@ -13142,6 +13228,9 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
+                    | "optional_request_response_message_payloads_and_extensions"
+                    | "request_response_fields_follow_kmip_specified_order"
+                    | "request_response_include_one_or_more_batch_items"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
                     | "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted"

@@ -165,6 +165,12 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "message_extension_fields_and_vendor_data_validated_by_message_model",
     ),
+    (
+        "client_profile_capability",
+        "optional_request_response_message_payloads_and_extensions",
+    ),
+    ("client_profile_capability", "request_response_fields_follow_kmip_specified_order"),
+    ("client_profile_capability", "request_response_include_one_or_more_batch_items"),
     ("client_profile_capability", "vendor_identification_is_caller_assigned_unique_text"),
     ("client_profile_capability", "activation_date_reached_before_use_caller_asserted"),
     (
