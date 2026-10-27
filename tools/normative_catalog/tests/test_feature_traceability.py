@@ -1271,6 +1271,14 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "    assert True\n",
             ),
             (
+                "aliased unittest skip decorator",
+                "test_capability",
+                "from unittest import skip as omit_test\n"
+                "@omit_test('requires unavailable service')\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+            (
                 "unittest class skip decorator",
                 "TestSkipped.test_capability",
                 "import unittest\n"
