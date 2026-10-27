@@ -1632,9 +1632,15 @@ class ClientExecutionTraceabilityTests(unittest.TestCase):
                     )
                     self.assertIn("OD-004", record["review_note"])
                     self.assertIn("countdown-derived", record["review_note"])
-                    self.assertIn("KMIPKIT-0010 profile capability", record["review_note"])
+                    self.assertIn(
+                        "KMIPKIT-0010 separately maps the caller-facing relative-date OptionalCapability",
+                        record["review_note"],
+                    )
                     self.assertEqual(row["status"], "deferred")
-                    self.assertEqual(row["implementation_location"], "")
+                    self.assertEqual(
+                        row["implementation_location"],
+                        "specs/007-client-execution/spec.md; specs/007-client-execution/research.md",
+                    )
                     continue
 
                 self.assertEqual(record["status"], "verified")

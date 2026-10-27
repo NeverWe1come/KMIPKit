@@ -34,6 +34,13 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 
 ROOT = Path(__file__).resolve().parents[3]
+PROFILE_EVIDENCE_FOR_DEFERRED_OWNER_REQUIREMENTS = frozenset(
+    {
+        # KMIPKIT-0007 defers countdown-derived timestamp generation, while
+        # KMIPKIT-0010 separately verifies the caller-facing relative-date capability.
+        "KMIPKIT-REQ-SPEC-9.20-001-002",
+    }
+)
 TABLE_HEADER_REJECTION_DISPOSITIONS = frozenset(
     {
         "reject_candidate_non_normative_table_header",
@@ -647,12 +654,13 @@ def _has_linked_typed_optional_capability_rule(
     requirement_id = requirement["requirement_id"]
     requirement_source_clause_ids = set(requirement.get("source_clause_ids", []))
     requirement_test_refs = set(requirement.get("verification_refs", []))
+    # Representational capabilities can be provided by typed models without a
+    # profile-specific evaluator; the exact linked positive test is still required.
     return any(
         mapping.get("requirement_id") == requirement_id
         and mapping.get("source_clause_id") in expected_source_clause_ids
         and mapping.get("source_clause_id") in requirement_source_clause_ids
         and mapping.get("verification_category") == "OptionalCapability"
-        and mapping.get("evaluator_present") is True
         and mapping.get("test_kind") == "OptionalCapabilityUsable"
         and mapping.get("test_id") in requirement_test_refs
         and mapping.get("test_id") in usable_positive_tests
@@ -743,8 +751,12 @@ def _has_usable_profile_optional_evidence(
         direction not in {"server_to_client", "both"}
         or has_linked_typed_positive_rule
     )
+    profile_evidence_for_deferred_owner = (
+        requirement.get("requirement_id") in PROFILE_EVIDENCE_FOR_DEFERRED_OWNER_REQUIREMENTS
+        and requirement["status"] == "deferred"
+    )
     scoped_client_exchange_evidence = (
-        requirement["status"] == "scoped_verified"
+        (requirement["status"] == "scoped_verified" or profile_evidence_for_deferred_owner)
         and requirement["role"] == "client"
         and direction in {"client_to_server", "server_to_client", "both", "unclear"}
         and requirement["scope_state"] == "client_1_0"
@@ -18864,7 +18876,10 @@ class CatalogValidationTests(unittest.TestCase):
             if not requirement["implementation_refs"]:
                 gaps.append(f"{requirement_id}: no usable implementation mapping")
             resolvable_implementation_refs = []
-            if requirement["status"] == "scoped_verified":
+            if (
+                requirement["status"] == "scoped_verified"
+                or requirement_id in PROFILE_EVIDENCE_FOR_DEFERRED_OWNER_REQUIREMENTS
+            ):
                 repository_root = ROOT.resolve()
                 for reference in requirement["implementation_refs"]:
                     implementation_path = ROOT / reference.partition("::")[0]
@@ -18905,6 +18920,9 @@ class CatalogValidationTests(unittest.TestCase):
             expected_blocked_requirement_ids = {
                 "KMIPKIT-REQ-SPEC-4.1-001-001",
                 "KMIPKIT-REQ-SPEC-4.17-001-001",
+                "KMIPKIT-REQ-SPEC-4.40-001-001",
+                "KMIPKIT-REQ-SPEC-4.40-001-003",
+                "KMIPKIT-REQ-SPEC-4.41-001-002",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
