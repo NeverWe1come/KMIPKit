@@ -91235,13 +91235,13 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_active_use_prohibition_as_caller_owned_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_records_pre_active_use_as_caller_owned_unverified_obligation",
         "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_pre_active_use_prohibition_is_client_scope"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.57, lines 20218–20221, states that a Pre-Active object exists and SHALL NOT be used for any cryptographic purpose. The source predicate names no actor or message direction; both remain unresolved/unclear. The KMIPKit project interpretation assigns the restriction to the client 1.0 profile as caller-owned: the library cannot infer a remote object State from its messages and does not execute local cryptographic operations. The caller must assert that a referenced Pre-Active object is not used cryptographically. This does not add state discovery, local cryptographic enforcement, or a server-acceptance claim. No official OASIS Test Case ID is explicitly linked, and none is inferred."
+      "review_note": "Pinned KMIP Specification v2.1 §4.57, lines 20218–20221, states that a Pre-Active object exists and SHALL NOT be used for any cryptographic purpose. The source predicate names no actor or message direction; both remain unresolved/unclear. The KMIPKit project interpretation assigns the restriction to the client 1.0 profile as caller-owned because the library cannot infer or track remote object State and performs no local cryptographic operation. The static typed mapping records the caller duty but has no evaluator. No category-appropriate negative behavioral evidence currently verifies the prohibition; the generated report and runtime profile selection retain a MissingCategoryTest blocker. The metadata test verifies this fail-closed disposition, not cryptographic-use behavior. No official OASIS Test Case ID is explicitly linked, and none is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-001",

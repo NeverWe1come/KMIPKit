@@ -1071,6 +1071,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         self.assertTrue(mappings)
         required_test_kinds: dict[str, str] = {}
         observed_test_kinds: dict[str, set[str]] = {}
+        missing_category_test_ids: set[str] = set()
 
         for mapping in mappings:
             requirement_id = mapping["requirement_id"]
@@ -1119,56 +1120,65 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 category = _verification_category(keyword)
                 self.assertEqual(mapping["verification_category"], category)
                 expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY[category]
-                required_test_kinds[requirement_id] = expected_test_kind
-                observed_test_kinds.setdefault(requirement_id, set()).add(mapping["test_kind"])
-                if category == "ProhibitedBehavior" and mapping["test_kind"] == "PositiveBehavior":
-                    self.assertTrue(
-                        mapping["test_id"].startswith(
-                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
-                        ),
-                        "positive evidence for a prohibition is limited to a profile configuration check",
-                    )
-                elif category == "RequiredBehavior" and mapping["test_kind"] == "NegativeBehavior":
-                    # Negative checks may supplement a required rule; the positive kind is asserted below.
-                    self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
-                else:
-                    self.assertEqual(mapping["test_kind"], expected_test_kind)
-                self.assertIsNotNone(mapping["test_id"])
-                if mapping["test_id"] not in requirement.get("verification_refs", []):
-                    self.assertIn(
+                if mapping["test_id"] is None:
+                    self.assertEqual(
                         requirement_id,
-                        {
-                            "KMIPKIT-REQ-SPEC-9.6-001-002",
-                            "KMIPKIT-REQ-SPEC-9.12-001-003",
-                            "KMIPKIT-REQ-SPEC-6.1.43-001",
-                            "KMIPKIT-REQ-SPEC-6.1.43-007",
-                            "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-                            "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-                            "KMIPKIT-REQ-SPEC-6.1.43-011",
-                            "KMIPKIT-REQ-SPEC-6.1.5-001",
-                            "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-                            "KMIPKIT-REQ-SPEC-9.1-001",
-                            "KMIPKIT-REQ-SPEC-9.19-002",
-                            "KMIPKIT-REQ-SPEC-6.1.19-002",
-                            "KMIPKIT-REQ-SPEC-6.1.19-003",
-                            "KMIPKIT-REQ-SPEC-6.1.19-004",
-                            "KMIPKIT-REQ-SPEC-6.1.19-005",
-                            "KMIPKIT-REQ-SPEC-6.1.19-006",
-                            "KMIPKIT-REQ-SPEC-6.1.13-006",
-                            "KMIPKIT-REQ-SPEC-3.3-001-001",
-                            "KMIPKIT-REQ-SPEC-3.3-001-002",
-                            "KMIPKIT-REQ-SPEC-7.18-006",
-                            # The KMIPKIT-0007 owner record remains deferred under OD-004;
-                            # the separate KMIPKIT-0010 OptionalCapability carries its own
-                            # typed profile evidence.
-                            "KMIPKIT-REQ-SPEC-9.20-001-002",
-                        },
-                        "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
+                        "KMIPKIT-REQ-SPEC-4.57-002",
+                        "only the caller-owned Pre-Active prohibition is an explicit evidence blocker",
                     )
-                self.assertTrue(
-                    self._is_executable_test_ref(mapping["test_id"]),
-                    mapping["test_id"],
-                )
+                    self.assertEqual(category, "ProhibitedBehavior")
+                    self.assertIsNone(mapping["test_kind"])
+                    missing_category_test_ids.add(requirement_id)
+                else:
+                    required_test_kinds[requirement_id] = expected_test_kind
+                    observed_test_kinds.setdefault(requirement_id, set()).add(mapping["test_kind"])
+                    if category == "ProhibitedBehavior" and mapping["test_kind"] == "PositiveBehavior":
+                        self.assertTrue(
+                            mapping["test_id"].startswith(
+                                "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                            ),
+                            "positive evidence for a prohibition is limited to a profile configuration check",
+                        )
+                    elif category == "RequiredBehavior" and mapping["test_kind"] == "NegativeBehavior":
+                        # Negative checks may supplement a required rule; the positive kind is asserted below.
+                        self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
+                    else:
+                        self.assertEqual(mapping["test_kind"], expected_test_kind)
+                    if mapping["test_id"] not in requirement.get("verification_refs", []):
+                        self.assertIn(
+                            requirement_id,
+                            {
+                                "KMIPKIT-REQ-SPEC-9.6-001-002",
+                                "KMIPKIT-REQ-SPEC-9.12-001-003",
+                                "KMIPKIT-REQ-SPEC-6.1.43-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-007",
+                                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-011",
+                                "KMIPKIT-REQ-SPEC-6.1.5-001",
+                                "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+                                "KMIPKIT-REQ-SPEC-9.1-001",
+                                "KMIPKIT-REQ-SPEC-9.19-002",
+                                "KMIPKIT-REQ-SPEC-6.1.19-002",
+                                "KMIPKIT-REQ-SPEC-6.1.19-003",
+                                "KMIPKIT-REQ-SPEC-6.1.19-004",
+                                "KMIPKIT-REQ-SPEC-6.1.19-005",
+                                "KMIPKIT-REQ-SPEC-6.1.19-006",
+                                "KMIPKIT-REQ-SPEC-6.1.13-006",
+                                "KMIPKIT-REQ-SPEC-3.3-001-001",
+                                "KMIPKIT-REQ-SPEC-3.3-001-002",
+                                "KMIPKIT-REQ-SPEC-7.18-006",
+                                # The KMIPKIT-0007 owner record remains deferred under OD-004;
+                                # the separate KMIPKIT-0010 OptionalCapability carries its own
+                                # typed profile evidence.
+                                "KMIPKIT-REQ-SPEC-9.20-001-002",
+                            },
+                            "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
+                        )
+                    self.assertTrue(
+                        self._is_executable_test_ref(mapping["test_id"]),
+                        mapping["test_id"],
+                    )
 
                 for reference in requirement.get("implementation_refs", []):
                     path, separator, symbol = reference.partition("::")
@@ -1192,6 +1202,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     if separator:
                         self.assertTrue(self._is_executable_test_ref(reference), reference)
 
+        self.assertEqual(missing_category_test_ids, {"KMIPKIT-REQ-SPEC-4.57-002"})
         for requirement_id, required_test_kind in required_test_kinds.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertIn(required_test_kind, observed_test_kinds[requirement_id])

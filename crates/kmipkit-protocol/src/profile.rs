@@ -8983,10 +8983,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_active_use_prohibition_as_caller_owned_behavior",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
+        test_evidence: &[],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",

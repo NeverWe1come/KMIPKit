@@ -24589,7 +24589,7 @@ fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.57 paragraph 2.
-fn profile_maps_pre_active_use_prohibition_as_caller_owned_behavior() {
+fn profile_records_pre_active_use_as_caller_owned_unverified_obligation() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-002";
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -24606,7 +24606,7 @@ fn profile_maps_pre_active_use_prohibition_as_caller_owned_behavior() {
         GeneratedVerificationCategory::ProhibitedBehavior
     );
     assert!(mapping.evaluator.is_none());
-    assert!(mapping.test_evidence.is_empty());
+    assert_eq!(mapping.test_evidence, []);
     assert_eq!(
         mapping.constraints,
         &[RuleConstraint {
@@ -24617,7 +24617,10 @@ fn profile_maps_pre_active_use_prohibition_as_caller_owned_behavior() {
 
     let error = validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
         .expect_err("caller-owned metadata is not negative behavioral evidence");
-    assert_eq!(error.code(), ProfileValidationErrorCode::MissingCategoryTest);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::MissingCategoryTest
+    );
 }
 
 #[test]
