@@ -324,3 +324,11 @@ T050 traceability correction: CI run 40231111620 identified a missing executable
 - DCO Red `2c1a8f51d` demonstrated the missing typed mapping; DCO Green `ecd154792` records a Baseline model capability and links the existing tests proving effective SHA-256 on omission, absent-field round-trip, and explicit/unknown-value preservation. No hashing, request insertion, credential transmission, server behavior, or OASIS Test Case success is claimed.
 - Green checks: 1,105 protocol unit tests plus all integration targets and doctests; protocol Clippy and formatting; report inventory; KMIPKIT-0008 credential traceability; catalog/profile/report generation checks; pinned-source check; full typed-profile closure/implementation/test traceability (1 test in 369.726 seconds). Independent QA/security reviews are pending.
 - Baseline currently has 237/265 typed mappings (28 unmapped), `evidence_incomplete`; T056 remains partial. PR #90 remains draft and needs exact-head hosted CI after publication.
+
+## CURRENT authoritative checkpoint (2026-10-27; supersedes prior dated snapshots)
+
+- PR #90 is open/draft. Remote head remains `48e250475301d26e4e6d3f318ae36f4fcc771c7b`; local feature branch is `feature/KMIPKIT-0010-profile-conformance-implementation-refresh` in `C:/Users/ramp1953/.codex/worktrees/0010-t040-profile-evidence/KMIPKit`.
+- T056 has DCO Red `4bf71d1a9` and Green `cbde290e5`. The remaining OD-003 requirement is mapped through a caller-owned timestamp sequence. Refactor documentation is prepared but uncommitted; see the appended T056 section in `specs/010-profile-conformance/implementation-evidence.md`.
+- Local checks pass: 1,133 protocol unit tests plus integrations and 3 doctests; focused timestamp/mapping tests; Clippy; fmt; normative catalog validation; profile generator and report checks; immutable-source check; credential source-review contract; credential traceability; and full typed-profile traceability (487 mappings).
+- Baseline report now has 265/265 typed mappings and 265 category references. Eligibility remains false due unresolved applicability/evidence. No official OASIS test pass or conformance claim.
+- T056 is 14/14 typed profile references but remains partial pending QA/security review and exact-head hosted CI. Keep PR #90 draft. Do not merge or publish.

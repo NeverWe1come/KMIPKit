@@ -18,7 +18,7 @@
 
 - [x] CHK007 Does the spec preserve all six Table 412 fields, label the one-of-four identifier presence rule as a conservative interpretation rather than verbatim source text, keep Password and Device Identifier representable without treating them as identifiers, and avoid imposing non-empty text?
 - [x] CHK008 Does the spec retain the caller's OASIS uniqueness obligation for the four named identifiers, leave the source's comparison scope unspecified, and avoid claiming that KMIPKit verifies or enforces uniqueness from client-local data?
-- [x] CHK009 Does the Hashed Password section require/preserve caller-owned hash bytes and Timestamp, expose effective SHA-256 when omitted, and defer monotonicity checks/tests pending OD-003 review?
+- [x] CHK009 Does the Hashed Password section preserve caller-owned bytes/Timestamp, expose effective SHA-256 when omitted, and enforce the resolved OD-003 caller-owned strict sequence without adding an implicit clock, hash calculation, or send path?
 - [x] CHK010 Does the SHA-256 default preserve the optional wire-field absence while exposing an unambiguous effective value?
 - [x] CHK011 Does the Attestation Credential require Nonce and Attestation Type and at least one evidence field, while accurately describing whether both are allowed?
 - [x] CHK012 Does the Nonce contract identify the server as source and require exact ID/value preservation?
@@ -33,7 +33,7 @@
 - [x] CHK018 Does the spec gate only future execution integration on an explicit 0007 handoff covering inherited defaults, request/batch replacement, omission, precedence, and one Request Header Authentication for the whole batch, while leaving standalone in-memory models independent of execution APIs?
 - [x] CHK019 Does the spec avoid adding a local hash provider, attestation generator/verifier, Nonce generator, server, retry, or persistence behavior?
 - [x] CHK020 Does the spec avoid claiming OASIS official test-vector evidence when the catalog links no requirement-specific fixture?
-- [x] CHK021 Are OD-001, OD-003, and OD-005 tracked as open decisions with bounded effects; OD-002, OD-004, and OD-006 recorded as resolved dispositions; and no unbounded `NEEDS CLARIFICATION` placeholders present?
+- [x] CHK021 Are OD-001 and OD-005 tracked as open decisions with bounded effects; OD-002, OD-003, OD-004, and OD-006 recorded as resolved dispositions; and no unbounded `NEEDS CLARIFICATION` placeholders present?
 - [x] CHK022 Are the success criteria objective, independently verifiable, and linked to requirements without claiming implementation is complete?
 - [x] CHK023 Are the affected 0005, 0006, 0007, and 0010 handoffs explicit and consistent with their feature scopes?
 - [x] CHK024 Does the document distinguish requirement-quality review from implementation completion and state feature status and delegated authorization unambiguously?

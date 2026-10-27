@@ -7285,3 +7285,21 @@ DCO Red commits `5321e9a78` and `89dab3f18` added regressions for the exact CI s
 | Current Baseline state | Typed profile registry and generated report | 264/265 typed mappings; `KMIPKIT-REQ-SPEC-9.11-010-001` remains unmapped under OD-003. Baseline remains `evidence_incomplete`; no official Test Case pass or profile-conformance claim is made. T056 remains partial. |
 
 Exact-head hosted CI remains pending publication; no hosted pass is claimed for these local changes.
+
+## KMIPKIT-0010 T056 Hashed Password Timestamp monotonicity - Red/Green evidence (2026-10-27)
+
+KMIP Specification v2.1 Section 9.11 requires Hashed Password Timestamps to monotonically increase but leaves the state owner, comparison scope, ordering event, and clock behavior unspecified. Following the project's rule for source silence, OD-003 is resolved as caller-owned sequence state per Username and logical credential producer. The caller supplies the current Date Time Extended value when producing each hash, strictly increases it, and persists/restores the last accepted value if continuity across restarts is needed. This policy does not add a clock, hash calculation, Credential transmission, or a wire-order or server-acceptance claim.
+
+| Evidence | Command or commit | Result |
+|---|---|---|
+| Red - sequence API contract | DCO commit `4bf71d1a9`; cargo test -p kmipkit-protocol --test credential_contract hashed_password_timestamp_sequence -- --nocapture | Expected Red: the credential integration target could not compile because the public HashedPasswordTimestampSequence type did not exist. |
+| Red - profile mapping | cargo test -p kmipkit-protocol --lib profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior -- --nocapture | Expected Red: the regression failed because the typed Baseline mapping for KMIPKIT-REQ-SPEC-9.11-010-001 was absent. |
+| Green | DCO commit `cbde290e5` | Added the caller-owned sequence helper, redacted non-increasing-value error, public exports, typed profile mapping, test references, catalog lifecycle update, and synchronized generated coverage report. |
+| Focused sequence tests | cargo test -p kmipkit-protocol --test credential_contract hashed_password_timestamp_sequence -- --nocapture; cargo test -p kmipkit-protocol --lib profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior -- --nocapture | PASS: 3 sequence integration tests and 1 typed mapping test. |
+| Rust protocol suite | cargo test -p kmipkit-protocol --all-features | PASS: 1,133 unit tests, all integration targets, and 3 doctests. |
+| Lint and formatting | cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings; cargo fmt --all --check; git diff --check | PASS. |
+| Normative catalog and generated artifacts | py -3 -B tools/normative_catalog/validate.py; py -3 -B tools/normative_catalog/generate_profiles.py --check; py -3 -B tools/normative_catalog/report.py --check | PASS: 4 sources, 1,411 clauses, 4,125 records; generated profile metadata and coverage report are synchronized. |
+| Typed-profile traceability | py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v | PASS: complete typed-profile traceability regression completed in 384.718 seconds. |
+| Immutable OASIS sources | py -3 -B tools/normative_catalog/check_immutable_sources.py --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4 | PASS: pinned upstream sources match the release base. |
+| Current Baseline state | Generated coverage report and typed registry | 265/265 typed mappings; all 14 T056 requirements have typed profile mapping references. Baseline eligibility remains false because applicability/evidence blockers remain. No official OASIS Test Case pass or profile-conformance claim is made. |
+| Independent reviews and hosted CI | Exact current local head | Pending: independent QA/security review and exact-head hosted CI have not yet run for these commits. |
