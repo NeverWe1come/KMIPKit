@@ -25223,7 +25223,7 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "The pinned KMIP Specification v2.1 §8 leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional payload and Message Extension presence; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case.",
+      "review_note": "The pinned KMIP Specification v2.1 §8 overview describes optional message payloads, while the message-specific §8.3 Table 396 requires Request Payload and §8.6 Table 399 requires Response Payload unless the Result Status is Failure. This mapping covers optional Message Extension presence and omission of Response Payload only for Failure; it does not claim that a request may omit Request Payload. The pinned source leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional Message Extension presence and the Failure response shape; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case.",
       "source_obligation_order": 1,
       "source_actor": "unspecified",
       "source_direction": "unspecified"
@@ -91532,7 +91532,7 @@
         "KMIPKIT-REQ-SPEC-8-001"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The pinned KMIP Specification v2.1 §8 leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional payload and Message Extension presence; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case."
+      "review_note": "The pinned KMIP Specification v2.1 §8 overview describes optional message payloads, while the message-specific §8.3 Table 396 requires Request Payload and §8.6 Table 399 requires Response Payload unless the Result Status is Failure. This mapping covers optional Message Extension presence and omission of Response Payload only for Failure; it does not claim that a request may omit Request Payload. The pinned source leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional Message Extension presence and the Failure response shape; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

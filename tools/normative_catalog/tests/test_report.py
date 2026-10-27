@@ -451,7 +451,7 @@ class CoverageReportTests(unittest.TestCase):
             },
             RuleConstraint {
                 key: "client_profile_capability",
-                value: "optional_request_response_message_payloads_and_extensions",
+                value: "optional_failure_response_payload_and_message_extensions",
             },
             RuleConstraint {
                 key: "client_profile_capability",

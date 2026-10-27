@@ -167,7 +167,7 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
     ),
     (
         "client_profile_capability",
-        "optional_request_response_message_payloads_and_extensions",
+        "optional_failure_response_payload_and_message_extensions",
     ),
     ("client_profile_capability", "request_response_fields_follow_kmip_specified_order"),
     ("client_profile_capability", "request_response_include_one_or_more_batch_items"),

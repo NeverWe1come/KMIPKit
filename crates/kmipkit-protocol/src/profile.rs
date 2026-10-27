@@ -10930,7 +10930,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: None,
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_message_payloads_and_extensions_for_client_messages",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
@@ -10948,7 +10948,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         ],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
-            value: "optional_request_response_message_payloads_and_extensions",
+            value: "optional_failure_response_payload_and_message_extensions",
         }],
     },
     TypedRuleMapping {
@@ -13169,7 +13169,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
-                    | "optional_request_response_message_payloads_and_extensions"
+                    | "optional_failure_response_payload_and_message_extensions"
                     | "request_response_fields_follow_kmip_specified_order"
                     | "request_response_include_one_or_more_batch_items"
                     | "vendor_identification_is_caller_assigned_unique_text"
@@ -13228,7 +13228,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted"
                     | "caller_selects_message_extension_presence_and_processing"
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
-                    | "optional_request_response_message_payloads_and_extensions"
+                    | "optional_failure_response_payload_and_message_extensions"
                     | "request_response_fields_follow_kmip_specified_order"
                     | "request_response_include_one_or_more_batch_items"
                     | "vendor_identification_is_caller_assigned_unique_text"
