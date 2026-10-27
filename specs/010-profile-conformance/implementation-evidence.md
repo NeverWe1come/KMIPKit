@@ -7475,3 +7475,7 @@ T040 remains open because applicability and broader profile evidence are still i
 ### Independent QA correction (2026-10-27)
 
 Read-only QA identified stale T002 assertions that expected the nine §4.40–§4.41 records to remain `profile_conditional`. Reproducing `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` also exposed the older §4.34 row's client-scope disposition mismatch. Updated the final-disposition fixture and §4.34–§4.42 source-obligation expectations; the tests continue to require unresolved source actors, unclear directions, and explicit project attribution to the client. The full T002 final-applicability module passes (7 tests), and `CatalogValidationTests.test_spec_4_34_through_4_42_source_review_slice_preserves_scope_and_candidate_atoms` passes (1 test). QA confirmed the catalog/report references to Tables 110 and 112 and found no other actionable issue. Independent security re-review and exact-head hosted CI remain pending.
+
+### Independent security re-review (2026-10-27)
+
+Read-only security review of the completed T040 batch found no actionable issues. The nine new mappings are static caller-owned constraints with `evaluator: None` and exact configuration-only allowlist entries; they add no local cryptography, clock access, remote-state lookup, secret handling, or request-body exposure. Documentation preserves the no-enforcement and no-conformance-claim boundary. Exact-head hosted CI remains pending publication.
