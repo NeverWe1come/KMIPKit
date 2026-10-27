@@ -10385,6 +10385,35 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_rejects_equal_or_earlier_values",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequences_are_independent",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "hashed_password_timestamp_monotonicity_per_username",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
         source_gap_id: None,
@@ -12741,6 +12770,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_poll_caller_directed"
                     | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
+                    | "hashed_password_timestamp_monotonicity_per_username"
                     | "credential_authentication_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"
@@ -12791,6 +12821,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "recover_poll_caller_directed"
                     | "recover_get_caller_directed"
                     | "hashed_password_sha256_default"
+                    | "hashed_password_timestamp_monotonicity_per_username"
                     | "credential_authentication_representation"
                     | "declared_response_capacity"
                     | "device_identifiers_caller_asserted_unique"

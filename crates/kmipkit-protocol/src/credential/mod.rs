@@ -23,7 +23,9 @@ mod variants;
 
 pub use attestation::AttestationCredential;
 pub use authentication::{Authentication, CredentialView};
-pub use hashed_password::HashedPasswordCredential;
+pub use hashed_password::{
+    HashedPasswordCredential, HashedPasswordTimestampSequence, HashedPasswordTimestampSequenceError,
+};
 pub use nonce::Nonce;
 pub use secret::{SecretBytes, SecretText};
 pub use value::{Credential, CredentialType};

@@ -704,7 +704,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         for requirement_id, status in (
             ("KMIPKIT-REQ-SPEC-9.4-001-003", "server_only"),
             ("KMIPKIT-REQ-SPEC-9.11-004-002", "scoped_verified"),
-            ("KMIPKIT-REQ-SPEC-9.11-010-001", "deferred"),
+            ("KMIPKIT-REQ-SPEC-9.11-010-001", "verified"),
         ):
             self.assertEqual(by_id[requirement_id]["status"], status)
         self.assertIn("OD-003", by_id["KMIPKIT-REQ-SPEC-9.11-010-001"]["scope"])
@@ -714,7 +714,6 @@ class FeatureTraceabilityTests(unittest.TestCase):
         for row in rows:
             if row["requirement_id"] in {
                 "KMIPKIT-REQ-SPEC-9.4-001-003",
-                "KMIPKIT-REQ-SPEC-9.11-010-001",
             }:
                 continue
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-002":

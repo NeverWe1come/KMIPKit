@@ -111,8 +111,9 @@ pub use create_split_key::{
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
-    HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
-    SecretText, TicketCredential, UsernameAndPasswordCredential,
+    HashedPasswordCredential, HashedPasswordTimestampSequence,
+    HashedPasswordTimestampSequenceError, Nonce, OneTimePasswordCredential, OpaqueTtlv,
+    SecretBytes, SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
 pub use cryptographic_operation::{
     CryptographicAlgorithm, CryptographicOperationError, CryptographicOperationErrorKind,

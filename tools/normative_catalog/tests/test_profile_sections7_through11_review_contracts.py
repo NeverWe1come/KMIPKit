@@ -305,8 +305,11 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         )
         timestamp_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-001"]
         self.assertEqual(timestamp_requirement["condition"], "When Credential Type is Hashed Password.")
-        for unresolved_limit in ("OD-003", "state owner", "comparison scope", "clock behavior"):
-            self.assertIn(unresolved_limit, timestamp_review["review_note"])
+        for source_gap in ("comparison scope", "state owner", "clock behavior"):
+            self.assertIn(source_gap, timestamp_review["review_note"])
+        self.assertIn("OD-003 is resolved", timestamp_review["review_note"])
+        self.assertIn("strict increase in hash-production order", timestamp_review["review_note"])
+        self.assertIn("strict", timestamp_requirement["review_note"])
 
         default_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-002"]
         self.assertIn("no override", default_requirement["condition"])

@@ -25371,7 +25371,7 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "The source does not name an actor for timestamp monotonicity. KMIPKIT-0008 assigns a caller-supplied timestamp model but leaves state owner, comparison scope, and clock behavior unresolved in OD-003; the client role is the approved requirement-scope mapping, not a source-named actor. Spec v2.1 §9.11 lines 44598–44602.",
+      "review_note": "The source does not name an actor for timestamp monotonicity. KMIPKIT-0008 assigns a caller-supplied timestamp model; KMIPKIT-0010 T056 resolves OD-003 with caller-owned sequence state per Username and logical producer, strict increase in hash-production order, and caller-supplied current time. The client role is a project requirement-scope mapping, not a source-named actor. The source still does not define comparison scope, state owner, or clock behavior. Spec v2.1 §9.11 lines 44598–44602.",
       "source_obligation_order": 1,
       "source_actor": "unspecified"
     },
@@ -91357,7 +91357,7 @@
         "KMIPKIT-REQ-SPEC-9.11-010-002"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source does not name an actor for either Hashed Password SHALL. The approved KMIPKIT-0008 caller-supplied timestamp model provides the client-side interpretation; the client requirement role is a project scope mapping. The source does not define the monotonic comparison scope, state owner, or clock behavior; OD-003 remains unresolved, and KMIPKit does not claim local monotonicity enforcement. Table 415 marks Hashing Algorithm optional; KMIPKIT-0008 preserves field absence and uses SHA-256 as its effective default when the field is omitted."
+      "review_note": "The source does not name an actor for either Hashed Password SHALL. The caller-supplied timestamp model provides the client-side interpretation; the client requirement role is a project scope mapping. The source does not define the monotonic comparison scope, state owner, ordering event, or clock behavior. KMIPKIT-0008 OD-003 is resolved by KMIPKIT-0010 T056 project policy: caller-owned sequence per Username and logical producer, strict increase in hash-production order, current Date Time Extended supplied by the caller, and no synthetic future time. This policy does not claim wire-order conformance or server acceptance. Table 415 marks Hashing Algorithm optional; KMIPKIT-0008 preserves field absence and uses SHA-256 as its effective default when the field is omitted."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

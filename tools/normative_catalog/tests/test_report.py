@@ -2340,7 +2340,12 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-8-003-001",
                     "KMIPKIT-REQ-SPEC-8-003-001",
                     # KMIPKIT-0010 T056: authentication, Device Credential,
-                    # and response Message Extension profile mappings.
+                    # Hashed Password timestamp, and response Message Extension
+                    # profile mappings.
+                    "KMIPKIT-REQ-SPEC-9.11-010-001",
+                    "KMIPKIT-REQ-SPEC-9.11-010-001",
+                    "KMIPKIT-REQ-SPEC-9.11-010-001",
+                    "KMIPKIT-REQ-SPEC-9.11-010-001",
                     "KMIPKIT-REQ-SPEC-9.4-001-002",
                     "KMIPKIT-REQ-SPEC-9.4-001-002",
                     "KMIPKIT-REQ-SPEC-9.4-001-001",

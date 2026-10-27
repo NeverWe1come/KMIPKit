@@ -99976,12 +99976,20 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0008",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/credential/hashed_password.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_rejects_equal_or_earlier_values",
+        "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequences_are_independent",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "deferred",
-      "review_note": "KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp to monotonically increase. KMIPKIT-0008 OD-003 leaves the implementation owner, comparison scope, and clock behavior unresolved; the profile registry therefore leaves this requirement unmapped and fails closed. KMIPKit does not claim monotonicity enforcement, a monotonicity test, or profile conformance for this requirement. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp to monotonically increase. Resolved KMIPKIT-0008 OD-003 as caller-owned state for one logical credential producer per Username: use strict increase in hash-production order, supply the current Date Time Extended value from the caller's clock, reject equal or earlier values without synthesizing a future value, and restore the last accepted value from caller-managed persistence when continuity across process restarts is needed. HashedPasswordTimestampSequence verifies this policy without calculating hashes, retaining a Username, reading a clock, or sending credentials. The typed Credential remains in-memory under OD-004; no wire-order or server-acceptance claim is made. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-002",
