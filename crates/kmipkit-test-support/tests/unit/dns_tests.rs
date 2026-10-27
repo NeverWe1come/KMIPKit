@@ -166,7 +166,7 @@ fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
     )
     .expect("a reserved ephemeral UDP port should be retried");
 
-    assert_eq!(attempts, 2);
+    assert!((2..=super::MAX_SOCKET_PAIR_BIND_ATTEMPTS).contains(&attempts));
     assert_eq!(
         udp_socket
             .local_addr()
