@@ -7799,3 +7799,44 @@ DCO Red commits `8bf9d6b01`, `9d99b26e1`, and `bbcf2dac0` separately demonstrate
 | Independent review | QA and security review of the exact slice found no actionable findings. |
 
 The generated Baseline report has 287 of 294 requirements with typed mappings and category-appropriate test references; seven remain unmapped. Readiness remains false and T040 remains open. No official OASIS Test Case pass or profile-conformance claim is made. Hosted CI run `40552434368` targets the previous remote head `ba8c9cd176373e16df5dc97c2160c48de67e9acc`; its Rust, bindings, FFI, catalog, traceability, and coverage-producer jobs passed, while script-contract jobs were still in progress when inspected. Exact-head hosted CI for this slice remains pending publication.
+
+## T040 KMIP Specification §4 single-instance attribute cardinality — Red, Green, and Refactor (2026-10-27)
+
+KMIP Specification v2.1 §4 defines attributes that objects SHALL have at most one instance of. The pinned attribute tables specify the per-attribute multiplicity. The offline source extractor now records the literal Multiple instances permitted cell for all 62 standard attribute records: 51 No, 10 Yes, and Table 72's conditional Yes for PGP keys. No for X.509 certificates. The generator maps these to Single, Multiple, and a conditional policy without flattening the OASIS text.
+
+AttributeSet remains a generic, lossless container, including for Locate predicates and unknown/vendor values. The typed Get Attributes response boundary checks known source-defined cardinality. It rejects duplicate unconditional singleton attributes; it rejects repeated Digital Signature Algorithm only when the response explicitly includes Certificate Type X.509. A missing, malformed, or unrelated conditional context remains undecided. The typed profile evaluator uses the Get Attributes response model and the same check. The runtime change does not claim server-side storage state, object-wide history, server acceptance, or formal conformance.
+
+DCO-signed Red commits 2c6e564a9, 6fa61b2c8, and 628faa2fb pin the source extraction, catalog contract, and generator output. Red 850ff0f9b adds duplicate-singleton parser tests. Red 993ad0a6e adds profile mapping, valid-response, and invalid-response regressions. The focused Red runs failed as intended: the missing catalog source field was not extracted, duplicate Comment and X.509 Digital Signature Algorithm responses were accepted, and the single-instance requirement lacked a typed profile mapping. A further conditional-context regression failed because Object Type=Certificate without Certificate Type was incorrectly treated as X.509. Green commit 443f568ce adds source-backed generated policies, parser enforcement at Get Attributes, profile evaluation and mapping, catalog traceability, and updates old tests that had incorrectly treated singleton Deactivation Date/Object Type as repeatable. The baseline-selection sentinel now points to KMIPKIT-REQ-SPEC-4.38-003.
+
+| Evidence | Result |
+|---|---|
+| Red — source and profile | cargo test -p kmipkit-protocol --lib profile_maps_single_instance_attributes_as_required_behavior --all-features --locked — failed because the typed mapping was absent. |
+| Red — conditional context | cargo test -p kmipkit-protocol --lib response_preserves_conditional_digital_signature_algorithm_without_context --all-features --locked — failed because missing Certificate Type was incorrectly inferred as X.509 from Object Type. |
+| Green — focused Rust behavior | cargo test -p kmipkit-protocol --lib single_instance_attributes --all-features --locked — PASS: 3 tests; cargo test -p kmipkit-protocol --lib digital_signature_algorithm --all-features --locked — PASS: 3 tests; repeated allowed NIST Key Type response regression — PASS. |
+| Green — full protocol package | cargo test -p kmipkit-protocol --all-features --locked — PASS: 1,158 library unit tests, all integration targets, and 3 doctests. |
+| Source and generator contracts | Three focused Python tests for exact source-cell extraction, catalog/source agreement, and conditional generator output — PASS. Catalog validation — PASS (4 sources, 1,411 clauses, 4,137 records). |
+| Quality and generated artifacts | cargo fmt --all --check, protocol Clippy with -D warnings, attribute-policy generator check, profile generator check, coverage report write/check, immutable pinned-source check, and git diff --check — PASS. The regenerated Baseline report has 288/294 typed mappings with category-appropriate test references; readiness remains false. |
+| Independent review and hosted CI | QA and security review of this exact slice and exact-head hosted CI are pending; no result is claimed here. |
+
+T040 remains open, six Baseline requirements remain without typed mappings or category-appropriate test references, and no official OASIS Test Case pass or profile-conformance claim is made.
+
+This initial narrow-slice record predates the cross-operation follow-up below; the following section supersedes its operation-coverage and review-status statements.
+
+## T040 §4 attribute cardinality follow-up — complete client request and response paths (2026-10-27)
+
+This follow-up expands the preceding §4 single-instance slice. It enforces source-defined cardinality at typed request serializers for Create, Create Key Pair, Register, Import, Certify, Re-key, Re-certify, Re-key Key Pair, Create Split Key, Join Split Key, Derive Key, Add Attribute, Modify Attribute, and Set Attribute. Baseline profile preflight checks those request attribute groups, direct Get Attributes responses, Get and Export response objects, and nested `KeyValue.Attributes` on Register, Import, Get, and Export paths. Export top-level returned Attributes are checked as well. The generic `AttributeSet` remains lossless; Locate predicates, unknown tags, vendor values, and source-permitted repetitions are preserved.
+
+KMIP Specification v2.1 §4.22 Table 72 permits repeated Digital Signature Algorithm only for PGP Key objects and marks the X.509 Certificate case as single-instance. §4.5 Table 41 does not make Certificate Type=PGP equivalent to Object Type=PGP Key. Therefore the profile evaluator permits repeated Digital Signature Algorithm only when Object Type explicitly identifies PGP Key; unknown or ambiguous context fails closed. The catalog now links the seven previously omitted direct serializer regressions and the expanded profile tests. The generated report remains at 288/294 Baseline mappings with six requirements still unmapped.
+
+DCO-signed follow-up Red commits: `86faa31fa`, `d096c53c7`, `daf0d472f`, `b2775dd59`, `60096c963`, `ca49faf55`, and `8982a2d44`. The distinct typed-serializer Green commit is `6c5a9e0e0`; the cross-operation profile/cardinality Green commit is `6b1337902`. The first Red commits demonstrate duplicate singleton acceptance, incomplete operation/nested-response paths, and missing serializer enforcement; the subsequent Green commits implement those cases while preserving generic round-trip behavior.
+
+| Evidence | Result |
+|---|---|
+| Full protocol behavior | `cargo test -p kmipkit-protocol --all-features --locked` — PASS: 1,194 unit tests, all integration targets, and 3 doctests. |
+| Static quality | `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` — PASS. |
+| Catalog and generated artifacts | Catalog validation — PASS (4 sources, 1,411 clauses, 4,137 records); `generate_profiles.py --check`, `generate_attribute_policy.py --check`, and `report.py --write` / `report.py --check` — PASS. |
+| Normative traceability | `FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` — PASS in 536.639 s after adding all seven serializer test references. |
+| Pinned-source integrity | `check_immutable_sources.py` against release base `d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4` — PASS; no upstream OASIS source was changed. |
+| Independent review | QA identified the seven missing serializer references and this documentation gap; the catalog references are corrected and the expanded evidence is recorded. QA re-review is pending. Independent security review of the committed and working-tree deltas found no actionable findings; it did not run tests. |
+
+This implementation still does not establish server-side stored-object behavior, server acceptance, official OASIS Test Case success, or formal Baseline Client conformance. T040 remains open with six unmapped Baseline requirements; readiness remains `evidence_incomplete`. Exact-head hosted CI is pending publication, and PR #90 remains a draft.
