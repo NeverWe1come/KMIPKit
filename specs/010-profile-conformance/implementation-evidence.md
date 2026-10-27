@@ -7305,3 +7305,9 @@ KMIP Specification v2.1 Section 9.11 requires Hashed Password Timestamps to mono
 | Independent QA | Read-only review of the six compact packages | PASS: spec-compliance and quality review found no current findings; the initial P2 stale checkpoint was corrected and re-reviewed. |
 | Independent security review | Read-only review of timestamp sequence, diagnostic redaction, profile boundaries, and changed catalog/report code | PASS: no actionable security or correctness findings. |
 | Exact-head hosted CI | T056 local commits through 10718306a | Pending publication; remote run 40423267224 targets the older head 48e250475 and does not validate these commits. |
+
+## PR #90 Windows coverage retry failure — Red (2026-10-27)
+
+Exact-head PR run `40431019041` (`73b8ac02c823197a09831e4235f7dc98b35afe2a`), Windows coverage job `121948525812`, failed while executing `cargo llvm-cov --workspace --all-features --locked --json --output-path coverage-raw.json`. The workspace test `retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` failed at `crates/kmipkit-test-support/tests/unit/dns_tests.rs:169`: it expected exactly 2 UDP bind attempts but observed 3. The injected first bind error is followed by real ephemeral-port binding, which can encounter another transient collision and use the helper's bounded retry. The adjacent TCP retry test already checks the valid range `2..=MAX_SOCKET_PAIR_BIND_ATTEMPTS`.
+
+This is a brittle test assertion, not an LLVM installation failure or a production UDP-helper failure. Coverage report production correctly failed, so the coverage gate rejected the missing Windows producer report; the temporary PR threshold waiver skipped threshold enforcement only. No coverage result is claimed for this run. This exact-head failure is the Red evidence for the focused test correction that follows.
