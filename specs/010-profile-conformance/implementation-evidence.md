@@ -7654,3 +7654,24 @@ DCO-signed Red `e6087decd` added regressions for the ten records and their indep
 | Repository integrity | `git diff --check` — PASS; `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; immutable OASIS source copies unchanged. |
 
 This is a scope-mapping correction, not a profile-conformance claim. Independent QA/security review and exact-head hosted CI for this slice remain pending; T040 stays open for the 12 unresolved applicability records and the remaining evidence gaps.
+
+## T040 §4.57 traceability correction: Active transition and retention SHOULD — Red, Green, and Refactor (2026-10-27)
+
+QA identified two traceability gaps after the initial server-only state-use disposition. First, the existing Active transition requirement KMIPKIT-REQ-SPEC-4.57-003-001 was already marked server-only in the catalog but remained unassigned and absent from DEC-021's requirement list and the independent oracle crosswalk. Second, KMIP Specification v2.1 §4.57 paragraph 7 contains a separate normative SHOULD: the compromised status of a Destroyed Compromised object should be retained for audit or security purposes. That obligation had no stable requirement ID.
+
+DCO-signed Red 58fe677bd adds regressions requiring a DEC-021 crosswalk for the Active transition and a stable requirement ID for the paragraph 7 SHOULD. The command py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability.T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state tools.normative_catalog.tests.test_source_coverage_sections2_to5.SourceCoverageSectionsTwoThroughFiveTests.test_destroyed_compromised_retention_should_has_a_server_requirement_id -v failed with two expected failures: the decision omitted the Active transition and new retention ID, and the source-review atom had no candidate requirement.
+
+DCO-signed Green 97d4063e5 aligns the Active transition record with DEC-021, assigns stable ID KMIPKIT-REQ-SPEC-4.57-007-002 to the distinct SHOULD, and updates the catalog, independent pinned-source oracle, scope regressions, and generated report. DEC-021 now covers twelve server-only obligations across §4.57 paragraphs 3–7. The source actor remains unresolved and direction unclear. The explicitly trusted-client SHOULD KMIPKIT-REQ-SPEC-4.57-005-002 remains unresolved, and this decision does not resolve KMIPKIT-DISC-013. The two new server-only records do not enter client requirement closures. No client behavior or profile conformance claim is added.
+
+| Verification | Command and result |
+|---|---|
+| Applicability | py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v — PASS: 11 tests. |
+| Server-only scope | py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v — PASS: 5 tests. |
+| Source coverage | py -3 -B -m unittest tools.normative_catalog.tests.test_source_coverage_sections2_to5 -v — PASS: 8 tests. |
+| Full report suite | py -3 -B -m unittest tools.normative_catalog.tests.test_report -v — PASS: 67 tests; 1 expected POSIX symlink-only skip. |
+| Catalog and generated artifacts | py -3 tools/normative_catalog/validate.py — PASS: 4 sources, 1,411 clauses, 4,128 records; generate_profiles.py --check — PASS; report.py --check — PASS when run serially. |
+| Rust profile selection | cargo test -p kmipkit-protocol --all-features --test profile_validation — PASS: 7 tests. |
+| Formatting and lint | cargo fmt --all --check — PASS; cargo clippy --workspace --all-targets --all-features -- -D warnings — PASS. |
+| Immutable source and diff | git diff --check — PASS; git diff --exit-code -- specification/oasis/kmip-2.1/upstream — PASS; pinned upstream files unchanged. |
+
+The report lists 634 normative requirements overall. Baseline remains not ready: 282 closure records, 282 typed mappings, 282 category-test references, and twelve unresolved applicability records. The earlier report-suite run had one error while catalog commands were running concurrently; its isolated failing test passed, and the complete serial rerun passed. T040 remains open.
