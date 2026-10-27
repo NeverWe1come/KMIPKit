@@ -7366,3 +7366,7 @@ DCO Green commit `5cb05a17` classifies ten server-produced or server-controlled 
 | Hosted CI for the preceding traceability fix | Run `40435304475` on head `ed859448` passed `Documentation contracts / traceability` and `Coverage / windows`; other jobs were still in progress at the last check. This run predates the T040 commits and does not validate them. |
 
 The independent QA audit of this batch is pending. The ten server-only records no longer block client applicability; the remaining 45 unresolved IDs and all typed implementation/evidence gaps remain open. No official OASIS Test Case pass or profile-conformance claim is made.
+
+## T040 §4.57 review-note correction — Red (2026-10-27)
+
+Independent QA found that `KMIPKIT-REQ-SPEC-4.57-003-001` still carried a stale review note about the separate Protect Stop/Process Stop Date discrepancy, although this requirement is the Active transition at §4.57 lines 20225–20231. Added a regression assertion that this row identifies the Active transition and does not include the unrelated date discrepancy. The focused run `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` failed only this subcase, reproducing the misleading note. This is the Red evidence for the note correction.
