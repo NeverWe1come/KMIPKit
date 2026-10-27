@@ -143,6 +143,7 @@ def _attribute_rule_tables(parser: _SourceParser) -> dict[str, dict[str, str]]:
             "initially set by",
             "modifiable by client",
             "deletable by client",
+            "multiple instances permitted",
         }
         if not required_cells.issubset(cells):
             raise ValueError(f"pinned attribute policy table is incomplete: {caption}")
@@ -158,6 +159,7 @@ def _attribute_rule_tables(parser: _SourceParser) -> dict[str, dict[str, str]]:
             "source_initially_set_by": cells["initially set by"],
             "source_modifiable_by_client": cells["modifiable by client"],
             "source_deletable_by_client": cells["deletable by client"],
+            "source_multiple_instances_permitted": cells["multiple instances permitted"],
         }
     return result
 

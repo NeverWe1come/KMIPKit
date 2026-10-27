@@ -131,7 +131,7 @@ ELEMENT_FIELDS = {
     "source_encoding", "source_requiredness", "source_comment", "source_name",
     "source_initially_set_by", "source_modifiable_by_client", "source_deletable_by_client",
     "source_always_required", "source_policy_table", "source_operation_restrictions",
-    "source_conditional_rules", "source_value_policies",
+    "source_multiple_instances_permitted", "source_conditional_rules", "source_value_policies",
 }
 ATTRIBUTE_POLICY_FIELDS = frozenset(
     {
@@ -140,6 +140,7 @@ ATTRIBUTE_POLICY_FIELDS = frozenset(
         "source_deletable_by_client",
         "source_always_required",
         "source_policy_table",
+        "source_multiple_instances_permitted",
         "source_operation_restrictions",
         "source_conditional_rules",
         "source_value_policies",
@@ -604,6 +605,7 @@ def _check_attribute_policy_metadata(catalog: dict[str, Any], repo_root: Path) -
             "source_deletable_by_client",
             "source_always_required",
             "source_policy_table",
+            "source_multiple_instances_permitted",
         ):
             if attribute.get(field) != expected[field]:
                 _fail(f"standard attribute {field} does not match its pinned source cell")

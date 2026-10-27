@@ -198,9 +198,9 @@ class AttributePolicyRenderingTests(unittest.TestCase):
     def test_renders_source_backed_attribute_multiplicity_without_flattening_conditions(self) -> None:
         rendered = self._render()
         expected = {
-            "Comment": "No",
-            "Name": "Yes",
-            "Digital Signature Algorithm": "Yes for PGP keys. No for X.509 certificates.",
+            "Comment": "Single",
+            "Name": "Multiple",
+            "Digital Signature Algorithm": "PgpKeyOrX509Certificate",
         }
 
         for name, multiplicity in expected.items():
@@ -208,11 +208,9 @@ class AttributePolicyRenderingTests(unittest.TestCase):
                 attribute = next(item for item in self._standard_attributes() if item["name"] == name)
                 tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
                 record = _attribute_policy_record(self, rendered, tag)
-                _assert_source_value(
-                    self,
+                self.assertIn(
+                    f"multiplicity: AttributeMultiplicity::{multiplicity},",
                     record,
-                    "source_multiple_instances_permitted",
-                    multiplicity,
                 )
 
     def _standard_attributes(self) -> list[dict[str, Any]]:

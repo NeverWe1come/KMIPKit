@@ -1,6 +1,7 @@
 //! Lossless typed grouping for the direct KMIP Object Attribute items used by
 //! operation attribute structures.
 
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 
@@ -12,6 +13,8 @@ const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+const CERTIFICATE_TYPE_X509: u32 = 1;
 
 /// A client-initiated KMIP operation that can mutate an object attribute.
 #[non_exhaustive]
@@ -259,6 +262,8 @@ pub enum AttributeSetError {
     DuplicateAttributeValue,
     /// A recognized attribute's TTLV type is outside the catalog encoding.
     AttributeTtlvTypeMismatch,
+    /// A server response contains multiple instances of a source-defined single-instance attribute.
+    DuplicateSingleInstanceAttribute,
     /// The required Vendor Attribute members violate §4.60 Table 150 order,
     /// applying the field order rule in §8 and the Structure encoding rule in §10.1.2.
     VendorAttributeFieldOrder,
@@ -283,6 +288,9 @@ impl Display for AttributeSetError {
             Self::DuplicateAttributeValue => "Attribute Value is repeated",
             Self::AttributeTtlvTypeMismatch => {
                 "attribute TTLV type does not match its catalog encoding"
+            }
+            Self::DuplicateSingleInstanceAttribute => {
+                "attribute set repeats a source-defined single-instance attribute"
             }
             Self::VendorAttributeFieldOrder => {
                 "Vendor Attribute fields do not follow Table 150 order"
@@ -347,6 +355,58 @@ impl AttributeSet {
         }
         self.items.push(item);
         Ok(())
+    }
+
+    /// Checks source-defined attribute multiplicity when interpreting a
+    /// server-returned object attribute set.
+    ///
+    /// The generic `AttributeSet` remains lossless. This check is applied by
+    /// typed response boundaries, not by Locate predicates or arbitrary TTLV
+    /// collections. The conditional Digital Signature Algorithm policy is
+    /// enforced only when Certificate Type explicitly identifies an X.509
+    /// certificate; other or missing context remains undecided.
+    pub(crate) fn validate_single_instance_cardinality(&self) -> Result<(), AttributeSetError> {
+        let certificate_type = self.enumeration_value(CERTIFICATE_TYPE_TAG);
+        let mut seen = HashSet::with_capacity(self.items.len());
+
+        for item in &self.items {
+            let raw_tag = item.tag().raw();
+            if !seen.insert(raw_tag) {
+                let Some(policy) = crate::attribute_policy::ATTRIBUTE_POLICIES
+                    .iter()
+                    .find(|policy| policy.tag == raw_tag)
+                else {
+                    continue;
+                };
+
+                let is_single_instance = match policy.multiplicity {
+                    crate::attribute_policy::AttributeMultiplicity::Single => true,
+                    crate::attribute_policy::AttributeMultiplicity::Multiple => false,
+                    crate::attribute_policy::AttributeMultiplicity::PgpKeyOrX509Certificate => {
+                        certificate_type == Some(CERTIFICATE_TYPE_X509)
+                    }
+                };
+                if is_single_instance {
+                    return Err(AttributeSetError::DuplicateSingleInstanceAttribute);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn enumeration_value(&self, tag: u32) -> Option<u32> {
+        let mut values = self
+            .items
+            .iter()
+            .filter(|item| item.tag().raw() == tag)
+            .map(|item| {
+                item.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                })
+            });
+        let value = values.next()??;
+        values.next().is_none().then_some(value)
     }
 
     /// Returns the direct items in wire order.

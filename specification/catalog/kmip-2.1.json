@@ -28004,6 +28004,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 30",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28061,6 +28062,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 32",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28098,6 +28100,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 34",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -28151,6 +28154,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 36",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28186,6 +28190,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 38",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28215,6 +28220,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 40",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28250,6 +28256,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 44",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -28319,6 +28326,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 42",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -28378,6 +28386,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 46",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28413,6 +28422,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 48",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28448,6 +28458,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 50",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28483,6 +28494,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 52",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28518,6 +28530,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 54",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28573,6 +28586,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 56",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28608,6 +28622,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 58",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28678,6 +28693,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 60",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28713,6 +28729,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 62",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28758,6 +28775,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 64",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28812,6 +28830,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 66",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28847,6 +28866,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 68",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -28883,6 +28903,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 70",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -28937,6 +28958,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 72",
+      "source_multiple_instances_permitted": "Yes for PGP keys. No for X.509 certificates.",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -28998,6 +29020,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 74",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29047,6 +29070,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 76",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29096,6 +29120,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 78",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29155,6 +29180,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 80",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29207,6 +29233,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 83",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29247,6 +29274,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 85",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29301,6 +29329,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 87",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29350,6 +29379,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 89",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29448,6 +29478,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 92",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29486,6 +29517,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 94",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29523,6 +29555,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 96",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29572,6 +29605,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 98",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -29621,6 +29655,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 100",
+      "source_multiple_instances_permitted": "Yes",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29656,6 +29691,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 102",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29715,6 +29751,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 104",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -29774,6 +29811,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 106",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -29819,6 +29857,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 108",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29854,6 +29893,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 110",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -29908,6 +29948,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 112",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -29962,6 +30003,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 114",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -29999,6 +30041,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 116",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30034,6 +30077,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 118",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30083,6 +30127,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 120",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30120,6 +30165,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 122",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": [
         {
@@ -30166,6 +30212,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 124",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30201,6 +30248,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 126",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30236,6 +30284,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 128",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30271,6 +30320,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 130",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30306,6 +30356,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 132",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30341,6 +30392,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 134",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30376,6 +30428,7 @@
       "source_deletable_by_client": "Yes",
       "source_always_required": "No",
       "source_policy_table": "Table 136",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30411,6 +30464,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "No",
       "source_policy_table": "Table 138",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [],
       "source_conditional_rules": []
     },
@@ -30448,6 +30502,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 140",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30497,6 +30552,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 142",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30559,6 +30615,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 144",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30785,6 +30842,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 147",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30852,6 +30910,7 @@
       "source_deletable_by_client": "Yes, as long as Get Usage Allocation has not been performed",
       "source_always_required": "No",
       "source_policy_table": "Table 149",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -30991,6 +31050,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 152",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -31051,6 +31111,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 154",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -31111,6 +31172,7 @@
       "source_deletable_by_client": "No",
       "source_always_required": "Yes",
       "source_policy_table": "Table 156",
+      "source_multiple_instances_permitted": "No",
       "source_operation_restrictions": [
         {
           "source_refs": [
@@ -88892,14 +88954,18 @@
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
         "crates/kmipkit-protocol/src/delete_attribute.rs",
+        "crates/kmipkit-protocol/src/generated/attribute_policy.rs",
         "crates/kmipkit-protocol/src/get_attributes.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/set_attribute.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_get_attributes_response",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
@@ -88911,8 +88977,8 @@
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4 defines single-instance attributes as having at most one instance and the surrounding text names client attribute operations. The client request representation must not create duplicate instances for a source-defined single-instance attribute; the server remains authoritative for the stored object."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4 defines single-instance attributes as having at most one instance. Table 46 marks Comment as single-instance; Table 72 makes Digital Signature Algorithm conditional, permitting multiple instances for PGP keys and prohibiting them for X.509 certificates. The generated attribute policy preserves each source table cell. AttributeSet remains lossless; typed Get Attributes parsing rejects duplicate unconditional single-instance attributes and rejects repeated Digital Signature Algorithm only when Certificate Type explicitly identifies X.509. Missing conditional context remains undecided. The profile mapping tests valid and invalid Get Attributes responses; no server-side stored-object behavior or formal conformance claim is made. No official OASIS Test Case is linked to this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-004",

@@ -3291,6 +3291,23 @@ fn client_can_represent_multi_instance_attributes(
     request.is_some() || response.is_some()
 }
 
+fn client_preserves_single_instance_attribute_cardinality(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if request.is_none() {
+        return false;
+    }
+    let Some((_, response)) = response else {
+        return true;
+    };
+
+    response.batch_items().all(|item| {
+        item.operation() != Some(GET_ATTRIBUTES_OPERATION)
+            || crate::GetAttributesResponse::try_from_response_item(item).is_ok()
+    })
+}
+
 fn client_can_repeat_credentials_within_authentication(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8279,6 +8296,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             key: "client_profile_capability",
             value: "caller_supplies_distinct_values_for_multi_instance_attributes",
         }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_preserves_single_instance_attribute_cardinality),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_get_attributes_response",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
     },
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.4-001",
