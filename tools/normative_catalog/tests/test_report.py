@@ -369,6 +369,45 @@ class CoverageReportTests(unittest.TestCase):
                 load_typed_rule_mappings(repository),
             )
 
+    def test_typed_rule_registry_accepts_caller_owned_distinct_attribute_values(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "caller_supplies_distinct_values_for_multi_instance_attributes",
+        }],
+    },
+];
+"""
+
+        self.assertEqual(
+            _parse_typed_rule_registry(source),
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
+                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+                    "source_gap_id": None,
+                    "verification_category": "RecommendedBehaviorOrDeviation",
+                    "evaluator_present": False,
+                    "transport_only": False,
+                    "configuration_only": True,
+                    "test_kind": "RecommendedBehavior",
+                    "test_id": "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
+                }
+            ],
+        )
+
     def test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
