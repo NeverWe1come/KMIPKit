@@ -12945,7 +12945,7 @@ fn validate_selection_with_registry(
     }
 
     let mut requirement_ids = BTreeSet::new();
-    let mut constraints = std::collections::BTreeMap::new();
+    let mut constraints = std::collections::BTreeMap::<&'static str, &'static str>::new();
     for profile_id in &dependency_order {
         let profile = find_profile(profiles, profile_id).ok_or_else(|| {
             ProfileValidationError::for_profile(
@@ -12990,18 +12990,13 @@ fn validate_selection_with_registry(
             };
             validate_mapping(profile_id, requirement, mapping)?;
             for constraint in mapping.constraints {
-                if let Some(existing_value) = constraints.get(constraint.key) {
-                    if *existing_value != constraint.value {
-                        return Err(ProfileValidationError::for_requirement(
-                            ProfileValidationErrorCode::ConflictingConstraints,
-                            profile_id,
-                            requirement.requirement_id,
-                            Some(mapping.source_clause_id),
-                        ));
-                    }
-                } else {
-                    constraints.insert(constraint.key, constraint.value);
-                }
+                merge_rule_constraint(
+                    &mut constraints,
+                    profile_id,
+                    requirement,
+                    mapping,
+                    constraint,
+                )?;
             }
             requirement_ids.insert(requirement.requirement_id);
         }
@@ -13011,6 +13006,45 @@ fn validate_selection_with_registry(
         profile_ids: resolved_ids.into_iter().collect(),
         requirement_ids: requirement_ids.into_iter().map(str::to_owned).collect(),
     })
+}
+
+fn merge_rule_constraint(
+    constraints: &mut std::collections::BTreeMap<&'static str, &'static str>,
+    profile_id: &str,
+    requirement: &GeneratedClientRequirement,
+    mapping: &TypedRuleMapping,
+    constraint: &RuleConstraint,
+) -> Result<(), ProfileValidationError> {
+    if let Some(existing_value) = constraints.get(constraint.key) {
+        if !rule_constraint_values_are_compatible(constraint.key, existing_value, constraint.value)
+        {
+            return Err(ProfileValidationError::for_requirement(
+                ProfileValidationErrorCode::ConflictingConstraints,
+                profile_id,
+                requirement.requirement_id,
+                Some(mapping.source_clause_id),
+            ));
+        }
+    } else {
+        constraints.insert(constraint.key, constraint.value);
+    }
+    Ok(())
+}
+
+fn rule_constraint_values_are_compatible(key: &str, left: &str, right: &str) -> bool {
+    if left == right {
+        return true;
+    }
+
+    match key {
+        // These constraints are independent capability/evidence labels, not
+        // assignments to one mutually exclusive runtime setting.
+        "client_profile_capability" | "client_profile_conformance_evidence" => true,
+        // TLS 1.3 satisfies the broader TLS requirement; both profile clauses
+        // can apply to the same selected client.
+        "transport_security" => matches!((left, right), ("tls", "tls13") | ("tls13", "tls")),
+        _ => false,
+    }
 }
 
 fn resolve_profile(
