@@ -7383,3 +7383,7 @@ DCO Green commit `8e606ba1` replaces the stale note with the exact Active-transi
 | Coverage report generation and check | `py -3 -B tools/normative_catalog/report.py --write`; serial `py -3 -B tools/normative_catalog/report.py --check` — PASS; the report matches the corrected catalog. |
 
 Independent QA found no additional scope or generated-output issue after the note correction. One earlier report check overlapped report regeneration and returned a generic input error; the sequential exact CLI check passed after writes settled. The six typed test references initially questioned during that run each resolve as active Cargo tests in the current tree, so no unrelated mapping changes were made. No official OASIS Test Case pass or profile-conformance claim is made.
+
+## T040 PKCS#11-only field applicability — Red (2026-10-27)
+
+Added a regression for Specification v2.1 §§7.26–7.30 requiring the five PKCS#11-specific field records to remain actor- and direction-unspecified, have conditional scope with no selected profile IDs, and stay out of Baseline Client closure and unresolved blockers. The pinned source says those fields may pertain only to certain profile types; each catalog condition already limits its row to the PKCS#11 profile. The first focused run failed all five subcases because their `scope_state` remained `unclear`. This is the Red evidence for resolving that profile condition without assigning it to Baseline.

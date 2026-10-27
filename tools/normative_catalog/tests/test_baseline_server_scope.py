@@ -26,6 +26,10 @@ SERVER_ONLY_REQUIREMENT_DIRECTIONS = {
     "KMIPKIT-REQ-SPEC-9.21-001-002": "server_to_client",
 }
 
+PKCS11_CONDITIONAL_REQUIREMENT_IDS = {
+    f"KMIPKIT-REQ-SPEC-7.{section}-001" for section in range(26, 31)
+}
+
 
 def load_catalog() -> dict[str, Any]:
     """Load the checked-in normative catalog used by profile generation."""
@@ -72,6 +76,36 @@ class BaselineServerScopeTests(unittest.TestCase):
                     requirement_id,
                     {item.requirement_id for item in closure.unresolved_scope_obligations},
                 )
+
+    def test_pkcs11_specific_fields_do_not_block_baseline_client(self) -> None:
+        catalog = load_catalog()
+        requirements = {
+            item["requirement_id"]: item for item in catalog["requirements"]
+        }
+        profile = next(
+            item
+            for item in catalog["profiles"]
+            if item["profile_id"] == BASELINE_PROFILE_ID
+        )
+        closure = compute_profile_closure(
+            catalog,
+            profile["direct_source_clause_ids"],
+            profile_id=BASELINE_PROFILE_ID,
+        )
+        unresolved_ids = {
+            item.requirement_id for item in closure.unresolved_scope_obligations
+        }
+
+        for requirement_id in PKCS11_CONDITIONAL_REQUIREMENT_IDS:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "unspecified")
+                self.assertEqual(requirement["direction"], "unclear")
+                self.assertEqual(requirement["scope_state"], "profile_conditional")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertIn("PKCS#11", requirement["condition"])
+                self.assertNotIn(requirement_id, closure.requirement_ids)
+                self.assertNotIn(requirement_id, unresolved_ids)
 
 
 if __name__ == "__main__":
