@@ -195,6 +195,26 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         self.assertIn("#[rustfmt::skip]\npub(super) const ATTRIBUTE_POLICIES", rendered)
         self.assertIn("#[rustfmt::skip]\npub(super) const VENDOR_ATTRIBUTE_POLICY", rendered)
 
+    def test_renders_source_backed_attribute_multiplicity_without_flattening_conditions(self) -> None:
+        rendered = self._render()
+        expected = {
+            "Comment": "No",
+            "Name": "Yes",
+            "Digital Signature Algorithm": "Yes for PGP keys. No for X.509 certificates.",
+        }
+
+        for name, multiplicity in expected.items():
+            with self.subTest(attribute=name):
+                attribute = next(item for item in self._standard_attributes() if item["name"] == name)
+                tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
+                record = _attribute_policy_record(self, rendered, tag)
+                _assert_source_value(
+                    self,
+                    record,
+                    "source_multiple_instances_permitted",
+                    multiplicity,
+                )
+
     def _standard_attributes(self) -> list[dict[str, Any]]:
         return [
             item
