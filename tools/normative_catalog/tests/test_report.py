@@ -485,10 +485,6 @@ class CoverageReportTests(unittest.TestCase):
                 key: "client_profile_capability",
                 value: "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
             },
-            RuleConstraint {
-                key: "client_profile_capability",
-                value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
-            },
         ],
     },
 ];

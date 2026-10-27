@@ -330,7 +330,9 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         )
 
         self.assertEqual(clause["scope_state"], "server_only")
-        self.assertIn("KMIPKIT-DEC-020", clause["exclusion_rationale"])
+        self.assertEqual(clause["role"], "server")
+        self.assertEqual(clause["requirement_ids"], [requirement_id])
+        self.assertIsNone(clause["exclusion_rationale"])
         self.assertEqual(requirement["role"], "server")
         self.assertEqual(requirement["scope_state"], "server_only")
         self.assertEqual(requirement["direction"], "unclear")

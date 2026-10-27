@@ -15155,9 +15155,9 @@
         "KMIPKIT-REQ-SPEC-4.57-002"
       ],
       "exclusion_rationale": null,
-      "role": "client",
+      "role": "server",
       "direction": "unclear",
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -91220,28 +91220,24 @@
       "normative_strength": "prohibited",
       "subject": "Pre-Active object use",
       "summary": "The object exists and SHALL NOT be used for any cryptographic purpose.",
-      "role": "client",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "client_1_0",
+      "scope_state": "server_only",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-STATE"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [
-        "crates/kmipkit-protocol/src/profile.rs",
-        "specs/010-profile-conformance/contracts/profile-validation.md"
-      ],
+      "implementation_refs": [],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_records_pre_active_use_as_caller_owned_unverified_obligation",
-        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_pre_active_use_prohibition_is_client_scope"
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_pre_active_use_prohibition_is_server_only"
       ],
       "negative_verification_required": true,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-020",
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.57, lines 20218–20221, states that a Pre-Active object exists and SHALL NOT be used for any cryptographic purpose. The source predicate names no actor or message direction; both remain unresolved/unclear. The KMIPKit project interpretation assigns the restriction to the client 1.0 profile as caller-owned because the library cannot infer or track remote object State and performs no local cryptographic operation. The static typed mapping records the caller duty but has no evaluator. No category-appropriate negative behavioral evidence currently verifies the prohibition; the generated report and runtime profile selection retain a MissingCategoryTest blocker. The metadata test verifies this fail-closed disposition, not cryptographic-use behavior. No official OASIS Test Case ID is explicitly linked, and none is inferred."
+      "review_note": "Pinned KMIP Specification v2.1 §4.57, lines 20218–20221, prohibits using a Pre-Active object for any cryptographic purpose but names no actor or message direction. KMIPKIT-DEC-020 classifies this requirement as server-only: §4.57 describes State as known to and changed by the server, while §6.1.17 defines Encrypt as a client request for the server to perform encryption. The source actor remains unresolved and source direction remains unclear. The §4.57 clause stays in all client source closures, but the requirement is excluded from client requirement closures. No client runtime guard, hidden State query, or local cryptographic behavior is inferred. No official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-001",
@@ -105179,7 +105175,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -106603,7 +106598,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -108010,7 +108004,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -109747,7 +109740,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -111204,7 +111196,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -112664,7 +112655,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -114122,7 +114112,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -115558,7 +115547,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -116978,7 +116966,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -118401,7 +118388,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -119838,7 +119824,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -121283,7 +121268,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -122718,7 +122702,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -124006,7 +123989,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -125299,7 +125281,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -126747,7 +126728,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -128228,7 +128208,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -129668,7 +129647,6 @@
         "KMIPKIT-REQ-SPEC-4.47-001-001",
         "KMIPKIT-REQ-SPEC-4.47-001-002",
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.59-003-002",
         "KMIPKIT-REQ-SPEC-4.62-003",
         "KMIPKIT-REQ-SPEC-4.63-004",
@@ -134909,7 +134887,6 @@
       ],
       "affected_requirement_ids": [
         "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-REQ-SPEC-4.57-002",
         "KMIPKIT-REQ-SPEC-4.57-003-001",
         "KMIPKIT-REQ-SPEC-4.57-003-002",
         "KMIPKIT-REQ-SPEC-4.57-003-003",
@@ -137245,6 +137222,30 @@
       "approval_evidence": "The user-approved source-first instruction and the exact ruling in .superpowers/sdd/plan/task-40-recertify-identifier-brief.md select this branch behavior.",
       "approved_at": "2026-10-25",
       "consequence": "The typed Re-certify request builder rejects omitted or ID Placeholder Unique Identifier only when Certificate Request Value is absent. The Baseline Client evaluator checks the request representation without claiming what the identifier denotes or how the server resolves it. The pinned OASIS source remains unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-020",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.57"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.57-002"
+      ],
+      "discrepancy_ids": [],
+      "policy_ids": [],
+      "interpretation": "KMIP Specification v2.1 §4.57 paragraph 2 prohibits use of a Pre-Active object but does not identify the actor or message direction. Section 4.57 states that State is known to the key management server and is changed only by the server; §6.1.17 defines Encrypt as a client request for the server to perform encryption. For KMIPKit 1.0, classify this prohibition as server-only because the server has authoritative object State and performs cryptographic operations on managed objects. Keep the §4.57 clause in every client source-clause closure, but exclude the prohibition from client requirement closures. Do not add a client State query, local crypto behavior, or a client runtime guard.",
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that the best-supported recommendation be used when the standard is silent on an actor, and that implementation continue autonomously without further approval requests.",
+      "approved_at": "2026-10-27",
+      "consequence": "The source actor remains unresolved and source direction remains unclear. The server-only requirement stays traceable in the normative inventory but is absent from all client profile requirement closures and runtime registries. No client conformance claim is made about server enforcement.",
       "status": "accepted"
     }
   ],
