@@ -2034,6 +2034,15 @@ mod unrelated {
         self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][5])
         self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
 
+        report = render_report(catalog, typed_rule_mappings=[mapping])
+        baseline_blocker_row = next(
+            row
+            for row in report.splitlines()
+            if row.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+            and len(row.split("|")) == 9
+        )
+        self.assertNotIn("category test references missing: 1", baseline_blocker_row)
+
     def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
