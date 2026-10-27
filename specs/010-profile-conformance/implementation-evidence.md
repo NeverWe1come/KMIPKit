@@ -7730,3 +7730,15 @@ The Red runs below were executed in detached worktrees at the named test commits
 Green commits `e087f23a9`, `25d2f686c`, `b7f173532`, `fef1050fd`, and `a17f02324` implement the corresponding parser, typed mapping, and compatible-constraint behavior. The current full protocol suite passes after those changes; Refactor `8c22f2e23` extracts the Query response fixture builder and keeps the tests under the Clippy line limit.
 
 The feature branch has not yet been pushed at this evidence point; exact-head hosted CI and independent review of this follow-up are pending. The existing PR remains a draft.
+
+## T040 client preflight test-contract correction (2026-10-27)
+
+The generated Baseline profile now has resolved applicability. Explicit selection therefore reaches the next fail-closed gate, `MissingRuleMapping`, before any transport exchange. DCO-signed test-only correction commit `f04e7fa723e339d84390d5f36e8c4d2a1c667636` updates the two stale client preflight contracts: explicit Query/Discover operations no longer expect an unresolved-scope error, and the incomplete-selection case no longer reads the now-empty `unresolved_scope_obligations` list. It checks stable requirement and source identifier namespaces without pinning the first currently unmapped requirement, which T040 is still closing. No production code or generated metadata changed.
+
+| Phase | Evidence |
+|---|---|
+| Red — exact hosted CI | [Run 40532922769, job 122290730541](https://github.com/NeverWe1come/KMIPKit/actions/runs/40532922769/job/122290730541), exact tested head `e49e0c70619292bfb4ae493d4437f1831cf09431`, `Core / ubuntu-latest / Rust stable`, failed at `cargo test --workspace --all-features --locked`. The `kmipkit-client --lib` target ran 589 tests: 587 passed and 2 failed. `explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaults` received `MissingRuleMapping` while expecting `UnresolvedRequirementScope`; `incomplete_profile_selection_fails_before_transport_with_stable_source_ids` panicked because Baseline had no unresolved applicability obligation to read. |
+| Green — focused Windows tests | `cargo test -p kmipkit-client --all-features profile_preflight_tests` — PASS: 12 passed, 0 failed, 577 filtered out in the client library test target. |
+| Formatting and diff | `cargo fmt --all --check` — PASS; `git diff --check` — PASS. |
+
+The focused Windows build emitted non-fatal `aws-lc-sys` warnings for an unavailable NASM executable and a failed optional `stdalign_check.c` probe; compilation and all focused tests completed successfully. This correction changes test expectations only; it does not resolve remaining T040 mapping or evidence gaps and makes no profile-conformance claim.
