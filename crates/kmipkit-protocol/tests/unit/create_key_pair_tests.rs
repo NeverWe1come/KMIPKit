@@ -248,6 +248,21 @@ fn decode_response(
 }
 
 #[test]
+fn create_key_pair_rejects_repeated_single_instance_attributes_per_group() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    let duplicate_comments = attributes([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    let request = request_with_groups(Some(duplicate_comments), None, None);
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "Create Key Pair must not encode duplicate Comment instances"
+    );
+}
+
+#[test]
 fn request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order() {
     let repeated_common = attributes([
         vendor_attribute(b"common-first"),

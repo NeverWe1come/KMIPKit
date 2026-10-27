@@ -239,6 +239,20 @@ fn create_only_oasis_fixtures_decode_with_the_expected_fields() {
 }
 
 #[test]
+fn create_rejects_repeated_single_instance_attributes() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    let attributes = AttributeSet::try_new([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ])
+    .expect("the generic AttributeSet remains lossless before operation validation");
+
+    let result = CreateRequest::new(ObjectType::from_raw(7), attributes).into_ttlv_payload();
+
+    assert!(result.is_err(), "Create must not encode duplicate Comment instances");
+}
+
+#[test]
 fn request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields() {
     let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
     assert_eq!(request.object_type(), ObjectType::from_raw(7));

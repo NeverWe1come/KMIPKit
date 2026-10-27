@@ -255,6 +255,27 @@ fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
 }
 
 #[test]
+fn import_rejects_repeated_single_instance_attributes() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    let duplicate_comments = AttributeSet::try_new([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ])
+    .expect("the generic AttributeSet remains lossless before operation validation");
+    let request = ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(2),
+        duplicate_comments,
+        key_object(),
+    );
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "Import must not encode duplicate Comment instances"
+    );
+}
+
+#[test]
 fn request_preserves_required_fields_and_only_explicit_optional_choices() {
     let request = ImportRequest::new(
         UniqueIdentifier::TextString("import-key".to_owned()),

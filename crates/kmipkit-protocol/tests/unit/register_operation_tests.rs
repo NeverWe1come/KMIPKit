@@ -625,6 +625,25 @@ fn opaque_object_preserves_future_type_unknown_children_attribute_order_and_data
 }
 
 #[test]
+fn register_rejects_repeated_single_instance_attributes() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    let duplicate_comments = attrs([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(OPAQUE_OBJECT_TYPE),
+        duplicate_comments,
+        opaque_object(),
+    );
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "Register must not encode duplicate Comment instances"
+    );
+}
+
+#[test]
 fn request_emits_table_291_fields_in_order_and_preserves_object_item() {
     let sentinel = SECRET_SENTINEL.to_vec();
     let mut object_body = Structure::new();
