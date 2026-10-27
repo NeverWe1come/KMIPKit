@@ -20008,6 +20008,24 @@
       "review_note": "Pinned KMIP Specification v2.1 §4.57, lines 20218–20221, states that a Pre-Active object SHALL NOT be used for any cryptographic purpose, without naming an actor or message direction. KMIPKIT-DEC-020 classifies the prohibition as server-only: the server knows authoritative State and performs managed-object cryptographic operations; the client receives no State input to enforce. Source actor remains unresolved and direction unclear. The source clause stays in each client closure, but the prohibition is not a client requirement. No official OASIS Test Case ID is explicitly linked."
     },
     {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-001",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4.57-003",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4.57",
+      "source_locator": {
+        "ordinal": 3,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHALL",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": [],
+      "source_actor": "unresolved",
+      "source_direction": "unclear",
+      "source_obligation_order": 1,
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231 says the object is transitioned to Active before cryptographic use but does not name the endpoint actor or message direction. This Active state transition is assigned to the server by the project interpretation recorded in KMIPKIT-DEC-021 because the server owns authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear. The Protect Stop / Process Stop Date discrepancy remains unresolved under KMIPKIT-DISC-013. No requirement-specific official OASIS Test Case ID is explicitly linked."
+    },
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-002",
       "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4.57-003",
       "source_id": "KMIPKIT-SRC-spec",
@@ -20186,6 +20204,24 @@
       "source_direction": "unclear",
       "source_obligation_order": 1,
       "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258-20262 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-007-002",
+      "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4.57-007",
+      "source_id": "KMIPKIT-SRC-spec",
+      "source_section": "4.57",
+      "source_locator": {
+        "ordinal": 7,
+        "block_kind": "paragraph"
+      },
+      "source_keyword": "SHOULD",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": [],
+      "source_actor": "unresolved",
+      "source_direction": "unclear",
+      "source_obligation_order": 2,
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258-20262 says the object's compromised status SHOULD be retained for audit or security purposes. The source does not name an endpoint actor or message direction. The project interpretation recorded in KMIPKIT-DEC-021 assigns retention to the server because it owns authoritative object State and the managed object. The source actor remains unresolved and direction unclear. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
@@ -72178,8 +72214,9 @@
           "actor": "unresolved",
           "direction": "The source predicate constrains object state/use; no message direction is stated.",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-001"
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-001",
+          "project_actor_interpretation": "server"
         },
         {
           "source_order": 2,
@@ -72218,7 +72255,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225–20231. The Active-state predicates constrain use of objects under server-owned State. KMIPKIT-DEC-021 assigns the state-dependent use predicates to the server because the server knows authoritative State and performs managed-object cryptographic operations; the source actor remains unresolved and direction unclear. The separate Protect Stop / Process Stop Date discrepancy remains open under KMIPKIT-DISC-013. The Compromised-state SHOULD in paragraph 5 remains separately unresolved because it explicitly names a trusted client."
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231. The Active-state predicates constrain use and transition of objects under server-owned State. KMIPKIT-DEC-021 assigns these state-dependent requirements to the server because it knows authoritative State and manages the cryptographic operations; source actor remains unresolved and direction unclear. The separate Protect Stop / Process Stop Date discrepancy remains open under KMIPKIT-DISC-013. The trusted-client Compromised-state SHOULD in paragraph 5 remains unresolved."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -72392,14 +72429,15 @@
           "actor": "unresolved",
           "direction": "The source predicate constrains object state/use; no message direction is stated.",
           "condition": null,
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": null
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.57-007-002",
+          "project_actor_interpretation": "server"
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258–20262. The Destroyed Compromised use prohibition is classified server-only under KMIPKIT-DEC-021 because State is server-owned and managed-object cryptographic operations are performed by the server. Source actor remains unresolved and direction unclear; the separate compromised-status retention SHOULD remains server-side context and is not assigned a new requirement ID."
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258-20262. The Destroyed Compromised use prohibition and the distinct SHOULD to retain compromised status are separately catalogued and classified server-only under KMIPKIT-DEC-021 because the server owns State and the managed object. Source actors remain unresolved and direction unclear. The trusted-client SHOULD in paragraph 5 is separate and remains unresolved."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",

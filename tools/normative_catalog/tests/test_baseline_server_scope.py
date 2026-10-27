@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
 
 SERVER_ONLY_REQUIREMENT_DIRECTIONS = {
-    "KMIPKIT-REQ-SPEC-4.57-003-001": "not_applicable",
+    "KMIPKIT-REQ-SPEC-4.57-003-001": "unclear",
     "KMIPKIT-REQ-SPEC-4.57-003-002": "unclear",
     "KMIPKIT-REQ-SPEC-4.57-003-003": "unclear",
     "KMIPKIT-REQ-SPEC-4.57-003-004": "unclear",
@@ -25,6 +25,7 @@ SERVER_ONLY_REQUIREMENT_DIRECTIONS = {
     "KMIPKIT-REQ-SPEC-4.57-005-003": "unclear",
     "KMIPKIT-REQ-SPEC-4.57-006": "unclear",
     "KMIPKIT-REQ-SPEC-4.57-007": "unclear",
+    "KMIPKIT-REQ-SPEC-4.57-007-002": "unclear",
     "KMIPKIT-REQ-SPEC-6.1.25-001": "not_applicable",
     "KMIPKIT-REQ-SPEC-7.12-005-002": "server_to_client",
     "KMIPKIT-REQ-SPEC-7.18-002": "server_to_client",

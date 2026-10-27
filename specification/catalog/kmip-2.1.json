@@ -15270,7 +15270,8 @@
       ],
       "disposition": "requirement",
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.57-007"
+        "KMIPKIT-REQ-SPEC-4.57-007",
+        "KMIPKIT-REQ-SPEC-4.57-007-002"
       ],
       "exclusion_rationale": null,
       "role": "server",
@@ -91255,7 +91256,7 @@
       "subject": "Active state before cryptographic use",
       "summary": "The object SHALL be transitioned to the Active state prior to being used for any cryptographic purpose.",
       "role": "server",
-      "direction": "not_applicable",
+      "direction": "unclear",
       "condition": null,
       "scope_state": "server_only",
       "element_ids": [],
@@ -91263,11 +91264,13 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4.57 lines 20225–20231 describe the Active state transition; the section states that State may only be changed by the server. Project interpretation: this requirement is server-controlled and server_only for client profile closure, with no message direction because it is lifecycle behavior. The separate Protect Stop/Process Stop Date wording discrepancy belongs to later state rules and remains unresolved there. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231 says the object is transitioned to Active before cryptographic use but does not name the endpoint actor or message direction. This Active state transition is assigned to the server by the project interpretation recorded in KMIPKIT-DEC-021, which owns authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear. The separate Protect Stop / Process Stop Date discrepancy belongs to later state rules and remains unresolved under KMIPKIT-DISC-013. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-002",
@@ -91586,6 +91589,39 @@
       "decision_id": "KMIPKIT-DEC-021",
       "status": "scoped_verified",
       "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258-20262 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-4.57-007-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-4.57-007"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.57"
+        }
+      ],
+      "source_keyword": "SHOULD",
+      "normative_strength": "recommended",
+      "subject": "Destroyed Compromised status retention",
+      "summary": "The object's compromised status SHOULD be retained for audit or security purposes.",
+      "role": "server",
+      "direction": "unclear",
+      "condition": null,
+      "scope_state": "server_only",
+      "element_ids": [],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": null,
+      "implementation_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_source_coverage_sections2_to5.py::SourceCoverageSectionsTwoThroughFiveTests.test_destroyed_compromised_retention_should_has_a_server_requirement_id",
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
+      "negative_verification_required": false,
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 paragraph 7 says the object's compromised status SHOULD be retained for audit or security purposes. The source does not name an endpoint actor or message direction. The project interpretation recorded in KMIPKIT-DEC-021 assigns retention to the server because it owns authoritative object State and the managed object. The source actor remains unresolved and direction unclear; this does not claim server enforcement or client behavior. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-002",
@@ -137281,6 +137317,7 @@
         }
       ],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.57-003-001",
         "KMIPKIT-REQ-SPEC-4.57-003-002",
         "KMIPKIT-REQ-SPEC-4.57-003-003",
         "KMIPKIT-REQ-SPEC-4.57-003-004",
@@ -137290,15 +137327,16 @@
         "KMIPKIT-REQ-SPEC-4.57-005-001",
         "KMIPKIT-REQ-SPEC-4.57-005-003",
         "KMIPKIT-REQ-SPEC-4.57-006",
-        "KMIPKIT-REQ-SPEC-4.57-007"
+        "KMIPKIT-REQ-SPEC-4.57-007",
+        "KMIPKIT-REQ-SPEC-4.57-007-002"
       ],
       "discrepancy_ids": [],
       "policy_ids": [],
-      "interpretation": "KMIP Specification v2.1 §4.57 paragraphs 3–7 state cryptographic-use restrictions based on object State but generally do not identify the actor or message direction. Section 4.57 says State is known to and changed only by the server; §6.1.17 describes Encrypt as a client request for the server to perform encryption. For KMIPKit 1.0 client profile scope, classify the ten listed state-dependent use predicates as server-only because the server has authoritative object State and performs managed-object cryptographic operations. Keep their source clauses in every client source closure but exclude the server-only requirements from client requirement closures. Preserve source actor as unresolved and direction as unclear. Do not add a client State query, local cryptographic behavior, or client runtime guard. This decision does not cover KMIPKIT-REQ-SPEC-4.57-005-002, whose SHOULD explicitly names a trusted client, and it does not resolve KMIPKIT-DISC-013 concerning Protect Stop / Process Stop Date wording.",
+      "interpretation": "KMIP Specification v2.1 §4.57 paragraphs 3-7 state cryptographic-use restrictions based on object State but generally do not identify the actor or message direction. Section 4.57 says State is known to and changed only by the server; §6.1.17 describes Encrypt as a client request for the server to perform encryption. For KMIPKit 1.0 client profile scope, classify the twelve state-dependent requirements with server-owned State or status as server-only because the server has authoritative object State and manages the cryptographic operations. Keep their source clauses in every client source closure but exclude the server-only requirements from client requirement closures. Preserve source actor as unresolved and direction as unclear. Do not add a client State query, local cryptographic behavior, or client runtime guard. This decision does not cover KMIPKIT-REQ-SPEC-4.57-005-002, whose SHOULD explicitly names a trusted client, and it does not resolve KMIPKIT-DISC-013 concerning Protect Stop / Process Stop Date wording.",
       "approver": "KMIPKit maintainer under direct delegated authorization",
       "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that the best-supported recommendation be used when the standard is silent on an actor, and that implementation continue autonomously without further approval requests.",
       "approved_at": "2026-10-27",
-      "consequence": "The ten server-only requirements remain normative source obligations but are excluded from client profile requirement closures and client runtime mappings. Their source clauses remain in client closures. The trusted-client Compromised-state SHOULD remains unresolved and no server enforcement claim is made.",
+      "consequence": "The twelve server-only requirements remain normative source obligations but are excluded from client profile requirement closures and client runtime mappings. Their source clauses remain in client closures. The trusted-client Compromised-state SHOULD remains unresolved and no server enforcement claim is made.",
       "status": "accepted"
     }
   ],

@@ -110,7 +110,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         }
 
     def test_final_scope_rows_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
-        self.assertEqual(len(FINAL_DISPOSITIONS), 35)
+        self.assertEqual(len(FINAL_DISPOSITIONS), 37)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
         self.assertEqual(
