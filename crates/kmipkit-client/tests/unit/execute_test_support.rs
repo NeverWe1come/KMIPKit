@@ -11,7 +11,7 @@ pub(crate) fn assert_lifecycle_request_debug(request: &ClientRequest, expected_n
     let formatted = format!("{request:?}");
     assert!(
         formatted.starts_with(expected_name),
-        "request debug output should identify {expected_name}: {formatted}"
+        "request debug output should identify {expected_name}"
     );
 }
 
