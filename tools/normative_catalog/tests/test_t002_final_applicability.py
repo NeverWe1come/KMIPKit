@@ -13,6 +13,18 @@ CATALOG_PATH = REPO_ROOT / "specification/catalog/kmip-2.1.json"
 
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
 PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.57-002"
+STATE_USE_SERVER_ONLY_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-4.57-003-002",
+    "KMIPKIT-REQ-SPEC-4.57-003-003",
+    "KMIPKIT-REQ-SPEC-4.57-003-004",
+    "KMIPKIT-REQ-SPEC-4.57-004-001",
+    "KMIPKIT-REQ-SPEC-4.57-004-002",
+    "KMIPKIT-REQ-SPEC-4.57-004-003",
+    "KMIPKIT-REQ-SPEC-4.57-005-001",
+    "KMIPKIT-REQ-SPEC-4.57-005-003",
+    "KMIPKIT-REQ-SPEC-4.57-006",
+    "KMIPKIT-REQ-SPEC-4.57-007",
+}
 BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.1-001-001",
     "KMIPKIT-REQ-SPEC-4.1-001-002",
@@ -60,6 +72,12 @@ FINAL_DISPOSITIONS = {
     **{requirement_id: "client_1_0" for requirement_id in CLIENT_SCOPE_REQUIREMENTS},
     SERVER_ONLY_REQUIREMENT: "server_only",
     PRE_ACTIVE_SERVER_ONLY_REQUIREMENT: "server_only",
+    **{requirement_id: "server_only" for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS},
+}
+SERVER_ONLY_REQUIREMENTS = {
+    SERVER_ONLY_REQUIREMENT,
+    PRE_ACTIVE_SERVER_ONLY_REQUIREMENT,
+    *STATE_USE_SERVER_ONLY_REQUIREMENTS,
 }
 TTLV_CLIENT_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-10.1.2-001",
@@ -89,8 +107,8 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             row["requirement_id"]: row for row in cls.catalog["requirements"]
         }
 
-    def test_final_twenty_five_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
-        self.assertEqual(len(FINAL_DISPOSITIONS), 25)
+    def test_final_scope_rows_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
+        self.assertEqual(len(FINAL_DISPOSITIONS), 35)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
         self.assertEqual(
@@ -108,11 +126,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         for requirement_id, expected_scope in FINAL_DISPOSITIONS.items():
             crosswalk = self.crosswalk[requirement_id]
             requirement = self.requirements[requirement_id]
-            expected_role = (
-                "server"
-                if requirement_id in {SERVER_ONLY_REQUIREMENT, PRE_ACTIVE_SERVER_ONLY_REQUIREMENT}
-                else "client"
-            )
+            expected_role = "server" if requirement_id in SERVER_ONLY_REQUIREMENTS else "client"
             expected_profiles = (
                 client_profile_ids
                 if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
@@ -359,6 +373,65 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             if profile["role"] == "client":
                 self.assertIn(clause_id, profile["source_clause_ids"])
                 self.assertNotIn(requirement_id, profile["requirement_ids"])
+
+    def test_state_use_restrictions_follow_server_owned_object_state(self) -> None:
+        decision = next(
+            (
+                row
+                for row in self.catalog["decisions"]
+                if row["decision_id"] == "KMIPKIT-DEC-021"
+            ),
+            None,
+        )
+        self.assertIsNotNone(decision, "the server-owned state interpretation needs a decision")
+        self.assertEqual(set(decision["requirement_ids"]), STATE_USE_SERVER_ONLY_REQUIREMENTS)
+
+        missing_requirements = STATE_USE_SERVER_ONLY_REQUIREMENTS - self.requirements.keys()
+        self.assertEqual(missing_requirements, set())
+        missing_crosswalk = STATE_USE_SERVER_ONLY_REQUIREMENTS - self.crosswalk.keys()
+        self.assertEqual(missing_crosswalk, set())
+        if missing_requirements or missing_crosswalk:
+            return
+
+        source_obligations = {
+            obligation.get("candidate_requirement_id"): obligation
+            for review in self.oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation.get("candidate_requirement_id") in STATE_USE_SERVER_ONLY_REQUIREMENTS
+        }
+        self.assertEqual(set(source_obligations), STATE_USE_SERVER_ONLY_REQUIREMENTS)
+        for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = self.requirements[requirement_id]
+                crosswalk = self.crosswalk[requirement_id]
+                obligation = source_obligations[requirement_id]
+                self.assertEqual(requirement["role"], "server")
+                self.assertEqual(requirement["scope_state"], "server_only")
+                self.assertEqual(requirement["direction"], "unclear")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-021")
+                self.assertEqual(crosswalk["role"], "server")
+                self.assertEqual(crosswalk["scope_state"], "server_only")
+                self.assertEqual(crosswalk["applies_to"], [])
+                self.assertEqual(crosswalk["source_actor"], "unresolved")
+                self.assertEqual(crosswalk["source_direction"], "unclear")
+                self.assertEqual(obligation["actor"], "unresolved")
+                self.assertEqual(obligation["scope_disposition"], "server_only")
+                self.assertEqual(obligation["project_actor_interpretation"], "server")
+                self.assertIn("project interpretation", crosswalk["review_note"].lower())
+
+        for profile in self.catalog["profiles"]:
+            if profile["role"] == "client":
+                for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+                    clause_id = self.requirements[requirement_id]["source_clause_ids"][0]
+                    self.assertIn(clause_id, profile["source_clause_ids"])
+                    self.assertNotIn(requirement_id, profile["requirement_ids"])
+        for profile in self.oracle["profiles"]:
+            if profile["role"] == "client":
+                for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+                    clause_id = self.requirements[requirement_id]["source_clause_ids"][0]
+                    self.assertIn(clause_id, profile["source_clause_ids"])
+                    self.assertNotIn(requirement_id, profile["requirement_ids"])
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
