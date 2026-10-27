@@ -88,9 +88,10 @@ la aplicación no demuestran aceptación del servidor ni conformidad del perfil.
 
 Otros mapeos de Baseline registran responsabilidades de la aplicación que
 dependen del estado remoto del objeto o del tiempo: Activation Date (§4.1),
-Deactivation Date (§4.18), el Cryptographic Usage Mask efectivo (§4.17), la
-caducidad del lease (§§4.30 y 6.1.35) y la asignación de uso con su ventana de
-fechas (§6.1.23). KMIP Specification v2.1 §4.34 también recomienda un solo
+Deactivation Date (§4.18), Process Start Date (§4.40), Protect Stop Date
+(§4.41), el Cryptographic Usage Mask efectivo (§4.17), la caducidad del lease
+(§§4.30 y 6.1.35) y la asignación de uso con su ventana de fechas (§6.1.23).
+KMIP Specification v2.1 §4.34 también recomienda un solo
 uso criptográfico por objeto e indica que el servidor no aplica esa
 recomendación. KMIPKit la registra como una recomendación del cliente a cargo
 de la aplicación: esta debería elegir y conservar el uso único previsto. KMIPKit
@@ -105,7 +106,17 @@ completa del perfil. La capacidad OPTIONAL de fechas relativas de §9.20 es
 independiente: si la aplicación la usa, proporciona el temporizador de cuenta
 atrás y resta los valores Time Stamp y Date-Time expuestos. El preflight no
 consulta el estado remoto, no lo conserva entre llamadas ni aplica estas
-condiciones a peticiones normales o TTLV genéricas.
+condiciones a peticiones normales o TTLV genéricas. Los §§4.40 y 4.41 describen
+cuándo puede usarse un objeto para procesar información protegida, cuándo debe
+dejar de aplicarse protección y la relación permitida con Activation y
+Deactivation Date. Los párrafos no asignan qué extremo realiza el procesamiento
+de información protegida; las tablas de reglas del atributo permiten que lo
+establezca inicialmente el servidor o el cliente y describen la mutabilidad
+por parte del cliente. KMIPKit registra estas reglas como responsabilidades
+del llamador cuando las fechas y el Cryptographic Usage Mask sean pertinentes;
+dependen de la hora actual, del uso criptográfico local y del estado del objeto.
+KMIPKit no realiza esas operaciones criptográficas, no lee el reloj ni recupera
+atributos remotos, por lo que el mapeo no las aplica automáticamente.
 Para las excepciones de Deactivation Date, la aplicación también debe comprobar
 que existen circunstancias extraordinarias y permiso especial. Estos mapeos
 estáticos registran obligaciones del llamador; no demuestran aceptación del

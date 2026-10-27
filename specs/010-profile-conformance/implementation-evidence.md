@@ -7447,3 +7447,27 @@ DCO Green commit `9967e7e9db4863b5381aa84e7beef75448dc99e4` assigns `KMIPKIT-REQ
 | Independent reviews | QA and security reviewers found no actionable issues. |
 
 An initial broad test run overlapped a report check and showed missing temporary CLI summaries plus stale §9.13 expected lists. The CLI tests passed in the serialized rerun; the stale expectations were corrected, and the complete 159-test run then passed. This batch does not close T040, pass the official OASIS profile cases, establish server acceptance, or make a conformance claim. Exact-head hosted CI remains pending publication.
+
+## T040 Process Start and Protect Stop date duties — Red (2026-10-27)
+
+Added Rust mapping and Python scope regressions for KMIP Specification v2.1 §§4.40–4.41. The nine requirements cover Process Start Date use and mutation rules (`KMIPKIT-REQ-SPEC-4.40-001-001` through `-005`) and Protect Stop Date use and mutation rules (`KMIPKIT-REQ-SPEC-4.41-001-001` through `-004`). DCO Red commit `042890b34b50d37e083c41e7e0a135b000085e17` records the expected failures: no typed caller-owned mappings existed and all nine records remained `profile_conditional` rather than inherited client scope.
+
+## T040 Process Start and Protect Stop date duties — Green and Refactor (2026-10-27)
+
+DCO Green commit `e5743fd41` assigns the nine records to the inherited client 1.0 scope and adds static typed mappings. The source paragraphs do not identify the actor or direction for object use; Tables 110 and 112 separately say the attributes may initially be set by the Server or Client and describe client mutability. The project interpretation is a caller-owned client responsibility when the dates and Cryptographic Usage Mask conditions apply. The mapping has no evaluator and does not perform local cryptography, read a clock, inspect remote state, or claim to enforce server behavior. All 18 client profile closure arrays and the independent source oracle include the new records. Refactor updates the English and Spanish guides, profile-validation contract, and the complete-report registry expectation.
+
+| Verification | Command and result |
+|---|---|
+| Focused Rust mapping | `cargo test -p kmipkit-protocol --lib profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned -- --nocapture` — PASS: 1 test. |
+| Scope and typed-registry contracts | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope tools.normative_catalog.tests.test_profile_typed_mapping_assignment -v` — PASS: 8 tests. |
+| Independent closure oracle | Three focused `test_generate_profiles` oracle/closure tests — PASS: 3 tests. |
+| Complete report contract | `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` first exposed the stale hand-reviewed registry expectation for the nine new IDs; after synchronizing the fixture, the same test passed in 73.884 seconds. |
+| Full typed-profile traceability | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` — PASS: 1 test in 397.682 seconds. |
+| Protocol tests | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,136 unit tests plus integration targets and doctests. |
+| Protocol quality | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check` — PASS. |
+| Catalog and generated artifacts | Catalog validation (`sources=4 clauses=1411 records=4125`), profile metadata `--check`, coverage report `--check`, and `git diff --check` — PASS. |
+| OASIS source immutability | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; pinned source copies are unchanged. |
+| Baseline closure state | 278 closure requirements, 278 typed mappings, and 278 category-test references; runtime validation remains false and 27 applicability conditions remain unresolved. Readiness remains `evidence_incomplete`. |
+| Independent review and hosted CI | QA, security re-review, and exact-head hosted CI remain pending until this Refactor commit is published. |
+
+T040 remains open because applicability and broader profile evidence are still incomplete. This batch does not pass an official OASIS Test Case, establish server acceptance, or claim profile conformance.

@@ -81,8 +81,9 @@ server acceptance or profile conformance.
 
 Other Baseline mappings record caller responsibilities that depend on remote
 object state or application time: Activation Date (§4.1), Deactivation Date
-(§4.18), the effective Cryptographic Usage Mask (§4.17), lease expiry
-(§§4.30 and 6.1.35), and Usage Allocation and its date window (§6.1.23).
+(§4.18), Process Start Date (§4.40), Protect Stop Date (§4.41), the effective
+Cryptographic Usage Mask (§4.17), lease expiry (§§4.30 and 6.1.35), and Usage
+Allocation and its date window (§6.1.23).
 KMIP Specification v2.1 §4.34 also recommends one cryptographic usage per
 object and says the server does not enforce it. KMIPKit records this as a
 caller-owned client recommendation; the application should choose and preserve
@@ -96,11 +97,20 @@ hashes or send credentials, and the mapping does not establish wire ordering
 or full profile conformance. The OPTIONAL §9.20 relative Date capability is
 separate: if the application uses it, it provides the countdown timer and
 performs subtraction using the exposed Time Stamp and Date-Time values.
-Profile preflight does not retrieve that state, track it across calls, or
-enforce these conditions for ordinary or raw requests. For Deactivation Date,
-the caller must also establish any extraordinary circumstance and special
-permission before using the stated exceptions. These static mappings record
-caller duties; they do not establish server acceptance, an official Test Case
+Sections 4.40 and 4.41 also define when a caller may use an object for
+protected-information processing, when it must stop applying protection, and
+the allowed relationships to Activation and Deactivation Dates. These duties
+depend on the caller's current time, local cryptographic use, and object state.
+The paragraphs do not assign which endpoint performs protected-information
+processing; the attribute-rule tables separately allow initial setting by the
+server or client and describe client mutability. KMIPKit does not perform those
+cryptographic operations, read a clock, or retrieve remote object attributes,
+so the mappings document caller duties without enforcing them. Profile
+preflight does not retrieve that state, track
+it across calls, or enforce these conditions for ordinary or raw requests. For
+Deactivation Date, the caller must also establish any extraordinary
+circumstance and special permission before using the stated exceptions. These
+static mappings do not establish server acceptance, an official Test Case
 pass, or profile conformance.
 
 ## Reading profile status
