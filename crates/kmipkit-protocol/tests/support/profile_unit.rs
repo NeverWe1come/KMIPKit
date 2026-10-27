@@ -24265,6 +24265,19 @@ fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §4.34 paragraph 1.
+fn profile_maps_single_key_usage_recommendation_as_caller_owned_behavior() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.34-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        "single_cryptographic_usage_per_key_object_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
+        RuleTestKind::RecommendedBehavior,
+    );
+}
+
+#[test]
 // OASIS KMIP Specification v2.1 §4.30 paragraph 1.
 fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(

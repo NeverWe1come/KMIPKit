@@ -173,6 +173,53 @@ class BaselineServerScopeTests(unittest.TestCase):
                 self.assertEqual(obligation["direction"], "unspecified")
                 self.assertEqual(obligation["scope_disposition"], "client_1_0")
 
+    def test_nist_key_single_usage_recommendation_is_client_scope(self) -> None:
+        catalog = load_catalog()
+        requirement_id = "KMIPKIT-REQ-SPEC-4.34-001-002"
+        requirement = next(
+            item
+            for item in catalog["requirements"]
+            if item["requirement_id"] == requirement_id
+        )
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["profile_ids"], [])
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertIn("project interpretation", requirement["review_note"].lower())
+
+        profile = next(
+            item
+            for item in catalog["profiles"]
+            if item["profile_id"] == BASELINE_PROFILE_ID
+        )
+        closure = compute_profile_closure(
+            catalog,
+            profile["direct_source_clause_ids"],
+            profile_id=BASELINE_PROFILE_ID,
+        )
+        self.assertIn(requirement_id, closure.requirement_ids)
+        self.assertNotIn(
+            requirement_id,
+            {item.requirement_id for item in closure.unresolved_scope_obligations},
+        )
+
+        fixture_path = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        review = next(
+            item
+            for item in fixture["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-4.34-001"
+        )
+        obligation = next(
+            item
+            for item in review["source_obligations"]
+            if item.get("candidate_requirement_id") == requirement_id
+        )
+        self.assertEqual(obligation["actor"], "unresolved")
+        self.assertEqual(obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(obligation["project_actor_interpretation"], "client")
+
 
 if __name__ == "__main__":
     unittest.main()
