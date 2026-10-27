@@ -179,6 +179,38 @@ fn query_accepts_the_empty_response_payload_form_and_preserves_common_failure_re
 }
 
 #[test]
+fn query_response_requires_both_profile_version_parts_when_version_is_present() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let incomplete_versions = [
+        structure([item(PROFILE_VERSION_MAJOR, Value::integer(2))]),
+        structure([item(PROFILE_VERSION_MINOR, Value::integer(1))]),
+    ];
+
+    for version in incomplete_versions {
+        let payload = structure([
+            item(
+                PROFILE_INFORMATION,
+                Value::structure(structure([item(
+                    PROFILE_VERSION,
+                    Value::structure(version),
+                )])),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     let response_fields = vec![
