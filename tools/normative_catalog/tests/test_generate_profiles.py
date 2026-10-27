@@ -678,6 +678,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             message_extension["requirement_ids"],
             [
                 "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
                 "KMIPKIT-REQ-SPEC-9.13-001-004",
                 "KMIPKIT-REQ-SPEC-9.13-001-005",
             ],
@@ -1415,6 +1418,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
             "requirement_ids": [
                 "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
                 "KMIPKIT-REQ-SPEC-9.13-001-004",
                 "KMIPKIT-REQ-SPEC-9.13-001-005",
             ],

@@ -90,8 +90,22 @@ Otros mapeos de Baseline registran responsabilidades de la aplicación que
 dependen del estado remoto del objeto o del tiempo: Activation Date (§4.1),
 Deactivation Date (§4.18), el Cryptographic Usage Mask efectivo (§4.17), la
 caducidad del lease (§§4.30 y 6.1.35) y la asignación de uso con su ventana de
-fechas (§6.1.23). El preflight no consulta ese estado, no lo conserva entre
-llamadas ni aplica estas condiciones a peticiones normales o TTLV genéricas.
+fechas (§6.1.23). KMIP Specification v2.1 §4.34 también recomienda un solo
+uso criptográfico por objeto e indica que el servidor no aplica esa
+recomendación. KMIPKit la registra como una recomendación del cliente a cargo
+de la aplicación: esta debería elegir y conservar el uso único previsto. KMIPKit
+no consulta el estado remoto ni aplica el límite de usos. El requisito
+obligatorio de monotonicidad de Hashed Password Timestamp (§9.11) está mapeado
+a una función de secuencia a cargo de la aplicación según la decisión resuelta
+OD-003 de KMIPKIT-0008. Exige marcas de tiempo que aumenten estrictamente por
+Username y productor lógico de credenciales; la aplicación mantiene la
+persistencia entre reinicios. La función no calcula hashes ni envía
+credenciales, y el mapeo no establece el orden del cable ni la conformidad
+completa del perfil. La capacidad OPTIONAL de fechas relativas de §9.20 es
+independiente: si la aplicación la usa, proporciona el temporizador de cuenta
+atrás y resta los valores Time Stamp y Date-Time expuestos. El preflight no
+consulta el estado remoto, no lo conserva entre llamadas ni aplica estas
+condiciones a peticiones normales o TTLV genéricas.
 Para las excepciones de Deactivation Date, la aplicación también debe comprobar
 que existen circunstancias extraordinarias y permiso especial. Estos mapeos
 estáticos registran obligaciones del llamador; no demuestran aceptación del

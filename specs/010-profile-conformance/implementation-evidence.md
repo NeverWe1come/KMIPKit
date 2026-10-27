@@ -7427,3 +7427,23 @@ The protocol model now requires a Vendor Extension to contain at least one direc
 | Immutable OASIS sources | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; no upstream source copy changed. |
 
 The first full client run after enforcing §9.13 exposed stale fixtures that placed standard `0x42xxxx` tags directly in outbound Vendor Extension data. After updating those client fixtures and the shared cross-language outbound corpus to include the required `0x54xxxx` vendor data, the complete client suite passed. Independent QA confirmed the three scope assignments and Baseline closure, identified the fixture gap, and re-reviewed the final batch with no remaining actionable finding. Exact-head hosted CI and security diff review remain required before treating this batch as ready for broader review. T040 stays open, and no OASIS Test Case pass or profile-conformance claim is made.
+
+## T040 §4.34 single-usage recommendation — Red (2026-10-27)
+
+Added a regression for KMIP Specification v2.1 §4.34 paragraph 1: preserve the normative `SHOULD`, keep the independent `MAY NOT` wording out of this requirement, and assign the one-usage recommendation as caller-owned client scope under the maintainer's direction for source silences. Added a Rust rule-mapping test and a Python registry-allowlist test. DCO Red commits `2a0a7101b88813a74ef443ef500771c2483a418a` and `2d99cea2653f28fe6f49e5032d3277657404d2ea` record the expected failures before implementation: the requirement had no typed profile mapping and the parser did not accept the new explicit constraint.
+
+## T040 §4.34 single-usage recommendation — Green and Refactor (2026-10-27)
+
+DCO Green commit `9967e7e9db4863b5381aa84e7beef75448dc99e4` assigns `KMIPKIT-REQ-SPEC-4.34-001-002` to the KMIPKit client 1.0 interpretation while retaining `direction=unclear` to reflect the source. Its static `RecommendedBehaviorOrDeviation` mapping has no evaluator and records `single_cryptographic_usage_per_key_object_caller_asserted`; it does not inspect or enforce remote object state. The source clause and independent profile oracle now agree, all client profile closures include the requirement, and the generated Rust metadata and report were regenerated. The English and Spanish guides and profile-validation contract explain the caller-owned boundary. Updated stale §9.13 crosswalk expectations to include the already-scoped client Message Extension obligations.
+
+| Verification | Command and result |
+|---|---|
+| Focused normative suite | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope tools.normative_catalog.tests.test_profile_typed_mapping_assignment tools.normative_catalog.tests.test_report tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_feature_traceability -v` — PASS: 159 tests, 3 platform skips, 922.850 seconds. |
+| Protocol tests | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,135 unit tests plus integration targets and doctests. |
+| Protocol lint | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — PASS. |
+| Formatting and patch hygiene | `cargo fmt --all --check`; `git diff --check` — PASS. |
+| Catalog and generated artifacts | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `py -3 -B tools/normative_catalog/report.py --check --repo-root .` — PASS; 4 sources, 1,411 clauses, 4,125 records. |
+| Baseline closure | Generated report: 269 assigned requirements and 36 unresolved applicability IDs; readiness remains `evidence_incomplete`. |
+| Independent reviews | QA and security reviewers found no actionable issues. |
+
+An initial broad test run overlapped a report check and showed missing temporary CLI summaries plus stale §9.13 expected lists. The CLI tests passed in the serialized rerun; the stale expectations were corrected, and the complete 159-test run then passed. This batch does not close T040, pass the official OASIS profile cases, establish server acceptance, or make a conformance claim. Exact-head hosted CI remains pending publication.
