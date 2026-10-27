@@ -408,6 +408,54 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_scoped_recommendation_decision_keeps_category_test_reference(self) -> None:
+        from tools.normative_catalog.report import _profile_requirement_coverage
+
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement.update(
+            {
+                "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-4-001"],
+                "source_keyword": "SHOULD",
+                "normative_strength": "recommended",
+                "role": "client",
+                "scope_state": "mixed",
+                "profile_ids": ["KMIPKIT-PROFILE-BASELINE-CLIENT"],
+                "decision_id": "KMIPKIT-DEC-023",
+                "status": "scoped_verified",
+            }
+        )
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "role": "client",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-4-001-002"],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-4-001"],
+            }
+        ]
+        catalog["decisions"] = [
+            {
+                "decision_id": "KMIPKIT-DEC-023",
+                "status": "accepted",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-4-001-002"],
+            }
+        ]
+        mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+            "verification_category": "RecommendedBehaviorOrDeviation",
+            "evaluator_present": False,
+            "transport_only": False,
+            "configuration_only": True,
+            "test_kind": "RecommendedBehavior",
+            "test_id": "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
+        }
+
+        rows, _ = _profile_requirement_coverage(catalog, [mapping])
+
+        self.assertEqual("Category test reference: present", rows[0][5])
+
     def test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
