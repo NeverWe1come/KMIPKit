@@ -11227,6 +11227,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-005",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-005",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_omit_authentication_when_not_required),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_request_authentication_from_profiles_clause",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
         source_gap_id: None,

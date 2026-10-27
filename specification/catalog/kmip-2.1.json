@@ -80498,12 +80498,17 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_request_authentication_from_profiles_clause"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-022",
-      "status": "unassigned",
-      "review_note": "Profiles v2.1 §4.1.2 item 4 permits Authentication in each request. KMIP Specification v2.1 §6.1.1 identifies the client Request Message in the 1.0 client-initiated flow. This is an optional client capability; it does not require authentication or claim that credentials are transmitted."
+      "status": "scoped_verified",
+      "review_note": "Profiles v2.1 §4.1.2 item 4 permits Authentication in each request. KMIP Specification v2.1 §§6.1.1 and 9.4 identify the client Request Message and its optional Authentication structure. The typed rule preserves omission and represents caller-selected presence; it neither requires authentication nor claims that KMIPKit transmits credentials. The profile-unit test checks both omission and presence against the pinned request model. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-4.1.2-007",
