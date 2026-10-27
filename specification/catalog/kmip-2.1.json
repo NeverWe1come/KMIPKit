@@ -91196,7 +91196,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: KMIP 2.1 §4.57 explicitly identifies this State transition as server-controlled. The project role is server; direction is not applicable because this is lifecycle behavior, not a message-field obligation."
+      "review_note": "KMIP Specification v2.1 §4.57 lines 20225–20231 describe the Active state transition; the section states that State may only be changed by the server. Project interpretation: this requirement is server-controlled and server_only for client profile closure, with no message direction because it is lifecycle behavior. The separate Protect Stop/Process Stop Date wording discrepancy belongs to later state rules and remains unresolved there. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-002",

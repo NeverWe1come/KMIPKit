@@ -61,9 +61,12 @@ class BaselineServerScopeTests(unittest.TestCase):
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertIn("project interpretation", requirement["review_note"].lower())
                 if requirement_id == "KMIPKIT-REQ-SPEC-4.57-003-001":
-                    self.assertIn("active transition", requirement["review_note"].lower())
-                    self.assertNotIn("protect stop", requirement["review_note"].lower())
-                    self.assertNotIn("process stop date", requirement["review_note"].lower())
+                    self.assertIn("active state transition", requirement["review_note"].lower())
+                    self.assertNotIn("§4.57 says", requirement["review_note"])
+                    self.assertIn(
+                        "discrepancy belongs to later state rules",
+                        requirement["review_note"].lower(),
+                    )
                 self.assertNotIn(requirement_id, closure.requirement_ids)
                 self.assertNotIn(
                     requirement_id,
