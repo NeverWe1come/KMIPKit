@@ -7667,6 +7667,40 @@ fn profile_requires_complete_version_in_query_profile_responses() {
 }
 
 #[test]
+fn profile_maps_optional_profile_specific_query_fields() {
+    // KMIP Specification v2.1 §7.31 permits profile-specific fields.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.31-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.31-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("profile-specific Query fields have a typed capability mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("profile-specific Query fields have generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive preservation evidence");
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping.constraints.contains(&RuleConstraint {
+        key: "client_profile_capability",
+        value: "profile_specific_query_information_preserved",
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+}
+
+#[test]
 fn profile_requires_at_least_one_client_query_function() {
     // KMIP Specification v2.1 §6.1.40 paragraph 14 requires one or more.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-014";
