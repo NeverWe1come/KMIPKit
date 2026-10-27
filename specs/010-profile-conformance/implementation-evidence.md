@@ -7365,8 +7365,21 @@ DCO Green commit `5cb05a17` classifies ten server-produced or server-controlled 
 | Baseline scope result | Direct `compute_profile_closure` evaluation — 265 assigned requirements remain; unresolved applicability is 45 unique IDs, down from 55. Readiness remains `evidence_incomplete`. |
 | Hosted CI for the preceding traceability fix | Run `40435304475` on head `ed859448` passed `Documentation contracts / traceability` and `Coverage / windows`; other jobs were still in progress at the last check. This run predates the T040 commits and does not validate them. |
 
-The independent QA audit of this batch is pending. The ten server-only records no longer block client applicability; the remaining 45 unresolved IDs and all typed implementation/evidence gaps remain open. No official OASIS Test Case pass or profile-conformance claim is made.
+Independent QA confirmed the ten server-only classifications and found one stale §4.57 review note, corrected in the follow-up below. The ten server-only records no longer block client applicability; the remaining 45 unresolved IDs and all typed implementation/evidence gaps remain open. No official OASIS Test Case pass or profile-conformance claim is made.
 
 ## T040 §4.57 review-note correction — Red (2026-10-27)
 
 Independent QA found that `KMIPKIT-REQ-SPEC-4.57-003-001` still carried a stale review note about the separate Protect Stop/Process Stop Date discrepancy, although this requirement is the Active transition at §4.57 lines 20225–20231. Added a regression assertion that this row identifies the Active transition and does not include the unrelated date discrepancy. The focused run `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` failed only this subcase, reproducing the misleading note. This is the Red evidence for the note correction.
+
+## T040 §4.57 review-note correction — Green and Refactor (2026-10-27)
+
+DCO Green commit `8e606ba1` replaces the stale note with the exact Active-transition locator, keeps its server-only interpretation explicit, and states that the unrelated Protect Stop/Process Stop Date discrepancy belongs to later state rules. The applicability classification itself is unchanged. The generated coverage report was regenerated from the corrected catalog.
+
+| Verification | Command and result |
+|---|---|
+| Focused applicability regression | `py -3 -B -m unittest tools.normative_catalog.tests.test_baseline_server_scope -v` — PASS: 1 test, ten subcases. |
+| Catalog validation | `py -3 -B tools/normative_catalog/validate.py` — PASS: 4 sources, 1,411 clauses, 4,125 records. |
+| Generated profile metadata | `py -3 -B tools/normative_catalog/generate_profiles.py --check` — PASS. |
+| Coverage report generation and check | `py -3 -B tools/normative_catalog/report.py --write`; serial `py -3 -B tools/normative_catalog/report.py --check` — PASS; the report matches the corrected catalog. |
+
+Independent QA found no additional scope or generated-output issue after the note correction. One earlier report check overlapped report regeneration and returned a generic input error; the sequential exact CLI check passed after writes settled. The six typed test references initially questioned during that run each resolve as active Cargo tests in the current tree, so no unrelated mapping changes were made. No official OASIS Test Case pass or profile-conformance claim is made.
