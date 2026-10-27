@@ -11528,7 +11528,7 @@ class CatalogValidationTests(unittest.TestCase):
             [
                 (1, "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-4.34-001-001"),
                 (2, "MAY", "client and server", "unresolved", None),
-                (3, "SHOULD", "unresolved", "profile_conditional", "KMIPKIT-REQ-SPEC-4.34-001-002"),
+                (3, "SHOULD", "unresolved", "client_1_0", "KMIPKIT-REQ-SPEC-4.34-001-002"),
             ],
             "§4.34's undefined compound MAY NOT must remain ambiguous rather than becoming SHALL NOT",
         )
@@ -11547,11 +11547,11 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.40-001"]["source_obligations"]],
-            ["profile_conditional"] * 5,
+            ["client_1_0"] * 5,
         )
         self.assertEqual(
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.41-001"]["source_obligations"]],
-            ["profile_conditional"] * 4,
+            ["client_1_0"] * 4,
         )
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["source_obligations"], [])
         self.assertIn("lowercase", reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["review_note"])

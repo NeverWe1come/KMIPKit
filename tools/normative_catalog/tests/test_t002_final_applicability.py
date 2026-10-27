@@ -25,8 +25,13 @@ CONDITIONAL_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.1-001-003",
     "KMIPKIT-REQ-SPEC-4.18-001-001",
     "KMIPKIT-REQ-SPEC-4.18-001-002",
-    "KMIPKIT-REQ-SPEC-4.34-001-002",
     "KMIPKIT-REQ-SPEC-4.38-003",
+    "KMIPKIT-REQ-SPEC-4.59-002",
+    "KMIPKIT-REQ-SPEC-4.59-003-001",
+    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+}
+CLIENT_SCOPE_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-4.34-001-002",
     "KMIPKIT-REQ-SPEC-4.40-001-001",
     "KMIPKIT-REQ-SPEC-4.40-001-002",
     "KMIPKIT-REQ-SPEC-4.40-001-003",
@@ -36,12 +41,13 @@ CONDITIONAL_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.41-001-002",
     "KMIPKIT-REQ-SPEC-4.41-001-003",
     "KMIPKIT-REQ-SPEC-4.41-001-004",
-    "KMIPKIT-REQ-SPEC-4.59-002",
-    "KMIPKIT-REQ-SPEC-4.59-003-001",
-    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
 }
+ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
+    BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
+)
 FINAL_DISPOSITIONS = {
     **{requirement_id: "profile_conditional" for requirement_id in CONDITIONAL_REQUIREMENTS},
+    **{requirement_id: "client_1_0" for requirement_id in CLIENT_SCOPE_REQUIREMENTS},
     SERVER_ONLY_REQUIREMENT: "server_only",
 }
 TTLV_CLIENT_REQUIREMENTS = {
@@ -107,7 +113,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             )
             expected_applies_to = (
                 "all_client_profiles"
-                if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
+                if requirement_id in ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS
                 else []
             )
             expected = (
@@ -156,14 +162,30 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 ))
         self.assertEqual(actor_mismatches, [])
 
-    def test_client_actor_interpretation_is_explicit_for_conditional_rows(self) -> None:
+    def test_client_actor_interpretation_is_explicit_for_adjudicated_client_rows(self) -> None:
+        client_rows = CONDITIONAL_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
+        source_obligations = {
+            obligation.get("candidate_requirement_id"): obligation
+            for review in self.oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation.get("candidate_requirement_id") in client_rows
+        }
         missing_project_rationale = [
             requirement_id
-            for requirement_id in CONDITIONAL_REQUIREMENTS
+            for requirement_id in client_rows
             if "project" not in self.crosswalk[requirement_id]["review_note"].casefold()
             or "interpretation" not in self.crosswalk[requirement_id]["review_note"].casefold()
         ]
         self.assertEqual(missing_project_rationale, [])
+        for requirement_id in CLIENT_SCOPE_REQUIREMENTS:
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(self.crosswalk[requirement_id]["source_actor"], "unresolved")
+                self.assertEqual(self.requirements[requirement_id]["direction"], "unclear")
+                self.assertEqual(self.crosswalk[requirement_id]["role"], "client")
+                self.assertEqual(
+                    source_obligations[requirement_id]["project_actor_interpretation"],
+                    "client",
+                )
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
