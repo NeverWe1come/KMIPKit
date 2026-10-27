@@ -52926,12 +52926,41 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": []
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ]
     },
     {
       "element_id": "KMIPKIT-ELEM-ENUMERATION-PROTECTION-LEVEL",
@@ -60799,12 +60828,41 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -60821,12 +60879,41 @@
       "direction": "both",
       "scope_state": "client_1_0",
       "parent_element_ids": [],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.32-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_both_profile_version_parts_when_version_is_present",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_non_integer_profile_version_parts",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": ""
     },
@@ -65490,12 +65577,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -65514,12 +65630,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "source_encoding": "Structure",
       "source_requiredness": "No"
     },
@@ -65538,12 +65683,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "source_encoding": "Integer",
       "source_requiredness": "No"
     },
@@ -65562,12 +65736,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.31-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "source_encoding": "Text String",
       "source_requiredness": "No"
     },
@@ -65586,12 +65789,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.32-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_both_profile_version_parts_when_version_is_present",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_non_integer_profile_version_parts",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses"
+      ],
       "source_encoding": "Integer",
       "source_requiredness": "Yes"
     },
@@ -65610,12 +65842,41 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION"
       ],
-      "requirement_ids": [],
-      "profile_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.32-001"
+      ],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_both_profile_version_parts_when_version_is_present",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_non_integer_profile_version_parts",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses"
+      ],
       "source_encoding": "Integer",
       "source_requiredness": "Yes"
     },
@@ -99291,7 +99552,14 @@
       "direction": "server_to_client",
       "condition": "When a client-initiated Query Profiles response contains Profile Information; preserve profile-specific fields without inferring unsupported semantics.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION",
+        "KMIPKIT-ELEM-ENUMERATION-PROFILE-NAME",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -99313,13 +99581,23 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-protocol/src/profiles_generated.rs",
+        "specification/catalog/coverage-report.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_profile_name_in_profile_information",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_wrong_types_for_optional_profile_information_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_profile_specific_query_fields"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.31 allows fields that apply only to some profile types. For the 1.0 client-initiated Query response, §6.1.40 introduction and Table 283 identify the profiles as server-supported. Nearby prose says client-supported profiles; this source conflict is recorded and resolved for this exchange by KMIPKIT-DEC-028 and KMIPKIT-DISC-056."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §7.31 and Table 383: Profile Name is a required Enumeration; Profile Version, Server URI, and Server Port are optional Structure, Text String, and Integer fields. KMIPKit preserves unknown profile-specific items as generic TTLV and does not infer profile-specific semantics. The client-initiated Query Profiles direction follows accepted DEC-028; the nearby client/server wording conflict remains recorded in DISC-056. These local tests are not official OASIS conformance-test executions."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.32-001",
@@ -99340,7 +99618,11 @@
       "direction": "server_to_client",
       "condition": "When Profile Version is represented within Profile Information received in a client-initiated Query response; retain both major and minor parts.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MAJOR",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MINOR"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -99362,13 +99644,23 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-protocol/src/profiles_generated.rs",
+        "specification/catalog/coverage-report.md"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_both_profile_version_parts_when_version_is_present",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_rejects_non_integer_profile_version_parts",
+        "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.32 requires Profile Version to contain major and minor parts. The 1.0 client receives server Profile Information in response to client-initiated Query Profiles; KMIPKit preserves the generic TTLV structure and does not infer profile-specific meaning. The §6.1.40 server/client wording is recorded in KMIPKIT-DISC-056."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §7.32 and Table 384 require Profile Version Major and Minor as Integer parts when the optional Profile Version Structure is present. Typed Query parsing and the selected-profile response evaluator enforce both parts only for client-initiated Query Profiles responses; unknown nested items remain preserved. These local tests are not official OASIS conformance-test executions."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.33-001",

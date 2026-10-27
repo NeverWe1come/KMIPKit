@@ -7695,3 +7695,21 @@ DCO-signed Red `70f2691c5` added the final applicability regression; before Gree
 | Pinned source integrity | `py -3 -B tools/normative_catalog/check_immutable_sources.py --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4 --repo-root .` — PASS; the immutable OASIS copies match the active release base. |
 
 The generated report now includes 294 Baseline requirements; 282 have typed-rule mappings and twelve do not. Ten lack category-appropriate test evidence, and five lack implementation and verification assignments. The readiness evaluator remains false and lists additional open discrepancy, optional-source, protected-run, and runtime-validation blockers. This slice closes applicability only. It does not complete T040, execute the official OASIS cases, enable runtime profile validation, or make a conformance claim. The separate Refactor commit records this evidence and the task-ledger update.
+
+## T040 follow-up — Query Profile Information and inherited constraint composition (2026-10-27)
+
+- Added typed Baseline mappings for `KMIPKIT-REQ-SPEC-7.31-001` and `KMIPKIT-REQ-SPEC-7.32-001`, grounded in KMIP Specification v2.1 §§7.31–7.32 and the client-initiated Query Profiles response direction adjudicated by DEC-028. The source wording conflict in §6.1.40 remains recorded as `KMIPKIT-DISC-056`; no server-initiated behavior is inferred.
+- The typed Query response requires Profile Name. Profile Version remains optional, but when present it must be a Structure containing Integer Profile Version Major and Minor members. Optional Server URI and Server Port fields are checked as Text String and Integer. Unknown profile-specific fields and their generic TTLV values remain preserved without assigning them semantics. The response rule runs only for a client request that selected Query Profiles.
+- DCO Red/Green commits for parser and mapping behavior: `2cdedba41`, `23f906b3c`, `86a1f776e`, `4f3821b98`, `ff630c7f1`, `1c4c73de0`, `d032c21db` / `e087f23a9`, `25d2f686c`, `b7f173532`, `fef1050fd`. The selection regression then demonstrated false scalar conflicts among inherited TLS/TLS 1.3 requirements and independent capability/evidence labels. DCO Red/Green/Refactor commits are `8965f75b7` / `a17f02324` / `8c22f2e23`. The compatibility rule permits these conjunctive/set-valued constraints while preserving rejection of incompatible `transport=raw_tls` and `transport=https` selections.
+- The generated report now records 294 Baseline requirements, 284 typed mappings, and 284 category-test references. Ten requirements remain without a typed mapping and ten without category-appropriate test references. Applicability is resolved; profile runtime validation remains unavailable due to those missing mappings. Readiness is false, T040 remains open, and no official Test Case pass or profile-conformance claim is made.
+
+| Verification | Command and result |
+|---|---|
+| Query response regression | `cargo test -p kmipkit-protocol --all-features query_response_` — PASS: 12 tests. |
+| Profile selection regression | `cargo test -p kmipkit-protocol --all-features --test profile_validation` — PASS: 7 tests. |
+| Protocol suite | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,149 unit tests plus integration targets and 3 doctests. |
+| Formatting and lint | `cargo fmt --all --check` — PASS; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — PASS. |
+| Catalog and generated metadata | `py -3 -B tools/normative_catalog/validate.py --repo-root .` — PASS: 4 sources, 1,411 clauses, 4,137 records; `generate_profiles.py --repo-root . --check` — PASS; `report.py --repo-root . --check` — PASS when run serially. |
+| Immutable sources and diff | `py -3 -B tools/normative_catalog/check_immutable_sources.py --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4 --repo-root .` — PASS; `git diff --check` and `git diff --check 963666c76946139c38909f975b7d3b868d923617..HEAD` — PASS. |
+
+The feature branch has not yet been pushed at this evidence point; exact-head hosted CI and independent review of this follow-up are pending. The existing PR remains a draft.
