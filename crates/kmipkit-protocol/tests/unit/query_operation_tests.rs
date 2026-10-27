@@ -236,6 +236,38 @@ fn query_response_requires_profile_name_in_profile_information() {
 }
 
 #[test]
+fn query_response_rejects_wrong_types_for_optional_profile_information_fields() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+    const SERVER_URI: u32 = 0x0042_00ed;
+    const SERVER_PORT: u32 = 0x0042_00ee;
+
+    let invalid_profile_information = [
+        structure([
+            item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+            item(SERVER_URI, Value::integer(5696)),
+        ]),
+        structure([
+            item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+            item(SERVER_PORT, Value::text_string("5696".to_owned())),
+        ]),
+    ];
+
+    for profile_information in invalid_profile_information {
+        let payload = structure([
+            item(PROFILE_INFORMATION, Value::structure(profile_information)),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
 fn query_response_rejects_non_integer_profile_version_parts() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
     const PROFILE_NAME: u32 = 0x0042_00ec;
@@ -435,7 +467,11 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
             );
             profile_information.children()[0]
                 .with_value(|value| assert!(matches!(value, ValueView::Enumeration(&0x8000_0042))));
-            profile_information.children()[1].with_value(|value| match value {
+            profile_information.children()[1]
+                .with_value(|value| assert!(matches!(value, ValueView::TextString(_))));
+            profile_information.children()[2]
+                .with_value(|value| assert!(matches!(value, ValueView::Integer(&5696))));
+            profile_information.children()[3].with_value(|value| match value {
                 ValueView::Structure(version) => assert_eq!(
                     version
                         .children()
@@ -446,7 +482,7 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
                 ),
                 _ => panic!("Profile Version is a Structure"),
             });
-            profile_information.children()[2].with_value(|value| {
+            profile_information.children()[4].with_value(|value| {
                 assert!(matches!(
                     value,
                     ValueView::TextString("profile-specific extension")
