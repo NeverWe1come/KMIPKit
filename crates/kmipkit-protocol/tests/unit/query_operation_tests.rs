@@ -181,6 +181,7 @@ fn query_accepts_the_empty_response_payload_form_and_preserves_common_failure_re
 #[test]
 fn query_response_requires_both_profile_version_parts_when_version_is_present() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_0140;
     const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
@@ -194,11 +195,35 @@ fn query_response_requires_both_profile_version_parts_when_version_is_present() 
         let payload = structure([
             item(
                 PROFILE_INFORMATION,
-                Value::structure(structure([item(
-                    PROFILE_VERSION,
-                    Value::structure(version),
-                )])),
+                Value::structure(structure([
+                    item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    item(PROFILE_VERSION, Value::structure(version)),
+                ])),
             ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_response_requires_profile_name_in_profile_information() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_0140;
+
+    let invalid_profile_information = [
+        structure([]),
+        structure([item(PROFILE_NAME, Value::integer(0x0000_012a))]),
+    ];
+
+    for profile_information in invalid_profile_information {
+        let payload = structure([
+            item(PROFILE_INFORMATION, Value::structure(profile_information)),
             item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
         ]);
         let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
@@ -213,6 +238,7 @@ fn query_response_requires_both_profile_version_parts_when_version_is_present() 
 #[test]
 fn query_response_rejects_non_integer_profile_version_parts() {
     const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_0140;
     const PROFILE_VERSION: u32 = 0x0042_0142;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
     const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
@@ -232,10 +258,10 @@ fn query_response_rejects_non_integer_profile_version_parts() {
         let payload = structure([
             item(
                 PROFILE_INFORMATION,
-                Value::structure(structure([item(
-                    PROFILE_VERSION,
-                    Value::structure(version),
-                )])),
+                Value::structure(structure([
+                    item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    item(PROFILE_VERSION, Value::structure(version)),
+                ])),
             ),
             item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
         ]);
@@ -277,7 +303,23 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         item(QUERY_RESPONSE_TAGS[5], Value::structure(structure([]))),
         item(QUERY_RESPONSE_TAGS[6], Value::enumeration(0x8000_0045)),
         item(QUERY_RESPONSE_TAGS[7], Value::structure(structure([]))),
-        item(QUERY_RESPONSE_TAGS[8], Value::structure(structure([]))),
+        item(
+            QUERY_RESPONSE_TAGS[8],
+            Value::structure(structure([
+                item(0x0042_0140, Value::enumeration(0x8000_0042)),
+                item(
+                    0x0042_0142,
+                    Value::structure(structure([
+                        item(0x0042_0143, Value::integer(2)),
+                        item(0x0042_0144, Value::integer(1)),
+                    ])),
+                ),
+                item(
+                    0x0054_0001,
+                    Value::text_string("profile-specific extension".to_owned()),
+                ),
+            ])),
+        ),
         item(
             QUERY_RESPONSE_TAGS[9],
             Value::structure(structure([item(0x0042_0057, Value::integer(7))])),
@@ -366,7 +408,42 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         [0x8000_0045]
     );
     assert_eq!(response.rng_parameters().count(), 1);
-    assert_eq!(response.profile_information().count(), 1);
+    let profile_information = response
+        .profile_information()
+        .next()
+        .expect("Profile Information is preserved");
+    profile_information.with_value(|value| match value {
+        ValueView::Structure(profile_information) => {
+            assert_eq!(
+                profile_information
+                    .children()
+                    .iter()
+                    .map(|field| field.tag().raw())
+                    .collect::<Vec<_>>(),
+                [0x0042_0140, 0x0042_0142, 0x0054_0001]
+            );
+            profile_information.children()[0]
+                .with_value(|value| assert!(matches!(value, ValueView::Enumeration(&0x8000_0042))));
+            profile_information.children()[1].with_value(|value| match value {
+                ValueView::Structure(version) => assert_eq!(
+                    version
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect::<Vec<_>>(),
+                    [0x0042_0143, 0x0042_0144]
+                ),
+                _ => panic!("Profile Version is a Structure"),
+            });
+            profile_information.children()[2].with_value(|value| {
+                assert!(matches!(
+                    value,
+                    ValueView::TextString("profile-specific extension")
+                ))
+            });
+        }
+        _ => panic!("Profile Information is a Structure"),
+    });
     assert_eq!(response.validation_information().count(), 1);
     assert_eq!(response.capability_information().count(), 1);
     assert_eq!(
