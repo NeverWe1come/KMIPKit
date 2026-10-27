@@ -90,7 +90,9 @@ impl GetAttributesRequest {
 /// The typed result of one Get Attributes response batch item.
 ///
 /// Successful responses contain the required Unique Identifier and the ordered
-/// direct attribute Items in Table 224's Attributes Structure. Other KMIP
+/// direct attribute Items in Table 224's Attributes Structure. Repetitions are
+/// preserved where the source permits them, and known single-instance
+/// violations are rejected. Other KMIP
 /// statuses retain the common result and have no typed response payload.
 pub struct GetAttributesResponse {
     result: KmipOperationResult,

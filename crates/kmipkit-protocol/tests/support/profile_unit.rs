@@ -4650,7 +4650,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_respons
 
 #[test]
 fn profile_rejects_repeated_single_instance_attributes_in_export_response() {
-    // KMIP Specification v2.1 §4/Table 46 and §6.1.18 Table 219 include the
+    // KMIP Specification v2.1 §4/Table 46 and §6.1.18 Table 218 include the
     // returned object's Attributes in an Export response.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -4715,10 +4715,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_export_key_value() {
         tagged(COMMENT_TAG, Value::text_string("first".to_owned())),
         tagged(COMMENT_TAG, Value::text_string("second".to_owned())),
     ]);
-    let key_value = structure([tagged(
-        ATTRIBUTES_TAG,
-        Value::structure(nested_attributes),
-    )]);
+    let key_value = structure([tagged(ATTRIBUTES_TAG, Value::structure(nested_attributes))]);
     let key_block = structure([tagged(KEY_VALUE_TAG, Value::structure(key_value))]);
     let object = structure([tagged(KEY_BLOCK_TAG, Value::structure(key_block))]);
     let request = request_message_with_operation_payload(
@@ -4784,6 +4781,36 @@ fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
+}
+
+#[test]
+fn profile_accepts_valid_single_instance_attribute_in_create_request() {
+    // KMIP Specification v2.1 §4 and Table 46 permit one Comment instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+
+    let request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    COMMENT_TAG,
+                    Value::text_string("one comment".to_owned()),
+                )])),
+            ),
+        ]),
+    );
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_request(&request)
+    .expect("profile preflight accepts a single source-defined singleton attribute");
 }
 
 #[test]
@@ -5052,6 +5079,37 @@ fn profile_rejects_repeated_dsa_for_pgp_certificate_context() {
         error.code(),
         ProfileValidationErrorCode::ResponseRuleRejected
     );
+}
+
+#[test]
+fn profile_accepts_repeated_dsa_for_pgp_key_object_type() {
+    // Specification §4.22 Table 72 permits repeated Digital Signature
+    // Algorithm for PGP Key objects.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+
+    let request = request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(9)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([
+                    tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(1)),
+                    tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(2)),
+                ])),
+            ),
+        ]),
+    );
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_request(&request)
+    .expect("Object Type PGP Key selects Table 72's repeated-value allowance");
 }
 
 #[test]

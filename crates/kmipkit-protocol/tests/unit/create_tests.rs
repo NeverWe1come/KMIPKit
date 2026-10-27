@@ -249,7 +249,10 @@ fn create_rejects_repeated_single_instance_attributes() {
 
     let result = CreateRequest::new(ObjectType::from_raw(7), attributes).into_ttlv_payload();
 
-    assert!(result.is_err(), "Create must not encode duplicate Comment instances");
+    assert!(
+        result.is_err(),
+        "Create must not encode duplicate Comment instances"
+    );
 }
 
 #[test]

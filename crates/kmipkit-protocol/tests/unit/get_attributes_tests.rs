@@ -474,7 +474,6 @@ fn response_preserves_repeated_digital_signature_algorithm_for_pgp_key() {
         None,
         Some(successful_payload([
             item(OBJECT_TYPE, Value::enumeration(9)),
-            item(CERTIFICATE_TYPE, Value::enumeration(2)),
             item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
             item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
         ])),
@@ -487,14 +486,14 @@ fn response_preserves_repeated_digital_signature_algorithm_for_pgp_key() {
             .attributes()
             .expect("successful response has Attributes")
             .len(),
-        4
+        3
     );
 }
 
 #[test]
 fn response_preserves_conditional_digital_signature_algorithm_without_context() {
-    // An Attribute Set may be filtered; without Object Type or Certificate
-    // Type, KMIPKit preserves conditional data and does not guess its type.
+    // Table 72's Certificate branch is undecidable without Certificate Type;
+    // the generic typed response preserves values without inferring X.509.
     let message = response_message(
         0,
         None,
@@ -514,6 +513,33 @@ fn response_preserves_conditional_digital_signature_algorithm_without_context() 
             .expect("successful response has Attributes")
             .len(),
         3
+    );
+}
+
+#[test]
+fn response_does_not_infer_pgp_key_multiplicity_from_certificate_type() {
+    // Table 41 scopes Certificate Type to Certificate objects. Table 72
+    // permits repeated DSA only for PGP Key Object Type, not PGP Certificates.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(1)),
+            item(CERTIFICATE_TYPE, Value::enumeration(2)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let response = GetAttributesResponse::try_from_response_item(response_item(&message))
+        .expect("the generic response preserves unresolved Table 72 multiplicity");
+    assert_eq!(
+        response
+            .attributes()
+            .expect("successful response has Attributes")
+            .len(),
+        4
     );
 }
 

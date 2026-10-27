@@ -43,9 +43,10 @@ pub enum OpaqueObjectContext {
 /// A KMIP 2.1 Register request from §6.1.43, Table 291.
 ///
 /// The caller supplies the object type, its direct Attributes, and the full
-/// object item. `KMIPKit` preserves their order and unknown values. It checks
-/// only the source-defined local Table 293 attribute requirements; the server
-/// remains authoritative for object validity, policy, and registration.
+/// object item. `KMIPKit` preserves their order and unknown values, rejects
+/// repeated source-defined single-instance attributes, and checks the local
+/// Table 293 attribute requirements; the server remains authoritative for
+/// object validity, policy, and registration.
 ///
 /// For caller-supplied wrapped Key Values, the caller is responsible for
 /// providing IV/Counter/Nonce when the selected wrapping method requires it
@@ -121,7 +122,17 @@ impl RegisterRequest {
     /// context does not apply to the Object Type.
     #[doc(hidden)]
     pub fn validate_local_shape(&self) -> Result<(), ProtocolError> {
-        if !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
+        if self
+            .attributes
+            .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
+            .is_err()
+            || crate::attribute::validate_key_value_attribute_cardinality(
+                &self.object,
+                Some(self.object_type.raw()),
+                false,
+            )
+            .is_err()
+            || !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
             || !attributes_satisfy_register_requirements(
                 self.object_type,
                 &self.attributes,

@@ -912,6 +912,7 @@ const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const NIST_KEY_TYPE_ATTRIBUTE: u32 = 0x0042_013A;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
+const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const REGISTER_OPAQUE_OBJECT: u32 = 0x0042_005B;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
@@ -925,7 +926,6 @@ const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
 const PROTECTION_STORAGE_MASK: u32 = 0x0042_015E;
-const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
 const PRIVATE_KEY_OBJECT_TYPE: u32 = 4;
 const SPLIT_KEY_OBJECT_TYPE: u32 = 5;
@@ -3295,7 +3295,10 @@ fn client_preserves_single_instance_attribute_cardinality(
     request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    if request.is_none() {
+    let Some(request) = request else {
+        return false;
+    };
+    if !request_attribute_sets_preserve_single_instance_cardinality(request) {
         return false;
     }
     let Some((_, response)) = response else {
@@ -3303,8 +3306,194 @@ fn client_preserves_single_instance_attribute_cardinality(
     };
 
     response.batch_items().all(|item| {
-        item.operation() != Some(GET_ATTRIBUTES_OPERATION)
-            || crate::GetAttributesResponse::try_from_response_item(item).is_ok()
+        if item.operation() == Some(GET_OPERATION) {
+            let Ok(typed) = crate::GetResponse::try_from_response_item(item) else {
+                return false;
+            };
+            let object_type = typed.object_type().map(crate::ObjectType::raw);
+            return typed.object().is_none_or(|object| {
+                crate::attribute::validate_key_value_attribute_cardinality(
+                    object,
+                    object_type,
+                    true,
+                )
+                .is_ok()
+            });
+        }
+        if item.operation() == Some(EXPORT_OPERATION) {
+            let Ok(typed) = crate::ExportResponse::try_from_response_item(item) else {
+                return false;
+            };
+            let object_type = typed.object_type().map(crate::ObjectType::raw);
+            let attributes_valid = typed.attributes().is_none_or(|attributes| {
+                attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        crate::attribute::validate_single_instance_attribute_items(
+                            attributes.children(),
+                            object_type,
+                            true,
+                        )
+                        .is_ok()
+                    }
+                    _ => false,
+                })
+            });
+            let object_valid = typed.object().is_none_or(|object| {
+                crate::attribute::validate_key_value_attribute_cardinality(
+                    object,
+                    object_type,
+                    true,
+                )
+                .is_ok()
+            });
+            return attributes_valid && object_valid;
+        }
+        if item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+            return true;
+        }
+        let Ok(typed) = crate::GetAttributesResponse::try_from_response_item(item) else {
+            return false;
+        };
+        typed.attributes().is_none_or(|attributes| {
+            crate::attribute::validate_single_instance_attribute_items(
+                attributes.as_items(),
+                None,
+                true,
+            )
+            .is_ok()
+        })
+    })
+}
+
+fn request_attribute_sets_preserve_single_instance_cardinality(request: &RequestMessage) -> bool {
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !operation_contains_attribute_sets(operation) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let object_type = request_payload_object_type(&payload, operation);
+                request_direct_attribute_groups_preserve_cardinality(
+                    &payload,
+                    operation,
+                    object_type,
+                ) && request_key_value_attributes_preserve_cardinality(
+                    &payload,
+                    operation,
+                    object_type,
+                )
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn operation_contains_attribute_sets(operation: u32) -> bool {
+    matches!(
+        operation,
+        CREATE_OPERATION
+            | REGISTER_OPERATION
+            | IMPORT_OPERATION
+            | CREATE_KEY_PAIR_OPERATION
+            | CERTIFY_OPERATION
+            | REKEY_OPERATION
+            | RECERTIFY_OPERATION
+            | REKEY_KEY_PAIR_OPERATION
+            | CREATE_SPLIT_KEY_OPERATION
+            | JOIN_SPLIT_KEY_OPERATION
+            | DERIVE_KEY_OPERATION
+            | ADD_ATTRIBUTE_OPERATION
+            | MODIFY_ATTRIBUTE_OPERATION
+            | SET_ATTRIBUTE_OPERATION
+    )
+}
+
+fn request_payload_object_type(payload: &StructureView<'_>, operation: u32) -> Option<u32> {
+    if matches!(
+        operation,
+        CREATE_OPERATION
+            | REGISTER_OPERATION
+            | IMPORT_OPERATION
+            | CREATE_SPLIT_KEY_OPERATION
+            | JOIN_SPLIT_KEY_OPERATION
+            | DERIVE_KEY_OPERATION
+    ) {
+        let mut fields = payload
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == REGISTER_OBJECT_TYPE);
+        return match (fields.next(), fields.next()) {
+            (Some(field), None) => field.with_value(|value| match value {
+                ValueView::Enumeration(value) => Some(*value),
+                _ => None,
+            }),
+            _ => None,
+        };
+    }
+    matches!(operation, CERTIFY_OPERATION | RECERTIFY_OPERATION).then_some(CERTIFICATE_OBJECT_TYPE)
+}
+
+fn request_direct_attribute_groups_preserve_cardinality(
+    payload: &StructureView<'_>,
+    operation: u32,
+    object_type: Option<u32>,
+) -> bool {
+    let mut seen_groups = HashSet::new();
+    payload.children().iter().all(|field| {
+        let is_attribute_group = match operation {
+            CREATE_OPERATION
+            | REGISTER_OPERATION
+            | IMPORT_OPERATION
+            | CERTIFY_OPERATION
+            | REKEY_OPERATION
+            | RECERTIFY_OPERATION
+            | CREATE_SPLIT_KEY_OPERATION
+            | JOIN_SPLIT_KEY_OPERATION
+            | DERIVE_KEY_OPERATION => field.tag().raw() == ATTRIBUTES,
+            CREATE_KEY_PAIR_OPERATION | REKEY_KEY_PAIR_OPERATION => matches!(
+                field.tag().raw(),
+                CREATE_KEY_PAIR_COMMON_ATTRIBUTES
+                    | CREATE_KEY_PAIR_PRIVATE_KEY_ATTRIBUTES
+                    | CREATE_KEY_PAIR_PUBLIC_KEY_ATTRIBUTES
+            ),
+            ADD_ATTRIBUTE_OPERATION | MODIFY_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+                field.tag().raw() == NEW_ATTRIBUTE
+            }
+            _ => false,
+        };
+        if !is_attribute_group {
+            return true;
+        }
+        if !seen_groups.insert(field.tag().raw()) {
+            return false;
+        }
+        field.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                crate::attribute::validate_single_instance_attribute_items(
+                    attributes.children(),
+                    object_type,
+                    true,
+                )
+                .is_ok()
+            }
+            _ => false,
+        })
+    })
+}
+
+fn request_key_value_attributes_preserve_cardinality(
+    payload: &StructureView<'_>,
+    operation: u32,
+    object_type: Option<u32>,
+) -> bool {
+    if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+        return true;
+    }
+    payload.children().iter().all(|field| {
+        crate::attribute::validate_key_value_attribute_cardinality(field, object_type, true).is_ok()
     })
 }
 
@@ -8311,6 +8500,42 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_get_attributes_response",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_create_request",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_single_instance_attribute_in_create_request",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_conditional_dsa_without_object_context",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_requests",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_nested_key_value_groups",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_response",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_key_value",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_dsa_for_pgp_certificate_context",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_repeated_dsa_for_pgp_key_object_type",
+                kind: RuleTestKind::PositiveBehavior,
             },
         ],
         constraints: &[],
