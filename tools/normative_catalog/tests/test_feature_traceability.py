@@ -1229,6 +1229,25 @@ class FeatureTraceabilityTests(unittest.TestCase):
 
         return _is_discoverable_positive_test(path, test_name, source)
 
+    def test_ignored_rust_tests_are_not_positive_evidence(self) -> None:
+        """An ignored test does not run in the normal suite and cannot prove a capability."""
+        for ignore_attribute in ('#[ignore]', '#[ignore = "requires unavailable service"]'):
+            with self.subTest(ignore_attribute=ignore_attribute):
+                source = (
+                    "#[test]\n"
+                    f"{ignore_attribute}\n"
+                    "fn ignored_capability_check() {\n"
+                    "    assert!(true);\n"
+                    "}\n"
+                )
+                self.assertFalse(
+                    _is_discoverable_positive_test(
+                        Path("tests/ignored_capability.rs"),
+                        "ignored_capability_check",
+                        source,
+                    )
+                )
+
 
 class MessageModelTraceabilityTests(unittest.TestCase):
     @staticmethod
