@@ -7479,3 +7479,29 @@ Read-only QA identified stale T002 assertions that expected the nine §4.40–§
 ### Independent security re-review (2026-10-27)
 
 Read-only security review of the completed T040 batch found no actionable issues. The nine new mappings are static caller-owned constraints with `evaluator: None` and exact configuration-only allowlist entries; they add no local cryptography, clock access, remote-state lookup, secret handling, or request-body exposure. Documentation preserves the no-enforcement and no-conformance-claim boundary. Exact-head hosted CI remains pending publication.
+
+## T040 State mutation through Modify Attribute — Red, Green, and Refactor (2026-10-27)
+
+The Red commit `ced9b484e` added a catalog-scope regression and Rust mapping/request tests for KMIP Specification v2.1 §4.57. Red evidence:
+
+| Test | Command and expected failure |
+|---|---|
+| Client scope crosswalk | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability.T002FinalApplicabilityTests.test_state_attribute_modify_prohibition_is_client_scope -v` — failed with `KeyError` because the approved source crosswalk had no §4.57-001 client disposition. |
+| Typed mapping and category evidence | `cargo test -p kmipkit-protocol --lib profile::tests::profile_maps_state_attribute_modify_prohibition_as_prohibited_behavior -- --nocapture` — failed because the generated client requirement record was absent. |
+| Outbound State mutation rejection | `cargo test -p kmipkit-protocol --lib profile::tests::profile_rejects_client_modify_attribute_for_state -- --nocapture` — failed with `MissingRuleMapping` instead of `RequestRuleRejected`. |
+
+The Green commit `b5d88f440` records the project interpretation: §4.57 prohibits State changes through Modify Attribute; §6.1.34 identifies Modify Attribute as client-to-server. The source sentence does not name its actor, so the catalog preserves `source_actor=unresolved` while assigning the client request restriction to KMIPKit's 1.0 scope. The typed evaluator rejects State in either Current Attribute or New Attribute and leaves unrelated attribute updates and server State transitions through other operations unaffected. The requirement is linked to the State attribute, Modify Attribute operation, exact OASIS sections, generated profile records, the negative request test, and the mapping test. No requirement-specific official OASIS Test Case ID is asserted.
+
+| Verification | Command and result |
+|---|---|
+| TDD Green regressions | Both focused Rust tests above passed; all four focused T002 assertions passed. |
+| Final T002 dispositions | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` — PASS: 8 tests. |
+| Protocol tests | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,138 unit tests plus integration targets and doctests. |
+| Protocol quality | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` — PASS. |
+| Complete profile report contract | `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` — PASS: 1 test in 78.717 seconds after adding the State mapping to its reviewed registry expectation. |
+| Full typed-profile traceability | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` — PASS: 1 test in 422.986 seconds. |
+| Catalog and generated artifacts | Catalog validation — PASS: 4 sources, 1,411 clauses, 4,125 records; generated profile metadata `--check` and coverage report `--check` — PASS. |
+| OASIS source immutability | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; all pinned source files remain unchanged. |
+| Baseline evidence state | 279/279 typed mappings and 279/279 category-test references; unresolved applicability conditions decreased from 27 to 26. Runtime validation remains false and readiness remains `evidence_incomplete`. |
+
+The Refactor commit records the profile contract and this evidence without changing runtime behavior. T040 remains open; this slice neither completes the remaining applicability review nor establishes profile conformance.
