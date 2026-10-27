@@ -88740,7 +88740,8 @@
         "crates/kmipkit-protocol/src/delete_attribute.rs",
         "crates/kmipkit-protocol/src/get_attributes.rs",
         "crates/kmipkit-protocol/src/modify_attribute.rs",
-        "crates/kmipkit-protocol/src/set_attribute.rs"
+        "crates/kmipkit-protocol/src/set_attribute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
@@ -88753,12 +88754,13 @@
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
-      "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §4 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. The client model preserves permitted repeated attribute instances in request and response structures; server storage remains server-owned."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §4 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. §4.32 Table 94 marks Name as permitting multiple instances. The typed AttributeSet preserves repeated Name items, and KMIPKIT-0010 maps the optional client representation capability. The test does not assert distinct values, stored-object cardinality, or server acceptance; the SHOULD for distinct values is separately caller-owned. No official OASIS Test Case is linked to this requirement."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
@@ -99586,12 +99588,10 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0010",
+      "feature_spec": "KMIPKIT-0020",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/query.rs",
-        "crates/kmipkit-protocol/src/profile.rs",
-        "crates/kmipkit-protocol/src/profiles_generated.rs",
-        "specification/catalog/coverage-report.md"
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
@@ -99602,7 +99602,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §7.31 and Table 383: Profile Name is a required Enumeration; Profile Version, Server URI, and Server Port are optional Structure, Text String, and Integer fields. KMIPKit preserves unknown profile-specific items as generic TTLV and does not infer profile-specific semantics. The client-initiated Query Profiles direction follows accepted DEC-028; the nearby client/server wording conflict remains recorded in DISC-056. These local tests are not official OASIS conformance-test executions."
+      "review_note": "The typed Query response in KMIPKIT-0020 owns Profile Information representation under Specification §6.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without taking ownership of this base Specification requirement. Section 7.31 and Table 383 require Profile Name and define optional Profile Version, Server URI, and Server Port field shapes; the client preserves unknown profile-specific items as generic TTLV and does not infer their semantics. Client-initiated response direction follows DEC-028; the conflict remains recorded in DISC-056. These local tests are not official OASIS conformance-test executions."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.32-001",
@@ -99649,12 +99649,10 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": "KMIPKIT-0010",
+      "feature_spec": "KMIPKIT-0020",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/query.rs",
-        "crates/kmipkit-protocol/src/profile.rs",
-        "crates/kmipkit-protocol/src/profiles_generated.rs",
-        "specification/catalog/coverage-report.md"
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_requires_both_profile_version_parts_when_version_is_present",
@@ -99665,7 +99663,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §7.32 and Table 384 require Profile Version Major and Minor as Integer parts when the optional Profile Version Structure is present. Typed Query parsing and the selected-profile response evaluator enforce both parts only for client-initiated Query Profiles responses; unknown nested items remain preserved. These local tests are not official OASIS conformance-test executions."
+      "review_note": "The typed Query response model in KMIPKIT-0020 owns Profile Version representation in Specification §6.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without transferring ownership of this base requirement. Specification §7.32 and Table 384 require Integer Major and Minor parts when optional Profile Version is present; the parser/evaluator enforce both for client-initiated Query Profiles responses and preserve unknown nested items. These local tests are not official OASIS conformance-test executions."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.33-001",

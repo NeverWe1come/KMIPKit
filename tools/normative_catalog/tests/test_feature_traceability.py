@@ -1133,7 +1133,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
             if requirement_id.startswith("KMIPKIT-REQ-PROF-")
         }
 
-        self.assertEqual(162, len(profile_requirement_ids))
+        self.assertEqual(163, len(profile_requirement_ids))
         incorrectly_owned_profile_requirements = [
             (requirement_id, requirements[requirement_id].get("feature_spec"))
             for requirement_id in profile_requirement_ids
