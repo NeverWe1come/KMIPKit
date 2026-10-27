@@ -455,13 +455,22 @@ class CoverageReportTests(unittest.TestCase):
                 key: "client_profile_capability",
                 value: "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
             },
+            RuleConstraint {
+                key: "client_profile_capability",
+                value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
+            },
         ],
     },
 ];
 """
 
+        try:
+            parsed = _parse_typed_rule_registry(source)
+        except ValueError as error:
+            self.fail(f"the report parser rejected a known caller-owned capability: {error}")
+
         self.assertEqual(
-            _parse_typed_rule_registry(source),
+            parsed,
             [
                 {
                     "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
