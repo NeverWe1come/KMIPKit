@@ -4350,6 +4350,59 @@ fn profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_cap
 }
 
 #[test]
+fn profile_maps_multi_instance_attribute_representation_as_optional_capability() {
+    // KMIP Specification v2.1 §4 permits multiple instances for attributes
+    // marked multi-instance; §4.32 Table 94 marks Name as multi-instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability";
+    const NAME_TAG: u32 = 0x0042_0053;
+    const NAME_TYPE_TAG: u32 = 0x0042_0054;
+    const NAME_VALUE_TAG: u32 = 0x0042_0055;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("multi-instance attributes have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the multi-instance requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional multi-instance capability has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
+    let name_attribute = |value: &str| {
+        tagged(
+            NAME_TAG,
+            Value::structure(structure([
+                tagged(NAME_VALUE_TAG, Value::text_string(value.to_owned())),
+                tagged(NAME_TYPE_TAG, Value::enumeration(1)),
+            ])),
+        )
+    };
+    let attributes = crate::AttributeSet::try_new([
+        name_attribute("primary-name"),
+        name_attribute("secondary-name"),
+    ])
+    .expect("§4.32 Table 94 permits multiple Name instances");
+    assert_eq!(attributes.len(), 2);
+    assert!(attributes
+        .as_items()
+        .iter()
+        .all(|attribute| attribute.tag().raw() == NAME_TAG));
+}
+
+#[test]
 fn profile_requires_get_and_export_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
