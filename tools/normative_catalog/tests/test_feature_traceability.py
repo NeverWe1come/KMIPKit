@@ -410,15 +410,38 @@ def _python_skip_decorator_aliases(module: ast.Module) -> set[str]:
     return aliases
 
 
-def _python_expression_has_skip_marker(node: ast.AST, aliases: set[str]) -> bool:
-    skip_decorators = {"skip", "skipif", "skipunless"}
+def _python_callable_is_skip_marker(node: ast.AST, aliases: set[str]) -> bool:
+    name = _python_ast_dotted_name(node)
+    if name is None:
+        return False
+    return name in aliases or name.rsplit(".", 1)[-1].casefold() in {
+        "skip",
+        "skipif",
+        "skipunless",
+    }
+
+
+def _python_expression_has_skip_marker(
+    node: ast.AST, aliases: set[str], *, allow_alias_values: bool = False
+) -> bool:
+    if isinstance(node, ast.Name) and _python_callable_is_skip_marker(node, aliases):
+        return True
     for child in ast.walk(node):
-        name = _python_ast_dotted_name(child)
-        if name is None:
-            continue
-        if name in aliases:
+        if isinstance(child, ast.Attribute) and child.attr.casefold() in {
+            "skip",
+            "skipif",
+            "skipunless",
+        }:
             return True
-        if any(part.casefold() in skip_decorators for part in name.split(".")):
+        if isinstance(child, ast.Call) and _python_callable_is_skip_marker(
+            child.func, aliases
+        ):
+            return True
+        if (
+            allow_alias_values
+            and isinstance(child, ast.Name)
+            and child.id in aliases
+        ):
             return True
     return False
 
@@ -432,21 +455,57 @@ def _python_node_has_skip_decorator(node: ast.AST, aliases: set[str]) -> bool:
 
 def _python_module_has_skip_marker(module: ast.Module, aliases: set[str]) -> bool:
     for node in module.body:
-        if isinstance(node, ast.Assign) and any(
-            isinstance(target, ast.Name) and target.id == "pytestmark"
-            for target in node.targets
-        ):
-            if _python_expression_has_skip_marker(node.value, aliases):
+        if isinstance(node, ast.Assign):
+            pytestmark_targets = [
+                target
+                for target in node.targets
+                if isinstance(target, ast.Name) and target.id == "pytestmark"
+            ]
+            if pytestmark_targets and _python_expression_has_skip_marker(
+                node.value, aliases, allow_alias_values=True
+            ):
                 return True
-        if (
-            isinstance(node, ast.AnnAssign)
-            and isinstance(node.target, ast.Name)
-            and node.target.id == "pytestmark"
-            and node.value is not None
-            and _python_expression_has_skip_marker(node.value, aliases)
-        ):
+            alias_targets = [
+                target
+                for target in node.targets
+                if isinstance(target, ast.Name) and target.id != "pytestmark"
+            ]
+            if _python_expression_has_skip_marker(
+                node.value, aliases, allow_alias_values=True
+            ):
+                aliases.update(target.id for target in alias_targets)
+            elif pytestmark_targets and _python_module_scope_uses_pytestmark(node.value):
+                return True
+            elif not pytestmark_targets and _python_module_scope_uses_pytestmark(node):
+                return True
+            continue
+        if isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name) and node.target.id == "pytestmark":
+                if node.value is not None and _python_expression_has_skip_marker(
+                    node.value, aliases, allow_alias_values=True
+                ):
+                    return True
+                if node.value is not None and _python_module_scope_uses_pytestmark(node.value):
+                    return True
+                continue
+            if node.value is not None and _python_expression_has_skip_marker(
+                node.value, aliases, allow_alias_values=True
+            ) and isinstance(node.target, ast.Name):
+                aliases.add(node.target.id)
+        if _python_module_scope_uses_pytestmark(node):
             return True
     return False
+
+
+def _python_module_scope_uses_pytestmark(node: ast.AST) -> bool:
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+        return False
+    if isinstance(node, ast.Name) and node.id == "pytestmark":
+        return True
+    return any(
+        _python_module_scope_uses_pytestmark(child)
+        for child in ast.iter_child_nodes(node)
+    )
 
 
 def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
@@ -1346,6 +1405,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "test_capability",
                 "from unittest import skip as omit_test\n"
                 "@omit_test('requires unavailable service')\n"
+                "def test_capability():\n"
+                "    assert True\n",
+            ),
+            (
+                "aliased pytest function skip marker",
+                "test_capability",
+                "import pytest\n"
+                "skip_marker = pytest.mark.skip(reason='service unavailable')\n"
+                "@skip_marker\n"
                 "def test_capability():\n"
                 "    assert True\n",
             ),
