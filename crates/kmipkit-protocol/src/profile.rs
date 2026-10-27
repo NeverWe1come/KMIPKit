@@ -8978,6 +8978,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.57-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_active_use_prohibition_as_caller_owned_behavior",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4-001-005",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
         source_gap_id: None,
@@ -13076,6 +13091,7 @@ fn is_supported_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
+                    | "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted"
             )
     );
     is_known_constraint || is_caller_owned_temporal_constraint(constraint)
@@ -13131,6 +13147,7 @@ fn is_configuration_only_rule_constraint(constraint: &RuleConstraint) -> bool {
                     | "message_extension_fields_and_vendor_data_validated_by_message_model"
                     | "vendor_identification_is_caller_assigned_unique_text"
                     | "single_cryptographic_usage_per_key_object_caller_asserted"
+                    | "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted"
             )
     );
     is_configuration_only || is_caller_owned_temporal_constraint(constraint)

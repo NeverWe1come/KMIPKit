@@ -80,8 +80,8 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             row["requirement_id"]: row for row in cls.catalog["requirements"]
         }
 
-    def test_final_twenty_one_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
-        self.assertEqual(len(FINAL_DISPOSITIONS), 21)
+    def test_final_twenty_two_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
+        self.assertEqual(len(FINAL_DISPOSITIONS), 22)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
         self.assertEqual(

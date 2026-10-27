@@ -2374,6 +2374,7 @@ mod unrelated {
                     # KMIPKIT-0010 T040: State cannot be changed through the
                     # client-to-server Modify Attribute operation.
                     "KMIPKIT-REQ-SPEC-4.57-001",
+                    "KMIPKIT-REQ-SPEC-4.57-002",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-002",
                     "KMIPKIT-REQ-SPEC-6.1.23-002-002",

@@ -217,6 +217,10 @@ _CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
         "client_profile_capability",
         "single_cryptographic_usage_per_key_object_caller_asserted",
     ),
+    (
+        "client_profile_capability",
+        "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
+    ),
 }
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),
