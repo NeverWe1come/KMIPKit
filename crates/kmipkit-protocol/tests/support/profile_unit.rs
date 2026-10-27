@@ -24727,37 +24727,20 @@ fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.57 paragraph 2.
-fn profile_records_pre_active_use_as_caller_owned_unverified_obligation() {
+fn server_only_pre_active_use_prohibition_is_not_a_client_rule() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-002";
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Pre-Active use has a typed scope mapping");
-    let requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("Pre-Active use has generated requirement metadata");
 
-    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.57-002");
-    assert_eq!(
-        mapping.verification_category,
-        GeneratedVerificationCategory::ProhibitedBehavior
+    assert!(
+        CLIENT_REQUIREMENTS
+            .iter()
+            .all(|requirement| requirement.requirement_id != REQUIREMENT_ID),
+        "server-owned Pre-Active use prohibition must not enter the client registry"
     );
-    assert!(mapping.evaluator.is_none());
-    assert_eq!(mapping.test_evidence, []);
-    assert_eq!(
-        mapping.constraints,
-        &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
-        }]
-    );
-
-    let error = validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
-        .expect_err("caller-owned metadata is not negative behavioral evidence");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::MissingCategoryTest
+    assert!(
+        TYPED_RULE_MAPPINGS
+            .iter()
+            .all(|mapping| mapping.requirement_id != REQUIREMENT_ID),
+        "server-owned Pre-Active use prohibition must not become a client runtime rule"
     );
 }
 

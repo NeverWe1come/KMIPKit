@@ -1270,14 +1270,8 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 self.assertEqual(mapping["verification_category"], category)
                 expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY[category]
                 if mapping["test_id"] is None:
-                    self.assertEqual(
-                        requirement_id,
-                        "KMIPKIT-REQ-SPEC-4.57-002",
-                        "only the caller-owned Pre-Active prohibition is an explicit evidence blocker",
-                    )
-                    self.assertEqual(category, "ProhibitedBehavior")
-                    self.assertIsNone(mapping["test_kind"])
                     missing_category_test_ids.add(requirement_id)
+                    self.assertIsNone(mapping["test_kind"])
                 else:
                     required_test_kinds[requirement_id] = expected_test_kind
                     observed_test_kinds.setdefault(requirement_id, set()).add(mapping["test_kind"])
@@ -1351,7 +1345,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     if separator:
                         self.assertTrue(self._is_executable_test_ref(reference), reference)
 
-        self.assertEqual(missing_category_test_ids, {"KMIPKIT-REQ-SPEC-4.57-002"})
+        self.assertEqual(missing_category_test_ids, set())
         for requirement_id, required_test_kind in required_test_kinds.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertIn(required_test_kind, observed_test_kinds[requirement_id])

@@ -1912,18 +1912,18 @@ mod unrelated {
             typed_rule_mappings=typed_rule_mappings,
         )
 
-        pre_active_mapping = next(
-            row
-            for row in typed_rule_mappings
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-002"
+        self.assertFalse(
+            any(
+                row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-002"
+                for row in typed_rule_mappings
+            )
         )
-        self.assertIsNone(pre_active_mapping["test_id"])
-        self.assertIsNone(pre_active_mapping["test_kind"])
-        pre_active_row = next(
-            row
-            for row in report.splitlines()
-            if row.startswith("| KMIPKIT-REQ-SPEC-4.57-002 |")
-            and "Typed rule mapping:" in row
+        self.assertFalse(
+            any(
+                row.startswith("| KMIPKIT-REQ-SPEC-4.57-002 |")
+                and "Typed rule mapping:" in row
+                for row in report.splitlines()
+            )
         )
         baseline_blocker_row = next(
             row
@@ -1931,8 +1931,7 @@ mod unrelated {
             if row.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
             and len(row.split("|")) == 9
         )
-        self.assertIn("No category-appropriate rule test", pre_active_row)
-        self.assertIn("category test references missing: 1", baseline_blocker_row)
+        self.assertNotIn("category test references missing: 1", baseline_blocker_row)
 
         self.assertCountEqual(
             [
@@ -2439,7 +2438,6 @@ mod unrelated {
                     # KMIPKIT-0010 T040: State cannot be changed through the
                     # client-to-server Modify Attribute operation.
                     "KMIPKIT-REQ-SPEC-4.57-001",
-                    "KMIPKIT-REQ-SPEC-4.57-002",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-001",
                     "KMIPKIT-REQ-SPEC-6.1.23-001-002",
                     "KMIPKIT-REQ-SPEC-6.1.23-002-002",

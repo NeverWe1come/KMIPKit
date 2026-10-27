@@ -186,11 +186,11 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        # Keep only actor/scope atoms still unresolved by T002; §4.57-001 is client scope,
+        # §4.57-002 is server-only by DEC-020, and §4.57-003-001 is server-only.
         unresolved_ids = {
             *(f"KMIPKIT-REQ-SPEC-4-001-{ordinal:03d}" for ordinal in range(1, 4)),
-            "KMIPKIT-REQ-SPEC-4.57-001",
-            "KMIPKIT-REQ-SPEC-4.57-002",
-            *(f"KMIPKIT-REQ-SPEC-4.57-003-{ordinal:03d}" for ordinal in range(1, 5)),
+            *(f"KMIPKIT-REQ-SPEC-4.57-003-{ordinal:03d}" for ordinal in range(2, 5)),
             *(f"KMIPKIT-REQ-SPEC-4.57-004-{ordinal:03d}" for ordinal in range(1, 4)),
             *(f"KMIPKIT-REQ-SPEC-4.57-005-{ordinal:03d}" for ordinal in range(1, 4)),
             "KMIPKIT-REQ-SPEC-4.57-006",

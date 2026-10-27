@@ -12,6 +12,7 @@ ORACLE_PATH = REPO_ROOT / "tools/normative_catalog/tests/fixtures/profile-closur
 CATALOG_PATH = REPO_ROOT / "specification/catalog/kmip-2.1.json"
 
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
+PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.57-002"
 BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.1-001-001",
     "KMIPKIT-REQ-SPEC-4.1-001-002",
@@ -42,7 +43,6 @@ CLIENT_SCOPE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.41-001-003",
     "KMIPKIT-REQ-SPEC-4.41-001-004",
     "KMIPKIT-REQ-SPEC-4.57-001",
-    "KMIPKIT-REQ-SPEC-4.57-002",
     "KMIPKIT-REQ-SPEC-8-001",
     "KMIPKIT-REQ-SPEC-8-002",
     "KMIPKIT-REQ-SPEC-9.7-001",
@@ -59,6 +59,7 @@ FINAL_DISPOSITIONS = {
     **{requirement_id: "profile_conditional" for requirement_id in CONDITIONAL_REQUIREMENTS},
     **{requirement_id: "client_1_0" for requirement_id in CLIENT_SCOPE_REQUIREMENTS},
     SERVER_ONLY_REQUIREMENT: "server_only",
+    PRE_ACTIVE_SERVER_ONLY_REQUIREMENT: "server_only",
 }
 TTLV_CLIENT_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-10.1.2-001",
@@ -107,7 +108,11 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         for requirement_id, expected_scope in FINAL_DISPOSITIONS.items():
             crosswalk = self.crosswalk[requirement_id]
             requirement = self.requirements[requirement_id]
-            expected_role = "server" if requirement_id == SERVER_ONLY_REQUIREMENT else "client"
+            expected_role = (
+                "server"
+                if requirement_id in {SERVER_ONLY_REQUIREMENT, PRE_ACTIVE_SERVER_ONLY_REQUIREMENT}
+                else "client"
+            )
             expected_profiles = (
                 client_profile_ids
                 if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
@@ -295,14 +300,13 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(obligation["scope_disposition"], "client_1_0")
         self.assertEqual(obligation["project_actor_interpretation"], "client")
 
-    def test_pre_active_use_prohibition_is_client_scope(self) -> None:
-        requirement_id = "KMIPKIT-REQ-SPEC-4.57-002"
-        self.assertIn(requirement_id, self.requirements)
-        self.assertTrue(
-            requirement_id in self.crosswalk,
-            "Pre-Active use must have an adjudicated client-scope crosswalk",
-        )
+    def test_pre_active_use_prohibition_is_server_only(self) -> None:
+        requirement_id = PRE_ACTIVE_SERVER_ONLY_REQUIREMENT
+        clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-002"
         requirement = self.requirements[requirement_id]
+        clause = next(
+            row for row in self.catalog["source_clauses"] if row["clause_id"] == clause_id
+        )
         crosswalk = self.crosswalk[requirement_id]
         obligation = next(
             obligation
@@ -310,17 +314,49 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             for obligation in review["source_obligations"]
             if obligation.get("candidate_requirement_id") == requirement_id
         )
+        decision = next(
+            (
+                row
+                for row in self.catalog["decisions"]
+                if row["decision_id"] == "KMIPKIT-DEC-020"
+            ),
+            None,
+        )
+        self.assertIsNotNone(decision, "the server-only interpretation needs a decision record")
+        discrepancy = next(
+            row
+            for row in self.catalog["discrepancies"]
+            if row["discrepancy_id"] == "KMIPKIT-DISC-013"
+        )
 
-        self.assertEqual(requirement["scope_state"], "client_1_0")
-        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(clause["scope_state"], "server_only")
+        self.assertIn("KMIPKIT-DEC-020", clause["exclusion_rationale"])
+        self.assertEqual(requirement["role"], "server")
+        self.assertEqual(requirement["scope_state"], "server_only")
         self.assertEqual(requirement["direction"], "unclear")
-        self.assertEqual(crosswalk["scope_state"], "client_1_0")
-        self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+        self.assertEqual(requirement["profile_ids"], [])
+        self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-020")
+        self.assertEqual(crosswalk["role"], "server")
+        self.assertEqual(crosswalk["scope_state"], "server_only")
+        self.assertEqual(crosswalk["applies_to"], [])
         self.assertEqual(crosswalk["source_actor"], "unresolved")
         self.assertEqual(crosswalk["source_direction"], "unclear")
         self.assertEqual(obligation["actor"], "unresolved")
-        self.assertEqual(obligation["scope_disposition"], "client_1_0")
-        self.assertEqual(obligation["project_actor_interpretation"], "client")
+        self.assertEqual(obligation["scope_disposition"], "server_only")
+        self.assertEqual(obligation["project_actor_interpretation"], "server")
+        self.assertEqual(obligation["candidate_requirement_id"], requirement_id)
+        self.assertEqual(decision["status"], "accepted")
+        self.assertIn(requirement_id, decision["requirement_ids"])
+        self.assertNotIn(requirement_id, discrepancy["affected_requirement_ids"])
+
+        for profile in self.catalog["profiles"]:
+            if profile["role"] == "client":
+                self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertNotIn(requirement_id, profile["requirement_ids"])
+        for profile in self.oracle["profiles"]:
+            if profile["role"] == "client":
+                self.assertIn(clause_id, profile["source_clause_ids"])
+                self.assertNotIn(requirement_id, profile["requirement_ids"])
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
