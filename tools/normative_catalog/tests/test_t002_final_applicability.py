@@ -42,6 +42,7 @@ CLIENT_SCOPE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.41-001-003",
     "KMIPKIT-REQ-SPEC-4.41-001-004",
     "KMIPKIT-REQ-SPEC-4.57-001",
+    "KMIPKIT-REQ-SPEC-4.57-002",
 }
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
     BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
@@ -211,6 +212,33 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
         self.assertEqual(crosswalk["source_actor"], "unresolved")
         self.assertEqual(crosswalk["source_direction"], "client_to_server")
+        self.assertEqual(obligation["actor"], "unresolved")
+        self.assertEqual(obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(obligation["project_actor_interpretation"], "client")
+
+    def test_pre_active_use_prohibition_is_client_scope(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-002"
+        self.assertIn(requirement_id, self.requirements)
+        self.assertTrue(
+            requirement_id in self.crosswalk,
+            "Pre-Active use must have an adjudicated client-scope crosswalk",
+        )
+        requirement = self.requirements[requirement_id]
+        crosswalk = self.crosswalk[requirement_id]
+        obligation = next(
+            obligation
+            for review in self.oracle["source_requirement_reviews"]
+            for obligation in review["source_obligations"]
+            if obligation.get("candidate_requirement_id") == requirement_id
+        )
+
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(crosswalk["scope_state"], "client_1_0")
+        self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+        self.assertEqual(crosswalk["source_actor"], "unresolved")
+        self.assertEqual(crosswalk["source_direction"], "unclear")
         self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["scope_disposition"], "client_1_0")
         self.assertEqual(obligation["project_actor_interpretation"], "client")

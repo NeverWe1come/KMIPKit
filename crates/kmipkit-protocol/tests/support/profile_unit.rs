@@ -24588,6 +24588,19 @@ fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
 }
 
 #[test]
+// OASIS KMIP Specification v2.1 §4.57 paragraph 2.
+fn profile_maps_pre_active_use_prohibition_as_caller_owned_behavior() {
+    assert_static_caller_owned_profile_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.57-002",
+        "KMIPKIT-CLAUSE-SPEC-4.57-002",
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        "pre_active_object_not_used_for_cryptographic_purposes_caller_asserted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_active_use_prohibition_as_caller_owned_behavior",
+        RuleTestKind::NegativeBehavior,
+    );
+}
+
+#[test]
 // OASIS KMIP Specification v2.1 §9.20 paragraph 1.
 fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
