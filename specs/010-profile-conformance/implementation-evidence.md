@@ -7509,3 +7509,30 @@ The Refactor commit records the profile contract and this evidence without chang
 ### Independent review of the State mutation slice (2026-10-27)
 
 QA found no actionable gaps. It confirmed that the source oracle preserves the unresolved source actor, the project client interpretation cites §6.1.34 for operation direction, and all 18 client profile closures include the requirement. Security review found no actionable issue: each outbound Modify Attribute batch item is checked in both attribute fields, and rejection returns stable requirement metadata without exposing request payloads. Exact-head hosted CI will run after these commits are pushed.
+
+
+## Pre-Active object use prohibition — Red, Green, and Refactor (2026-10-27)
+
+The Red commits `753227963` and `77a4e2acf` added regressions for KMIP Specification v2.1 §4.57 paragraph 2, its client-scope crosswalk, and the coverage-report constraint parser. Red evidence:
+
+| Test | Command and expected failure |
+|---|---|
+| Static profile mapping | `cargo test -p kmipkit-protocol --lib profile::tests::profile_maps_pre_active_use_prohibition_as_caller_owned_behavior -- --exact` — failed because the typed mapping was absent. |
+| Client scope disposition | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability.T002FinalApplicabilityTests.test_pre_active_use_prohibition_is_client_scope -v` — failed because §4.57-002 had no adjudicated client crosswalk. |
+| Report constraint registry | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints -v` — failed because the new caller-owned capability was not in the report parser allowlist. |
+
+The Green commit `90337a1ca` records the §4.57 Pre-Active prohibition as client 1.0 scope while preserving the OASIS source actor as unresolved and direction as unclear. The typed rule is `ProhibitedBehavior`, has no local evaluator, and carries the caller-owned `pre_active_object_not_used_for_cryptographic_purposes_caller_asserted` capability. KMIPKit does not discover or track remote State and performs no local cryptographic operation; the catalog and independent oracle assign the usage duty to the caller. The State element and all 18 client profile closure records now include this requirement. The report parser accepts the same exact capability, and its generated report includes the mapped requirement.
+
+| Verification | Command and result |
+|---|---|
+| T002 scope regressions | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability -v` — PASS: 9 tests. |
+| Protocol tests | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,139 unit tests plus integration targets and doctests. |
+| Protocol quality | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check` — PASS. |
+| Report parser regression | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_accepts_baseline_conformance_and_capability_constraints -v` — PASS. |
+| Complete profile report contract | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` — PASS: 1 test in 80.192 seconds. |
+| Full typed-profile traceability | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v` — PASS: 1 test in 429.165 seconds. |
+| Catalog and generated artifacts | `py -3 -B tools/normative_catalog/validate.py`; profile generator `--check`; coverage report `--check` — PASS: 4 sources, 1,411 clauses, 4,125 catalog records. |
+| OASIS source immutability | `git diff --exit-code -- specification/oasis/kmip-2.1/upstream` — PASS; pinned OASIS sources are unchanged. |
+| Baseline evidence state | 280/280 closure requirements have typed mappings and category-test references. Unresolved applicability blockers decreased from 26 to 25; runtime validation remains false and claim state remains `evidence_incomplete`. No conformance claim or official Test Case pass is made. |
+
+The Refactor documentation clarifies that the caller-owned mapping is metadata, not a runtime state query, assertion input, or proof of enforcement. T040 remains open; additional applicability and evidence gaps remain.
