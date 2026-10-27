@@ -90,6 +90,21 @@ TTLV_CLIENT_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-11.56-001",
 }
 PROFILE_VARIATION_REQUIREMENT = "KMIPKIT-REQ-PROF-4.1.2-001"
+T040_BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+T040_REMAINING_APPLICABILITY = {
+    "KMIPKIT-REQ-PROF-4.1.2-005": ("profile_conditional", "client", "client_to_server", "all_client_profiles"),
+    "KMIPKIT-REQ-SPEC-4-001-001": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIPKIT-REQ-SPEC-4-001-002": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIPKIT-REQ-SPEC-4-001-003": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIPKIT-REQ-SPEC-4.38-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-4.57-005-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-4.59-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-4.59-003-001": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-6.1.14-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-6.1.34-001-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIPKIT-REQ-SPEC-7.31-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
+    "KMIPKIT-REQ-SPEC-7.32-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
+}
 
 
 def _load_json(path: Path) -> dict:
@@ -552,6 +567,71 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
         self.assertIn("shared", crosswalk["review_note"].casefold())
         self.assertIn("evidence", crosswalk["review_note"].casefold())
+
+    def test_t040_remaining_applicability_rows_have_adjudicated_crosswalks(self) -> None:
+        """Resolve the final Baseline Client source-scope rows without rewriting OASIS facts."""
+        all_client_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.oracle["profiles"]
+            if profile["role"] == "client"
+        )
+        source_reviews = {
+            review["source_clause_id"]: review
+            for review in self.oracle["source_requirement_reviews"]
+        }
+        accepted_decisions = {
+            decision["decision_id"]: decision
+            for decision in self.catalog["decisions"]
+            if decision["status"] == "accepted"
+        }
+        catalog_profiles = {
+            profile["profile_id"]: profile for profile in self.catalog["profiles"]
+        }
+
+        self.assertEqual(len(T040_REMAINING_APPLICABILITY), 12)
+        for requirement_id, expected in T040_REMAINING_APPLICABILITY.items():
+            with self.subTest(requirement_id=requirement_id):
+                expected_scope, expected_role, expected_direction, target = expected
+                requirement = self.requirements[requirement_id]
+                crosswalk = self.crosswalk[requirement_id]
+                clause_id = requirement["source_clause_ids"][0]
+                review = source_reviews[clause_id]
+                obligation = next(
+                    item
+                    for item in review["source_obligations"]
+                    if item["candidate_requirement_id"] == requirement_id
+                )
+                expected_profiles = (
+                    all_client_profile_ids
+                    if target == "all_client_profiles"
+                    else [T040_BASELINE_PROFILE_ID]
+                )
+                expected_applies_to = (
+                    "all_client_profiles"
+                    if target == "all_client_profiles"
+                    else expected_profiles
+                )
+
+                self.assertEqual(requirement["scope_state"], expected_scope)
+                self.assertEqual(requirement["role"], expected_role)
+                self.assertEqual(requirement["direction"], expected_direction)
+                self.assertEqual(requirement["profile_ids"], expected_profiles)
+                self.assertEqual(requirement["decision_id"], crosswalk["decision_id"])
+                self.assertEqual(crosswalk["scope_state"], expected_scope)
+                self.assertEqual(crosswalk["role"], expected_role)
+                self.assertEqual(crosswalk["applies_to"], expected_applies_to)
+                self.assertEqual(crosswalk["source_actor"], obligation["actor"])
+                self.assertEqual(crosswalk["source_direction"], obligation["direction"])
+                self.assertEqual(obligation["scope_disposition"], expected_scope)
+                self.assertEqual(obligation["project_actor_interpretation"], "client")
+                self.assertIn(requirement_id, review["expected_client_requirement_ids"])
+                self.assertEqual(review["applies_to"], expected_applies_to)
+
+                decision = accepted_decisions[requirement["decision_id"]]
+                self.assertIn(requirement_id, decision["requirement_ids"])
+                self.assertIn("KMIP Specification v2.1", decision["interpretation"])
+                self.assertIn(T040_BASELINE_PROFILE_ID, catalog_profiles)
+                self.assertIn("project", crosswalk["review_note"].casefold())
 
 
 if __name__ == "__main__":
