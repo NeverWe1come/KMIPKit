@@ -694,6 +694,94 @@ class CoverageReportTests(unittest.TestCase):
         self.assertTrue(mappings[0]["configuration_only"])
         self.assertEqual(mappings[0]["test_kind"], "RecommendedBehavior")
 
+    def test_typed_rule_registry_accepts_final_baseline_caller_owned_mappings(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        expected = [
+            (
+                "KMIPKIT-REQ-SPEC-4.38-003",
+                "ProhibitedBehavior",
+                "NegativeBehavior",
+                "original_creation_date_immutable_after_set_caller_asserted",
+            ),
+            (
+                "KMIPKIT-REQ-SPEC-4.57-005-002",
+                "RecommendedBehaviorOrDeviation",
+                "RecommendedBehavior",
+                "compromised_object_protected_information_only_trusted_client_caller_asserted",
+            ),
+            (
+                "KMIPKIT-REQ-SPEC-4.59-002",
+                "ProhibitedBehavior",
+                "NegativeBehavior",
+                "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+            ),
+            (
+                "KMIPKIT-REQ-SPEC-4.59-003-001",
+                "ProhibitedBehavior",
+                "NegativeBehavior",
+                "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+            ),
+            (
+                "KMIPKIT-REQ-SPEC-6.1.14-002",
+                "OptionalCapability",
+                "OptionalCapabilityUsable",
+                "derive_key_multiple_inputs_caller_selected",
+            ),
+            (
+                "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+                "OptionalCapability",
+                "OptionalCapabilityUsable",
+                "modify_attribute_existing_instance_named",
+            ),
+        ]
+
+        entries = [
+            f'''    TypedRuleMapping {{
+        requirement_id: "{requirement_id}",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::{category},
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {{
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::example",
+            kind: RuleTestKind::{test_kind},
+        }}],
+        constraints: &[RuleConstraint {{
+            key: "client_profile_capability",
+            value: "{capability}",
+        }}],
+    }}'''
+            for requirement_id, category, test_kind, capability in expected
+        ]
+        source = (
+            "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
+            + ",\n".join(entries)
+            + "\n];\n"
+        )
+        mappings = _parse_typed_rule_registry(source)
+
+        for requirement_id, category, test_kind, _ in expected:
+            with self.subTest(requirement_id=requirement_id):
+                matches = [
+                    mapping
+                    for mapping in mappings
+                    if mapping["requirement_id"] == requirement_id
+                ]
+                self.assertTrue(matches)
+                self.assertTrue(
+                    all(mapping["configuration_only"] for mapping in matches)
+                )
+                self.assertTrue(
+                    all(
+                        mapping["verification_category"] == category
+                        for mapping in matches
+                    )
+                )
+                self.assertTrue(
+                    all(mapping["test_kind"] == test_kind for mapping in matches)
+                )
+
     def test_typed_rule_registry_accepts_caller_directed_recover_capabilities(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
