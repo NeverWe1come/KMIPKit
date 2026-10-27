@@ -4604,9 +4604,9 @@ fn profile_maps_single_instance_attributes_as_required_behavior() {
     assert!(mapping
         .evaluator
         .expect("single-instance mapping evaluates typed responses")(
-            Some(&request),
-            Some((&request, &singleton_response)),
-        ));
+        Some(&request),
+        Some((&request, &singleton_response)),
+    ));
     ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
@@ -4642,6 +4642,72 @@ fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_respons
     }
     .validate_response(&request, &repeated_response)
     .expect_err("profile validation rejects repeated Comment instances");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
+fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const COMMENT_TAG: u32 = 0x0042_00FD;
+    const CREATE_OPERATION: u32 = 0x0000_0001;
+
+    let request = request_message_with_operation_payload(
+        CREATE_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([
+                    tagged(COMMENT_TAG, Value::text_string("first".to_owned())),
+                    tagged(COMMENT_TAG, Value::text_string("second".to_owned())),
+                ])),
+            ),
+        ]),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_request(&request)
+    .expect_err("profile validation rejects a raw Create with duplicate Comment");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+}
+
+#[test]
+fn profile_rejects_repeated_conditional_dsa_without_object_context() {
+    // KMIP Specification v2.1 §4 Table 72 applies to Certificates and PGP keys;
+    // a Certificate without Certificate Type does not establish either branch.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("object-id".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_attributes(
+        crate::AttributeSet::try_new([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(1)),
+            tagged(DIGITAL_SIGNATURE_ALGORITHM_TAG, Value::enumeration(2)),
+        ])
+        .expect("the generic AttributeSet preserves undecided conditional values"),
+    );
+    let error = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_response(&request, &response)
+    .expect_err("profile evidence cannot treat unresolved Table 72 cardinality as valid");
     assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
 }
 
