@@ -18852,32 +18852,49 @@ fn profile_rejects_client_modify_attribute_for_state() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
     const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
     const STATE_TAG: u32 = 0x0042_008D;
+    const COMMENT_ATTRIBUTE_TAG: u32 = 0x0042_00FD;
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let request = request_message_with_operation_payload(
-        MODIFY_ATTRIBUTE_OPERATION,
-        structure([tagged(
-            CURRENT_ATTRIBUTE_TAG,
-            Value::structure(structure([tagged(STATE_TAG, Value::enumeration(1))])),
-        )]),
-    );
+    for wrapper_tag in [CURRENT_ATTRIBUTE_TAG, NEW_ATTRIBUTE_TAG] {
+        let request = request_message_with_operation_payload(
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                wrapper_tag,
+                Value::structure(structure([tagged(STATE_TAG, Value::enumeration(1))])),
+            )]),
+        );
 
-    let error = result
-        .validate_request(&request)
-        .expect_err("the client cannot change the State attribute through Modify Attribute");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::RequestRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-SPEC-4.57-001")
-    );
+        let error = result
+            .validate_request(&request)
+            .expect_err("the client cannot change the State attribute through Modify Attribute");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.57-001")
+        );
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([tagged(
+                NEW_ATTRIBUTE_TAG,
+                Value::structure(structure([tagged(
+                    COMMENT_ATTRIBUTE_TAG,
+                    Value::text_string("operator note".to_owned()),
+                )])),
+            )]),
+        ))
+        .expect("this requirement only prohibits modifying the State attribute");
 }
 
 #[test]

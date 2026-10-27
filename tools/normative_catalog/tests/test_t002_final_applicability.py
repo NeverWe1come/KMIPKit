@@ -41,6 +41,7 @@ CLIENT_SCOPE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.41-001-002",
     "KMIPKIT-REQ-SPEC-4.41-001-003",
     "KMIPKIT-REQ-SPEC-4.41-001-004",
+    "KMIPKIT-REQ-SPEC-4.57-001",
 }
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
     BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
@@ -78,8 +79,8 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             row["requirement_id"]: row for row in cls.catalog["requirements"]
         }
 
-    def test_final_twenty_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
-        self.assertEqual(len(FINAL_DISPOSITIONS), 20)
+    def test_final_twenty_one_have_adjudicated_crosswalk_and_catalog_scope(self) -> None:
+        self.assertEqual(len(FINAL_DISPOSITIONS), 21)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
         self.assertEqual(
@@ -179,8 +180,13 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(missing_project_rationale, [])
         for requirement_id in CLIENT_SCOPE_REQUIREMENTS:
             with self.subTest(requirement_id=requirement_id):
+                expected_direction = (
+                    "client_to_server"
+                    if requirement_id == "KMIPKIT-REQ-SPEC-4.57-001"
+                    else "unclear"
+                )
                 self.assertEqual(self.crosswalk[requirement_id]["source_actor"], "unresolved")
-                self.assertEqual(self.requirements[requirement_id]["direction"], "unclear")
+                self.assertEqual(self.requirements[requirement_id]["direction"], expected_direction)
                 self.assertEqual(self.crosswalk[requirement_id]["role"], "client")
                 self.assertEqual(
                     source_obligations[requirement_id]["project_actor_interpretation"],
@@ -203,10 +209,11 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(crosswalk["scope_state"], "client_1_0")
         self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
-        self.assertEqual(crosswalk["source_actor"], "client")
+        self.assertEqual(crosswalk["source_actor"], "unresolved")
         self.assertEqual(crosswalk["source_direction"], "client_to_server")
-        self.assertEqual(obligation["actor"], "client")
+        self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["scope_disposition"], "client_1_0")
+        self.assertEqual(obligation["project_actor_interpretation"], "client")
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]

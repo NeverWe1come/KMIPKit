@@ -855,6 +855,7 @@ const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
 const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
 const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const STATE_ATTRIBUTE: u32 = 0x0042_008D;
 const APPLICATION_DATA: u32 = 0x0042_0002;
 const APPLICATION_NAMESPACE: u32 = 0x0042_0003;
 const APPLICATION_SPECIFIC_INFORMATION: u32 = 0x0042_0004;
@@ -6745,6 +6746,46 @@ fn client_read_only_attribute_modification_is_not_requested(
     })
 }
 
+fn client_state_modify_attribute_is_not_requested(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != MODIFY_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                [CURRENT_ATTRIBUTE, NEW_ATTRIBUTE]
+                    .into_iter()
+                    .all(|wrapper_tag| {
+                        payload
+                            .children()
+                            .iter()
+                            .filter(|field| field.tag().raw() == wrapper_tag)
+                            .all(|field| {
+                                field.with_value(|value| match value {
+                                    ValueView::Structure(attributes) => attributes
+                                        .children()
+                                        .iter()
+                                        .all(|attribute| attribute.tag().raw() != STATE_ATTRIBUTE),
+                                    _ => false,
+                                })
+                            })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_read_only_attribute_deletion_is_not_requested(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8920,6 +8961,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_read_only_attribute_modification_is_not_requested),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_modification_on_all_client_routes",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.57-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_state_modify_attribute_is_not_requested),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_modify_attribute_for_state",
             kind: RuleTestKind::NegativeBehavior,
         }],
         constraints: &[],
