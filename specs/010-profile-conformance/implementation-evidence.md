@@ -7743,3 +7743,22 @@ Independent QA on PR #90 found that the earlier test correction still depended o
 | Formatting and diff | `cargo fmt --all --check` — PASS; `git diff --check` — PASS. |
 
 The Windows builds emitted non-fatal `aws-lc-sys` warnings for the unavailable NASM executable and failed optional `stdalign_check.c` probe; the workspace run also emitted a non-fatal C API linker warning. Compilation and tests completed successfully. The correction does not resolve remaining T040 mapping or evidence gaps and makes no profile-conformance claim.
+
+## T040 Profiles §4.1.2 optional Authentication mapping — Red, Green, and regression correction (2026-10-27)
+
+KMIP Profiles v2.1 §4.1.2 item 4 permits an optional Authentication structure in each request. KMIP Specification v2.1 §§6.1.1 and 9.4 ground the client Request Message and optional Authentication model. Accepted decision `KMIPKIT-DEC-022` bounds this to a caller-selected request capability: omission is valid; no authentication requirement or credential-transmission claim is made.
+
+Red commit `4770f742b` added a profile-specific test for omission and caller-selected presence. The focused command failed at the expected missing typed mapping. Green commit `12cec50c7` maps `KMIPKIT-REQ-PROF-4.1.2-005` to the existing optional Authentication evaluator, records the exact Profiles clause and test in the normative catalog, and regenerates the coverage report. The focused test then passed.
+
+The complete protocol suite exposed three stale selection assertions that still expected this requirement to be the first unmapped Baseline obligation. They now expect the next actual gap, `KMIPKIT-REQ-SPEC-4-001-001` / `KMIPKIT-CLAUSE-SPEC-4-001`; correction commit `448018d9a` contains only those test expectation updates.
+
+| Evidence | Result |
+|---|---|
+| Red | `cargo test -p kmipkit-protocol --all-features --locked profile_maps_optional_request_authentication_from_profiles_clause` — failed because the typed mapping was absent, as intended. |
+| Green | Same focused command — PASS: 1 passed. |
+| Regression correction | `cargo test -p kmipkit-protocol --all-features --locked --test profile_validation` — PASS: 7 passed. |
+| Protocol suite | `cargo test --quiet -p kmipkit-protocol --all-features --locked` — PASS: 1,150 unit tests plus all integration and documentation test targets; 0 failures. |
+| Catalog and generated artifacts | `report.py --write` and `report.py --check` — PASS; catalog validation — PASS (4 sources, 1,411 clauses, 4,137 records); `generate_profiles.py --check` — PASS. |
+| Quality checks | `cargo fmt --all --check`, protocol Clippy with `-D warnings`, and `git diff --check` — PASS. |
+
+The Baseline report now has one more typed mapping and category-test reference; nine of the 294 selected-profile requirements remain without each. T040 remains open, readiness remains false, and no official Test Case pass or profile-conformance claim is made.
