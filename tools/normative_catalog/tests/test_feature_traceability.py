@@ -401,6 +401,7 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
         test_attribute = re.compile(
             r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
         )
+        ignored_test_attribute = re.compile(r"^\s*#\[\s*ignore(?:\s*=.*)?\s*\]\s*$")
         cfg_attribute = re.compile(r"^\s*#\[\s*cfg\((?P<condition>.*)\)\s*\]\s*$")
         cfg_attr_marker = re.compile(r"^\s*#\[\s*cfg_attr\s*\(")
         lines = source.splitlines()
@@ -423,6 +424,8 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
                     cursor -= 1
                     continue
                 if preceding_line.startswith("#["):
+                    if ignored_test_attribute.fullmatch(preceding_line):
+                        return False
                     if test_attribute.fullmatch(preceding_line):
                         is_test = True
                     elif cfg_attr_marker.match(preceding_line):
