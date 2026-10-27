@@ -15180,9 +15180,9 @@
         "KMIPKIT-REQ-SPEC-4.57-003-004"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
+      "role": "server",
       "direction": "unclear",
-      "scope_state": "mixed",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -15205,9 +15205,9 @@
         "KMIPKIT-REQ-SPEC-4.57-004-003"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
+      "role": "server",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -15232,7 +15232,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -15251,9 +15251,9 @@
         "KMIPKIT-REQ-SPEC-4.57-006"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
+      "role": "server",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -15273,9 +15273,9 @@
         "KMIPKIT-REQ-SPEC-4.57-007"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
+      "role": "server",
       "direction": "unclear",
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "condition": null
     },
     {
@@ -91284,20 +91284,22 @@
       "normative_strength": "mandatory",
       "subject": "Active state usage mask",
       "summary": "The object SHALL only be used for all cryptographic purposes that are allowed by its Cryptographic Usage Mask attribute.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-003-003",
@@ -91314,20 +91316,22 @@
       "normative_strength": "prohibited",
       "subject": "Process Start Date restriction",
       "summary": "If a Process Start Date attribute is set, then the object SHALL NOT be used for cryptographic purposes prior to the Process Start Date.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
-      "condition": "Process Start Date is set.",
-      "scope_state": "unclear",
+      "condition": null,
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "§4.57 says “Protect Stop” then “Process Stop Date”; §4.41 defines Protect Stop Date. Preserve the state rules, leave this date reference unresolved. Clear client sub-obligations are retained as separate records; disputed wording remains unresolved. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-004-001",
@@ -91344,20 +91348,22 @@
       "normative_strength": "prohibited",
       "subject": "Deactivated object protection use",
       "summary": "The object SHALL NOT be used for applying cryptographic protection (e.g., encryption, signing, wrapping, MACing, deriving) .",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20233-20241 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-004-002",
@@ -91374,20 +91380,22 @@
       "normative_strength": "mandatory",
       "subject": "Deactivated object usage mask",
       "summary": "The object SHALL only be used for cryptographic purposes permitted by the Cryptographic Usage Mask attribute.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20233-20241 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-004-003",
@@ -91404,20 +91412,22 @@
       "normative_strength": "recommended",
       "subject": "Deactivated object processing",
       "summary": "The object SHOULD only be used to process cryptographically-protected information (e.g., decryption, signature verification, unwrapping, MAC verification under extraordinary circumstances and when special permission is granted.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20233-20241 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-001",
@@ -91434,20 +91444,22 @@
       "normative_strength": "prohibited",
       "subject": "Compromised object protection use",
       "summary": "The object SHALL NOT be used for applying cryptographic protection (e.g., encryption, signing, wrapping, MACing, deriving).",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20243-20251 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-002",
@@ -91494,20 +91506,22 @@
       "normative_strength": "mandatory",
       "subject": "Compromised object usage mask",
       "summary": "The object SHALL only be used for cryptographic purposes permitted by the Cryptographic Usage Mask attribute.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20243-20251 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-006",
@@ -91524,20 +91538,22 @@
       "normative_strength": "prohibited",
       "subject": "Destroyed object use",
       "summary": "The object SHALL NOT be used for any cryptographic purpose.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20253-20256 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-007",
@@ -91554,20 +91570,22 @@
       "normative_strength": "prohibited",
       "subject": "Destroyed Compromised object use",
       "summary": "The object SHALL NOT be used for any cryptographic purpose;",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
       "condition": null,
-      "scope_state": "unclear",
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20258-20262 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-002",
@@ -101409,20 +101427,22 @@
       "normative_strength": "prohibited",
       "subject": "Protect Stop / Process Stop Date restriction",
       "summary": "If a Protect Stop attribute is set, then the object SHALL NOT be used for cryptographic purposes after the Process Stop Date.",
-      "role": "unspecified",
+      "role": "server",
       "direction": "unclear",
-      "condition": "Protect Stop attribute is set",
-      "scope_state": "unclear",
+      "condition": null,
+      "scope_state": "server_only",
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [],
-      "verification_refs": [],
+      "verification_refs": [
+        "tools/normative_catalog/tests/test_t002_final_applicability.py::T002FinalApplicabilityTests.test_state_use_restrictions_follow_server_owned_object_state"
+      ],
       "negative_verification_required": true,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The pinned source has no requirement-specific official Test Cases entry for this predicate. Preserve the Protect Stop / Process Stop Date source discrepancy in KMIPKIT-DISC-013; implementation and verification remain unassigned."
+      "decision_id": "KMIPKIT-DEC-021",
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.57 lines 20225-20231 states this state-dependent object-use predicate without naming an endpoint actor or message direction. The server-only scope is a project interpretation recorded in KMIPKIT-DEC-021 because the server knows authoritative object State and performs managed-object cryptographic operations. The source actor remains unresolved and direction unclear; no client State query, local cryptographic behavior, runtime guard, or claim about server enforcement is added. No requirement-specific official OASIS Test Case ID is explicitly linked. The Protect Stop / Process Stop Date source discrepancy remains open under KMIPKIT-DISC-013; this decision does not resolve it."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.12-003",
@@ -137246,6 +137266,39 @@
       "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that the best-supported recommendation be used when the standard is silent on an actor, and that implementation continue autonomously without further approval requests.",
       "approved_at": "2026-10-27",
       "consequence": "The source actor remains unresolved and source direction remains unclear. The server-only requirement stays traceable in the normative inventory but is absent from all client profile requirement closures and runtime registries. No client conformance claim is made about server enforcement.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-021",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.57"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.57-003-002",
+        "KMIPKIT-REQ-SPEC-4.57-003-003",
+        "KMIPKIT-REQ-SPEC-4.57-003-004",
+        "KMIPKIT-REQ-SPEC-4.57-004-001",
+        "KMIPKIT-REQ-SPEC-4.57-004-002",
+        "KMIPKIT-REQ-SPEC-4.57-004-003",
+        "KMIPKIT-REQ-SPEC-4.57-005-001",
+        "KMIPKIT-REQ-SPEC-4.57-005-003",
+        "KMIPKIT-REQ-SPEC-4.57-006",
+        "KMIPKIT-REQ-SPEC-4.57-007"
+      ],
+      "discrepancy_ids": [],
+      "policy_ids": [],
+      "interpretation": "KMIP Specification v2.1 §4.57 paragraphs 3–7 state cryptographic-use restrictions based on object State but generally do not identify the actor or message direction. Section 4.57 says State is known to and changed only by the server; §6.1.17 describes Encrypt as a client request for the server to perform encryption. For KMIPKit 1.0 client profile scope, classify the ten listed state-dependent use predicates as server-only because the server has authoritative object State and performs managed-object cryptographic operations. Keep their source clauses in every client source closure but exclude the server-only requirements from client requirement closures. Preserve source actor as unresolved and direction as unclear. Do not add a client State query, local cryptographic behavior, or client runtime guard. This decision does not cover KMIPKIT-REQ-SPEC-4.57-005-002, whose SHOULD explicitly names a trusted client, and it does not resolve KMIPKIT-DISC-013 concerning Protect Stop / Process Stop Date wording.",
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that the best-supported recommendation be used when the standard is silent on an actor, and that implementation continue autonomously without further approval requests.",
+      "approved_at": "2026-10-27",
+      "consequence": "The ten server-only requirements remain normative source obligations but are excluded from client profile requirement closures and client runtime mappings. Their source clauses remain in client closures. The trusted-client Compromised-state SHOULD remains unresolved and no server enforcement claim is made.",
       "status": "accepted"
     }
   ],

@@ -154,7 +154,7 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
                 ],
             )
 
-    def test_active_state_fourth_predicate_preserves_source_reference_without_actor_inference(self) -> None:
+    def test_active_state_fourth_predicate_preserves_source_reference_and_server_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
@@ -173,11 +173,12 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         )
         self.assertEqual(fourth["source_keyword"], "SHALL NOT")
         self.assertEqual(fourth["actor"], "unresolved")
-        self.assertEqual(fourth["scope_disposition"], "unresolved")
+        self.assertEqual(fourth["scope_disposition"], "server_only")
         self.assertEqual(fourth["candidate_requirement_id"], requirement_id)
         self.assertIn(requirement_id, requirements)
-        self.assertEqual(requirements[requirement_id]["role"], "unspecified")
-        self.assertEqual(requirements[requirement_id]["scope_state"], "unclear")
+        self.assertEqual(requirements[requirement_id]["role"], "server")
+        self.assertEqual(requirements[requirement_id]["scope_state"], "server_only")
+        self.assertEqual(requirements[requirement_id]["decision_id"], "KMIPKIT-DEC-021")
         self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
         self.assertIn("Process Stop Date", review["review_note"])
         self.assertIn("KMIPKIT-DISC-013", review["review_note"])
@@ -186,15 +187,11 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        # Keep only actor/scope atoms still unresolved by T002; §4.57-001 is client scope,
-        # §4.57-002 is server-only by DEC-020, and §4.57-003-001 is server-only.
+        # Keep only actor/scope atoms still unresolved by T002; state-use rules in §4.57
+        # are server-only under DEC-020/DEC-021 except the trusted-client SHOULD.
         unresolved_ids = {
             *(f"KMIPKIT-REQ-SPEC-4-001-{ordinal:03d}" for ordinal in range(1, 4)),
-            *(f"KMIPKIT-REQ-SPEC-4.57-003-{ordinal:03d}" for ordinal in range(2, 5)),
-            *(f"KMIPKIT-REQ-SPEC-4.57-004-{ordinal:03d}" for ordinal in range(1, 4)),
-            *(f"KMIPKIT-REQ-SPEC-4.57-005-{ordinal:03d}" for ordinal in range(1, 4)),
-            "KMIPKIT-REQ-SPEC-4.57-006",
-            "KMIPKIT-REQ-SPEC-4.57-007",
+            "KMIPKIT-REQ-SPEC-4.57-005-002",
         }
         review_by_requirement = {
             atom["candidate_requirement_id"]: (review, atom)
