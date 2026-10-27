@@ -14,11 +14,9 @@ const AES_XTS: &str = "KMIPKIT-PROFILE-AES-XTS-CLIENT";
 const HTTPS: &str = "KMIPKIT-PROFILE-HTTPS-CLIENT";
 const JSON: &str = "KMIPKIT-PROFILE-JSON-CLIENT";
 const BASELINE_SERVER: &str = "KMIPKIT-PROFILE-BASELINE-SERVER";
-const FIRST_UNMAPPED_BASELINE_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
-const FIRST_UNMAPPED_BASELINE_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
 
 #[test]
-fn baseline_target_membership_does_not_bypass_missing_rule_mapping() {
+fn baseline_target_selection_requires_category_appropriate_evidence() {
     let target = CLIENT_PROFILES
         .iter()
         .find(|profile| profile.profile_id == BASELINE)
@@ -85,35 +83,17 @@ fn baseline_target_membership_does_not_bypass_missing_rule_mapping() {
 
     let error = ProfileValidationSelection::new([BASELINE])
         .validate()
-        .expect_err("Baseline cannot be selected while a required typed rule is unmapped");
-
-    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
-    assert_eq!(error.profile_id(), Some(BASELINE));
-    assert_eq!(
-        error.requirement_id(),
-        Some(FIRST_UNMAPPED_BASELINE_REQUIREMENT)
-    );
-    assert_eq!(
-        error.source_clause_id(),
-        Some(FIRST_UNMAPPED_BASELINE_CLAUSE)
-    );
+        .expect_err("caller-owned prohibitions need real negative behavior evidence");
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingCategoryTest);
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.38-003"));
 }
 
 #[test]
-fn baseline_selection_reports_unmapped_requirement_after_scope_resolution() {
+fn baseline_selection_fails_when_category_test_evidence_is_incomplete() {
     let error = ProfileValidationSelection::new([BASELINE])
         .validate()
-        .expect_err("an unmapped client requirement must fail closed");
-
-    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
-    assert_eq!(
-        error.requirement_id(),
-        Some(FIRST_UNMAPPED_BASELINE_REQUIREMENT)
-    );
-    assert_eq!(
-        error.source_clause_id(),
-        Some(FIRST_UNMAPPED_BASELINE_CLAUSE)
-    );
+        .expect_err("category-incomplete rules keep Baseline unavailable");
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingCategoryTest);
     let target = CLIENT_PROFILES
         .iter()
         .find(|profile| profile.profile_id == BASELINE)
@@ -122,7 +102,7 @@ fn baseline_selection_reports_unmapped_requirement_after_scope_resolution() {
 }
 
 #[test]
-fn profile_readiness_exposes_runtime_blocker_after_applicability_resolution() {
+fn profile_readiness_separates_runtime_availability_from_conformance_evidence() {
     let readiness = kmipkit_protocol::ProfileReadiness::evaluate(BASELINE, &[])
         .expect("Baseline Client is present in generated profile metadata");
 
@@ -130,7 +110,7 @@ fn profile_readiness_exposes_runtime_blocker_after_applicability_resolution() {
         readiness
             .blockers()
             .iter()
-            .any(|blocker| blocker.as_str() == "runtime profile validation is unavailable")
+            .any(|blocker| { blocker.as_str() == "runtime profile validation is unavailable" })
     );
     assert!(
         !readiness.blockers().iter().any(|blocker| {
@@ -138,6 +118,8 @@ fn profile_readiness_exposes_runtime_blocker_after_applicability_resolution() {
         })
     );
     assert!(!readiness.runtime_validation_available());
+    assert_eq!(readiness.effective_state(), "evidence_incomplete");
+    assert!(!readiness.published_claim());
 }
 
 #[test]
@@ -151,14 +133,12 @@ fn in_scope_non_target_profile_uses_dependency_closure_without_target_gating() {
 
     let error = ProfileValidationSelection::new([AES_XTS])
         .validate()
-        .expect_err("the Baseline dependency has no complete rule registry");
+        .expect_err("AES-XTS has profile-specific requirements beyond Baseline");
 
     assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
-    assert_eq!(error.profile_id(), Some(BASELINE));
-    assert_eq!(
-        error.requirement_id(),
-        Some(FIRST_UNMAPPED_BASELINE_REQUIREMENT)
-    );
+    assert_eq!(error.profile_id(), Some(AES_XTS));
+    assert!(error.requirement_id().is_some());
+    assert!(error.source_clause_id().is_some());
 }
 
 #[test]

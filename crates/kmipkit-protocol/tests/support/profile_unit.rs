@@ -25468,52 +25468,65 @@ fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_beh
 #[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn profile_maps_original_creation_date_immutability_as_caller_owned_prohibition() {
-    assert_static_caller_owned_profile_rule_mapping(
+    assert_caller_owned_prohibition_has_no_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.38-003",
         "KMIPKIT-CLAUSE-SPEC-4.38-003",
-        GeneratedVerificationCategory::ProhibitedBehavior,
         "original_creation_date_immutable_after_set_caller_asserted",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition",
-        RuleTestKind::NegativeBehavior,
     );
 }
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.57 paragraph 5.
 fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
-    assert_static_caller_owned_profile_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.57-005-002",
-        "KMIPKIT-CLAUSE-SPEC-4.57-005",
-        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        "compromised_object_protected_information_only_trusted_client_caller_asserted",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_compromised_object_processing_as_caller_owned_recommendation",
-        RuleTestKind::RecommendedBehavior,
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-005-002";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the trusted-client recommendation has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the trusted-client recommendation resolves to normative metadata");
+
+    assert!(requirement.has_accepted_deviation);
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.57-005");
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+    );
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping
+        .test_evidence
+        .iter()
+        .all(|evidence| evidence.kind != RuleTestKind::RecommendedBehavior));
+    validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+        .expect("the accepted caller-owned SHOULD deviation has no behavior claim");
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "compromised_object_protected_information_only_trusted_client_caller_asserted",
+        }]
     );
 }
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
 fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
-    assert_static_caller_owned_profile_rule_mapping(
+    assert_caller_owned_prohibition_has_no_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-002",
         "KMIPKIT-CLAUSE-SPEC-4.59-002",
-        GeneratedVerificationCategory::ProhibitedBehavior,
         "usage_limits_total_immutable_after_protection_begins_caller_asserted",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition",
-        RuleTestKind::NegativeBehavior,
     );
 }
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
 fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
-    assert_static_caller_owned_profile_rule_mapping(
+    assert_caller_owned_prohibition_has_no_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-003-001",
         "KMIPKIT-CLAUSE-SPEC-4.59-003",
-        GeneratedVerificationCategory::ProhibitedBehavior,
         "usage_limits_total_immutable_after_count_allocation_caller_asserted",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition",
-        RuleTestKind::NegativeBehavior,
     );
 }
 
@@ -25538,8 +25551,47 @@ fn profile_maps_modify_attribute_existing_instance_as_optional_capability() {
         "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
         GeneratedVerificationCategory::OptionalCapability,
         "modify_attribute_existing_instance_named",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_existing_instance_as_optional_capability",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
         RuleTestKind::OptionalCapabilityUsable,
+    );
+}
+
+fn assert_caller_owned_prohibition_has_no_behavior_evidence(
+    requirement_id: &str,
+    source_clause_id: &str,
+    capability: &'static str,
+) {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("caller-owned profile rule has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("caller-owned profile rule resolves to normative metadata");
+
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert!(mapping
+        .test_evidence
+        .iter()
+        .all(|evidence| evidence.kind != RuleTestKind::NegativeBehavior));
+    assert_eq!(
+        validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+            .expect_err("metadata-only evidence cannot satisfy a SHALL NOT")
+            .code(),
+        ProfileValidationErrorCode::MissingCategoryTest
+    );
+    assert_eq!(
+        mapping.constraints,
+        &[RuleConstraint {
+            key: "client_profile_capability",
+            value: capability,
+        }]
     );
 }
 
