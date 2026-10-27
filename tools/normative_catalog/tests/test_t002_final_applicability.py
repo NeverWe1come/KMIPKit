@@ -13,7 +13,8 @@ CATALOG_PATH = REPO_ROOT / "specification/catalog/kmip-2.1.json"
 
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
 PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.57-002"
-STATE_USE_SERVER_ONLY_REQUIREMENTS = {
+STATE_SERVER_ONLY_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-4.57-003-001",
     "KMIPKIT-REQ-SPEC-4.57-003-002",
     "KMIPKIT-REQ-SPEC-4.57-003-003",
     "KMIPKIT-REQ-SPEC-4.57-003-004",
@@ -24,6 +25,7 @@ STATE_USE_SERVER_ONLY_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.57-005-003",
     "KMIPKIT-REQ-SPEC-4.57-006",
     "KMIPKIT-REQ-SPEC-4.57-007",
+    "KMIPKIT-REQ-SPEC-4.57-007-002",
 }
 BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -72,12 +74,12 @@ FINAL_DISPOSITIONS = {
     **{requirement_id: "client_1_0" for requirement_id in CLIENT_SCOPE_REQUIREMENTS},
     SERVER_ONLY_REQUIREMENT: "server_only",
     PRE_ACTIVE_SERVER_ONLY_REQUIREMENT: "server_only",
-    **{requirement_id: "server_only" for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS},
+    **{requirement_id: "server_only" for requirement_id in STATE_SERVER_ONLY_REQUIREMENTS},
 }
 SERVER_ONLY_REQUIREMENTS = {
     SERVER_ONLY_REQUIREMENT,
     PRE_ACTIVE_SERVER_ONLY_REQUIREMENT,
-    *STATE_USE_SERVER_ONLY_REQUIREMENTS,
+    *STATE_SERVER_ONLY_REQUIREMENTS,
 }
 TTLV_CLIENT_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-10.1.2-001",
@@ -384,11 +386,11 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             None,
         )
         self.assertIsNotNone(decision, "the server-owned state interpretation needs a decision")
-        self.assertEqual(set(decision["requirement_ids"]), STATE_USE_SERVER_ONLY_REQUIREMENTS)
+        self.assertEqual(set(decision["requirement_ids"]), STATE_SERVER_ONLY_REQUIREMENTS)
 
-        missing_requirements = STATE_USE_SERVER_ONLY_REQUIREMENTS - self.requirements.keys()
+        missing_requirements = STATE_SERVER_ONLY_REQUIREMENTS - self.requirements.keys()
         self.assertEqual(missing_requirements, set())
-        missing_crosswalk = STATE_USE_SERVER_ONLY_REQUIREMENTS - self.crosswalk.keys()
+        missing_crosswalk = STATE_SERVER_ONLY_REQUIREMENTS - self.crosswalk.keys()
         self.assertEqual(missing_crosswalk, set())
         if missing_requirements or missing_crosswalk:
             return
@@ -397,10 +399,10 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             obligation.get("candidate_requirement_id"): obligation
             for review in self.oracle["source_requirement_reviews"]
             for obligation in review["source_obligations"]
-            if obligation.get("candidate_requirement_id") in STATE_USE_SERVER_ONLY_REQUIREMENTS
+            if obligation.get("candidate_requirement_id") in STATE_SERVER_ONLY_REQUIREMENTS
         }
-        self.assertEqual(set(source_obligations), STATE_USE_SERVER_ONLY_REQUIREMENTS)
-        for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+        self.assertEqual(set(source_obligations), STATE_SERVER_ONLY_REQUIREMENTS)
+        for requirement_id in STATE_SERVER_ONLY_REQUIREMENTS:
             with self.subTest(requirement_id=requirement_id):
                 requirement = self.requirements[requirement_id]
                 crosswalk = self.crosswalk[requirement_id]
@@ -422,13 +424,13 @@ class T002FinalApplicabilityTests(unittest.TestCase):
 
         for profile in self.catalog["profiles"]:
             if profile["role"] == "client":
-                for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+                for requirement_id in STATE_SERVER_ONLY_REQUIREMENTS:
                     clause_id = self.requirements[requirement_id]["source_clause_ids"][0]
                     self.assertIn(clause_id, profile["source_clause_ids"])
                     self.assertNotIn(requirement_id, profile["requirement_ids"])
         for profile in self.oracle["profiles"]:
             if profile["role"] == "client":
-                for requirement_id in STATE_USE_SERVER_ONLY_REQUIREMENTS:
+                for requirement_id in STATE_SERVER_ONLY_REQUIREMENTS:
                     clause_id = self.requirements[requirement_id]["source_clause_ids"][0]
                     self.assertIn(clause_id, profile["source_clause_ids"])
                     self.assertNotIn(requirement_id, profile["requirement_ids"])

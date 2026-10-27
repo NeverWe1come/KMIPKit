@@ -183,6 +183,33 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         self.assertIn("Process Stop Date", review["review_note"])
         self.assertIn("KMIPKIT-DISC-013", review["review_note"])
 
+    def test_destroyed_compromised_retention_should_has_a_server_requirement_id(self) -> None:
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        reviews = {
+            row["source_clause_id"]: row
+            for row in fixture["source_requirement_reviews"]
+            if row["source_id"] == "KMIPKIT-SRC-spec"
+        }
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.57-007"]
+        retention = review["source_obligations"][1]
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-007-002"
+
+        self.assertEqual(
+            retention["source_text"],
+            "however its compromised status SHOULD be retained for audit or security purposes.",
+        )
+        self.assertEqual(retention["source_keyword"], "SHOULD")
+        self.assertEqual(retention["candidate_requirement_id"], requirement_id)
+        self.assertEqual(retention["scope_disposition"], "server_only")
+        self.assertEqual(retention["project_actor_interpretation"], "server")
+        self.assertIn(requirement_id, requirements)
+        self.assertEqual(requirements[requirement_id]["normative_strength"], "recommended")
+        self.assertEqual(requirements[requirement_id]["scope_state"], "server_only")
+        self.assertEqual(requirements[requirement_id]["decision_id"], "KMIPKIT-DEC-021")
+        self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+
     def test_unresolved_object_state_atoms_are_not_client_obligations(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
