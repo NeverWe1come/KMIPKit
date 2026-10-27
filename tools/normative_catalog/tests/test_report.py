@@ -516,6 +516,40 @@ class CoverageReportTests(unittest.TestCase):
             ],
         )
 
+    def test_typed_rule_registry_accepts_single_key_usage_recommendation(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_capability",
+            value: "single_cryptographic_usage_per_key_object_caller_asserted",
+        }],
+    },
+];
+"""
+
+        mappings = _parse_typed_rule_registry(source)
+
+        self.assertEqual(len(mappings), 1)
+        self.assertEqual(
+            mappings[0]["requirement_id"], "KMIPKIT-REQ-SPEC-4.34-001-002"
+        )
+        self.assertEqual(
+            mappings[0]["verification_category"], "RecommendedBehaviorOrDeviation"
+        )
+        self.assertTrue(mappings[0]["configuration_only"])
+        self.assertEqual(mappings[0]["test_kind"], "RecommendedBehavior")
+
     def test_typed_rule_registry_accepts_caller_directed_recover_capabilities(self) -> None:
         from tools.normative_catalog.report import _parse_typed_rule_registry
 
