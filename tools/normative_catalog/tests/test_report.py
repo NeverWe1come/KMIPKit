@@ -63,6 +63,24 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_message_envelope_summary_preserves_request_payload_requirement(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(
+            record
+            for record in catalog["requirements"]
+            if record["requirement_id"] == "KMIPKIT-REQ-SPEC-8-001"
+        )
+
+        self.assertEqual(
+            "A protocol message has a header and one or more Batch Items. Request Payload is required; Response Payload is required unless the Result Status is Failure; Message Extensions are optional.",
+            requirement["summary"],
+        )
+        self.assertIn("§8.3 Table 396", requirement["review_note"])
+        self.assertIn("§8.6 Table 399", requirement["review_note"])
+        self.assertNotIn("optional request/response payload", requirement["review_note"])
+
     @staticmethod
     def _complete_profile_readiness_fixture() -> tuple[
         dict[str, object],
