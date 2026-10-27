@@ -14,8 +14,8 @@ use std::time::{Duration, Instant};
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
 
-// Keep loopback socket tests serialized; concurrent test listeners overlapped
-// when hosted Windows coverage hit WinSock 10013.
+// Serialize tests that open loopback sockets. Hosted Windows coverage hit
+// WinSock 10013 while another listener test was active.
 fn lock_network_fixture() -> MutexGuard<'static, ()> {
     match NETWORK_FIXTURE_LOCK.lock() {
         Ok(guard) => guard,
