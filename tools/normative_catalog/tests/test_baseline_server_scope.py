@@ -107,6 +107,72 @@ class BaselineServerScopeTests(unittest.TestCase):
                 self.assertNotIn(requirement_id, closure.requirement_ids)
                 self.assertNotIn(requirement_id, unresolved_ids)
 
+    def test_vendor_extension_structure_is_client_1_0_profile_scope(self) -> None:
+        catalog = load_catalog()
+        requirement_ids = {
+            "KMIPKIT-REQ-SPEC-9.13-001-001",
+            "KMIPKIT-REQ-SPEC-9.13-001-002",
+            "KMIPKIT-REQ-SPEC-9.13-001-003",
+        }
+        requirements = {
+            item["requirement_id"]: item
+            for item in catalog["requirements"]
+            if item["requirement_id"] in requirement_ids
+        }
+        self.assertEqual(set(requirements), requirement_ids)
+
+        profile = next(
+            item
+            for item in catalog["profiles"]
+            if item["profile_id"] == BASELINE_PROFILE_ID
+        )
+        closure = compute_profile_closure(
+            catalog,
+            profile["direct_source_clause_ids"],
+            profile_id=BASELINE_PROFILE_ID,
+        )
+        unresolved_ids = {
+            item.requirement_id for item in closure.unresolved_scope_obligations
+        }
+
+        for requirement_id, requirement in requirements.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(requirement["role"], "client")
+                self.assertEqual(requirement["direction"], "client_to_server")
+                self.assertEqual(requirement["scope_state"], "client_1_0")
+                self.assertEqual(requirement["profile_ids"], [])
+                self.assertIn("project interpretation", requirement["review_note"].lower())
+                self.assertIn("source does not identify the sender", requirement["review_note"].lower())
+                self.assertIn(requirement_id, closure.requirement_ids)
+                self.assertNotIn(requirement_id, unresolved_ids)
+
+        fixture_path = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+        review = next(
+            item
+            for item in fixture["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.13-001"
+        )
+        self.assertEqual(
+            review["expected_client_requirement_ids"],
+            [
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
+            ],
+        )
+        source_obligations = {
+            item["source_order"]: item for item in review["source_obligations"]
+        }
+        for source_order in (1, 2, 3, 4, 7):
+            with self.subTest(source_order=source_order):
+                obligation = source_obligations[source_order]
+                self.assertEqual(obligation["actor"], "unspecified")
+                self.assertEqual(obligation["direction"], "unspecified")
+                self.assertEqual(obligation["scope_disposition"], "client_1_0")
+
 
 if __name__ == "__main__":
     unittest.main()

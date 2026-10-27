@@ -76,7 +76,13 @@ mod tests {
                     Value::text_string("Vendor".to_owned()),
                 ),
                 item(CRITICALITY_INDICATOR, Value::boolean(false)),
-                item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+                item(
+                    VENDOR_EXTENSION,
+                    Value::structure(structure([item(
+                        0x0054_0001,
+                        Value::text_string("opaque vendor value".to_owned()),
+                    )])),
+                ),
             ])),
         )
     }
@@ -533,6 +539,19 @@ mod tests {
             item(VENDOR_EXTENSION, Value::structure(Structure::new())),
         ]);
         assert!(validate_message_extension(&valid.view()).is_ok());
+
+        let empty_vendor_extension = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+        ]);
+        assert_kind(
+            validate_message_extension(&empty_vendor_extension.view()),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
 
         let missing_vendor = structure([
             item(CRITICALITY_INDICATOR, Value::boolean(false)),

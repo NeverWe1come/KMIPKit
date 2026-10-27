@@ -512,7 +512,13 @@ fn request_message_with_extensions<'a>(
                     Value::text_string(vendor.to_owned()),
                 ),
                 tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(criticality)),
-                tagged(VENDOR_EXTENSION_TAG, Value::structure(Structure::new())),
+                tagged(
+                    VENDOR_EXTENSION_TAG,
+                    Value::structure(structure([tagged(
+                        0x0054_0001,
+                        Value::text_string("opaque vendor value".to_owned()),
+                    )])),
+                ),
             ])),
         )
     }));
@@ -1154,7 +1160,13 @@ fn response_message_with_extension_criticality(criticality: bool) -> crate::Resp
                             Value::text_string("KMIPKit_Test".to_owned()),
                         ),
                         tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(criticality)),
-                        tagged(VENDOR_EXTENSION_TAG, Value::structure(Structure::new())),
+                        tagged(
+                            VENDOR_EXTENSION_TAG,
+                            Value::structure(structure([tagged(
+                                0x0054_0001,
+                                Value::text_string("opaque vendor value".to_owned()),
+                            )])),
+                        ),
                     ])),
                 ),
             ])),
@@ -4984,6 +4996,17 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
             VENDOR_ID_REQUIREMENT_ID.to_owned(),
         ],
     };
+    let baseline = crate::profiles_generated::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE_PROFILE_ID)
+        .expect("generated metadata includes Baseline Client");
+    for requirement_id in [
+        OPTIONAL_REQUIREMENT_ID,
+        REQUIRED_FIELDS_REQUIREMENT_ID,
+        VENDOR_ID_REQUIREMENT_ID,
+    ] {
+        assert!(baseline.requirement_ids.contains(&requirement_id));
+    }
     let request_without_extension = request_message_with_extensions(std::iter::empty());
     result
         .validate_request(&request_without_extension)
@@ -5005,7 +5028,10 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
         Some("Vendor_A".to_owned())
     );
     assert_eq!(request_extension.criticality_indicator(), Some(false));
-    assert!(request_extension.with_vendor_extension(|_| ()).is_some());
+    assert_eq!(
+        request_extension.with_vendor_extension(|extension| extension.children().len()),
+        Some(1)
+    );
 
     let response = response_message_with_extension_criticality(false);
     result
@@ -5017,7 +5043,10 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
         .and_then(|item| item.message_extension(0))
         .expect("the response extension is available through the typed API");
     assert!(response_extension.with_vendor_identification(str::to_owned).is_some());
-    assert!(response_extension.with_vendor_extension(|_| ()).is_some());
+    assert_eq!(
+        response_extension.with_vendor_extension(|extension| extension.children().len()),
+        Some(1)
+    );
 }
 
 #[test]
