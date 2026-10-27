@@ -10,8 +10,8 @@ use std::rc::Rc;
 
 use kmipkit_protocol::{
     CheckRequest, GetAttributesRequest, ProfileTransport, ProfileValidationError,
-    ProfileValidationErrorCode, ProfileValidationSelection, QueryFunction, QueryRequest,
-    RequestMessage, ResponseMessage, SetDefaultsRequest, UniqueIdentifier,
+    ProfileValidationErrorCode, QueryFunction, QueryRequest, RequestMessage, ResponseMessage,
+    SetDefaultsRequest, UniqueIdentifier,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -216,22 +216,6 @@ fn explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaul
     assert!(query.defaults_information().is_some());
     assert_eq!(exchanges.get(), 1);
 
-    let selection = ProfileValidationSelection::new([BASELINE]);
-    let after_query = client
-        .execute_with_profiles(discover_versions_batch(), &selection, &limits)
-        .expect_err("Query profile information is not a local conformance claim");
-    assert_eq!(
-        after_query.delivery_state(),
-        Some(RequestDeliveryState::NotSent)
-    );
-    assert_eq!(
-        after_query
-            .profile_validation_error()
-            .map(ProfileValidationError::code),
-        Some(ProfileValidationErrorCode::MissingRuleMapping)
-    );
-    assert_eq!(exchanges.get(), 1);
-
     let explicit_empty_defaults =
         ClientBatch::new(ClientBatchItem::new(ClientRequest::set_defaults(
             SetDefaultsRequest::new().with_defaults_information(test_structure([])),
@@ -249,61 +233,55 @@ fn explicit_query_and_discover_responses_do_not_select_profiles_or_change_defaul
         .execute(discover_versions_batch(), &limits)
         .expect("Discover Versions remains an explicit operation");
     assert_eq!(exchanges.get(), 3);
-
-    let after_discover_versions = client
-        .execute_with_profiles(discover_versions_batch(), &selection, &limits)
-        .expect_err("a protocol-version response is not a profile conformance claim");
-    assert_eq!(
-        after_discover_versions.delivery_state(),
-        Some(RequestDeliveryState::NotSent)
-    );
-    assert_eq!(
-        after_discover_versions
-            .profile_validation_error()
-            .map(ProfileValidationError::code),
-        Some(ProfileValidationErrorCode::MissingRuleMapping)
-    );
-    assert_eq!(exchanges.get(), 3);
 }
 
 #[test]
-fn incomplete_profile_selection_fails_before_transport_with_stable_source_ids() {
+fn synthetic_missing_rule_mapping_preflight_error_fails_before_transport_with_stable_source_ids() {
     let exchanges = Rc::new(Cell::new(0));
+    let request_checks = Rc::new(Cell::new(0));
+    let expected_profile_error = ProfileValidationError::for_test(
+        ProfileValidationErrorCode::MissingRuleMapping,
+        "KMIPKIT-TEST-PROFILE",
+        "KMIPKIT-TEST-REQUIREMENT",
+        "KMIPKIT-TEST-CLAUSE",
+    );
+    let validator = TestProfileValidator {
+        error: expected_profile_error.clone(),
+        request_checks: Some(Rc::clone(&request_checks)),
+        transport_error: None,
+        request_error: Some(expected_profile_error.clone()),
+    };
     let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
     let error = client
-        .execute_with_profiles(
+        .execute_inner(
             discover_versions_batch(),
-            &ProfileValidationSelection::new([BASELINE]),
             &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
         )
-        .expect_err("an incomplete profile cannot reach the network");
+        .expect_err("a synthetic profile preflight error prevents the exchange");
 
     assert_eq!(error.category(), ClientErrorCategory::Validation);
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(request_checks.get(), 1);
+    assert_eq!(exchanges.get(), 0);
     let profile_error = error
         .profile_validation_error()
         .expect("profile validation keeps its stable structured source error");
+    assert_eq!(profile_error, &expected_profile_error);
     assert_eq!(
         profile_error.code(),
         ProfileValidationErrorCode::MissingRuleMapping
     );
-    assert_eq!(profile_error.profile_id(), Some(BASELINE));
-    let requirement_id = profile_error
-        .requirement_id()
-        .expect("a missing mapping identifies its source-backed requirement");
-    assert!(requirement_id.starts_with("KMIPKIT-REQ-"));
-    match (
+    assert_eq!(profile_error.profile_id(), Some("KMIPKIT-TEST-PROFILE"));
+    assert_eq!(
+        profile_error.requirement_id(),
+        Some("KMIPKIT-TEST-REQUIREMENT")
+    );
+    assert_eq!(
         profile_error.source_clause_id(),
-        profile_error.source_gap_id(),
-    ) {
-        (Some(source_clause_id), None) => assert!(source_clause_id.starts_with("KMIPKIT-CLAUSE-")),
-        (None, Some(source_gap_id)) => {
-            assert!(source_gap_id.starts_with("KMIPKIT-SOURCE-GAP-"));
-            assert!(profile_error.source_gap_locator().is_some());
-        }
-        _ => panic!("the missing mapping exposes exactly one stable source identifier"),
-    }
-    assert_eq!(exchanges.get(), 0);
+        Some("KMIPKIT-TEST-CLAUSE")
+    );
 }
 
 #[test]
