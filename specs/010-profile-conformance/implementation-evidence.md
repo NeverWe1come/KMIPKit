@@ -8077,3 +8077,15 @@ The independent QA review found that the §7.36 evaluator covered only Register 
 | Phase | Command | Result |
 | --- | --- | --- |
 | Red | `cargo test -p kmipkit-protocol --lib --all-features rng` | FAIL as expected against the prior evaluator: 29 passed and 3 failed. The failures showed missing response evidence links, acceptance of malformed RNG data in creation-operation Attributes, and acceptance of malformed RNG Parameters in Get Attributes responses. |
+
+## T040 Shared RNG request and response representation — Green (2026-10-28)
+
+The shared §7.36 evaluator now validates caller-supplied RNG Parameters in Register, Add Attribute, Create, Create Key Pair, Derive Key, Re-key, and Re-key Key Pair requests, and validates the returned Attributes group for Get Attributes responses. The evaluator preserves unknown fields and only validates known Table 388 members; it makes no claim about server RNG behavior or generated output. The catalog and generated report link this scoped representation evidence to all four §7.36 requirements.
+
+| Phase | Command | Result |
+| --- | --- | --- |
+| Green — focused behavior | `cargo test -p kmipkit-protocol --lib --all-features rng` | PASS: all 32 RNG-focused tests, including accepted creation inputs and Get Attributes responses, malformed request/response cases, and evidence registration. |
+| Green — profile regressions | `cargo test -p kmipkit-protocol --lib --all-features profile_` | PASS: all 398 profile-filtered tests. |
+| Green — report contract | `python -B -m unittest tools.normative_catalog.tests.test_report` | PASS: 72 tests, one platform skip. |
+| Green — catalog and generated artifacts | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,142 records; generated profile metadata and coverage report are current. |
+| Refactor verification | `cargo fmt --all --check`; `git diff --check` | PASS. |

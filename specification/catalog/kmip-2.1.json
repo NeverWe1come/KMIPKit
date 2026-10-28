@@ -99922,13 +99922,15 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-030",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. The optional RNG Parameters fields are accepted and type-checked. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. Section 4.46 permits client-supplied RNG values in Register, Add Attribute, and the Attributes fields of Create, Create Key Pair, Derive Key, Re-key, and Re-key Key Pair; the client also validates RNG Parameters returned through Get Attributes. The optional fields are accepted and type-checked. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-001",
@@ -99978,7 +99980,9 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_without_rng_algorithm",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_algorithm_with_wrong_type_or_duplicate"
@@ -99986,7 +99990,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-030",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. Exactly one direct RNG Algorithm Enumeration is required whenever RNG Parameters is supplied; omission of the Random Number Generator attribute remains permitted by \u00a74.46. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. Exactly one direct RNG Algorithm Enumeration is required whenever RNG Parameters is supplied; omission of the Random Number Generator attribute remains permitted by \u00a74.46. Client-supplied operation paths and Get Attributes response representation are covered. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-002",
@@ -100036,13 +100040,15 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_unspecified_rng_algorithm_when_details_are_unknown"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-030",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. The client request accepts Unspecified when the algorithm or its implementation details are unknown; \u00a711.49 defines Unspecified as enumeration value 1. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. The client accepts Unspecified when the algorithm or its implementation details are unknown; \u00a711.49 defines Unspecified as enumeration value 1. Client-supplied creation attributes and Get Attributes response representation are covered. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-003",
@@ -100092,7 +100098,9 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field"
@@ -100100,7 +100108,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-030",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. Known cryptographic building blocks are accepted with Table 388 TTLV types; malformed or duplicate known singleton fields are rejected. Unknown tags are outside this profile check. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. Known cryptographic building blocks are accepted with Table 388 TTLV types; malformed or duplicate known singleton fields are rejected. Unknown tags are preserved and outside this profile check. Client-supplied creation attributes and Get Attributes response representation are covered. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.7-002",

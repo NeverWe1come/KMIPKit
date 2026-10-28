@@ -7467,8 +7467,74 @@ fn client_rng_parameters_are_well_formed(
     request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_register_random_number_generator_is_well_formed(request, response)
-        && client_add_attribute_random_number_generator_is_well_formed(request, response)
+    const RNG_ATTRIBUTE_CREATION_OPERATIONS: [u32; 5] = [
+        CREATE_OPERATION,
+        CREATE_KEY_PAIR_OPERATION,
+        DERIVE_KEY_OPERATION,
+        REKEY_OPERATION,
+        REKEY_KEY_PAIR_OPERATION,
+    ];
+
+    if let Some((request, response)) = response {
+        return request.batch_items().zip(response.batch_items()).all(
+            |(request_item, response_item)| {
+                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return true;
+                }
+                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return false;
+                }
+
+                response_item
+                    .with_response_payload(|payload| {
+                        rng_attribute_group_is_well_formed(&payload, ATTRIBUTES)
+                    })
+                    .unwrap_or(true)
+            },
+        );
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        let attribute_groups: &[u32] = if operation == REGISTER_OPERATION {
+            &[REGISTER_ATTRIBUTES]
+        } else if operation == ADD_ATTRIBUTE_OPERATION {
+            &[NEW_ATTRIBUTE]
+        } else if operation == CREATE_KEY_PAIR_OPERATION || operation == REKEY_KEY_PAIR_OPERATION {
+            &CREATE_KEY_PAIR_ATTRIBUTE_GROUPS
+        } else if RNG_ATTRIBUTE_CREATION_OPERATIONS.contains(&operation) {
+            &[ATTRIBUTES]
+        } else {
+            return true;
+        };
+
+        batch_item
+            .with_request_payload(|payload| {
+                attribute_groups
+                    .iter()
+                    .all(|group| rng_attribute_group_is_well_formed(&payload, *group))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn rng_attribute_group_is_well_formed(payload: &StructureView<'_>, group_tag: u32) -> bool {
+    match field_presence(payload, group_tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                rng_parameters_attribute_is_well_formed(&attributes)
+            }
+            _ => false,
+        }),
+    }
 }
 
 fn client_application_specific_information_can_omit_data(
@@ -10756,7 +10822,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_rng_parameters_are_well_formed),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
@@ -10774,7 +10848,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_rng_parameters_are_well_formed),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
@@ -10800,7 +10882,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_rng_parameters_are_well_formed),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
@@ -10818,7 +10908,15 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_rng_parameters_are_well_formed),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
