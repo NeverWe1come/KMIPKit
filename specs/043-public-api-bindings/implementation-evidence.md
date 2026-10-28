@@ -5962,4 +5962,9 @@ response semantics, and each test's success/error assertions remain distinct.
 
 | Phase | Commit | Command or check | Result |
 |---|---|---|---|
-| Red | this commit | From `bindings/python`: focused pytest for `test_unique_identifier_ttlv_fixture_preserves_native_callback_contract` | Expected failure: the shared unique-identifier/TTLV fixture factory does not yet exist. |
+| Red | `9a0089706` | From `bindings/python`: focused pytest for `test_unique_identifier_ttlv_fixture_preserves_native_callback_contract` | Expected failure: the shared unique-identifier/TTLV fixture factory does not yet exist. |
+| Green | `280cbf897` | From `bindings/python`: `test_tls_peer_support.py` | Pass, 14 tests; the shared fixture's operation-specific ABI symbols, present typed bytes, TTLV pointer, release callback, and owned-wrapper lifecycle are verified. |
+| Refactor | `6d7c48473` | From `bindings/python`: `test_tls_peer_support.py`, `test_register_operation.py`, and `test_revoke_operation.py` | Pass, 31 tests; Register/Revoke success, redaction, ownership, error cleanup, and operation-specific response mappings remain asserted by their original tests. |
+| Refactor | `6d7c48473` | Ruff `I001` on shared support and changed operation tests; `git diff --check` | Pass. |
+| Refactor | this commit | Combined native-backed pytest over all T074 shared-fixture callers and Login/Delegated Login, Rekey/RNG, Certify, Derive Key, Get Usage Allocation, Register, and Revoke | Pass, 108 tests. |
+| Refactor | this commit | API parity/T076 suite; API generator check; Ruff `I001`; `cargo fmt --all --check`; `git diff --check` | Pass, 72 tests; all 12 generated outputs current; formatting and import checks clean. |
