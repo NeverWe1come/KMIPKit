@@ -39,6 +39,8 @@ Example (illustrative):
 
 The plan is an untrusted workflow input at the Summary boundary. The Summary validates its schema, SHA binding, known job/scope identifiers, and internal consistency before accepting any skip. Missing, invalid, mismatched, or unsupported plans make the Summary fail and are treated as full-selection inputs by PR job conditions wherever possible.
 
+For full pull-request CI, `fast-preflight` is a required selected job. It runs the focused classifier and normative-catalog checks on Linux and gates the Script Contracts matrix. Its result is shown as its own row in the final Summary; a failed preflight and the consequent skipped matrix both fail the run. Selective component plans do not select this job.
+
 ## Coverage Scope Names
 
 | Name | Reports and current policy |

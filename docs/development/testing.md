@@ -25,6 +25,15 @@ selected. The scheduled workflow is unchanged. Selective execution does not
 change the thresholds below; every selected report remains required, and a
 missing or malformed selected report fails the gate.
 
+Full pull-request CI also runs a visible Linux fast-preflight with focused
+classifier and normative-catalog tests. It starts before the Script Contracts
+matrix; failure appears in the final Summary and prevents that matrix from
+starting. The full matrix and all other required checks still run after a
+successful preflight. Python `unittest` discovery in Script Contracts stops at
+the first failed test, and the matrix cancels its remaining operating-system
+jobs after a failure. This shortens the failure signal without changing the
+checks required for a passing full-CI run.
+
 ## Static analysis services
 
 The separate CodeQL workflow scans Rust, C/C++, Java, and Python on pushes to
