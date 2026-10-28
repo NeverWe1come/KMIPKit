@@ -3863,7 +3863,22 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     expected,
                     "full requirement closure must be independently enumerated from the source review fixture",
                 )
-                self.assertEqual(profile["requirement_ids_audited_subset"], expected)
+                audited_subset = profile["requirement_ids_audited_subset"]
+                missing_audited_ids = sorted(expected_requirement_ids - set(audited_subset))
+                unexpected_audited_ids = sorted(set(audited_subset) - expected_requirement_ids)
+                self.assertFalse(
+                    missing_audited_ids,
+                    f"audited subset omits independently reviewed profile requirements: {missing_audited_ids}",
+                )
+                self.assertFalse(
+                    unexpected_audited_ids,
+                    f"audited subset contains requirements outside the independent source review: {unexpected_audited_ids}",
+                )
+                self.assertEqual(
+                    audited_subset,
+                    sorted(audited_subset),
+                    "audited requirement IDs must remain deterministically ordered",
+                )
 
     def test_catalog_scopes_source_reviewed_conditional_requirements_to_profiles(self) -> None:
         """Catalog profile IDs and closures match source-reviewed conditional applicability."""
