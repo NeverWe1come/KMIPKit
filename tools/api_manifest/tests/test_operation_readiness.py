@@ -489,6 +489,40 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     feature_id="KMIPKIT-0020",
                 )
 
+    def test_standing_direct_authorization_is_not_approval_without_merge_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "012-vendor-extension-registry" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = (
+                "Approved for implementation under the maintainer's standing direct "
+                "authorization to execute the complete KMIPKit plan without further "
+                "approval requests. This authorizes the defined feature scope for "
+                "implementation; it does not claim line-by-line human review of this "
+                "revision or waive PR approval and merge rules."
+            )
+            owner.write_text(
+                "# Vendor extension registry\n\n"
+                "**Feature Branch**: `feature/KMIPKIT-0012-registry-implementation`\n\n"
+                f"**Status**: {status}\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "candidate", generate._operation_owner_state(root, "KMIPKIT-0012")
+            )
+            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
+                generate._validate_approval_source(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/012-vendor-extension-registry/spec.md",
+                        "status": "Approved",
+                        "evidence": f"**Status**: {status}",
+                    },
+                    root,
+                    feature_id="KMIPKIT-0012",
+                )
+
     def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
