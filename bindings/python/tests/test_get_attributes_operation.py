@@ -139,3 +139,57 @@ def test_get_attributes_executes_once_and_preserves_repeated_attribute_values():
         if batch_result is not None:
             batch_result.close()
         peer.join(timeout=4)
+
+
+def test_get_attributes_accepts_successful_no_match_response_with_identifier_only():
+    received: list[bytes] = []
+    response = operation_response_message(
+        0x0B,
+        _GET_ATTRIBUTES_ID,
+        payload_items=(ttlv_item(0x0042_0094, 7, b"object-7"),),
+    )
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(response)
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    configuration = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    batch_result = None
+    request_item = None
+    try:
+        with (
+            configuration,
+            client.Client.create(
+                configuration, mtls_transport_config(port, _TLS_FIXTURES)
+            ) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            batch = client.Batch.create()
+            request_item = extensions.client_batch_item_get_attributes(
+                extensions.UniqueIdentifier.text_string("object-7"),
+                (extensions.AttributeReference.tag(0x0042_002F),),
+            )
+            batch.add_item(
+                extensions.with_unique_batch_item_id(request_item, _GET_ATTRIBUTES_ID)
+            )
+            request_item = None
+            batch_result = kmip.execute(batch, limits)
+
+        assert failures.empty(), "the mTLS peer must complete one Get Attributes exchange"
+        assert len(received) == 1
+        assert batch_result is not None and len(batch_result.items) == 1
+        result = batch_result.items[0].get_attributes_response
+        assert result is not None
+        assert result.unique_identifier == "object-7"
+        assert result.attributes is None
+    finally:
+        if request_item is not None:
+            request_item.close()
+        if batch_result is not None:
+            batch_result.close()
+        peer.join(timeout=4)
