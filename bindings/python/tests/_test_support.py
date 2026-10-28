@@ -237,3 +237,68 @@ def install_ticket_native_response(
         }
     )
     monkeypatch.setattr(client, "lib", library)
+
+
+def batch_result_test_symbols(
+    ffi_module: object,
+    item_pointer: object,
+    metadata: Callable[..., int],
+    *,
+    response_release: Callable[[object], None] | None = None,
+    item_release: Callable[[object], None] | None = None,
+) -> dict[str, object]:
+    """Return common fake ABI symbols for one-item batch response tests."""
+    def absent_span(_item: object, present: object, span: object) -> int:
+        present[0] = 0
+        span.data = ffi_module.NULL
+        span.length = 0
+        return 0
+
+    def absent_versions(
+        _item: object,
+        present: object,
+        _values: object,
+        _capacity: object,
+        count: object,
+    ) -> int:
+        present[0] = 0
+        count[0] = 0
+        return 0
+
+    def absent_create(
+        _item: object, present: object, object_type: object, _identifier: object
+    ) -> int:
+        present[0] = 0
+        object_type[0] = 0
+        return 0
+
+    def absent_create_key_pair(
+        _item: object, present: object, _private: object, _public: object
+    ) -> int:
+        present[0] = 0
+        return 0
+
+    def absent_split_key_count(_item: object, present: object, count: object) -> int:
+        present[0] = 0
+        count[0] = 0
+        return 0
+
+    return {
+        "kmipkit_client_batch_response_release": response_release
+        or (lambda _pointer: None),
+        "kmipkit_client_batch_item_response_release": item_release
+        or (lambda _pointer: None),
+        "kmipkit_client_batch_response_item_count": lambda _pointer, count: (
+            count.__setitem__(0, 1) or 0
+        ),
+        "kmipkit_client_batch_response_item_at": lambda _pointer, _index, output: (
+            output.__setitem__(0, item_pointer) or 0
+        ),
+        "kmipkit_client_batch_item_response_metadata_v2": metadata,
+        "kmipkit_client_batch_item_response_unique_batch_item_id": absent_span,
+        "kmipkit_client_batch_item_response_pending_correlation_value": absent_span,
+        "kmipkit_client_batch_item_response_discover_versions_supported_versions": absent_versions,
+        "kmipkit_client_batch_item_response_create": absent_create,
+        "kmipkit_client_batch_item_response_create_key_pair": absent_create_key_pair,
+        "kmipkit_client_batch_item_response_create_split_key_count": absent_split_key_count,
+    }
