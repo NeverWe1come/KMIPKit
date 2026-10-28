@@ -223,8 +223,7 @@ fn bind_local_dns_sockets_with(
             let tcp_listener = match bind_tcp(SocketAddr::from((Ipv4Addr::LOCALHOST, 0))) {
                 Ok(listener) => listener,
                 Err(error) => {
-                    retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                    tcp_first = false;
+                    retry_socket_pair_bind(&mut attempts_remaining, &mut tcp_first, error)?;
                     continue;
                 }
             };
@@ -232,16 +231,14 @@ fn bind_local_dns_sockets_with(
             match bind_udp(local_addr) {
                 Ok(socket) => return Ok((socket, tcp_listener)),
                 Err(error) => {
-                    retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                    tcp_first = false;
+                    retry_socket_pair_bind(&mut attempts_remaining, &mut tcp_first, error)?;
                 }
             }
         } else {
             let udp_socket = match bind_udp(SocketAddr::from((Ipv4Addr::LOCALHOST, 0))) {
                 Ok(socket) => socket,
                 Err(error) => {
-                    retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                    tcp_first = true;
+                    retry_socket_pair_bind(&mut attempts_remaining, &mut tcp_first, error)?;
                     continue;
                 }
             };
@@ -249,20 +246,24 @@ fn bind_local_dns_sockets_with(
             match bind_tcp(local_addr) {
                 Ok(listener) => return Ok((udp_socket, listener)),
                 Err(error) => {
-                    retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                    tcp_first = true;
+                    retry_socket_pair_bind(&mut attempts_remaining, &mut tcp_first, error)?;
                 }
             }
         }
     }
 }
 
-fn retry_socket_pair_bind(attempts_remaining: &mut usize, error: io::Error) -> io::Result<()> {
+fn retry_socket_pair_bind(
+    attempts_remaining: &mut usize,
+    tcp_first: &mut bool,
+    error: io::Error,
+) -> io::Result<()> {
     if !is_retryable_socket_pair_bind_error(error.kind()) || *attempts_remaining <= 1 {
         return Err(error);
     }
 
     *attempts_remaining -= 1;
+    *tcp_first = !*tcp_first;
     Ok(())
 }
 
