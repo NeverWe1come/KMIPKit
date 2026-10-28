@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -44,20 +45,44 @@ final class GetAttributeListJavaFacadeTest {
                 limits);
         long handle = payload.nativeHandleOwner().transfer();
         ClientBatchItemResult.GetAttributeListResponse mapped = ClientBatchItemResult
-                .parseGetAttributeListResponse(new Object[] {new long[] {1}, new long[] {handle}})
+                .parseGetAttributeListResponse(new Object[] {
+                    new long[] {1},
+                    UniqueIdentifier.textString("object-7"),
+                    new long[] {1, 2, 2},
+                    new long[] {0x0054_0001L, 0, 0},
+                    new String[] {null, "vendor", "vendor"},
+                    new String[] {null, "Opaque.Name", "Opaque.Name"},
+                    new long[] {handle}
+                })
                 .orElseThrow();
+
+        assertEquals("object-7", mapped.uniqueIdentifier().text());
+        assertEquals(3, mapped.attributeReferences().size());
+        assertEquals(0x0054_0001L, mapped.attributeReferences().get(0).tagValue().orElseThrow());
+        assertEquals("vendor", mapped.attributeReferences().get(1)
+                .vendorIdentification().orElseThrow());
+        assertEquals("Opaque.Name", mapped.attributeReferences().get(2)
+                .attributeName().orElseThrow());
+        assertEquals(mapped.attributeReferences().get(1), mapped.attributeReferences().get(2));
+        assertThrows(UnsupportedOperationException.class,
+                () -> mapped.attributeReferences().clear());
 
         try (mapped; TtlvStructureView view = mapped.responsePayloadTtlv().view()) {
             assertEquals(2, view.itemCount());
             assertEquals(0x0042_0094, tagAt(view, 0));
             assertEquals(0x0042_013b, tagAt(view, 1));
         }
+        assertEquals("Opaque.Name", mapped.attributeReferences().get(2)
+                .attributeName().orElseThrow(), "typed response data is copied from the native owner");
     }
 
     @Test
     void failureHasNoSuccessfulResponseTtlv() {
         assertTrue(ClientBatchItemResult
-                .parseGetAttributeListResponse(new Object[] {new long[] {0}, new long[] {0}})
+                .parseGetAttributeListResponse(new Object[] {
+                    new long[] {0}, null, new long[0], new long[0],
+                    new String[0], new String[0], new long[] {0}
+                })
                 .isEmpty());
     }
 
@@ -65,7 +90,8 @@ final class GetAttributeListJavaFacadeTest {
     void malformedSuccessRejectsMissingOwnedTtlv() {
         org.junit.jupiter.api.Assertions.assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parseGetAttributeListResponse(
-                        new Object[] {new long[] {1}, new long[] {0}}));
+                        new Object[] {new long[] {1}, null, new long[0], new long[0],
+                                new String[0], new String[0], new long[] {0}}));
     }
 
     private static TtlvStructure append(

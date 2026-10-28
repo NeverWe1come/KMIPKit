@@ -12,6 +12,7 @@ from _test_support import (
     start_tls13_mtls_peer,
     ttlv_enumeration,
     ttlv_item,
+    ttlv_structure,
 )
 
 from kmipkit import client, extensions, ttlv
@@ -27,7 +28,17 @@ def _get_attribute_list_response_message() -> bytes:
         _GET_ATTRIBUTE_LIST_ID,
         payload_items=(
             ttlv_item(0x0042_0094, 7, b"object-7"),
-            ttlv_enumeration(0x0042_013B, 0x0042_002F),
+            ttlv_enumeration(0x0042_013B, 0x0054_0001),
+            ttlv_structure(
+                0x0042_013B,
+                ttlv_item(0x0042_009D, 7, b"vendor"),
+                ttlv_item(0x0042_000A, 7, b"Opaque.Name"),
+            ),
+            ttlv_structure(
+                0x0042_013B,
+                ttlv_item(0x0042_009D, 7, b"vendor"),
+                ttlv_item(0x0042_000A, 7, b"Opaque.Name"),
+            ),
         ),
     )
 
@@ -90,6 +101,12 @@ def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monke
 
     assert isinstance(result, client.GetAttributeListResponse)
     assert result.response_payload_ttlv is structure
+    assert result.unique_identifier == extensions.UniqueIdentifier.text_string("object-7")
+    assert result.attribute_references == (
+        extensions.AttributeReference.tag(0x0054_0001),
+        extensions.AttributeReference.name("vendor", "Opaque.Name"),
+        extensions.AttributeReference.name("vendor", "Opaque.Name"),
+    )
     assert "123" not in repr(result)
     result.close()
     assert structure.closed
@@ -133,8 +150,17 @@ def test_get_attribute_list_executes_once_over_native_mtls_client():
         assert batch_result is not None and len(batch_result.items) == 1
         response = batch_result.items[0].get_attribute_list_response
         assert isinstance(response, client.GetAttributeListResponse)
+        assert response.unique_identifier == extensions.UniqueIdentifier.text_string("object-7")
+        assert len(response.attribute_references) == 3
+        assert response.attribute_references[0] == extensions.AttributeReference.tag(0x0054_0001)
+        assert response.attribute_references[1:] == (
+            extensions.AttributeReference.name("vendor", "Opaque.Name"),
+            extensions.AttributeReference.name("vendor", "Opaque.Name"),
+        )
         with ttlv.ttlv_structure_view(response.response_payload_ttlv) as view:
-            assert ttlv.ttlv_structure_view_item_count(view) == 2
+            assert ttlv.ttlv_structure_view_item_count(view) == 4
+        batch_result.close()
+        assert response.attribute_references[-1].attribute_name == "Opaque.Name"
     finally:
         if request_item is not None:
             request_item.close()
