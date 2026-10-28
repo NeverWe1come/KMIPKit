@@ -392,6 +392,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             generate._validate_release_package_versions(manifest, ROOT)
 
+    def test_release_gate_rejects_c_distribution_identity_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        c_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "c-kmipkit"
+        )
+        c_package["packageName"] = "kmipkit-c-unverified"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
     def test_release_gate_rejects_rust_python_and_java_metadata_identity_drift(self) -> None:
         metadata_paths = (
             "Cargo.toml",
