@@ -76,9 +76,11 @@ recorded. The typed-rule registry is not empty: it includes a
 mapping for Wrapped Secret Data under KMIPKIT-REQ-SPEC-2.7-001. Baseline's
 294-requirement closure now has typed mappings and category-appropriate
 behavior tests, so runtime rule selection is available. Its catalog evidence
-remains incomplete: T036 still records three blocked mandatory fixture replays
-and 77 linked cases without local fixtures. Runtime selection does not
-establish official test success or a profile-conformance claim.
+remains incomplete: T036 records 13 complete replays and three typed preflight
+blockers among Baseline's 16 linked cases. Separately, the broader Profiles
+catalog has 77 linked case records without local fixtures; none belongs to
+Baseline's 16-case list. Runtime selection does not establish official test
+success or a profile-conformance claim.
 
 Readiness may accept test results only from a strict, ephemeral manifest made
 by the final aggregate job during a push to protected `release/1.0.0`. The

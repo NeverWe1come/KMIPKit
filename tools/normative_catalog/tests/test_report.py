@@ -2755,10 +2755,22 @@ mod unrelated {
             typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
         )
 
-        if "77 linked profile cases without local fixtures" in report:
+        note_rows = [
+            line
+            for line in report.splitlines()
+            if line.startswith("| KMIPKIT-REQ-PROF-6-001 |")
+            or line.startswith("| KMIPKIT-REQ-PROF-6.1-003 |")
+        ]
+        notes = "\n".join(note_rows)
+        if "77 linked profile cases without local fixtures" in notes:
             self.fail("the report incorrectly attributes the broader fixture inventory to Baseline")
-        self.assertIn("77 additional linked case IDs", report)
-        self.assertIn("none of those cases is in Baseline Client's 16-case list", report)
+        expected_fragments = (
+            "77 linked case records without local fixtures",
+            "none belongs to Baseline's 16-case list",
+        )
+        for fragment in expected_fragments:
+            if fragment not in notes:
+                self.fail(f"generated profile report is missing the fixture-scope clarification: {fragment}")
 
     def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module

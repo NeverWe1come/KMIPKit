@@ -83431,7 +83431,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 still has three mandatory official case preflight blockers and 77 linked profile cases without local fixtures; this mapping does not establish a Profile conformance claim."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; this mapping does not establish a Profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-001",
@@ -83590,7 +83590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 still has three mandatory official case preflight blockers and 77 linked profile cases without local fixtures; no Profile conformance claim is made."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; no Profile conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
