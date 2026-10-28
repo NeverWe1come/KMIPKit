@@ -19,6 +19,16 @@ The manifest generator now treats statuses that explicitly grant autonomous impl
 | Green | `cb1f2527c` | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | PASS: 21 readiness tests; all 12 generated outputs current. The dependency-check regression confirms an authorization-only owner cannot be represented as approved without a merge record. |
 | Refactor | `5df68dc75` | Same readiness test and generator-check commands; `git diff --check` | PASS: 21 readiness tests; all 12 generated outputs current; no whitespace errors after consolidating the authorization-only status fixture. |
 
+#### T086 security follow-up — status variants and merged feature review
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `c7f2762d0`, `56df1a5b6` | Focused readiness cases for alternate authorization wording, plain `Status:` headers, and stale merge records | Expected failures reproduced the authorization wording bypass and the historical-merge override. The follow-up `KMIPKIT-0044` test also failed until its human-merged feature PR was recognized as owner acceptance evidence. |
+| Green | `0d6d8db4f` | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | PASS: 25 readiness tests; all 12 generated outputs verified. PR #103 was confirmed merged by maintainer NeverWe1come into `release/1.0.0` on `2026-10-13`; its checked-in specification is included in the merged feature PR. |
+| Refactor | `bddf27ad4` | Same readiness test and generator-check commands; `git diff --check` | PASS: 25 readiness tests; all 12 generated outputs verified; helper naming now reflects documented merged owner evidence from specification or feature PRs. |
+
+The broad diagnostic `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -v` ran 527 tests and reported 9 failures, 7 errors, and 3 platform-dependent skips. Failures included stale binding-export counts and mapping/report discrepancies (for example, Java expected 732 declarations while the audit found 789). They are outside the focused T086 readiness behavior and remain part of the open manifest/export reconciliation work; this diagnostic is not recorded as passing.
+
 Additional local CI contracts passed: 308 script tests (26 skipped), 222 normative catalog tests (7 skipped), and 118 API manifest contract tests (1 skipped). The CI workflow now runs the readiness suite as part of Python contracts. Linux, Windows, macOS, and the full pull-request CI matrix remain subject to the PR run.
 
 ## T039 owner approval evidence
