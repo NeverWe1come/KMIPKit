@@ -3680,6 +3680,74 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     f"{sorted(missing_requirement_ids)[:8]}",
                 )
 
+    def test_rng_parameters_preserve_shared_client_and_server_scope(self) -> None:
+        """The §7.36 structure is usable in client requests and server-created responses."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        oracle = json.loads(
+            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        requirement_ids = {
+            "KMIPKIT-REQ-SPEC-7.36-001",
+            "KMIPKIT-REQ-SPEC-7.36-002-001",
+            "KMIPKIT-REQ-SPEC-7.36-002-002",
+            "KMIPKIT-REQ-SPEC-7.36-003",
+        }
+        mappings = {
+            row["requirement_id"]: row
+            for row in oracle["requirement_crosswalk"]
+            if row["requirement_id"] in requirement_ids
+        }
+        self.assertEqual(set(mappings), requirement_ids)
+        for requirement_id, mapping in mappings.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(mapping["role"], "both")
+                self.assertEqual(mapping["scope_state"], "client_1_0 + server_only (split/shared)")
+                self.assertEqual(mapping["source_actor"], "unspecified")
+                self.assertEqual(mapping["source_direction"], "unspecified")
+                self.assertEqual(mapping["decision_id"], "KMIPKIT-DEC-030")
+
+        reviews = [
+            review
+            for review in oracle["source_requirement_reviews"]
+            if any(
+                obligation.get("candidate_requirement_id") in requirement_ids
+                for obligation in review["source_obligations"]
+            )
+        ]
+        reviewed_ids = set()
+        expected_client_ids = set()
+        for review in reviews:
+            expected_client_ids.update(
+                set(review["expected_client_requirement_ids"]) & requirement_ids
+            )
+            for obligation in review["source_obligations"]:
+                requirement_id = obligation.get("candidate_requirement_id")
+                if requirement_id in requirement_ids:
+                    self.assertEqual(obligation["actor"], "unspecified")
+                    self.assertEqual(obligation["direction"], "unspecified")
+                    self.assertEqual(
+                        obligation["scope_disposition"],
+                        "client_1_0 + server_only (split/shared)",
+                    )
+                    self.assertEqual(obligation["project_actor_interpretation"], "client")
+                    reviewed_ids.add(requirement_id)
+        self.assertEqual(reviewed_ids, requirement_ids)
+        self.assertEqual(expected_client_ids, requirement_ids)
+
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
+        self.assertEqual(len(profiles), 18)
+        for requirement_id in requirement_ids:
+            self.assertEqual(requirements[requirement_id]["role"], "both")
+            self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
+            self.assertEqual(requirements[requirement_id]["direction"], "both")
+            self.assertEqual(requirements[requirement_id]["decision_id"], "KMIPKIT-DEC-030")
+        for profile in profiles:
+            with self.subTest(profile_id=profile["profile_id"]):
+                self.assertTrue(requirement_ids.issubset(set(profile["requirement_ids"])))
+
     def test_profile_oracle_requirement_arrays_match_independent_source_reviews(self) -> None:
         """Full profile requirement sets come from reviewed source records, not profile arrays."""
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
