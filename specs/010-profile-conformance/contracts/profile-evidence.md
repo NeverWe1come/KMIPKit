@@ -8,7 +8,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Evidence rules
 
-- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` until all required tests have passing execution evidence; fixture availability alone does not pass a test. No public claim is emitted.
+- Applicability, selected target, runtime validation selection, catalog `claim_state`, and published release claim are separate values. Baseline `claim_state` is `evidence_incomplete` until all applicable requirements and evidence gates pass; fixture availability alone does not pass a test. Apply Profiles §6.1 item 4's one-or-more test rule rather than requiring every linked case. No public claim is emitted.
 - Readiness reports expose target membership and runtime validation availability as separate booleans and one effective evidence/readiness lifecycle value; they do not create a duplicate readiness enum. The evaluator recomputes all required evidence before comparing it with catalog `claim_state`.
 - Every applicable normative client requirement has an implementation and verification assignment before a claim is eligible.
 - A verification assignment uses stable test IDs and current CI check IDs. An arbitrary result artifact path or a manually asserted `verified` value is not evidence.
@@ -26,7 +26,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Current Baseline state
 
-The pinned inventory links 16 mandatory test cases to Baseline Client, and all 16 XML fixtures are available in the repository. T036 records 13 full deterministic client replays and 3 typed preflight blockers. Replay evidence does not establish server interoperability or profile conformance. The readiness report must keep those three blockers and all other evidence gaps visible, and must not state or imply Baseline Client conformance until every required test and evidence gate passes.
+The pinned inventory links 13 Baseline Mandatory and 3 Shared Knowledge Link Client Mandatory test cases to the selected Baseline target, and all 16 XML fixtures are available in the repository. T036 records 10 full BL-M replays, 3 full SKLC-M replays, and 3 typed preflight blockers. Profiles §6.1 item 4 requires support for one or more listed cases, not all 16; the three blockers remain visible but do not alone invalidate that minimum. Replay evidence does not establish server interoperability or profile conformance. The readiness report must keep all case dispositions and other evidence gaps visible, and must not state or imply Baseline Client conformance until every applicable requirement and evidence gate passes.
 
 ## Stable output
 

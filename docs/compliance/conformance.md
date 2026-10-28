@@ -63,10 +63,14 @@ validation availability, catalog evidence state, fixture availability, and
 public claims separate. Baseline Client is the selected 1.0 evidence target;
 its 294-requirement closure has typed mappings and category-appropriate
 negative behavior tests, so explicit runtime selection is available. Its catalog
-`claim_state` remains `evidence_incomplete`: the 16 mandatory official XML
-fixtures are pinned, while T036 records 13 full deterministic client replays
-and 3 typed preflight blockers. Seventy-seven other linked profile cases have
-no local fixture. Local runtime validation and replay evidence do not establish
+`claim_state` remains `evidence_incomplete`: the 16 linked mandatory official
+XML fixtures are pinned, while T036 records 10 full Baseline Client (`BL-M`)
+replays, 3 full Shared Knowledge Link Client (`SKLC-M`) replays, and 3 typed
+preflight blockers. KMIP Profiles v2.1 §6.1 item 4 requires support for one or
+more cases from §§5.1.3 and 5.6.3, not every linked case. The three blocked
+cases remain visible as case-level evidence gaps but do not by themselves
+invalidate that minimum. Seventy-seven other linked profile cases have no
+local fixture. Local runtime validation and fixture replay do not establish
 server interoperability or profile conformance. No profile conformance claim
 is published by KMIPKIT-0010.
 Other profile records retain their own catalog states; none of these fields is
@@ -112,11 +116,13 @@ Use the following stages independently:
    A catalog state advances only after its required human review, and any
    public claim remains a separate reviewed release decision.
 
-Baseline remains ineligible for a formal profile claim because T036 still has
-three mandatory cases blocked before full replay and current protected-branch
-and app-token evidence has not been established. Runtime selection being
-available means only that selected typed rules can be evaluated before and
-after an exchange; it does not close those external evidence gates.
+Baseline remains ineligible for a formal profile claim until all applicable
+requirements and evidence gates are satisfied, including current protected-
+branch verification. The three case-level replay blockers remain recorded but
+do not by themselves negate the one-or-more test requirement. Runtime
+selection being available means only that selected typed rules can be
+evaluated before and after an exchange; it does not establish server
+interoperability or close the external evidence gates.
 The registry also includes a mapping for Wrapped Secret Data under
 KMIPKIT-REQ-SPEC-2.7-001. See the
 [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for

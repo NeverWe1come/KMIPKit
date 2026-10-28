@@ -37,4 +37,4 @@
 
 ## Notes
 
-- The specification defines the feature and its evidence gate. All 16 Baseline mandatory fixtures are pinned; T036 records 13 full local replays and 3 typed preflight blockers, so execution evidence remains incomplete and no claim is eligible.
+- The specification defines the feature and its evidence gate. The 16 linked Baseline/Shared Knowledge Link mandatory fixtures are pinned; T036 records 10 full BL-M replays, 3 full SKLC-M replays, and 3 typed preflight blockers. Profiles §6.1 item 4 requires one or more listed cases, not every case; replay evidence remains distinct from server interoperability and an overall profile claim.

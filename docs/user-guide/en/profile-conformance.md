@@ -96,13 +96,16 @@ available for Baseline Client's 294 mapped requirements. This enables local
 rule checks; it does not establish profile support or satisfy the
 specification's conformance requirement.
 
-The Baseline Client catalog state is `evidence_incomplete`. All 16 mandatory
-official fixtures are pinned. T036 records 13 full deterministic client
-replays and 3 typed preflight blockers. Separately, the broader Profiles
-catalog contains 77 linked case records without local fixture files (70
-mandatory, 7 optional); none belongs to Baseline's 16-case list. These fixture
-and replay gaps remain independent from local runtime validation. KMIPKit does
-not recreate or infer absent fixture contents.
+The Baseline Client catalog state is `evidence_incomplete`. All 16 linked
+Baseline and Shared Knowledge Link mandatory official fixtures are pinned.
+T036 records 10 full deterministic `BL-M` replays, 3 full `SKLC-M` replays,
+and 3 typed preflight blockers. Profiles v2.1 §6.1 item 4 requires support for
+one or more cases from §§5.1.3 and 5.6.3, not every linked case; the three
+blockers remain visible but do not alone invalidate that minimum. Separately,
+the broader Profiles catalog contains 77 linked case records without local
+fixture files (70 mandatory, 7 optional); none belongs to Baseline's 16-case
+list. Fixture replay does not establish server interoperability or profile
+conformance. KMIPKit does not recreate or infer absent fixture contents.
 
 The typed mapping for archived Locate retrieval records a caller-directed
 workflow only. Profile preflight checks one exchange at a time; it does not

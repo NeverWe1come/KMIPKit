@@ -27,8 +27,8 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 ## Scenario 3: Report Baseline evidence gaps
 
 1. Generate the profile readiness report from the checked-in catalog.
-2. Inspect `KMIPKIT-PROFILE-BASELINE-CLIENT` and its 16 mandatory tests.
-3. Confirm all 16 mandatory fixtures are pinned, T036's 13 full replays and 3 typed preflight blockers are accurately represented, readiness remains incomplete, and no public conformance claim appears.
+2. Inspect `KMIPKIT-PROFILE-BASELINE-CLIENT` and its linked mandatory tests.
+3. Confirm the 16 linked Baseline/Shared Knowledge Link fixtures are pinned; T036 records 10 full BL-M replays, 3 full SKLC-M replays, and 3 typed preflight blockers; Profiles §6.1 item 4's one-or-more rule is represented; and no public conformance claim appears.
 
 ## Scenario 4: Fail a conditional profile closed
 

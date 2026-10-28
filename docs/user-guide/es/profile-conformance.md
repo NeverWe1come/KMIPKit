@@ -100,14 +100,16 @@ soporte del perfil ni satisface por sí solo el requisito de conformidad del
 estándar.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
-fixtures oficiales obligatorios están fijados en el repositorio. T036 registra
-13 reproducciones deterministas completas del cliente y 3 bloqueos previos al
-envío causados por la validación tipada. Por separado, el catálogo general de
-perfiles contiene 77 registros de casos sin archivos fixture locales (70
-obligatorios y 7 opcionales); ninguno pertenece a la lista de 16 casos de
-Baseline. Estas carencias de fixtures y reproducciones son independientes de
-la validación runtime local. KMIPKit no reconstruye ni deduce el contenido de
-fixtures ausentes.
+fixtures oficiales vinculados a Baseline y Shared Knowledge Link están fijados.
+T036 registra 10 reproducciones deterministas completas de casos `BL-M`, 3 de
+casos `SKLC-M` y 3 bloqueos previos al envío por la validación tipada. Profiles
+v2.1 §6.1, ítem 4, exige soportar uno o más casos de §§5.1.3 y 5.6.3, no todos
+los casos vinculados; los tres bloqueos siguen visibles, pero por sí solos no
+invalidan ese mínimo. Por separado, el catálogo general de perfiles contiene
+77 registros de casos sin archivos fixture locales (70 obligatorios y 7
+opcionales); ninguno pertenece a la lista de 16 casos. La reproducción de
+fixtures no demuestra interoperabilidad con servidores ni conformidad del
+perfil. KMIPKit no reconstruye ni deduce el contenido de fixtures ausentes.
 
 El mapping tipado para recuperar resultados archivados de Locate solo registra
 un flujo dirigido por la aplicación. El preflight del perfil comprueba un
