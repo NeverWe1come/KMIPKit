@@ -188,7 +188,25 @@ fn get_attribute_list_uid_span_remains_readable_while_response_is_open() {
     );
     assert_eq!(present, 1);
     assert_eq!(count, 1);
-    assert_eq!(unique_identifier_text(&identifier), b"object-7");
+    let handle = reference_handle(success, Kind::ClientBatchItemResponse)
+        .expect("the response handle keeps the typed identifier alive");
+    let HandleValue::ClientBatchItemResponse { response, index } = &handle.value else {
+        panic!("the response handle contains a batch item response");
+    };
+    let item = response
+        .get(*index)
+        .expect("the response item remains owned by the response handle");
+    let kmipkit_client::ClientBatchOutcome::GetAttributeList(result) = item.outcome() else {
+        panic!("the response contains a typed Get Attribute List outcome");
+    };
+    let expected_text = result
+        .unique_identifier()
+        .expect("successful Get Attribute List returns a Unique Identifier");
+    assert_eq!(
+        identifier.text_data,
+        expected_text.as_ptr(),
+        "FFI must borrow the UID span directly from the retained response"
+    );
     kmipkit_client_batch_item_response_release(success);
 }
 
