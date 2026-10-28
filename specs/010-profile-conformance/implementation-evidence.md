@@ -8125,3 +8125,19 @@ DCO Red commit `7200711b5` adds `test_profile_review_notes_do_not_duplicate_vola
 | Diff whitespace | `git diff --check` | PASS before this evidence update; rerun after the final documentation edit. |
 
 One initial local attempt ran the report and feature-traceability suites concurrently on Windows and produced path-lock and temporary-file errors. Both suites passed when rerun serially; no repository source defect was reproduced. Exact-head hosted CI and independent closeout re-review remain pending, so T040 is not marked complete here.
+
+
+## T040 closeout and T045 post-closure fixture replay (2026-10-28)
+
+T040 is complete: the generated Baseline readiness summary reports 298 closure requirements, 298 typed mappings, and 298 category-test references, with runtime selection available. The Baseline claim state remains `evidence_incomplete`; no official-case pass or profile-conformance claim is made. The exact-head hosted CI run [40667964300](https://github.com/NeverWe1come/KMIPKit/actions/runs/40667964300) for `e38052ad816347320a8683aba77e62fc0da7a7a5` passed, and independent closeout re-review found no remaining findings.
+
+After T040 closed, T045's replay check was rerun. The test records 13 replayed profile cases and three typed preflight blockers. All 16 linked Baseline cases remain visible; the three blockers are not counted as passed. The one-or-more threshold in KMIP Profiles v2.1 §6.1 item 4 is met by the completed BL-M and SKLC-M replays. Fixture replay does not establish formal OASIS test execution or profile conformance.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Post-T040 fixture replay | `cargo test --locked -p kmipkit-client --lib profile_fixture_replay_tests --all-features -- --nocapture` | PASS: 1 test; 13 cases replayed, `BL-M-4-21`, `BL-M-7-21`, and `BL-M-10-21` remain typed `Validation/InvalidInput/NotSent` blockers; 602 tests filtered out. |
+| Exact-head hosted CI | [Run 40667964300](https://github.com/NeverWe1come/KMIPKit/actions/runs/40667964300) | PASS on `e38052ad8`; Script Contracts passed on Ubuntu, macOS, and Windows. |
+| Independent closeout review | Read-only review of `e38052ad8` | PASS: no remaining findings; Baseline remains `evidence_incomplete`. |
+| Immutable upstream sources | `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4` | PASS: pinned OASIS upstream sources match the release base. |
+
+T026, T043, and T056 remain open. PR #90 remains a draft until those separately tracked gates are complete.
