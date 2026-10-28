@@ -373,6 +373,24 @@ fn response_without_requested_values_keeps_required_identifier_and_empty_attribu
 }
 
 #[test]
+fn response_with_no_matching_references_accepts_the_prose_required_identifier_only_form() {
+    let payload = structure([item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string(OBJECT_IDENTIFIER.to_owned()),
+    )]);
+    let message = response_message(0, None, None, Some(payload));
+
+    let actual = GetAttributesResponse::try_from_response_item(response_item(&message))
+        .expect("§6.1.20 prose permits only Unique Identifier when no requested value exists");
+
+    assert_eq!(actual.unique_identifier(), Some("object-id-17"));
+    assert!(
+        actual.attributes().is_none(),
+        "the absent Attributes field remains distinct from a present empty Structure"
+    );
+}
+
+#[test]
 fn response_without_references_preserves_the_full_direct_attribute_set_in_order() {
     let request = GetAttributesRequest::try_new(None, [])
         .expect("Table 223 allows no Attribute Reference to request all attributes");
