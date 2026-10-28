@@ -682,6 +682,16 @@ def _missing_category_tests_without_accepted_deviation(
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_repeated_confined_source_reads_reuse_the_same_snapshot(self) -> None:
+        source_path = "crates/kmipkit-protocol/tests/support/profile_unit.rs"
+        first = _read_confined_test_source(source_path)
+        second = _read_confined_test_source(source_path)
+        self.assertIsNotNone(first)
+        self.assertTrue(
+            first is second,
+            "repeated evidence references should reuse the validated source snapshot",
+        )
+
     def test_accepted_recommendation_deviation_is_exempt_from_category_test(self) -> None:
         requirement_id = "KMIPKIT-REQ-EXAMPLE-001"
         result = _missing_category_tests_without_accepted_deviation(
