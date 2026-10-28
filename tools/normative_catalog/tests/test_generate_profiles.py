@@ -1644,7 +1644,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(mixed_response_obligation["source_keyword"], "MAY")
         self.assertEqual(mixed_response_obligation["actor"], "response producer (endpoint not named)")
         self.assertEqual(mixed_response_obligation["direction"], "server_to_client")
-        self.assertEqual(mixed_response_obligation["scope_disposition"], "unresolved")
+        self.assertEqual(mixed_response_obligation["scope_disposition"], "server_only")
+        self.assertEqual(mixed_response_obligation["project_actor_interpretation"], "server")
         self.assertEqual(mixed_response_obligation["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-8-003-002")
         self.assertNotIn("KMIPKIT-REQ-SPEC-8-003-002", expected_async_mapping["requirement_ids"])
 
@@ -3118,8 +3119,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"],
         )
 
-    def test_baseline_unique_batch_item_id_maps_client_batch_requirements_not_server_echo(self) -> None:
-        """Unique Batch Item ID maps conditional client use without a server echo duty."""
+    def test_baseline_unique_batch_item_id_maps_client_request_and_server_echo_separately(self) -> None:
+        """Unique Batch Item ID maps client request use and server echo as separate duties."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
@@ -3182,7 +3183,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "response producer (endpoint not named)",
         )
         self.assertEqual(request_optional_review["source_obligations"][1]["direction"], "server_to_client")
-        self.assertEqual(request_optional_review["source_obligations"][1]["scope_disposition"], "unclear")
+        self.assertEqual(request_optional_review["source_obligations"][1]["scope_disposition"], "server_only")
         self.assertNotIn("KMIPKIT-REQ-SPEC-9.21-001-002", unique_batch_mapping["requirement_ids"])
 
         profile_may_review = reviews["KMIPKIT-CLAUSE-PROF-4.1.2-007"]
@@ -3561,8 +3562,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(cleanup_requirement["scope_state"], "unclear")
         self.assertNotIn(cleanup_requirement["requirement_id"], profile["requirement_ids"])
 
-    def test_unresolved_actor_requirement_is_not_a_client_profile_obligation(self) -> None:
-        """Specification v2.1 §4.57 does not assign the Active predicates to a client."""
+    def test_server_scoped_actor_requirement_is_not_a_client_profile_obligation(self) -> None:
+        """DEC-021 records a server-side interpretation without changing the source actor."""
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -3574,10 +3575,15 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         crosswalk = [item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id]
         catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
 
-        self.assertEqual(requirement["role"], "unspecified")
-        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(requirement["role"], "server")
+        self.assertEqual(requirement["direction"], "unclear")
+        self.assertEqual(requirement["scope_state"], "server_only")
+        self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-021")
         self.assertEqual(review["expected_client_requirement_ids"], [])
-        self.assertEqual(crosswalk, [])
+        self.assertEqual(len(crosswalk), 1)
+        self.assertEqual(crosswalk[0]["role"], "server")
+        self.assertEqual(crosswalk[0]["source_actor"], "unresolved")
+        self.assertEqual(crosswalk[0]["scope_state"], "server_only")
         self.assertEqual(len(oracle["profiles"]), 18)
         for expected in oracle["profiles"]:
             with self.subTest(profile_id=expected["profile_id"]):

@@ -23360,6 +23360,10 @@ fn random_number_generator_with_optional_fields() -> Value {
         tagged(RNG_RECOMMENDED_CURVE_TAG, Value::enumeration(1)),
         tagged(RNG_FIPS186_VARIATION_TAG, Value::enumeration(1)),
         tagged(RNG_PREDICTION_RESISTANCE_TAG, Value::boolean(true)),
+        tagged(
+            0x0054_FF01,
+            Value::text_string("vendor-rng-data".to_owned()),
+        ),
     ]))
 }
 
@@ -23435,40 +23439,44 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
     let expected = [
         (
             RNG_PARAMETERS_REQUIREMENTS[0],
+            "KMIPKIT-CLAUSE-SPEC-7.36-001",
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[1],
+            "KMIPKIT-CLAUSE-SPEC-7.36-002",
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_register_random_number_generator",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[2],
+            "KMIPKIT-CLAUSE-SPEC-7.36-002",
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[3],
+            "KMIPKIT-CLAUSE-SPEC-7.36-003",
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
         ),
     ];
 
-    for (requirement_id, category, evidence_kind, evidence_test) in expected {
+    for (requirement_id, source_clause_id, category, evidence_kind, evidence_test) in expected {
         let mapping = TYPED_RULE_MAPPINGS
             .iter()
             .find(|mapping| mapping.requirement_id == requirement_id);
-        assert!(mapping.is_some(), "{requirement_id} has a typed profile rule");
+        assert!(
+            mapping.is_some(),
+            "{requirement_id} has a typed profile rule"
+        );
         if let Some(mapping) = mapping {
-            assert_eq!(
-                mapping.source_clause_id,
-                requirement_id.replace("REQ-SPEC", "CLAUSE-SPEC")
-            );
+            assert_eq!(mapping.source_clause_id, source_clause_id);
             assert_eq!(mapping.verification_category, category);
             assert!(mapping.test_evidence.iter().any(|evidence| {
                 evidence.kind == evidence_kind && evidence.test_id.ends_with(evidence_test)
@@ -23523,9 +23531,11 @@ fn profile_accepts_rng_parameters_with_optional_fields() {
 #[test]
 // KMIP Specification v2.1 §7.36 Table 388 requires RNG Algorithm and §11.49 defines Unspecified as value 1.
 fn profile_accepts_unspecified_rng_algorithm_when_details_are_unknown() {
-    let request = register_random_number_generator_request(Some(Value::structure(structure([
-        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
-    ]))));
+    let request =
+        register_random_number_generator_request(Some(Value::structure(structure([tagged(
+            RNG_ALGORITHM_TAG,
+            Value::enumeration(1),
+        )]))));
 
     table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[2]])
         .validate_request(&request)
@@ -23535,16 +23545,30 @@ fn profile_accepts_unspecified_rng_algorithm_when_details_are_unknown() {
 #[test]
 // KMIP Specification v2.1 §7.36 Table 388 assigns Cryptographic Length the TTLV Integer type.
 fn profile_rejects_rng_parameters_with_malformed_optional_field_type() {
-    let request = add_attribute_random_number_generator_request(Value::structure(structure([
-        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
-        tagged(RNG_CRYPT_LENGTH_TAG, Value::enumeration(256)),
-    ])));
+    let malformed_fields = [
+        (RNG_CRYPT_ALGORITHM_TAG, Value::integer(256)),
+        (RNG_CRYPT_LENGTH_TAG, Value::enumeration(256)),
+        (RNG_HASHING_ALGORITHM_TAG, Value::integer(1)),
+        (RNG_DRBG_ALGORITHM_TAG, Value::integer(1)),
+        (RNG_RECOMMENDED_CURVE_TAG, Value::integer(1)),
+        (RNG_FIPS186_VARIATION_TAG, Value::integer(1)),
+        (RNG_PREDICTION_RESISTANCE_TAG, Value::enumeration(1)),
+    ];
 
-    let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
-        .validate_request(&request)
-        .expect_err("Cryptographic Length in RNG Parameters is an Integer");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
-    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
+    for (tag, value) in malformed_fields {
+        let request = add_attribute_random_number_generator_request(Value::structure(structure([
+            tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+            tagged(tag, value),
+        ])));
+        let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+            .validate_request(&request)
+            .expect_err("RNG Parameters fields use their Table 388 TTLV types");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
+    }
 }
 
 #[test]
@@ -23555,8 +23579,35 @@ fn profile_rejects_rng_parameters_without_rng_algorithm() {
     let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[1]])
         .validate_request(&request)
         .expect_err("RNG Parameters cannot omit RNG Algorithm");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[1]));
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 requires a unique RNG Algorithm Enumeration.
+fn profile_rejects_rng_algorithm_with_wrong_type_or_duplicate() {
+    let malformed_parameters = [
+        structure([tagged(RNG_ALGORITHM_TAG, Value::integer(1))]),
+        structure([
+            tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+            tagged(RNG_ALGORITHM_TAG, Value::enumeration(2)),
+        ]),
+    ];
+
+    for parameters in malformed_parameters {
+        let request = register_random_number_generator_request(Some(Value::structure(parameters)));
+        let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[1]])
+            .validate_request(&request)
+            .expect_err("RNG Algorithm is a unique Enumeration");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[1]));
+    }
 }
 
 #[test]
@@ -23571,7 +23622,10 @@ fn profile_rejects_duplicate_rng_optional_field() {
     let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
         .validate_request(&request)
         .expect_err("known optional RNG Parameters fields are singleton fields");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
     assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
 }
 

@@ -453,7 +453,7 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
         self.assertEqual(crosswalk["scope_state"], "profile_conditional")
         self.assertEqual(crosswalk["applies_to"], profile_id)
         self.assertIn("KMIPKIT-DISC-007", crosswalk["discrepancy_ids"])
-        self.assertEqual(fixture["counts"]["requirement_crosswalk_records"], 541)
+        self.assertEqual(fixture["counts"]["requirement_crosswalk_records"], 546)
 
 
 if __name__ == "__main__":

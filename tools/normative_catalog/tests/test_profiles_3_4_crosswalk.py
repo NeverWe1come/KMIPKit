@@ -52,6 +52,7 @@ CLIENT_IDS = {
     "KMIPKIT-REQ-PROF-3.2.4-002",
     "KMIPKIT-REQ-PROF-3.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-001",
+    "KMIPKIT-REQ-PROF-4.1.2-005",
     "KMIPKIT-REQ-PROF-4.1.2-007",
 }
 UNRESOLVED_IDS = {
@@ -59,7 +60,6 @@ UNRESOLVED_IDS = {
     "KMIPKIT-REQ-PROF-3-003",
     "KMIPKIT-REQ-PROF-3-004",
     "KMIPKIT-REQ-PROF-3-006",
-    "KMIPKIT-REQ-PROF-4.1.2-005",
 }
 OUT_OF_SCOPE_IDS = {
     "KMIPKIT-REQ-PROF-3.1.1-004",
@@ -134,7 +134,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         )
 
     def test_unresolved_and_out_of_scope_rows_are_not_client_obligations(self) -> None:
-        self.assertEqual(len(UNRESOLVED_IDS), 5)
+        self.assertEqual(len(UNRESOLVED_IDS), 4)
         self.assertEqual(len(OUT_OF_SCOPE_IDS), 5)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
         reviewed_clause_ids = {
@@ -185,7 +185,11 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
             expected_actor = (
                 "unresolved"
-                if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001"
+                if requirement_id
+                in {
+                    "KMIPKIT-REQ-PROF-4.1.2-001",
+                    "KMIPKIT-REQ-PROF-4.1.2-005",
+                }
                 else
                 "client and server"
                 if requirement_id
@@ -491,7 +495,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             "KMIPKIT-REQ-PROF-4.1-001": ("unclear", "unclear", "out_of_scope"),
             "KMIPKIT-REQ-PROF-4.1-003": ("unclear", "unclear", "out_of_scope"),
             "KMIPKIT-REQ-PROF-4.1.2-001": ("client", "not_applicable", "profile_conditional"),
-            "KMIPKIT-REQ-PROF-4.1.2-005": ("unclear", "unclear", "unclear"),
+            "KMIPKIT-REQ-PROF-4.1.2-005": ("client", "client_to_server", "profile_conditional"),
             "KMIPKIT-REQ-PROF-4.1.2-008": (
                 "not_applicable",
                 "not_applicable",
@@ -517,28 +521,50 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             self.assertEqual((requirement["role"], requirement["direction"], requirement["scope_state"]), (role, direction, scope))
             expected_clause_scope = (
                 ("unclear", "unclear", scope)
-                if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001"
+                if requirement_id
+                in {
+                    "KMIPKIT-REQ-PROF-4.1.2-001",
+                    "KMIPKIT-REQ-PROF-4.1.2-005",
+                }
                 else (role, direction, scope)
             )
             self.assertEqual(
                 (clause["role"], clause["direction"], clause["scope_state"]),
                 expected_clause_scope,
             )
-            if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001":
+            if requirement_id in {
+                "KMIPKIT-REQ-PROF-4.1.2-001",
+                "KMIPKIT-REQ-PROF-4.1.2-005",
+            }:
                 self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
                 self.assertIn(requirement_id, self.crosswalk)
                 self.assertIn(requirement_id, baseline["requirement_ids"])
                 self.assertEqual(requirement["status"], "scoped_verified")
-                self.assertEqual(
-                    requirement["implementation_refs"],
-                    ["crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"],
-                )
-                self.assertEqual(
-                    requirement["verification_refs"],
-                    [
-                        "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests"
-                    ],
-                )
+                if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001":
+                    self.assertEqual(
+                        requirement["implementation_refs"],
+                        ["crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"],
+                    )
+                    self.assertEqual(
+                        requirement["verification_refs"],
+                        [
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests"
+                        ],
+                    )
+                else:
+                    self.assertEqual(
+                        requirement["implementation_refs"],
+                        [
+                            "crates/kmipkit-protocol/src/message/header.rs",
+                            "crates/kmipkit-protocol/src/profile.rs",
+                        ],
+                    )
+                    self.assertEqual(
+                        requirement["verification_refs"],
+                        [
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_request_authentication_from_profiles_clause"
+                        ],
+                    )
             else:
                 self.assertEqual(review["expected_client_requirement_ids"], [])
                 self.assertNotIn(requirement_id, self.crosswalk)
@@ -549,7 +575,8 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                 self.assertNotIn(clause_id, baseline["source_clause_ids"])
 
         auth_requirement = self.requirements["KMIPKIT-REQ-PROF-4.1.2-005"]
-        self.assertNotIn("client request", auth_requirement["summary"].lower())
+        self.assertIn("optional authentication", auth_requirement["summary"].lower())
+        self.assertEqual(auth_requirement["decision_id"], "KMIPKIT-DEC-022")
         interop_text = pinned_excerpt([4494, 4502]).lower()
         self.assertIn("not expected that production kmip clients will support the interop operation", interop_text)
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.1-001"

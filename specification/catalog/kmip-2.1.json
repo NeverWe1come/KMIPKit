@@ -18533,8 +18533,8 @@
         "KMIPKIT-REQ-SPEC-6.1.25-001"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
-      "direction": "unclear",
+      "role": "server",
+      "direction": "not_applicable",
       "scope_state": "server_only",
       "condition": null
     },
@@ -26439,9 +26439,9 @@
         "KMIPKIT-REQ-SPEC-7.36-001"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "server_only",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": "Fields depend on the RNG type."
     },
     {
@@ -26461,9 +26461,9 @@
         "KMIPKIT-REQ-SPEC-7.36-002-002"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "server_only",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": null
     },
     {
@@ -26482,9 +26482,9 @@
         "KMIPKIT-REQ-SPEC-7.36-003"
       ],
       "exclusion_rationale": null,
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "server_only",
+      "role": "both",
+      "direction": "both",
+      "scope_state": "mixed",
       "condition": "When those building blocks are known."
     },
     {
@@ -27638,7 +27638,7 @@
       "exclusion_rationale": null,
       "role": "unclear",
       "direction": "server_to_client",
-      "scope_state": "client_1_0",
+      "scope_state": "mixed",
       "condition": "The first MAY concerns a response field whose actor is not named; the second MAY is assigned by KMIPKIT-DEC-016 to the consuming client application when the response contains Result Message."
     },
     {
@@ -88828,7 +88828,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. §4.32 Table 94 marks Name as permitting multiple instances. The typed AttributeSet preserves repeated Name items, and KMIPKIT-0010 maps the optional client representation capability. The test does not assert distinct values, stored-object cardinality, or server acceptance; the SHOULD for distinct values is separately caller-owned. No official OASIS Test Case is linked to this requirement."
+      "review_note": "KMIP Specification v2.1 \u00a74 defines multi-instance attributes and names client Get, Add Attribute, Modify Attribute, and Delete Attribute operations in the same clause. \u00a74.32 Table 94 marks Name as permitting multiple instances. The typed AttributeSet preserves repeated Name items, and KMIPKIT-0010 maps the optional client representation capability. The test does not assert distinct values, stored-object cardinality, or server acceptance; the SHOULD for distinct values is separately caller-owned. No official OASIS Test Case is linked to this requirement. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
@@ -88902,7 +88902,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4 recommends distinct values for multi-instance attributes but names no enforcing endpoint. Under KMIPKIT-DEC-023, the caller owns this SHOULD: the Baseline profile maps it as recommended behavior, and the test represents two distinct Name values permitted by §4.32 Table 94. KMIPKit preserves values without rewriting or deduplicating them; no general value-comparison or server-acceptance claim is made. No official OASIS Test Case is linked to this requirement."
+      "review_note": "KMIP Specification v2.1 \u00a74 recommends distinct values for multi-instance attributes but names no enforcing endpoint. Under KMIPKIT-DEC-023, the caller owns this SHOULD: the Baseline profile maps it as recommended behavior, and the test represents two distinct Name values permitted by \u00a74.32 Table 94. KMIPKit preserves values without rewriting or deduplicating them; no general value-comparison or server-acceptance claim is made. No official OASIS Test Case is linked to this requirement. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-003",
@@ -89031,7 +89031,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-023",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4 defines single-instance attributes; Table 46 marks Comment single-instance, and §4.22 Table 72 permits repeated Digital Signature Algorithm only for PGP Key objects while prohibiting duplicates for X.509 certificates. §4.5 Table 41 scopes Certificate Type to Certificate objects, so Certificate Type=PGP does not imply the PGP Key exception. The generated policy preserves all 62 source table cells. The profile evaluator checks attribute groups on client Create, Create Key Pair, Register, Import, Certify, Re-key, Re-certify, Derive Key, Create/Join Split Key, Re-key Key Pair, Add/Modify/Set Attribute requests; Get Attributes, Get, and Export responses; and nested KeyValue.Attributes on Register/Import/Get/Export object paths (Specification §3.2 Table 13; Export §6.1.18 Table 218). Generic AttributeSet and unknown/vendor values remain lossless, and Locate predicates are not treated as object attributes. Repeated DSA is accepted only with explicit Object Type=PGP Key; unknown or ambiguous conditional context remains unproven and fails profile validation. No server-side stored-object behavior, server acceptance, or formal conformance claim is made. No official OASIS Test Case is linked to this requirement."
+      "review_note": "KMIP Specification v2.1 \u00a74 defines single-instance attributes; Table 46 marks Comment single-instance, and \u00a74.22 Table 72 permits repeated Digital Signature Algorithm only for PGP Key objects while prohibiting duplicates for X.509 certificates. \u00a74.5 Table 41 scopes Certificate Type to Certificate objects, so Certificate Type=PGP does not imply the PGP Key exception. The generated policy preserves all 62 source table cells. The profile evaluator checks attribute groups on client Create, Create Key Pair, Register, Import, Certify, Re-key, Re-certify, Derive Key, Create/Join Split Key, Re-key Key Pair, Add/Modify/Set Attribute requests; Get Attributes, Get, and Export responses; and nested KeyValue.Attributes on Register/Import/Get/Export object paths (Specification \u00a73.2 Table 13; Export \u00a76.1.18 Table 218). Generic AttributeSet and unknown/vendor values remain lossless, and Locate predicates are not treated as object attributes. Repeated DSA is accepted only with explicit Object Type=PGP Key; unknown or ambiguous conditional context remains unproven and fails profile validation. No server-side stored-object behavior, server acceptance, or formal conformance claim is made. No official OASIS Test Case is linked to this requirement. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4-001-004",
@@ -90965,7 +90965,7 @@
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.38 and Tables 105–106 permit Add when Original Creation Date is absent, mark the attribute non-modifiable and non-deletable by the client, and prohibit updates or deletion once set. The selected Baseline rule uses explicit exchange-scoped caller state bound to the exact request batch item and Unique Identifier; it rejects Modify, Delete, and Set for both known-present and known-absent state, and permits Add only when absent. Negative behavioral tests assert zero transport writes. Errors redact the identifier and caller state; KMIPKit does not infer or cache remote state."
+      "review_note": "KMIP Specification v2.1 \u00a74.38 and Tables 105\u2013106 permit Add when Original Creation Date is absent, mark the attribute non-modifiable and non-deletable by the client, and prohibit updates or deletion once set. The selected Baseline rule uses explicit exchange-scoped caller state bound to the exact request batch item and Unique Identifier; it rejects Modify, Delete, and Set for both known-present and known-absent state, and permits Add only when absent. Negative behavioral tests assert zero transport writes. Errors redact the identifier and caller state; KMIPKit does not infer or cache remote state. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
@@ -91680,7 +91680,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "T002 applicability adjudication: KMIP Specification v2.1 §4.57 prohibits changing State through Modify Attribute but does not name the actor of that prohibition. Section 6.1.34 defines Modify Attribute as a client-to-server operation. The KMIPKit project interpretation assigns the outbound request restriction to the client in the inherited KMIP 1.0 client profile scope. The source actor remains unresolved; the source direction follows the operation definition. This rule rejects State in either Current Attribute or New Attribute and does not prohibit server State transitions through other operations or server processes. No official OASIS Test Case ID is explicitly linked to this requirement, and none is inferred."
+      "review_note": "T002 applicability adjudication: KMIP Specification v2.1 \u00a74.57 prohibits changing State through Modify Attribute but does not name the actor of that prohibition. Section 6.1.34 defines Modify Attribute as a client-to-server operation. The KMIPKit project interpretation assigns the outbound request restriction to the client in the inherited KMIP 1.0 client profile scope. The source actor remains unresolved; the source direction follows the operation definition. This rule rejects State in either Current Attribute or New Attribute and does not prohibit server State transitions through other operations or server processes. No official OASIS Test Case ID is explicitly linked to this requirement, and none is inferred. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-002",
@@ -91974,7 +91974,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-025",
       "status": "deviated",
-      "review_note": "KMIP Specification v2.1 §4.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements. KMIPKIT-DEC-025 is an accepted deviation from local runtime behavior: the profile exposes caller-owned guidance, and this record makes no behavior-test or enforcement claim."
+      "review_note": "KMIP Specification v2.1 \u00a74.57 paragraph 5 explicitly names a trusted client and recommends using a compromised object only to process cryptographically protected information. This is caller-owned use policy; KMIPKit does not determine trust, inspect remote State, or perform cryptography locally. DEC-021 remains limited to server-owned State requirements. KMIPKIT-DEC-025 is an accepted deviation from local runtime behavior: the profile exposes caller-owned guidance, and this record makes no behavior-test or enforcement claim. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.57-005-003",
@@ -92126,12 +92126,12 @@
       "scope_state": "profile_conditional",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
         "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
-        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
+        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
@@ -92168,7 +92168,7 @@
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.59 and Table 149 prohibit changing Usage Limits Total after protection use begins or Get Usage Allocation has been performed under accepted DEC-024. The caller supplies those facts and the current Total/Count for a Set that changes Total; the evaluator rejects before transport when a prohibition applies and permits the tested false-state case while preserving Count. It does not infer or cache server state. The existing KMIPKIT-0016 Add/Modify restriction remains independently enforced."
+      "review_note": "KMIP Specification v2.1 \u00a74.59 and Table 149 prohibit changing Usage Limits Total after protection use begins or Get Usage Allocation has been performed under accepted DEC-024. The caller supplies those facts and the current Total/Count for a Set that changes Total; the evaluator rejects before transport when a prohibition applies and permits the tested false-state case while preserving Count. It does not infer or cache server state. The existing KMIPKIT-0016 Add/Modify restriction remains independently enforced. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001",
@@ -92191,12 +92191,12 @@
       "scope_state": "profile_conditional",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL",
         "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
         "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
-        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
+        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
@@ -92230,7 +92230,7 @@
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit changing Usage Limits Total after Get Usage Allocation changes Count. The explicit exchange context binds that caller-attested condition to the request item and object identifier. The negative behavior test proves zero writes and exact 4.59-003-001 attribution only when Count changed; the evaluator does not infer or cache remote state."
+      "review_note": "KMIP Specification v2.1 \u00a74.59 paragraph 3 and Table 149 prohibit changing Usage Limits Total after Get Usage Allocation changes Count. The explicit exchange context binds that caller-attested condition to the request item and object identifier. The negative behavior test proves zero writes and exact 4.59-003-001 attribution only when Count changed; the evaluator does not infer or cache remote state. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-002",
@@ -92282,7 +92282,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 prohibits client Count writes through Add Attribute or Modify Attribute; Table 149 limits client-modifiable Usage Limits members to Total and Unit. The existing Add/Modify enforcement remains intact. For the explicitly supported Set path that changes Total, caller context and a behavior test require Count to remain unchanged; the test proves rejection before transport. This context does not override the KMIPKIT-0016 Add/Modify restriction."
+      "review_note": "KMIP Specification v2.1 \u00a74.59 paragraph 3 prohibits client Count writes through Add Attribute or Modify Attribute; Table 149 limits client-modifiable Usage Limits members to Total and Unit. The existing Add/Modify enforcement remains intact. For the explicitly supported Set path that changes Total, caller context and a behavior test require Count to remain unchanged; the test proves rejection before transport. This context does not override the KMIPKIT-0016 Add/Modify restriction. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.60-001",
@@ -94013,7 +94013,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-026",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally. The profile mapping and Derive Key serializer tests verify that callers can provide multiple input identifiers; derivation remains server-side."
+      "review_note": "KMIP Specification v2.1 \u00a76.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally. The profile mapping and Derive Key serializer tests verify that callers can provide multiple input identifiers; derivation remains server-side. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-006-001",
@@ -94991,9 +94991,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-033",
       "status": "unassigned",
-      "review_note": "The source sentence does not name its actor. The surrounding Import processing describes server-side behavior; for KMIPKit client profile closure, this record is assigned server_only as an explicit project interpretation, not as source wording. The separate Attributes Required=Yes request row remains a client request-table source-only gap. No client implementation or profile mapping is inferred from this prose MUST."
+      "review_note": "KMIPKIT-DEC-033 assigns the supplied-value enforcement in Import to the server; the source atom remains actor-ambiguous and the separate Attributes Required request row stays client-side."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.25-004",
@@ -96169,7 +96169,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-027",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §6.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise. The profile mapping test verifies the optional request capability only; server state remains authoritative for whether the named attribute instance exists."
+      "review_note": "KMIP Specification v2.1 \u00a76.1.34 defines a client-to-server request to modify an existing attribute. The caller may request this capability; server state determines whether the instance exists and the server returns an error otherwise. The profile mapping test verifies the optional request capability only; server state remains authoritative for whether the named attribute instance exists. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-004",
@@ -99430,9 +99430,9 @@
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": true,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-031",
       "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: This restriction applies to the Key Value returned by the server after the client selected No Encoding in its Key Wrapping Specification. The selector is client input; this SHALL constrains server output."
+      "review_note": "KMIPKIT-DEC-031 assigns the returned wrapped Key Value representation to the server response, based on §7.18 request/response context."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.18-004",
@@ -99567,7 +99567,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.26 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
+      "review_note": "KMIP Specification v2.1 \u00a77.26 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned. The pinned KMIP Specification v2.1 source limits this condition to the named profile types; the selected Baseline Client is outside that scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.27-001",
@@ -99597,7 +99597,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.27 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
+      "review_note": "KMIP Specification v2.1 \u00a77.27 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned. The pinned KMIP Specification v2.1 source limits this condition to the named profile types; the selected Baseline Client is outside that scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.28-001",
@@ -99627,7 +99627,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.28 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
+      "review_note": "KMIP Specification v2.1 \u00a77.28 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned. The pinned KMIP Specification v2.1 source limits this condition to the named profile types; the selected Baseline Client is outside that scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.29-001",
@@ -99657,7 +99657,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.29 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
+      "review_note": "KMIP Specification v2.1 \u00a77.29 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned. The pinned KMIP Specification v2.1 source limits this condition to the named profile types; the selected Baseline Client is outside that scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.30-001",
@@ -99687,7 +99687,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "unassigned",
-      "review_note": "KMIP Specification v2.1 §7.30 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned."
+      "review_note": "KMIP Specification v2.1 \u00a77.30 states that specific fields may pertain only to certain profile types. The catalog condition limits this record to a PKCS#11 profile. The selected Baseline Client is not a PKCS#11 profile target; role and direction remain unspecified and no client profile ID is assigned. The pinned KMIP Specification v2.1 source limits this condition to the named profile types; the selected Baseline Client is outside that scope."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.31-001",
@@ -99709,12 +99709,12 @@
       "condition": "When a client-initiated Query Profiles response contains Profile Information; preserve profile-specific fields without inferring unsupported semantics.",
       "scope_state": "profile_conditional",
       "element_ids": [
-        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION",
         "KMIPKIT-ELEM-ENUMERATION-PROFILE-NAME",
+        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-NAME",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT"
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
@@ -99751,7 +99751,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
       "status": "scoped_verified",
-      "review_note": "The typed Query response in KMIPKIT-0020 owns Profile Information representation under Specification §6.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without taking ownership of this base Specification requirement. Section 7.31 and Table 383 require Profile Name and define optional Profile Version, Server URI, and Server Port field shapes; the client preserves unknown profile-specific items as generic TTLV and does not infer their semantics. Client-initiated response direction follows DEC-028; the conflict remains recorded in DISC-056. These local tests are not official OASIS conformance-test executions."
+      "review_note": "The typed Query response in KMIPKIT-0020 owns Profile Information representation under Specification \u00a76.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without taking ownership of this base Specification requirement. Section 7.31 and Table 383 require Profile Name and define optional Profile Version, Server URI, and Server Port field shapes; the client preserves unknown profile-specific items as generic TTLV and does not infer their semantics. Client-initiated response direction follows DEC-028; the conflict remains recorded in DISC-056. These local tests are not official OASIS conformance-test executions. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.32-001",
@@ -99812,7 +99812,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-028",
       "status": "scoped_verified",
-      "review_note": "The typed Query response model in KMIPKIT-0020 owns Profile Version representation in Specification §6.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without transferring ownership of this base requirement. Specification §7.32 and Table 384 require Integer Major and Minor parts when optional Profile Version is present; the parser/evaluator enforce both for client-initiated Query Profiles responses and preserve unknown nested items. These local tests are not official OASIS conformance-test executions."
+      "review_note": "The typed Query response model in KMIPKIT-0020 owns Profile Version representation in Specification \u00a76.1.40 Table 283. KMIPKIT-0010 adds the profile-specific rule mapping without transferring ownership of this base requirement. Specification \u00a77.32 and Table 384 require Integer Major and Minor parts when optional Profile Version is present; the parser/evaluator enforce both for client-initiated Query Profiles responses and preserve unknown nested items. These local tests are not official OASIS conformance-test executions. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.33-001",
@@ -99889,20 +99889,46 @@
       "normative_strength": "permission_or_optional",
       "subject": "RNG Parameters",
       "summary": "RNG Parameters include optional fields that describe a Random Number Generator.",
-      "role": "server",
-      "direction": "server_to_client",
+      "role": "both",
+      "direction": "both",
       "condition": "Fields depend on the RNG type.",
-      "scope_state": "server_only",
+      "scope_state": "mixed",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::rng_parameters_structure_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::client_rng_parameters_are_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: RNG description data is produced in the server response. Server role and response direction are project interpretation because the source does not name the actor."
+      "decision_id": "KMIPKIT-DEC-030",
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. The optional RNG Parameters fields are accepted and type-checked. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-001",
@@ -99919,20 +99945,48 @@
       "normative_strength": "mandatory",
       "subject": "RNG Algorithm",
       "summary": "The RNG Algorithm is specified in RNG Parameters.",
-      "role": "server",
-      "direction": "server_to_client",
+      "role": "both",
+      "direction": "both",
       "condition": null,
-      "scope_state": "server_only",
+      "scope_state": "mixed",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::rng_parameters_structure_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::client_rng_parameters_are_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_without_rng_algorithm",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_algorithm_with_wrong_type_or_duplicate"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: The RNG Algorithm value is response data produced by the server. Server role and response direction are project interpretation because the source does not name the actor."
+      "decision_id": "KMIPKIT-DEC-030",
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. Exactly one direct RNG Algorithm Enumeration is required whenever RNG Parameters is supplied; omission of the Random Number Generator attribute remains permitted by \u00a74.46. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-002-002",
@@ -99949,20 +100003,46 @@
       "normative_strength": "mandatory",
       "subject": "RNG Algorithm",
       "summary": "Use the Unspecified enumeration when the algorithm is unknown or implementation details are not provided.",
-      "role": "server",
-      "direction": "server_to_client",
+      "role": "both",
+      "direction": "both",
       "condition": "When algorithm details are unknown or omitted.",
-      "scope_state": "server_only",
+      "scope_state": "mixed",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::rng_parameters_structure_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::client_rng_parameters_are_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_unspecified_rng_algorithm_when_details_are_unknown"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: The Unspecified RNG Algorithm fallback is server response behavior. Server role and response direction are project interpretation because the source does not name the actor."
+      "decision_id": "KMIPKIT-DEC-030",
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. The client request accepts Unspecified when the algorithm or its implementation details are unknown; \u00a711.49 defines Unspecified as enumeration value 1. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.36-003",
@@ -99979,20 +100059,48 @@
       "normative_strength": "permission_or_optional",
       "subject": "RNG Parameters",
       "summary": "Known cryptographic building blocks used within the RNG may be specified with the remaining RNG Parameters fields.",
-      "role": "server",
-      "direction": "server_to_client",
+      "role": "both",
+      "direction": "both",
       "condition": "When those building blocks are known.",
-      "scope_state": "server_only",
+      "scope_state": "mixed",
       "element_ids": [],
-      "profile_ids": [],
+      "profile_ids": [
+        "KMIPKIT-PROFILE-AES-XTS-CLIENT",
+        "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
+        "KMIPKIT-PROFILE-HTTPS-CLIENT",
+        "KMIPKIT-PROFILE-JSON-CLIENT",
+        "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
+        "KMIPKIT-PROFILE-PKCS11-CLIENT",
+        "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
+        "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+        "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
+        "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
+        "KMIPKIT-PROFILE-XML-CLIENT"
+      ],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::rng_parameters_structure_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::client_rng_parameters_are_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field"
+      ],
       "negative_verification_required": false,
-      "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. Project interpretation: Optional RNG building-block data is produced in the server response. Server role and response direction are project interpretation because the source does not name the actor."
+      "decision_id": "KMIPKIT-DEC-030",
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request representation under accepted decision KMIPKIT-DEC-030. Known cryptographic building blocks are accepted with Table 388 TTLV types; malformed or duplicate known singleton fields are rejected. Unknown tags are outside this profile check. This does not claim server acceptance or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.7-002",
@@ -100121,7 +100229,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The pinned KMIP Specification v2.1 §8 overview describes optional message payloads, while the message-specific §8.3 Table 396 requires Request Payload and §8.6 Table 399 requires Response Payload unless the Result Status is Failure. This mapping covers optional Message Extension presence and omission of Response Payload only for Failure; it does not claim that a request may omit Request Payload. The pinned source leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under §8.1 and consume Response Messages under §8.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional Message Extension presence and the Failure response shape; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case."
+      "review_note": "The pinned KMIP Specification v2.1 \u00a78 overview describes optional message payloads, while the message-specific \u00a78.3 Table 396 requires Request Payload and \u00a78.6 Table 399 requires Response Payload unless the Result Status is Failure. This mapping covers optional Message Extension presence and omission of Response Payload only for Failure; it does not claim that a request may omit Request Payload. The pinned source leaves endpoint actor and direction unspecified. Project interpretation: client implementations emit Request Messages under \u00a78.1 and consume Response Messages under \u00a78.4, so this in-memory message model capability applies to the client in both directions across every client profile. Existing model evidence preserves optional Message Extension presence and the Failure response shape; it does not assert server behavior. The pinned OASIS Test Cases source does not link a requirement-specific case. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-002",
@@ -100164,7 +100272,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §8 requires fields to appear in the specified order but does not name an endpoint actor or direction. Project interpretation: the client is responsible for ordering both emitted Request Messages (§8.1) and consumed Response Messages (§8.4) in its in-memory message model, across every client profile. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources."
+      "review_note": "KMIP Specification v2.1 \u00a78 requires fields to appear in the specified order but does not name an endpoint actor or direction. Project interpretation: the client is responsible for ordering both emitted Request Messages (\u00a78.1) and consumed Response Messages (\u00a78.4) in its in-memory message model, across every client profile. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8-003-001",
@@ -100237,9 +100345,9 @@
         "crates/kmipkit-protocol/tests/message_validation.rs::one_response_batch_can_mix_completed_and_pending_results"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-031",
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Project interpretation: This requirement concerns response-side Message Extension data. Server role and response direction are project interpretation; client parsing evidence does not prove server production."
+      "review_note": "KMIPKIT-DEC-031 assigns mixed synchronous/asynchronous response production to the server in client-initiated 1.0 exchanges."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.1-002",
@@ -100577,9 +100685,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_device_identifier_uniqueness_as_caller_responsibility"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "scoped_verified",
-      "review_note": "The pinned KMIP Specification v2.1 §9.11 and Table 412 require one or a combination of the four Device identifier fields to be unique and require the client to provide at least one field. Approved KMIPKIT-0008 OD-002 assigns actual uniqueness to the caller because the source does not define a comparison scope. KMIPKit exposes and preserves the caller-supplied fields; it does not verify uniqueness or claim a client-side uniqueness test. No official OASIS Test Case is linked."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-004-003",
@@ -100693,9 +100801,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §9.11 requires the Hashed Password Timestamp to monotonically increase. Resolved KMIPKIT-0008 OD-003 as caller-owned state for one logical credential producer per Username: use strict increase in hash-production order, supply the current Date Time Extended value from the caller's clock, reject equal or earlier values without synthesizing a future value, and restore the last accepted value from caller-managed persistence when continuity across process restarts is needed. HashedPasswordTimestampSequence verifies this policy without calculating hashes, retaining a Username, reading a clock, or sending credentials. The typed Credential remains in-memory under OD-004; no wire-order or server-acceptance claim is made. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential representation to the client-initiated 1.0 message path while preserving the unspecified source actor. Under KMIPKIT-0010 T056, OD-003 is resolved for project behavior: caller-owned timestamp sequence state per Username and logical producer, caller-supplied current time, and strict increase in hash-production order. The source does not specify comparison scope, state owner, or clock behavior. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.11-010-002",
@@ -100730,9 +100838,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_sha256_default_as_required_behavior"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The pinned KMIP Specification v2.1 §9.11 paragraph immediately before Table 415 sets SHA-256 (raw Enumeration value 6) as the effective Hashing Algorithm default when omitted. The typed model preserves field absence while exposing that effective value; explicit assigned and unknown raw values remain unchanged. This is model-level evidence only: KMIPKit does not calculate hashes or claim credential transmission, server behavior, or an official OASIS Test Case pass."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential representation to the client-initiated 1.0 message path while preserving the unspecified source actor. KMIPKIT-0008 implements the source rule that Hashing Algorithm is optional in Table 415 and defaults to SHA-256 when omitted. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-001",
@@ -100774,9 +100882,9 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §9.12 and Table 417 define Maximum Response Size as an OPTIONAL Integer in the request header; the typed profile mapping and test demonstrate that the client can omit or include a caller-supplied value. Client handling of the declared size (KMIPKIT-REQ-SPEC-9.12-001-002) and SHOULD guidance on when to send it (KMIPKIT-REQ-SPEC-9.12-001-003) are separate requirements. No server enforcement, recommendation-selection behavior, official Test Case result, or profile-conformance claim is inferred. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-002",
@@ -100815,9 +100923,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_declared_response_capacity_as_required_behavior"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The pinned KMIP Specification v2.1 §9.12 and Table 417 require a client to handle responses up to the Maximum Response Size it declares. For Create Split Key, the client advertises its configured local byte cap as a signed Integer (clamped to i32::MAX when needed), passes the full local cap to transport, accepts a valid response exactly at the cap, and rejects one byte over before decoding. Discover Versions omits the peer-visible field. This derived evidence is not an official Test Case and does not claim server acceptance or profile conformance."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-003",
@@ -100850,9 +100958,9 @@
         "crates/kmipkit-client/tests/unit/response_boundary_tests.rs::discover_versions_omits_peer_response_cap_and_server_correlation_fields"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §9.12 recommends sending this field only when a request may yield a large reply. The typed profile rule rejects it for Discover Versions, which KMIPKIT-0007 classifies as not likely-large; it accepts omission and leaves other operation classifications to their approved feature specifications. KMIPKIT-0014 tests that Create Split Key advertises the configured local cap and enforces exact and over-limit response boundaries. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-001",
@@ -100895,9 +101003,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The pinned Specification makes Message Extension optional and permits appending it to any Batch Item, but does not identify the sender. Project interpretation assigns this optional capability to the client-to-server slice of every 1.0 client profile; the client may omit it or attach it to an outbound Batch Item."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID. Project interpretation under KMIPKIT-DEC-032: this client representation applies to client-initiated 1.0 exchanges; the OASIS source does not identify the sender for every field, and this assignment does not claim server behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-002",
@@ -100949,9 +101057,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The pinned Specification requires the three fields and vendor-specific contents when an extension is sent, but does not identify the sender. Project interpretation applies this message-shape rule to client-sent extensions in every 1.0 client profile. §11.56 allocates extension tags in 0x540000..=0x54FFFF; the validator requires at least one child in that range and preserves the opaque subtree."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID. Project interpretation under KMIPKIT-DEC-032: this client representation applies to client-initiated 1.0 exchanges; the OASIS source does not identify the sender for every field, and this assignment does not claim server behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-003",
@@ -100993,9 +101101,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The pinned Specification requires Vendor Identification to be text that uniquely identifies its vendor; it names a client as the party that can use the value to determine whether it understands the extension, but does not identify the sender. Project interpretation applies the sender rule to client-to-server extensions in every 1.0 client profile. The caller supplies the vendor identity; KMIPKit does not claim to verify global uniqueness."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID. Project interpretation under KMIPKIT-DEC-032: this client representation applies to client-initiated 1.0 exchanges; the OASIS source does not identify the sender for every field, and this assignment does not claim server behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-004",
@@ -101030,9 +101138,9 @@
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "The client has no registered vendor extension handler, so its typed Baseline response evaluator rejects any critical Message Extension as unrecognized; the execution path also rejects such responses. No vendor critical-extension support is claimed. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID. Project interpretation under KMIPKIT-DEC-032: this client representation applies to client-initiated 1.0 exchanges; the OASIS source does not identify the sender for every field, and this assignment does not claim server behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.13-001-005",
@@ -101068,9 +101176,9 @@
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-032",
       "status": "verified",
-      "review_note": "OASIS permits treating an unknown non-critical extension as absent; KMIPKit preserves and exposes its opaque value, which still permits processing the rest of the message. The profile evaluator accepts non-critical response extensions and rejects critical ones under the separate SHALL. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIPKIT-DEC-032 assigns this client credential, request, or extension representation to the client-initiated 1.0 message path while preserving source actor wording. The pinned OASIS source set does not link a requirement-specific official Test Case ID. Project interpretation under KMIPKIT-DEC-032: this client representation applies to client-initiated 1.0 exchanges; the OASIS source does not identify the sender for every field, and this assignment does not claim server behavior."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.19-002",
@@ -101310,9 +101418,9 @@
         "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::reordered_response_batch_is_associated_by_unique_id_and_returned_in_request_order"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-031",
       "status": "verified",
-      "review_note": "Response items are associated by the sent Unique Batch Item ID independent of response order. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Project interpretation: This requirement describes the response echo of Unique Batch Item ID. Server role and response direction are project interpretation; client-side correlation validation is separate consumer behavior."
+      "review_note": "KMIPKIT-DEC-031 assigns the response echo of Unique Batch Item ID to the server in client-initiated 1.0 exchanges."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-001",
@@ -101806,7 +101914,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-029",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §9.7 requires Batch Items to hold individual requests or responses and does not name an endpoint actor or direction. Project interpretation: the client is responsible for including one or more Batch Items in both emitted requests and consumed responses; §§8.1 and 8.4 define those client message forms. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources."
+      "review_note": "KMIP Specification v2.1 \u00a79.7 requires Batch Items to hold individual requests or responses and does not name an endpoint actor or direction. Project interpretation: the client is responsible for including one or more Batch Items in both emitted requests and consumed responses; \u00a7\u00a78.1 and 8.4 define those client message forms. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources. The pinned OASIS source set does not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.8-001-001",
@@ -105952,6 +106060,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -107381,6 +107493,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -108799,6 +108915,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -110541,6 +110661,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -112003,6 +112127,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -113468,6 +113596,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -114931,6 +115063,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -116372,6 +116508,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -117797,6 +117937,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -119225,6 +119369,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -120667,6 +120815,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -122117,6 +122269,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -123557,6 +123713,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -124850,6 +125010,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -126148,6 +126312,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -127601,6 +127769,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -129087,6 +129259,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -130532,6 +130708,10 @@
         "KMIPKIT-REQ-SPEC-7.18-006",
         "KMIPKIT-REQ-SPEC-7.31-001",
         "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003",
         "KMIPKIT-REQ-SPEC-7.8-001",
         "KMIPKIT-REQ-SPEC-8-001",
         "KMIPKIT-REQ-SPEC-8-002",
@@ -138328,6 +138508,129 @@
       "approved_at": "2026-10-28",
       "consequence": "KMIPKIT-REQ-SPEC-9.7-001 is assigned to the 1.0 client request/response message path with client role, both directions, and client_1_0 scope. The pinned §9.7 source actor and direction remain unspecified, and no server-initiated operation is added.",
       "status": "accepted"
+    },
+    {
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that best-supported project interpretations be used where the standard is silent, and authorized autonomous continuation without further approval requests.",
+      "approved_at": "2026-10-28",
+      "status": "accepted",
+      "policy_ids": [],
+      "discrepancy_ids": [],
+      "decision_id": "KMIPKIT-DEC-030",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "4.46"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-REQ-SPEC-7.36-003"
+      ],
+      "interpretation": "Specification v2.1 §7.36 defines RNG Parameters without naming an actor. Section 4.46 says a client MAY set the Random Number Generator attribute during Register or Add Attribute and the server SHALL set it for server-created objects. For the 1.0 client message API, classify the structure as shared: clients represent caller-supplied values and consume server-produced values. Preserve the raw §7.36 actor and direction as unspecified. This does not make KMIPKit an RNG or cryptographic algorithm provider.",
+      "consequence": "The four §7.36 requirements use mixed client/server scope and are included in client profile closures for request and response representation. No local random generation or server-conformance claim is made."
+    },
+    {
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that best-supported project interpretations be used where the standard is silent, and authorized autonomous continuation without further approval requests.",
+      "approved_at": "2026-10-28",
+      "status": "accepted",
+      "policy_ids": [],
+      "discrepancy_ids": [],
+      "decision_id": "KMIPKIT-DEC-031",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.18"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.21"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-7.18-002",
+        "KMIPKIT-REQ-SPEC-8-003-002",
+        "KMIPKIT-REQ-SPEC-9.21-001-002"
+      ],
+      "interpretation": "These clauses govern returned wrapped Key Value or response contents. The pinned source does not consistently name the response producer, but KMIPKit 1.0 sends client-initiated requests and receives their responses. Assign production of these response obligations to the server; preserve each source actor and direction as recorded by the pinned text. Client decoding, validation, and correlation remain separate consumer behavior.",
+      "consequence": "The three obligations remain in the normative catalog as server_only and do not expand client profile requirement closures. Existing client response parsing does not claim that the server obligation is implemented."
+    },
+    {
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that best-supported project interpretations be used where the standard is silent, and authorized autonomous continuation without further approval requests.",
+      "approved_at": "2026-10-28",
+      "status": "accepted",
+      "policy_ids": [],
+      "discrepancy_ids": [],
+      "decision_id": "KMIPKIT-DEC-032",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.11"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.12"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.13"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.11-004-002",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-REQ-SPEC-9.11-010-002",
+        "KMIPKIT-REQ-SPEC-9.12-001-001",
+        "KMIPKIT-REQ-SPEC-9.12-001-002",
+        "KMIPKIT-REQ-SPEC-9.12-001-003",
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002",
+        "KMIPKIT-REQ-SPEC-9.13-001-003",
+        "KMIPKIT-REQ-SPEC-9.13-001-004",
+        "KMIPKIT-REQ-SPEC-9.13-001-005"
+      ],
+      "interpretation": "For KMIPKit 1.0 client-initiated exchanges, assign these device credential, hashed-password, Maximum Response Size, and Message Extension representations to the client when the pinned source uses a generic requester, receiver, or unnamed actor. Keep the source actor wording unchanged. This scope covers client request construction and response representation only; it does not infer server support, authenticate locally, or execute vendor extension semantics.",
+      "consequence": "The listed source atoms remain represented in all client profile closures and trace to the client message API. Source actor text remains intact, and unsupported optional capabilities remain evidence blockers."
+    },
+    {
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned KMIP 2.1 is the source of truth, that best-supported project interpretations be used where the standard is silent, and authorized autonomous continuation without further approval requests.",
+      "approved_at": "2026-10-28",
+      "status": "accepted",
+      "policy_ids": [],
+      "discrepancy_ids": [],
+      "decision_id": "KMIPKIT-DEC-033",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.25-001"
+      ],
+      "interpretation": "Section 6.1.25 describes a request to the server to Import an object, then requires supplied attribute values rather than server-generated values. Although the MUST sentence does not name its actor, the server controls Import processing and generated attribute values. Assign this MUST to server-side Import processing; preserve the source actor as server/actor-ambiguous. The Attributes Required request-table row remains a separate client-side obligation.",
+      "consequence": "The MUST remains a normative server_only catalog record and is excluded from client profile closures. It no longer appears as an unresolved client-scope blocker, and no client claim is inferred from this processing rule."
     }
   ],
   "normative_inclusions": [

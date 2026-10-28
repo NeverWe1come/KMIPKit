@@ -107,8 +107,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
 
         response_id = "KMIPKIT-REQ-SPEC-9.21-001-002"
         response_requirement = self.requirements[response_id]
-        self.assertEqual(response_requirement["role"], "unspecified")
-        self.assertEqual(response_requirement["scope_state"], "unclear")
+        self.assertEqual(response_requirement["role"], "server")
+        self.assertEqual(response_requirement["scope_state"], "server_only")
+        self.assertEqual(response_requirement["decision_id"], "KMIPKIT-DEC-031")
         self.assertNotIn(response_id, {row["requirement_id"] for row in self.oracle["requirement_crosswalk"]})
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.21-001"]
         response_atom = next(
@@ -116,7 +117,8 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             if atom["candidate_requirement_id"] == response_id
         )
         self.assertEqual(response_atom["actor"], "response producer (endpoint not named)")
-        self.assertEqual(response_atom["scope_disposition"], "unclear")
+        self.assertEqual(response_atom["scope_disposition"], "server_only")
+        self.assertEqual(response_atom["project_actor_interpretation"], "server")
 
     def test_result_message_source_atoms_keep_response_output_and_client_use_separate(self) -> None:
         response_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-8.4-002"]

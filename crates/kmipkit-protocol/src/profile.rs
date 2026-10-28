@@ -1786,6 +1786,11 @@ const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
 const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
 const RNG_PARAMETERS: u32 = 0x0042_00D9;
 const RNG_ALGORITHM: u32 = 0x0042_00DA;
+const RNG_HASHING_ALGORITHM: u32 = 0x0042_0038;
+const RNG_RECOMMENDED_CURVE: u32 = 0x0042_0075;
+const RNG_DRBG_ALGORITHM: u32 = 0x0042_00DB;
+const RNG_FIPS186_VARIATION: u32 = 0x0042_00DC;
+const RNG_PREDICTION_RESISTANCE: u32 = 0x0042_00DD;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
 const PROTECTION_STORAGE_MASK: u32 = 0x0042_015E;
@@ -7458,6 +7463,14 @@ fn client_add_attribute_random_number_generator_is_well_formed(
     })
 }
 
+fn client_rng_parameters_are_well_formed(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_register_random_number_generator_is_well_formed(request, response)
+        && client_add_attribute_random_number_generator_is_well_formed(request, response)
+}
+
 fn client_application_specific_information_can_omit_data(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -7666,11 +7679,41 @@ fn rng_parameters_structure_is_well_formed(parameters: &StructureView<'_>) -> bo
         return false;
     }
 
-    match field_presence(parameters, RNG_ALGORITHM) {
+    let algorithm_is_well_formed = match field_presence(parameters, RNG_ALGORITHM) {
         FieldPresence::Unique(algorithm) => {
             algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
         }
         FieldPresence::Missing | FieldPresence::Duplicate => false,
+    };
+
+    algorithm_is_well_formed
+        && [
+            CRYPTOGRAPHIC_ALGORITHM,
+            CRYPTOGRAPHIC_LENGTH,
+            RNG_HASHING_ALGORITHM,
+            RNG_DRBG_ALGORITHM,
+            RNG_RECOMMENDED_CURVE,
+            RNG_FIPS186_VARIATION,
+            RNG_PREDICTION_RESISTANCE,
+        ]
+        .into_iter()
+        .all(|tag| rng_optional_parameter_is_well_formed(parameters, tag))
+}
+
+fn rng_optional_parameter_is_well_formed(parameters: &StructureView<'_>, tag: u32) -> bool {
+    match field_presence(parameters, tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(field) => field.with_value(|value| match tag {
+            CRYPTOGRAPHIC_LENGTH => matches!(value, ValueView::Integer(_)),
+            RNG_PREDICTION_RESISTANCE => matches!(value, ValueView::Boolean(_)),
+            CRYPTOGRAPHIC_ALGORITHM
+            | RNG_HASHING_ALGORITHM
+            | RNG_DRBG_ALGORITHM
+            | RNG_RECOMMENDED_CURVE
+            | RNG_FIPS186_VARIATION => matches!(value, ValueView::Enumeration(_)),
+            _ => false,
+        }),
     }
 }
 
@@ -10701,6 +10744,94 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.36-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_rng_parameters_are_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_rng_parameters_are_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_without_rng_algorithm",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_algorithm_with_wrong_type_or_duplicate",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_rng_parameters_are_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-7.36-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_rng_parameters_are_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_rules",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],

@@ -1411,8 +1411,11 @@ class FeatureTraceabilityTests(unittest.TestCase):
                             ),
                             "positive evidence for a prohibition is limited to a profile configuration check",
                         )
-                    elif category == "RequiredBehavior" and mapping["test_kind"] == "NegativeBehavior":
-                        # Negative checks may supplement a required rule; the positive kind is asserted below.
+                    elif (
+                        category in {"RequiredBehavior", "OptionalCapability"}
+                        and mapping["test_kind"] == "NegativeBehavior"
+                    ):
+                        # Negative checks may supplement positive required or optional evidence.
                         self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
                     else:
                         self.assertEqual(mapping["test_kind"], expected_test_kind)

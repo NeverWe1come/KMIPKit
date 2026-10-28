@@ -2715,11 +2715,11 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
         self.assertEqual(requirement["test_case_ids"], [])
-        self.assertEqual(requirement["role"], "unclear")
-        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertRegex(
             requirement["review_note"].casefold(),
-            r"official(?: oasis)? test cases?",
+            r"official.*test case",
         )
 
     def test_requirement_test_evidence_is_bidirectional_or_has_gap_reason(self) -> None:
@@ -5297,6 +5297,13 @@ class CatalogValidationTests(unittest.TestCase):
             for profile in catalog["profiles"]
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
+        requirement = next(
+            requirement
+            for requirement in catalog["requirements"]
+            if requirement["requirement_id"] in baseline["requirement_ids"]
+        )
+        requirement["implementation_refs"] = []
+        requirement["verification_refs"] = []
         baseline["claim_state"] = "evidence_complete"
         official_test = next(
             test_case
@@ -5621,18 +5628,24 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNotNone(fourth_predicate)
         self.assertEqual(fourth_predicate["source_keyword"], "SHALL NOT")
         self.assertEqual(fourth_predicate["normative_strength"], "prohibited")
-        self.assertEqual(fourth_predicate["role"], "unspecified")
-        self.assertEqual(fourth_predicate["scope_state"], "unclear")
-        self.assertEqual(fourth_predicate["condition"], "Protect Stop attribute is set")
+        self.assertEqual(fourth_predicate["role"], "server")
+        self.assertEqual(fourth_predicate["direction"], "unclear")
+        self.assertEqual(fourth_predicate["scope_state"], "server_only")
+        self.assertIsNone(fourth_predicate["condition"])
         self.assertTrue(fourth_predicate["negative_verification_required"])
-        self.assertEqual(fourth_predicate["status"], "unassigned")
+        self.assertEqual(fourth_predicate["status"], "scoped_verified")
+        self.assertEqual(fourth_predicate["decision_id"], "KMIPKIT-DEC-021")
 
         crosswalk = [
             row
             for row in oracle["requirement_crosswalk"]
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-003-004"
         ]
-        self.assertEqual(crosswalk, [])
+        self.assertEqual(len(crosswalk), 1)
+        self.assertEqual(crosswalk[0]["source_obligation_order"], 4)
+        self.assertEqual(crosswalk[0]["role"], "server")
+        self.assertEqual(crosswalk[0]["scope_state"], "server_only")
+        self.assertEqual(crosswalk[0]["source_actor"], "unresolved")
         reviewed_clause = next(
             row
             for row in oracle["source_requirement_reviews"]
@@ -13556,7 +13569,7 @@ class CatalogValidationTests(unittest.TestCase):
                 source_atom(6, "Clients MAY derive multiple keys and IVs by requesting the creation of a Secret Data object and specifying a Cryptographic Length that is the total length of the derived object.", "MAY", "client", "client→server Derive Key request", "The client requests a Secret Data result and its Cryptographic Length is the total length of the derived object.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-001-004"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.14-002": [
-                source_atom(1, "some derivation methods MAY use multiple keys or Secret Data objects to derive the result", "MAY", "unresolved", "unresolved", "The selected derivation method accepts multiple keys or Secret Data inputs.", "unresolved", "KMIPKIT-REQ-SPEC-6.1.14-002"),
+                source_atom(1, "some derivation methods MAY use multiple keys or Secret Data objects to derive the result", "MAY", "unresolved", "unresolved", "The selected derivation method accepts multiple keys or Secret Data inputs.", "profile_conditional", "KMIPKIT-REQ-SPEC-6.1.14-002"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.14-003": [
                 source_atom(1, "The server SHALL perform the derivation function, and then register the derived object as a new Managed Object, returning the new Unique Identifier for the new object in the response.", "SHALL", "server", "server-side derivation and response production", "A Derive Key request is processed.", "server_only"),
@@ -13592,7 +13605,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(actual_atoms, atoms)
         expected_ids_by_clause = {
             "KMIPKIT-CLAUSE-SPEC-6.1.14-001": ["KMIPKIT-REQ-SPEC-6.1.14-001-001", "KMIPKIT-REQ-SPEC-6.1.14-001-002", "KMIPKIT-REQ-SPEC-6.1.14-001-003", "KMIPKIT-REQ-SPEC-6.1.14-001-004"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-002": [],
+            "KMIPKIT-CLAUSE-SPEC-6.1.14-002": ["KMIPKIT-REQ-SPEC-6.1.14-002"],
             "KMIPKIT-CLAUSE-SPEC-6.1.14-003": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.14-004": [],
             "KMIPKIT-CLAUSE-SPEC-6.1.14-005": [],
@@ -13622,6 +13635,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.14-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 3, "SHALL", "client", "client_1_0"),
             "KMIPKIT-REQ-SPEC-6.1.14-001-003": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 4, "SHALL", "client", "client_1_0"),
             "KMIPKIT-REQ-SPEC-6.1.14-001-004": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 6, "MAY", "client", "client_1_0"),
+            "KMIPKIT-REQ-SPEC-6.1.14-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-002", 1, "MAY", "unresolved", "profile_conditional"),
             "KMIPKIT-REQ-SPEC-6.1.14-006-001": ("KMIPKIT-CLAUSE-SPEC-6.1.14-006", 2, "MAY", "client", "client_1_0"),
             "KMIPKIT-REQ-SPEC-6.1.14-006-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-006", 3, "SHALL NOT", "client", "client_1_0"),
             "KMIPKIT-REQ-SPEC-6.1.14-007-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-007", 2, "SHALL", "client", "client_1_0"),
@@ -13648,7 +13662,7 @@ class CatalogValidationTests(unittest.TestCase):
         all_client_profiles = [profile for profile in oracle["profiles"] if profile["role"] == "client" and "6.1" in profile["direct_profiles_sections"]]
         self.assertEqual(len(all_client_profiles), 18)
         catalog_profiles = {profile["profile_id"]: profile for profile in catalog["profiles"] if profile["role"] == "client"}
-        expected_closed_ids = (candidate_ids - {"KMIPKIT-REQ-SPEC-6.1.14-002"}) | {
+        expected_closed_ids = candidate_ids | {
             "KMIPKIT-REQ-SPEC-6.1.14-007-001",
             "KMIPKIT-REQ-SPEC-6.1.14-009",
             "KMIPKIT-REQ-SPEC-6.1.14-010",
@@ -13657,7 +13671,16 @@ class CatalogValidationTests(unittest.TestCase):
         }
         for profile in all_client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
-                self.assertEqual(set(catalog_profiles[profile["profile_id"]]["requirement_ids"]) & expected_closed_ids, expected_closed_ids)
+                expected_for_profile = expected_closed_ids
+                if profile["profile_id"] != "KMIPKIT-PROFILE-BASELINE-CLIENT":
+                    expected_for_profile = expected_for_profile - {
+                        "KMIPKIT-REQ-SPEC-6.1.14-002"
+                    }
+                self.assertEqual(
+                    set(catalog_profiles[profile["profile_id"]]["requirement_ids"])
+                    & expected_for_profile,
+                    expected_for_profile,
+                )
 
         gaps = {
             gap["gap_id"]: gap
@@ -20383,7 +20406,7 @@ class CatalogValidationTests(unittest.TestCase):
         expected_atoms = {
             "KMIPKIT-CLAUSE-SPEC-6.1.25-001": [
                 (1, "The attribute rules for each attribute for “Initially set by” and “When implicitly set” SHALL NOT be enforced", "SHALL NOT", "server", "server_only", None),
-                (2, "all attributes MUST be set to the supplied values rather than any server generated values.", "MUST", "server/actor-ambiguous", "unresolved", None),
+                (2, "all attributes MUST be set to the supplied values rather than any server generated values.", "MUST", "server/actor-ambiguous", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-001"),
             ],
             "KMIPKIT-CLAUSE-SPEC-6.1.25-002": [
                 (1, "The server SHALL copy the Unique Identifier returned by this operations into the ID Placeholder variable.", "SHALL", "server", "server_only", None),
@@ -20422,14 +20445,9 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
         paragraph = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]
-        self.assertIn("Initiall", paragraph["review_note"])
-        self.assertIn("actor", paragraph["review_note"])
-        self.assertEqual(
-            [row["requirement_id"] for row in paragraph["rejected_candidate_mappings"]],
-            ["KMIPKIT-REQ-SPEC-6.1.25-001"],
-        )
-        self.assertEqual(paragraph["rejected_candidate_mappings"][0]["claimed_keyword"], "MUST")
-        self.assertIn("does not unambiguously make it a client conformance duty", paragraph["rejected_candidate_mappings"][0]["source_review"])
+        self.assertIn("KMIPKIT-DEC-033 assigns the supplied-value enforcement to the server", paragraph["review_note"])
+        self.assertIn("server/actor-ambiguous", paragraph["review_note"])
+        self.assertEqual(paragraph["rejected_candidate_mappings"], [])
         self.assertEqual(
             [row["requirement_id"] for row in reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-004"]["rejected_candidate_mappings"]],
             [],
@@ -20440,7 +20458,7 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         self.assertEqual([row["source_obligation_order"] for row in replace_crosswalk], [1, 2])
         self.assertTrue(all(row["role"] == "server" and row["scope_state"] == "server_only" for row in replace_crosswalk))
-        self.assertIn("does not name Import among the ID Placeholder-copy operations", reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]["review_note"])
+        self.assertIn("separate Attributes Required request-table row remains client-side", reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]["review_note"])
 
         expected_request_rows = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED": (
@@ -20552,9 +20570,9 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(set(reason_values)), 17)
         self.assertEqual(reason_values.count("Invalid Field"), 2)
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.25.1-002"]["source_obligations"], [])
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["role"], "unspecified")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["direction"], "unclear")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["scope_state"], "unclear")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["role"], "server")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["direction"], "not_applicable")
+        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["scope_state"], "server_only")
         self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["status"], "unassigned")
         self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-004"]["role"], "server")
         self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-006"]["source_keyword"], "MAY")
@@ -20931,7 +20949,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
-        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 541)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 546)
         contract = contracts[0]
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [29529, 29544]

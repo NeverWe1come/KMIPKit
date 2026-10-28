@@ -29,12 +29,15 @@ SERVER_ONLY_REQUIREMENT_DIRECTIONS = {
     "KMIPKIT-REQ-SPEC-6.1.25-001": "not_applicable",
     "KMIPKIT-REQ-SPEC-7.12-005-002": "server_to_client",
     "KMIPKIT-REQ-SPEC-7.18-002": "server_to_client",
-    "KMIPKIT-REQ-SPEC-7.36-001": "server_to_client",
-    "KMIPKIT-REQ-SPEC-7.36-002-001": "server_to_client",
-    "KMIPKIT-REQ-SPEC-7.36-002-002": "server_to_client",
-    "KMIPKIT-REQ-SPEC-7.36-003": "server_to_client",
     "KMIPKIT-REQ-SPEC-8-003-002": "server_to_client",
     "KMIPKIT-REQ-SPEC-9.21-001-002": "server_to_client",
+}
+
+SHARED_RNG_PARAMETER_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-7.36-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-002",
+    "KMIPKIT-REQ-SPEC-7.36-003",
 }
 
 PKCS11_CONDITIONAL_REQUIREMENT_IDS = {
@@ -79,7 +82,15 @@ class BaselineServerScopeTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], expected_direction)
                 self.assertEqual(requirement["scope_state"], "server_only")
                 self.assertEqual(requirement["profile_ids"], [])
-                self.assertIn("project interpretation", requirement["review_note"].lower())
+                if requirement["decision_id"]:
+                    self.assertIn(requirement["decision_id"], requirement["review_note"])
+                else:
+                    self.assertTrue(
+                        any(
+                            marker in requirement["review_note"].lower()
+                            for marker in ("oasis", "pinned", "source")
+                        )
+                    )
                 if requirement_id == "KMIPKIT-REQ-SPEC-4.57-003-001":
                     self.assertIn("active state transition", requirement["review_note"].lower())
                     self.assertNotIn("§4.57 says", requirement["review_note"])
@@ -92,6 +103,27 @@ class BaselineServerScopeTests(unittest.TestCase):
                     requirement_id,
                     {item.requirement_id for item in closure.unresolved_scope_obligations},
                 )
+
+    def test_rng_parameters_have_shared_client_and_server_scope(self) -> None:
+        catalog = load_catalog()
+        requirements = {
+            item["requirement_id"]: item for item in catalog["requirements"]
+        }
+        client_profile_ids = {
+            item["profile_id"]
+            for item in catalog["profiles"]
+            if item["role"] == "client"
+        }
+
+        for requirement_id in SHARED_RNG_PARAMETER_REQUIREMENTS:
+            with self.subTest(requirement_id=requirement_id):
+                requirement = requirements[requirement_id]
+                self.assertEqual(requirement["role"], "both")
+                self.assertEqual(requirement["direction"], "both")
+                self.assertEqual(requirement["scope_state"], "mixed")
+                self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-030")
+                self.assertEqual(set(requirement["profile_ids"]), client_profile_ids)
+                self.assertEqual(requirement["status"], "scoped_verified")
 
     def test_pkcs11_specific_fields_do_not_block_baseline_client(self) -> None:
         catalog = load_catalog()

@@ -117,22 +117,23 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
             atom["source_keyword"]: atom
             for atom in import_review["source_obligations"]
         }
-        self.assertNotIn(import_id, self.crosswalk_ids)
+        self.assertIn(import_id, self.crosswalk_ids)
         self.assertNotIn(import_id, self.client_profile_ids)
-        self.assertEqual(import_requirement["role"], "unspecified")
-        self.assertEqual(import_requirement["direction"], "unclear")
-        self.assertEqual(import_requirement["scope_state"], "unclear")
+        self.assertEqual(import_requirement["role"], "server")
+        self.assertEqual(import_requirement["direction"], "not_applicable")
+        self.assertEqual(import_requirement["scope_state"], "server_only")
+        self.assertEqual(import_requirement["decision_id"], "KMIPKIT-DEC-033")
         self.assertEqual(import_atoms["SHALL NOT"]["actor"], "server")
         self.assertEqual(import_atoms["SHALL NOT"]["scope_disposition"], "server_only")
         self.assertEqual(import_atoms["MUST"]["actor"], "server/actor-ambiguous")
-        self.assertEqual(import_atoms["MUST"]["scope_disposition"], "unresolved")
-        self.assertIn(
-            "reject_as_client_requirement_actor_ambiguous",
-            {
-                candidate["expected_disposition"]
+        self.assertEqual(import_atoms["MUST"]["scope_disposition"], "server_only")
+        self.assertEqual(import_atoms["MUST"]["project_actor_interpretation"], "server")
+        self.assertEqual(import_review["expected_client_requirement_ids"], [])
+        self.assertFalse(
+            any(
+                candidate["requirement_id"] == import_id
                 for candidate in import_review["rejected_candidate_mappings"]
-                if candidate["requirement_id"] == import_id
-            },
+            )
         )
 
         encrypt_id = "KMIPKIT-REQ-SPEC-6.1.17-005-001"
