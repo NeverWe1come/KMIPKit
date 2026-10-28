@@ -8,6 +8,7 @@ import json
 import re
 import tempfile
 import unittest
+from collections.abc import Mapping
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from tools.normative_catalog.rust_source_analysis import (
@@ -629,7 +630,118 @@ def _markdown_catalog_rows(document: str) -> dict[str, list[str]]:
     return rows_by_id
 
 
+_ACCEPTED_DEVIATION_CATEGORIES = {
+    "RecommendedBehaviorOrDeviation",
+    "DiscouragedAbsenceOrDeviation",
+}
+
+
+def _is_accepted_recommendation_deviation(
+    requirement_id: str,
+    requirement: Mapping[str, object],
+    decisions_by_id: Mapping[str, Mapping[str, object]],
+    category: str,
+) -> bool:
+    decision_id = requirement.get("decision_id")
+    decision = (
+        decisions_by_id.get(decision_id)
+        if isinstance(decision_id, str)
+        else None
+    )
+    decision_requirement_ids = (
+        decision.get("requirement_ids") if decision is not None else None
+    )
+    return (
+        requirement.get("status") == "deviated"
+        and category in _ACCEPTED_DEVIATION_CATEGORIES
+        and decision is not None
+        and decision.get("status") == "accepted"
+        and isinstance(decision_requirement_ids, list)
+        and all(isinstance(value, str) for value in decision_requirement_ids)
+        and requirement_id in decision_requirement_ids
+    )
+
+
+def _missing_category_tests_without_accepted_deviation(
+    missing_category_test_ids: set[str],
+    requirements_by_id: Mapping[str, Mapping[str, object]],
+    decisions_by_id: Mapping[str, Mapping[str, object]],
+    verification_categories: Mapping[str, str],
+) -> set[str]:
+    return {
+        requirement_id
+        for requirement_id in missing_category_test_ids
+        if not _is_accepted_recommendation_deviation(
+            requirement_id,
+            requirements_by_id.get(requirement_id, {}),
+            decisions_by_id,
+            verification_categories.get(requirement_id, ""),
+        )
+    }
+
+
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_accepted_recommendation_deviation_is_exempt_from_category_test(self) -> None:
+        requirement_id = "KMIPKIT-REQ-EXAMPLE-001"
+        result = _missing_category_tests_without_accepted_deviation(
+            {requirement_id},
+            {
+                requirement_id: {
+                    "status": "deviated",
+                    "decision_id": "KMIPKIT-DEC-EXAMPLE-001",
+                }
+            },
+            {
+                "KMIPKIT-DEC-EXAMPLE-001": {
+                    "status": "accepted",
+                    "requirement_ids": [requirement_id],
+                }
+            },
+            {requirement_id: "RecommendedBehaviorOrDeviation"},
+        )
+        self.assertEqual(result, set())
+
+    def test_missing_category_test_requires_accepted_recommendation_deviation(self) -> None:
+        requirement_id = "KMIPKIT-REQ-EXAMPLE-001"
+        self.assertEqual(
+            _missing_category_tests_without_accepted_deviation(
+                {requirement_id},
+                {requirement_id: {"status": "active"}},
+                {},
+                {requirement_id: "RequiredBehavior"},
+            ),
+            {requirement_id},
+        )
+
+        deviations_without_valid_exception = (
+            (
+                {"status": "deviated", "decision_id": "KMIPKIT-DEC-EXAMPLE-001"},
+                {"status": "proposed", "requirement_ids": [requirement_id]},
+                "RecommendedBehaviorOrDeviation",
+            ),
+            (
+                {"status": "deviated", "decision_id": "KMIPKIT-DEC-EXAMPLE-001"},
+                {"status": "accepted", "requirement_ids": ["KMIPKIT-REQ-OTHER-001"]},
+                "RecommendedBehaviorOrDeviation",
+            ),
+            (
+                {"status": "deviated", "decision_id": "KMIPKIT-DEC-EXAMPLE-001"},
+                {"status": "accepted", "requirement_ids": [requirement_id]},
+                "RequiredBehavior",
+            ),
+        )
+        for requirement, decision, category in deviations_without_valid_exception:
+            with self.subTest(requirement=requirement, decision=decision, category=category):
+                self.assertEqual(
+                    _missing_category_tests_without_accepted_deviation(
+                        {requirement_id},
+                        {requirement_id: requirement},
+                        {"KMIPKIT-DEC-EXAMPLE-001": decision},
+                        {requirement_id: category},
+                    ),
+                    {requirement_id},
+                )
+
     def test_join_split_key_threshold_uses_exact_unique_identifier_sources(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         requirement = next(
