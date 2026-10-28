@@ -121,9 +121,9 @@ approved exact exclusion:
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 441 | 404 | 404 | 37 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 956 | 753 | 753 | 203 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 1,278 | 725 | 725 | 553 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 455 | 418 | 418 | 37 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 967 | 764 | 764 | 203 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 1,296 | 743 | 743 | 553 | 0 | 0 | 0 | 0 | yes |
 
 The Java audit accounts for the exact JNI bridge method
 `NativeExtensionRegistry.clientExecuteWithOptions` and the generated record
