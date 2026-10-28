@@ -2003,14 +2003,18 @@ class T076ClientMappingTests(unittest.TestCase):
                 "clientBatchItemArchive",
                 "clientBatchItemDestroy",
                 "clientBatchItemGetAttributeList",
+                "clientBatchItemGetAttributes",
                 "clientBatchItemAddAttribute",
+                "clientBatchItemModifyAttribute",
                 "clientBatchItemAdjustAttribute",
                 "clientBatchItemRecover",
                 "clientBatchItemResponseActivate",
                 "clientBatchItemResponseArchive",
                 "clientBatchItemResponseDestroy",
                 "clientBatchItemResponseGetAttributeList",
+                "clientBatchItemResponseGetAttributes",
                 "clientBatchItemResponseAddAttribute",
+                "clientBatchItemResponseModifyAttribute",
                 "clientBatchItemResponseAdjustAttribute",
                 "clientBatchItemResponseRecover",
             )
@@ -2022,12 +2026,17 @@ class T076ClientMappingTests(unittest.TestCase):
                 "ArchiveResponse",
                 "DestroyResponse",
                 "GetAttributeListResponse",
+                "GetAttributesResponse",
                 "AddAttributeResponse",
+                "ModifyAttributeResponse",
                 "AdjustAttributeResponse",
                 "RecoverResponse",
             )
         }
-        expected = bridge_exports | redacted_formatters
+        response_lifecycle_helpers = {
+            "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.close"
+        }
+        expected = bridge_exports | redacted_formatters | response_lifecycle_helpers
         exclusions = {
             row["exportName"]: row
             for row in self.manifest["approvedExclusions"]
@@ -2045,6 +2054,10 @@ class T076ClientMappingTests(unittest.TestCase):
                 exclusion = exclusions[export_name]
                 self.assertIn("redacted", exclusion["reason"].lower())
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+        lifecycle = exclusions[
+            "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.close"
+        ]
+        self.assertIn("generic TTLV structure lifecycle", lifecycle["reason"])
 
     def test_delete_attribute_declarations_have_exact_four_language_mappings(self) -> None:
         expected = {
@@ -2085,6 +2098,56 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
 
+    def test_modify_attribute_declarations_cover_each_language_mapping(self) -> None:
+        expected = {
+            "kmipkit_client_batch_item_modify_attribute",
+            "kmipkit_client_batch_item_response_modify_attribute",
+            "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+            "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.uniqueIdentifier",
+            "kmipkit.extensions.client_batch_item_modify_attribute",
+            "kmipkit.client.ModifyAttributeResponse",
+            "kmipkit.client.ModifyAttributeResponse.unique_identifier",
+            "kmipkit.client.BatchItemResult.modify_attribute_response",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(declarations))
+        for export_name in sorted(expected):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+                    declaration["capabilityId"],
+                )
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+        operation = next(
+            row
+            for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE"
+        )
+        self.assertEqual("verified", operation["apiState"])
+        self.assertNotIn("blockedReason", operation)
+        self.assertTrue(
+            {
+                "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+                "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+                "bindings/c/tests/client_abi_consumer.c",
+                "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "bindings/python/tests/test_modify_attribute_operation.py",
+            }.issubset(set(operation["parityEvidenceIds"])),
+            "verified Modify Attribute mapping cites the executable binding evidence",
+        )
+
     def test_get_attributes_declarations_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit_client_batch_item_get_attributes",
@@ -2106,6 +2169,11 @@ class T076ClientMappingTests(unittest.TestCase):
             if row["exportName"] in expected
         }
         self.assertEqual(expected, set(declarations))
+        self.assertNotIn(
+            "javaSignatures",
+            declarations["org.kmipkit.extensions.ClientBatchItem.getAttributes"],
+            "a single Java overload is inventoried directly and needs no overload list",
+        )
         for export_name in sorted(expected):
             with self.subTest(export=export_name):
                 declaration = declarations[export_name]
@@ -2125,6 +2193,10 @@ class T076ClientMappingTests(unittest.TestCase):
         )
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
+        self.assertIn(
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            operation["parityEvidenceIds"],
+        )
 
     def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
         expected = {
