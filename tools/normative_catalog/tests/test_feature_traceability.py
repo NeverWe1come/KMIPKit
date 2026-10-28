@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from functools import lru_cache
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
+import tools.normative_catalog.rust_source_analysis as rust_source_analysis
 from tools.normative_catalog.rust_source_analysis import (
     _rust_item_is_top_level,
     _rust_test_item_has_active_module_context,
@@ -685,6 +686,40 @@ def _missing_category_tests_without_accepted_deviation(
 
 
 class FeatureTraceabilityTests(unittest.TestCase):
+    def test_batched_rust_test_contexts_match_individual_context_checks(self) -> None:
+        source = (
+            "#[cfg(test)]\n"
+            "mod active {\n"
+            "    #[test]\n"
+            "    fn active_test() {}\n"
+            "    fn helper() {\n"
+            "        #[test]\n"
+            "        fn nested_test() {}\n"
+            "    }\n"
+            "    #[cfg(feature = \"disabled\")]\n"
+            "    mod inactive {\n"
+            "        #[test]\n"
+            "        fn inactive_test() {}\n"
+            "    }\n"
+            "}\n"
+        )
+        offsets = {
+            name: source.index(f"fn {name}")
+            for name in ("active_test", "nested_test", "inactive_test")
+        }
+
+        contexts_index = getattr(rust_source_analysis, "_rust_test_item_contexts", None)
+        self.assertIsNotNone(contexts_index, "Rust test module context should be indexed in one pass")
+        if contexts_index is None:
+            return
+        contexts = contexts_index(source, offsets.values())
+
+        self.assertEqual(contexts[offsets["active_test"]], True)
+        self.assertEqual(contexts[offsets["nested_test"]], False)
+        self.assertEqual(contexts[offsets["inactive_test"]], False)
+        for offset, indexed_result in contexts.items():
+            self.assertEqual(indexed_result, _rust_test_item_has_active_module_context(source, offset))
+
     def test_repeated_confined_source_reads_reuse_the_same_snapshot(self) -> None:
         source_path = "crates/kmipkit-protocol/tests/support/profile_unit.rs"
         first = _read_confined_test_source(source_path)
