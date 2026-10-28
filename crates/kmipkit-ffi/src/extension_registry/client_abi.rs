@@ -3115,6 +3115,29 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_
     })
 }
 
+#[derive(Clone, Copy)]
+enum AttributeMutationResponseKind {
+    Add,
+    Adjust,
+}
+
+fn attribute_mutation_response_identifier(
+    outcome: &kmipkit_client::ClientBatchOutcome,
+    expected: AttributeMutationResponseKind,
+) -> Option<&str> {
+    match (expected, outcome) {
+        (
+            AttributeMutationResponseKind::Add,
+            kmipkit_client::ClientBatchOutcome::AddAttribute(response),
+        ) => response.unique_identifier(),
+        (
+            AttributeMutationResponseKind::Adjust,
+            kmipkit_client::ClientBatchOutcome::AdjustAttribute(response),
+        ) => response.unique_identifier(),
+        _ => None,
+    }
+}
+
 /// Copies the successful Add Attribute response's required Text String Unique
 /// Identifier. The borrowed identifier span remains valid while `item` is open.
 /// Non-success and other-operation results set `out_present` to zero.
@@ -3147,10 +3170,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_add_attribute(
         let Some(item) = response.get(*index) else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let kmipkit_client::ClientBatchOutcome::AddAttribute(result) = item.outcome() else {
-            return SUCCESS;
-        };
-        let Some(value) = result.unique_identifier() else {
+        let Some(value) = attribute_mutation_response_identifier(
+            item.outcome(),
+            AttributeMutationResponseKind::Add,
+        ) else {
             return SUCCESS;
         };
         if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
@@ -3193,10 +3216,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_adjust_attribute(
         let Some(item) = response.get(*index) else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let kmipkit_client::ClientBatchOutcome::AdjustAttribute(result) = item.outcome() else {
-            return SUCCESS;
-        };
-        let Some(value) = result.unique_identifier() else {
+        let Some(value) = attribute_mutation_response_identifier(
+            item.outcome(),
+            AttributeMutationResponseKind::Adjust,
+        ) else {
             return SUCCESS;
         };
         if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
