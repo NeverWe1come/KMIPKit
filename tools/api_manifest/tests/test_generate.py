@@ -488,6 +488,42 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_client_batch_item_response_metadata_v1(", public_header)
         self.assertTrue(t076_declarations)
 
+    def test_declared_c_macro_values_are_emitted_in_the_generated_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["publicDeclarations"].append(
+            {
+                "declarationId": "T037:test-attribute-reference-kind-tag:c",
+                "packageId": "c-kmipkit",
+                "kind": "macro",
+                "exportName": "KMIPKIT_TEST_ATTRIBUTE_REFERENCE_KIND_TAG",
+                "cValue": 1,
+                "cValueType": "uint32_t",
+                "capabilityId": "public_binding_surface",
+                "requirementIds": ["KMIPKIT-0043-FR-007"],
+                "declarationState": "declared",
+                "parityScope": "four-language",
+                "approvalSource": {
+                    "kind": "feature-specification",
+                    "path": "specs/043-public-api-bindings/spec.md",
+                    "status": "Approved",
+                    "evidence": "Approved public API binding surface.",
+                },
+                "languageMappings": {
+                    "rust": {"packageId": "rust-kmipkit", "name": "Tag"},
+                    "c": {"packageId": "c-kmipkit", "name": "KMIPKIT_TEST_ATTRIBUTE_REFERENCE_KIND_TAG"},
+                    "java": {"packageId": "java-kmipkit", "name": "AttributeReference.tag"},
+                    "python": {"packageId": "python-kmipkit", "name": "AttributeReference.tag"},
+                },
+            }
+        )
+
+        header = generate.render_c_header(manifest)
+
+        self.assertIn(
+            "#define KMIPKIT_TEST_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)",
+            header,
+        )
+
     def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         type_name = "kmipkit_test_config_v1_t"
