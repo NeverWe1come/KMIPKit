@@ -6,6 +6,7 @@ import csv
 import json
 import locale
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -63,6 +64,27 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_profile_review_notes_do_not_duplicate_volatile_baseline_counts(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        notes = [
+            requirement["review_note"]
+            for requirement in catalog["requirements"]
+            if isinstance(requirement.get("review_note"), str)
+        ]
+
+        stale_count_notes = [
+            note
+            for note in notes
+            if re.search(
+                r"Baseline (?:now )?has \d+ of \d+ typed mappings with category-appropriate evidence",
+                note,
+            )
+        ]
+
+        self.assertEqual([], stale_count_notes)
+
     def test_message_envelope_summary_preserves_request_payload_requirement(self) -> None:
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
