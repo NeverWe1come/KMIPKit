@@ -2,7 +2,10 @@ import queue
 import ssl
 from collections.abc import Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Protocol
+
+from kmipkit import client
 
 _PEER_FAILURE_TYPES = (AssertionError, OSError, RuntimeError, ssl.SSLError)
 
@@ -22,6 +25,31 @@ def capture_peer_failures(
         yield
     except _PEER_FAILURE_TYPES as failure:
         peer_failures.put(failure)
+
+
+def mtls_transport_config(port: int, fixtures: Path) -> client.TransportConfig:
+    return client.TransportConfig(
+        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
+        client_certificates=(
+            client.TransportInput.file(
+                fixtures / "client-cert.pem", client.CredentialEncoding.PEM
+            ),
+        ),
+        client_private_key=client.TransportInput.file(
+            fixtures / "client-key.pem", client.CredentialEncoding.PEM
+        ),
+        trust=client.TrustSource.certificate_authorities(
+            (
+                client.TransportInput.file(
+                    fixtures / "server-cert.pem", client.CredentialEncoding.PEM
+                ),
+            )
+        ),
+        connect_timeout=client.TimeoutLimit.bounded(5),
+        write_timeout=client.TimeoutLimit.bounded(5),
+        read_timeout=client.TimeoutLimit.bounded(5),
+        total_timeout=client.TimeoutLimit.bounded(8),
+    )
 
 
 def require_tls13_mtls_peer(stream: _TlsPeer) -> None:
