@@ -7562,14 +7562,13 @@ fn client_get_attributes_rng_response_is_well_formed(
             return false;
         };
 
-        if consumed_responses
-            .get(response_index)
-            .copied()
-            .unwrap_or(true)
-        {
+        let Some(consumed_response) = consumed_responses.get_mut(response_index) else {
+            return false;
+        };
+        if *consumed_response {
             return false;
         }
-        consumed_responses[response_index] = true;
+        *consumed_response = true;
 
         let response_item = response_items[response_index];
         if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
