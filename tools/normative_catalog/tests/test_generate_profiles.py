@@ -1321,6 +1321,26 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         locate_007_source = _normalized_html_source_span(spec_lines, [29206, 29210])
         self.assertIn("Linked Object Identifier value is specified without the Link Type value", locate_007_source)
 
+    def test_batch_item_client_scope_has_a_recorded_interpretation(self) -> None:
+        """Client ownership of §9.7's actor-unspecified rule must be traceable."""
+        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.7-001")
+        requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001")
+
+        self.assertEqual(clause["role"], "unclear")
+        self.assertEqual(clause["direction"], "unclear")
+        self.assertEqual(clause["scope_state"], "client_1_0")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "both")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-029")
+        decision = next(item for item in catalog["decisions"] if item["decision_id"] == "KMIPKIT-DEC-029")
+        self.assertEqual(decision["status"], "accepted")
+        self.assertEqual(
+            {(reference["source_id"], reference["section"]) for reference in decision["source_refs"]},
+            {("KMIPKIT-SRC-spec", "9.7"), ("KMIPKIT-SRC-spec", "8.1"), ("KMIPKIT-SRC-spec", "8.4")},
+        )
+
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
         """The fourteen reviewed Message Data Structure mappings stay structurally bounded."""
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
