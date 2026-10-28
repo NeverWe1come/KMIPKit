@@ -2148,6 +2148,46 @@ class T076ClientMappingTests(unittest.TestCase):
             "verified Modify Attribute mapping cites the executable binding evidence",
         )
 
+    def test_add_and_adjust_attribute_operations_have_four_language_parity_evidence(self) -> None:
+        evidence_by_operation = {
+            "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE": {
+                "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+                "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+                "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+                "bindings/c/tests/client_abi_consumer.c",
+                "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "bindings/python/tests/test_add_attribute_operation.py",
+                "tools/api_manifest/tests/test_t076_client_mapping.py",
+            },
+            "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
+                "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+                "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+                "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+                "bindings/c/tests/client_abi_consumer.c",
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "bindings/python/tests/test_add_attribute_operation.py",
+                "tools/api_manifest/tests/test_t076_client_mapping.py",
+            },
+        }
+
+        for operation_id, required_evidence in evidence_by_operation.items():
+            with self.subTest(operation=operation_id):
+                operation = next(
+                    row
+                    for row in self.manifest["operations"]
+                    if row["operationId"] == operation_id
+                )
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(operation["declarations"]),
+                )
+                self.assertTrue(
+                    required_evidence.issubset(set(operation["parityEvidenceIds"])),
+                    "verified operation cites its protocol, client, FFI, and binding evidence",
+                )
+
     def test_set_attribute_declarations_cover_each_language_mapping(self) -> None:
         expected = {
             "kmipkit_client_batch_item_set_attribute",
