@@ -32,7 +32,7 @@ def _add_attribute_response_message() -> bytes:
 def _adjust_attribute_response_message() -> bytes:
     return operation_response_message(
         0x30,
-        b"adjusted-object-1",
+        _ADJUST_ATTRIBUTE_ID,
         payload_items=(ttlv_item(0x0042_0094, 7, b"adjusted-object-1"),),
     )
 
@@ -194,7 +194,7 @@ def test_adjust_attribute_preserves_reference_value_and_maps_typed_response():
             batch = client.Batch.create()
             request_item = extensions.client_batch_item_adjust_attribute(
                 None,
-                extensions.AttributeReference.tag(0x0042_000A),
+                extensions.AttributeReference.name("KMIPKit", "Counter"),
                 1,
                 adjustment_value,
             )
@@ -208,7 +208,11 @@ def test_adjust_attribute_preserves_reference_value_and_maps_typed_response():
         assert failures.empty(), "the mTLS peer must complete one Adjust Attribute exchange"
         assert len(received) == 1
         assert ttlv_enumeration(0x42005C, 0x30) in received[0]
-        assert ttlv_enumeration(0x0042_013B, 0x0042_000A) in received[0]
+        assert ttlv_structure(
+            0x0042_013B,
+            ttlv_item(0x0042_009D, 7, b"KMIPKit"),
+            ttlv_item(0x0042_000A, 7, b"Counter"),
+        ) in received[0]
         assert ttlv_enumeration(0x0042_0158, 1) in received[0]
         assert ttlv_item(0x0042_0162, 2, b"\x00\x00\x00\x05") in received[0]
         assert b"\x42\x00\x94" not in received[0], "omitted Unique Identifier must stay absent"

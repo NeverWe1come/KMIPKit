@@ -871,6 +871,7 @@ class BatchItemResult(_BatchItemResultNativeState):
         default=None, repr=False
     )
     add_attribute_response: AddAttributeResponse | None = field(default=None, repr=False)
+    adjust_attribute_response: AdjustAttributeResponse | None = field(default=None, repr=False)
     set_constraints_response: SetConstraintsResponse | None = field(default=None, repr=False)
     _get_response: GetResponse | None = field(default=None, repr=False)
     _locate_response: LocateResponse | None = field(default=None, repr=False)
@@ -1443,6 +1444,16 @@ class AddAttributeResponse:
 
     def __repr__(self) -> str:
         return "AddAttributeResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class AdjustAttributeResponse:
+    """Successful Adjust Attribute response with its required Text String identifier."""
+
+    unique_identifier: str = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "AdjustAttributeResponse(unique_identifier=redacted)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -2247,6 +2258,13 @@ def _batch_result(
                     and int(metadata.operation) == 0x0D
                 ):
                     add_attribute_response = _add_attribute_response(item)
+                adjust_attribute_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x30
+                ):
+                    adjust_attribute_response = _adjust_attribute_response(item)
                 set_constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2356,6 +2374,7 @@ def _batch_result(
                     set_defaults_response=set_defaults_response,
                     get_attribute_list_response=attribute_list_response,
                     add_attribute_response=add_attribute_response,
+                    adjust_attribute_response=adjust_attribute_response,
                     _get_response=get_response,
                     _locate_response=locate_response,
                     import_response=import_response,
@@ -3682,6 +3701,34 @@ def _add_attribute_response(item: _ClientBatchItemResponse) -> AddAttributeRespo
     return AddAttributeResponse(value)
 
 
+def _adjust_attribute_response(
+    item: _ClientBatchItemResponse,
+) -> AdjustAttributeResponse:
+    present = ffi.new("uint8_t *")
+    identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
+    identifier.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    identifier.abi_version = 1
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_adjust_attribute(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] != 1 or identifier.kind != 1 or identifier.reserved != 0:
+        errors.raise_for_status(4)
+    length = int(identifier.text_length)
+    if length and identifier.text_data == ffi.NULL:
+        errors.raise_for_status(4)
+    try:
+        value = (
+            bytes(ffi.buffer(identifier.text_data, length)).decode("utf-8", "strict")
+            if length
+            else ""
+        )
+    except UnicodeDecodeError:
+        errors.raise_for_status(4)
+    return AdjustAttributeResponse(value)
+
+
 def _set_constraints_response(
     item: _ClientBatchItemResponse,
 ) -> SetConstraintsResponse:
@@ -4583,6 +4630,7 @@ def _nonempty_text(value: str) -> str:
 __all__ = [
     "ActivateResponse",
     "AddAttributeResponse",
+    "AdjustAttributeResponse",
     "ArchiveResponse",
     "Batch",
     "BatchItemMetadataV2",

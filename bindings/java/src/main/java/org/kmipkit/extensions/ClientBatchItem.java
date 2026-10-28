@@ -772,6 +772,58 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /**
+     * Creates a KMIP 2.1 §6.1.3 Adjust Attribute item. The caller's optional generic value is
+     * borrowed; KMIPKit does not calculate a replacement value or synthesize the Table 428 default.
+     */
+    public static ClientBatchItem adjustAttribute(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            AttributeReference attributeReference,
+            long adjustmentType,
+            @Nullable TtlvValue adjustmentValue) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Adjust Attribute Unique Identifier must be a Text String");
+        }
+        if (attributeReference == null) {
+            throw new InvalidInputException("Adjust Attribute Reference is required");
+        }
+        if (adjustmentType < 0 || adjustmentType > 0xffff_ffffL) {
+            throw new InvalidInputException("Adjustment Type is outside uint32");
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] vendorIdentification = attributeReference.nativeVendorIdentification();
+        byte[] attributeName = attributeReference.nativeAttributeName();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value;
+            if (adjustmentValue == null) {
+                value = NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                        identifierKind(uniqueIdentifier), identifierText,
+                        identifierNumber(uniqueIdentifier), attributeReference.nativeKind(),
+                        attributeReference.isTag() ? attributeReference.nativeTagValue() : 0,
+                        vendorIdentification, attributeName, adjustmentType, 0);
+            } else {
+                value = NativeHandle.withValues(
+                        new NativeHandle[] {adjustmentValue.nativeHandleOwner()}, handles ->
+                                NativeExtensionRegistry.clientBatchItemAdjustAttribute(
+                                        identifierKind(uniqueIdentifier), identifierText,
+                                        identifierNumber(uniqueIdentifier),
+                                        attributeReference.nativeKind(),
+                                        attributeReference.isTag()
+                                                ? attributeReference.nativeTagValue() : 0,
+                                        vendorIdentification, attributeName, adjustmentType,
+                                        handles[0]));
+            }
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+            clearNativeCopies(vendorIdentification);
+            clearNativeCopies(attributeName);
+        }
+    }
+
     /** Creates a Set Constraints request from the required Constraints structure. */
     public static ClientBatchItem setConstraints(TtlvStructure constraints) {
         requireStructure(constraints, "Set Constraints");

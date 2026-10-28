@@ -38,19 +38,20 @@ use kmipkit_client::{
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    ActivateRequest, AddAttributeRequest, ArchiveRequest, AttributeSet, CertifyRequest,
-    CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
-    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
-    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
-    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, NewAttribute, ObjectGroupMember,
-    ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError,
-    ProtocolErrorKind, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
-    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
-    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
+    AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
+    CreateRequest, CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DerivationMethod,
+    DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest,
+    GetAttributeListRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
+    MacVerifyRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
+    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3240,6 +3241,19 @@ fn copy_required_item_handle(item: *mut kmipkit_ttlv_item_t) -> FfiResult<Item> 
     source.try_clone().map_err(model_status)
 }
 
+fn copy_optional_value_handle(value: *mut kmipkit_ttlv_value_t) -> FfiResult<Option<Value>> {
+    if value.is_null() {
+        return Ok(None);
+    }
+    let handle = reference_handle(value, Kind::Value)?;
+    let HandleValue::Value(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    kmipkit_ttlv::try_clone_value(source)
+        .map(Some)
+        .map_err(model_status)
+}
+
 fn copy_attribute_set_handle(
     structure: *mut kmipkit_ttlv_structure_t,
     required: bool,
@@ -3445,6 +3459,64 @@ fn copy_optional_text_identifier(
         None => Ok(None),
         Some(UniqueIdentifier::TextString(value)) => Ok(Some(value)),
         Some(_) => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn copy_attribute_reference(
+    reference: *const crate::kmipkit_attribute_reference_v1_t,
+) -> FfiResult<AttributeReference> {
+    if reference.is_null() || !reference.is_aligned() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the non-null aligned input record is readable for this call by ABI contract.
+    let value = unsafe { reference.read() };
+    if value.struct_size as usize != std::mem::size_of::<crate::kmipkit_attribute_reference_v1_t>()
+        || value.abi_version != 1
+        || value.reserved != 0
+        || value.reserved2 != 0
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    match value.kind {
+        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG => {
+            if !value.vendor_identification_data.is_null()
+                || value.vendor_identification_length != 0
+                || !value.attribute_name_data.is_null()
+                || value.attribute_name_length != 0
+            {
+                return Err(ERROR_INVALID_INPUT);
+            }
+            Ok(AttributeReference::tag(value.tag_value))
+        }
+        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME => {
+            if value.tag_value != 0 {
+                return Err(ERROR_INVALID_INPUT);
+            }
+            let vendor_bytes = input_span(
+                value.vendor_identification_data,
+                value.vendor_identification_length,
+                MAX_FFI_INPUT_BYTES,
+            )?;
+            let name_bytes = input_span(
+                value.attribute_name_data,
+                value.attribute_name_length,
+                MAX_FFI_INPUT_BYTES,
+            )?;
+            let vendor = std::str::from_utf8(vendor_bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            let name = std::str::from_utf8(name_bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            let mut owned_vendor = String::new();
+            owned_vendor
+                .try_reserve_exact(vendor.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned_vendor.push_str(vendor);
+            let mut owned_name = String::new();
+            owned_name
+                .try_reserve_exact(name.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned_name.push_str(name);
+            Ok(AttributeReference::name(owned_vendor, owned_name))
+        }
+        _ => Err(ERROR_INVALID_INPUT),
     }
 }
 
@@ -4282,6 +4354,33 @@ pub extern "C" fn kmipkit_client_batch_item_add_attribute(
         let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
         let request = AddAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
         *out = try_ffi!(batch_item_handle(ClientRequest::AddAttribute(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.3 Adjust Attribute request from its optional
+/// Text String Unique Identifier, versioned Attribute Reference, raw Adjustment
+/// Type, and optional borrowed generic Adjustment Value. All inputs are copied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_adjust_attribute(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_reference: *const crate::kmipkit_attribute_reference_v1_t,
+    adjustment_type: u32,
+    adjustment_value: *mut kmipkit_ttlv_value_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let attribute_reference = try_ffi!(copy_attribute_reference(attribute_reference));
+        let adjustment_value = try_ffi!(copy_optional_value_handle(adjustment_value));
+        let request = AdjustAttributeRequest::new(
+            unique_identifier,
+            attribute_reference,
+            AdjustmentType::from_raw(adjustment_type),
+            adjustment_value,
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::AdjustAttribute(request)));
         SUCCESS
     })
 }

@@ -683,6 +683,12 @@ ffi.cdef(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         kmipkit_ttlv_item_t *new_attribute,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_adjust_attribute(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const kmipkit_attribute_reference_v1_t *attribute_reference,
+        uint32_t adjustment_type,
+        kmipkit_ttlv_value_t *adjustment_value,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_set_constraints(
         kmipkit_ttlv_structure_t *constraints,
         kmipkit_client_batch_item_t **out_item);
@@ -719,6 +725,10 @@ ffi.cdef(
         uint64_t capacity,
         uint64_t *out_count);
     int32_t kmipkit_client_batch_item_response_add_attribute(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_adjust_attribute(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_unique_identifier_v1_t *out_unique_identifier);

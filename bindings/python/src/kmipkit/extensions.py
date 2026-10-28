@@ -103,6 +103,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_activate",
         "kmipkit_client_batch_item_archive",
         "kmipkit_client_batch_item_add_attribute",
+        "kmipkit_client_batch_item_adjust_attribute",
         "kmipkit_client_batch_item_destroy",
         "kmipkit_client_batch_item_recover",
     }
@@ -1875,6 +1876,58 @@ def _client_native_item(value: ttlv.TtlvItem) -> Any:
     return _client_ffi.cast("kmipkit_ttlv_item_t *", address)
 
 
+def _client_native_value(value: ttlv.Value | None) -> Any:
+    """Cast an optional public TTLV Value into the private client ABI context."""
+    if value is None:
+        return _client_ffi.NULL
+    if not isinstance(value, ttlv.Value):
+        errors.raise_for_status(4)
+    pointer = value._pointer()
+    address = int(ffi.cast("uintptr_t", pointer))
+    return _client_ffi.cast("kmipkit_ttlv_value_t *", address)
+
+
+def _client_native_attribute_reference(
+    value: AttributeReference,
+    staging_buffers: list[Any],
+) -> Any:
+    """Build a versioned ABI input record for a caller-owned Attribute Reference."""
+    if not isinstance(value, AttributeReference):
+        errors.raise_for_status(4)
+    reference = _client_ffi.new("kmipkit_attribute_reference_v1_t *")
+    reference.struct_size = _client_ffi.sizeof("kmipkit_attribute_reference_v1_t")
+    reference.abi_version = 1
+    if value.tag_value is not None:
+        reference.kind = 1
+        reference.tag_value = value.tag_value
+        reference.vendor_identification_data = _client_ffi.NULL
+        reference.vendor_identification_length = 0
+        reference.attribute_name_data = _client_ffi.NULL
+        reference.attribute_name_length = 0
+    else:
+        vendor_raw, vendor_data = _owned_bytes(
+            value.vendor_identification, _MAX_TEXT_BYTES_PER_FIELD
+        )
+        name_raw, name_data = _owned_bytes(value.attribute_name, _MAX_TEXT_BYTES_PER_FIELD)
+        staging_buffers.extend((vendor_data, name_data))
+        reference.kind = 2
+        reference.tag_value = 0
+        reference.vendor_identification_data = (
+            _client_ffi.cast("const uint8_t *", int(ffi.cast("uintptr_t", vendor_data)))
+            if vendor_raw
+            else _client_ffi.NULL
+        )
+        reference.vendor_identification_length = len(vendor_raw)
+        reference.attribute_name_data = (
+            _client_ffi.cast("const uint8_t *", int(ffi.cast("uintptr_t", name_data)))
+            if name_raw
+            else _client_ffi.NULL
+        )
+        reference.attribute_name_length = len(name_raw)
+    staging_buffers.append(reference)
+    return reference
+
+
 def _native_value(value: ttlv.Value | None) -> Any:
     if value is None:
         return ffi.NULL
@@ -2385,6 +2438,31 @@ def client_batch_item_add_attribute(
             "kmipkit_client_batch_item_t",
             "kmipkit_client_batch_item_add_attribute",
             (identifier, native_item),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_adjust_attribute(
+    unique_identifier: UniqueIdentifier | None,
+    attribute_reference: AttributeReference,
+    adjustment_type: int,
+    adjustment_value: ttlv.Value | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.3 Adjust Attribute item from borrowed generic values."""
+    if unique_identifier is not None and not (
+        isinstance(unique_identifier, UniqueIdentifier)
+        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    raw_adjustment_type = _integer_range(adjustment_type, 0, 0xFFFF_FFFF)
+    native_value = _client_native_value(adjustment_value)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        reference = _client_native_attribute_reference(attribute_reference, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_adjust_attribute",
+            (identifier, reference, raw_adjustment_type, native_value),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -3346,6 +3424,7 @@ __all__ = [
     "client_batch_item_get_constraints",
     "client_batch_item_get_attribute_list",
     "client_batch_item_add_attribute",
+    "client_batch_item_adjust_attribute",
     "client_batch_item_set_constraints",
     "client_batch_item_set_defaults",
     "client_batch_item_interop",
