@@ -5910,3 +5910,19 @@ values, release tracking, and behavioral assertions.
 
 The refactor is limited to test fixtures and callers; no production facade code
 changed.
+
+### T074 Windows DNS fixture metric synchronization (2026-10-28)
+
+Exact-head CI run `40678012821` failed only in the Windows stable test
+`local_dns_fixture_tracks_multiplexed_tcp_requests_per_connection`. The
+failure is a test synchronization race, not evidence of a production transport
+regression: `serve_tcp_connection` calls `record_question` before
+`begin_tcp_request`, while the test waits only for the question count before
+reading the independent TCP metrics. The question counter can therefore reach
+two briefly while the TCP active/peak counters still report one. The required
+behavior remains that both requests are concurrently active on the same
+connection before responses are released.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | this commit | GitHub Actions run `40678012821`, Windows stable job `122781473690` | Failed at `crates/kmipkit-test-support/tests/transport_fixtures.rs:148`: `peak_active_tcp_requests_per_connection() >= 2`; source inspection confirms the assertion races the later TCP metric update. |
