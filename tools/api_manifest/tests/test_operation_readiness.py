@@ -323,6 +323,137 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 "approved", generate._operation_owner_state(root, "KMIPKIT-0018")
             )
 
+    def test_autonomous_implementation_status_without_merged_approval_is_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Query and Ping\n\n"
+                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "candidate", generate._operation_owner_state(root, "KMIPKIT-0020")
+            )
+
+    def test_merged_spec_pr_approval_resolves_autonomous_implementation_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Query and Ping\n\n"
+                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0020` is approved "
+                "for implementation by specification PR #67, MERGED into "
+                "`release/1.0.0` on `2026-10-09`; the PR body gates implementation "
+                "on approval and merge. The checked-in owner status remains "
+                "`Approved for autonomous implementation under a standing instruction`.\n",
+                encoding="utf-8",
+            )
+
+            self.assertTrue(
+                generate._has_merged_specification_approval_record(
+                    root, "KMIPKIT-0020"
+                )
+            )
+            self.assertEqual(
+                "approved", generate._operation_owner_state(root, "KMIPKIT-0020")
+            )
+            status_evidence = (
+                "**Status**: Approved for autonomous implementation under "
+                "a standing instruction."
+            )
+            generate._validate_approval_source(
+                {
+                    "kind": "feature-specification",
+                    "path": "specs/020-query-ping/spec.md",
+                    "status": "Approved",
+                    "evidence": status_evidence,
+                },
+                root,
+                feature_id="KMIPKIT-0020",
+            )
+
+    def test_authorization_only_status_is_not_manifest_approval_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = (
+                "**Status**: Approved for autonomous implementation under a standing instruction."
+            )
+            owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
+                generate._validate_approval_source(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/020-query-ping/spec.md",
+                        "status": "Approved",
+                        "evidence": status,
+                    },
+                    root,
+                    feature_id="KMIPKIT-0020",
+                )
+
+    def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Query and Ping\n\n"
+                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                encoding="utf-8",
+            )
+            matrix = root / "specs" / "043-public-api-bindings" / "contracts"
+            matrix.mkdir(parents=True)
+            lines = [
+                "# Operation dependencies",
+                "",
+                "| OASIS section | Operation | Owner | Status |",
+                "|---|---|---|---|",
+            ]
+            operations: list[dict[str, object]] = []
+            for number in range(1, 57):
+                section = "6.1.40" if number == 40 else f"6.1.{number}"
+                name = "Query" if number == 40 else f"Operation {number}"
+                owner_id = "KMIPKIT-0020" if number == 40 else None
+                lines.append(
+                    f"| §{section} | {name} | {owner_id or '—'} | Test fixture. |"
+                )
+                operations.append(
+                    {
+                        "section": section,
+                        "name": name,
+                        "ownerDependency": {
+                            "state": "approved" if owner_id else "unassigned",
+                            "specId": owner_id,
+                        },
+                    }
+                )
+            (matrix / "operation-dependencies.md").write_text(
+                "\n".join(lines) + "\n", encoding="utf-8"
+            )
+
+            with self.assertRaisesRegex(
+                ManifestError, "owner state differs from its specification"
+            ):
+                generate._validate_operation_dependencies(operations, root)
+
     def test_merged_spec_pr_allows_manifest_source_with_stale_draft_status(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -440,8 +571,8 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         manifest = self._release_manifest()
 
         self.assertEqual(56, len(operation_rows))
-        self.assertEqual(45, owner_counts["approved"])
-        self.assertEqual(11, owner_counts["candidate"])
+        self.assertEqual(52, owner_counts["approved"])
+        self.assertEqual(4, owner_counts["candidate"])
         self.assertEqual(0, owner_counts["unassigned"])
         self.assertIn(
             f"Linked to an approved/accepted owner: **{owner_counts['approved']} operations**.",

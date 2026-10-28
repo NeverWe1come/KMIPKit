@@ -169,3 +169,7 @@ T024 implementation checkpoint: the Python client facade exposes the shared clie
 ## Phase 10: Restore temporary CI coverage threshold waiver
 
 - [ ] T085 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0043 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record every minimum coverage check, including normative-generator line coverage and selected-scope/aggregate gates, before requesting review or merge.
+
+## Phase 11: Convergence — Enforce owner acceptance semantics
+
+- [ ] T086 Add Red/Green/Refactor tests and harden tools/api_manifest/generate.py so operation owners whose checked-in status only authorizes autonomous implementation cannot be treated as formally approved. Require an Approved/Accepted-for-implementation status with active-release human acceptance or a documented merged specification-approval record, and verify --check rejects authorization-only owner evidence. Reconcile affected operation rows under T042/T073 without conflating implementation authorization with formal acceptance; trace to KMIPKIT-0043-FR-003/FR-021 and manifest-v2.md (contradicts).
