@@ -6065,7 +6065,10 @@ higher-level Java builder, which already rejects the aggregate.
 | Exact-head CI | `474422dd1` | [Run 40694895609](https://github.com/NeverWe1come/KMIPKit/actions/runs/40694895609), with CodeQL `40694895558` and zizmor `40694895705` | Pass, 35 CI jobs succeeded, 2 scheduled skips, 0 failures; CodeQL, zizmor, and SonarCloud passed. |
 
 The source/encoding/count checks are shared between the preflight and copy
-passes. Red, Green, and Refactor commits are DCO-signed. This scope-clarifying
-rename/evidence update does not change behavior; its exact-head CI is pending.
-The authorized coverage-threshold waiver remains unchanged; no threshold pass
-is claimed and T085 remains open.
+passes. Red, Green, and Refactor commits are DCO-signed. The scope-clarifying
+rename/evidence update does not change behavior. Exact-head CI run
+`40697042389` completed successfully on `68aff8981c0b390354a4d3cb8b18c4a8d2a706ff`
+with 35 successful jobs, 2 scheduled skips, and 0 failures; CodeQL run
+`40697042527` and zizmor run `40697042170` also passed. The authorized
+coverage-threshold waiver remains unchanged: threshold enforcement was not
+performed and no threshold pass is claimed. T085 remains open.
