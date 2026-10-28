@@ -1,3 +1,8 @@
+"""Set Attribute mapping tests from OASIS KMIP 2.1 §6.1.51, Tables 322–324.
+
+These tests implement KMIPKIT-0016-FR-009.
+"""
+
 from __future__ import annotations
 
 import ssl
@@ -53,6 +58,7 @@ def _set_attribute_response_message() -> bytes:
         ttlv_enumeration(0x42005C, 0x3B),
         ttlv_item(0x420093, 8, _PING_ID),
         ttlv_enumeration(0x42007F, 0),
+        ttlv_structure(0x42007C),
     )
     return ttlv_structure(
         0x42007B,
@@ -126,7 +132,7 @@ def test_set_attribute_executes_once_maps_only_successful_results_and_borrows_it
             (), extensions.default_extension_registry_limits()
         )
     )
-    request_items: list[client.ClientBatchItem] = []
+    request_items: list[extensions.ClientBatchItem | None] = []
     batch_result = None
     limits = ttlv.codec_limits_defaults()
     raw_comment_tag = ttlv.raw_tag_from_raw(0x0042_00FD)
