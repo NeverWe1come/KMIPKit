@@ -648,7 +648,7 @@ def _validate_approval_source(
             feature_id is not None
             and status is not None
             and _status_only_authorizes_implementation(status)
-            and not _has_merged_specification_approval_record(
+            and not _has_merged_owner_approval_record(
                 root, feature_id
             )
         ):
@@ -660,7 +660,7 @@ def _validate_approval_source(
             recorded_status == "Approved"
             and actual_status.startswith("Draft")
             and feature_id is not None
-            and _has_merged_specification_approval_record(root, feature_id)
+            and _has_merged_owner_approval_record(root, feature_id)
         )
         if actual_status not in {"Approved", "Accepted"} and not stale_status_covered_by_merged_pr:
             raise ManifestError("manifest owner source is not approved or accepted")
@@ -777,7 +777,7 @@ def _operation_owner_state(root: Path, owner_id: str | None) -> str:
     status = _status_value_from_document(spec_text)
     if status is None:
         raise ManifestError("operation owner specification has no recorded status")
-    merged_approval = _has_merged_specification_approval_record(root, owner_id)
+    merged_approval = _has_merged_owner_approval_record(root, owner_id)
     if _status_only_authorizes_implementation(status):
         return "approved" if merged_approval else "candidate"
     if re.match(r"(?:Approved|Accepted)\b", status):
@@ -787,8 +787,8 @@ def _operation_owner_state(root: Path, owner_id: str | None) -> str:
     return "candidate"
 
 
-def _has_merged_specification_approval_record(root: Path, owner_id: str) -> bool:
-    """Recognize the recorded PR approval when the owner's checked-in status is stale."""
+def _has_merged_owner_approval_record(root: Path, owner_id: str) -> bool:
+    """Recognize documented human merge evidence for the owner's release scope."""
     evidence_path = (
         root
         / "specs"

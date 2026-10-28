@@ -366,7 +366,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             )
 
             self.assertTrue(
-                generate._has_merged_specification_approval_record(
+                generate._has_merged_owner_approval_record(
                     root, "KMIPKIT-0020"
                 )
             )
