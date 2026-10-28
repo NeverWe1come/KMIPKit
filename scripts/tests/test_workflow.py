@@ -266,6 +266,28 @@ class WorkflowContractTests(unittest.TestCase):
             "The contract step must not select a system Python ahead of the uv environment.",
         )
 
+    def test_script_contracts_preflight_the_recent_normative_regression(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        preflight = (
+            "unittest discover -s tools/normative_catalog/tests -p 'test_validate.py' "
+            "-k active_state_source_predicates_have_four_distinct_requirement_labels -v"
+        )
+        self.assertIn(
+            preflight,
+            python_contracts,
+            "The recent catalog regression must run before the slow full contract suite.",
+        )
+        self.assertLess(
+            python_contracts.index(preflight),
+            python_contracts.index("unittest discover -s scripts/tests"),
+        )
+        self.assertLess(
+            python_contracts.index(preflight),
+            python_contracts.index("unittest discover -s tools/normative_catalog/tests -p 'test_*.py'"),
+        )
+
     def test_script_contract_diagnostics_use_the_uv_environment_python(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
