@@ -1,7 +1,10 @@
+from pathlib import Path
 import queue
 
 import pytest
+import _test_support
 from _test_support import capture_peer_failures, require_tls13_mtls_peer
+from kmipkit import client
 
 
 class FakeTlsPeer:
@@ -31,6 +34,24 @@ def test_rejects_peers_without_tls13_mutual_authentication(
 
 def test_accepts_tls13_mutual_authentication_peer() -> None:
     require_tls13_mtls_peer(FakeTlsPeer("TLSv1.3", b"client-certificate"))
+
+
+def test_mtls_transport_factory_preserves_shared_client_inputs() -> None:
+    factory = getattr(_test_support, "mtls_transport_config", None)
+    assert callable(factory), "shared mTLS transport factory is required"
+
+    fixtures = Path(__file__).parent / "fixtures" / "login-mtls"
+    transport = factory(43123, fixtures)
+
+    assert transport.endpoint == client.Endpoint.raw_tls("127.0.0.1", 43123)
+    assert transport.client_certificates[0].source == fixtures / "client-cert.pem"
+    assert transport.client_private_key.source == fixtures / "client-key.pem"
+    assert transport.trust.kind is client.TrustKind.CERTIFICATES
+    assert transport.trust.certificates[0].source == fixtures / "server-cert.pem"
+    assert transport.connect_timeout == client.TimeoutLimit.bounded(5)
+    assert transport.write_timeout == client.TimeoutLimit.bounded(5)
+    assert transport.read_timeout == client.TimeoutLimit.bounded(5)
+    assert transport.total_timeout == client.TimeoutLimit.bounded(8)
 
 
 def test_captures_runtime_tls_peer_validation_failures() -> None:
