@@ -104,6 +104,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_archive",
         "kmipkit_client_batch_item_add_attribute",
         "kmipkit_client_batch_item_adjust_attribute",
+        "kmipkit_client_batch_item_delete_attribute",
         "kmipkit_client_batch_item_destroy",
         "kmipkit_client_batch_item_recover",
     }
@@ -2467,6 +2468,35 @@ def client_batch_item_adjust_attribute(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_delete_attribute(
+    unique_identifier: UniqueIdentifier | None,
+    current_attribute: ttlv.TtlvItem | None,
+    attribute_reference: AttributeReference | None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.13 Delete Attribute item from optional selectors."""
+    if unique_identifier is not None and not (
+        isinstance(unique_identifier, UniqueIdentifier)
+        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    native_item = _client_native_item(current_attribute) if current_attribute is not None else None
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        reference = (
+            _client_native_attribute_reference(attribute_reference, staging_buffers)
+            if attribute_reference is not None
+            else None
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_delete_attribute",
+            (identifier, native_item, reference),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_set_constraints(constraints: ttlv.Structure) -> ClientBatchItem:
     """Create a Set Constraints item from KMIP 2.1 §6.1.52, Table 325."""
     native_constraints = _client_native_structure(constraints, required=True)
@@ -3425,6 +3455,7 @@ __all__ = [
     "client_batch_item_get_attribute_list",
     "client_batch_item_add_attribute",
     "client_batch_item_adjust_attribute",
+    "client_batch_item_delete_attribute",
     "client_batch_item_set_constraints",
     "client_batch_item_set_defaults",
     "client_batch_item_interop",

@@ -824,6 +824,48 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a KMIP 2.1 §6.1.13 Delete Attribute item with all optional selectors omitted. */
+    public static ClientBatchItem deleteAttribute() {
+        return deleteAttribute(null, null, null);
+    }
+
+    /** Creates a KMIP 2.1 §6.1.13 Delete Attribute item from its optional selectors. */
+    public static ClientBatchItem deleteAttribute(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvItem currentAttribute,
+            @Nullable AttributeReference attributeReference) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Delete Attribute Unique Identifier must be a Text String");
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] vendorIdentification = attributeReference == null
+                ? null : attributeReference.nativeVendorIdentification();
+        byte[] attributeName = attributeReference == null
+                ? null : attributeReference.nativeAttributeName();
+        NativeHandle[] owners = currentAttribute == null
+                ? new NativeHandle[0]
+                : new NativeHandle[] {currentAttribute.nativeHandleOwner()};
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
+                    owners, handles -> NativeExtensionRegistry.clientBatchItemDeleteAttribute(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier),
+                            currentAttribute == null ? 0 : handles[0],
+                            attributeReference == null ? 0 : attributeReference.nativeKind(),
+                            attributeReference == null || !attributeReference.isTag()
+                                    ? 0 : attributeReference.nativeTagValue(),
+                            vendorIdentification, attributeName)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+            clearNativeCopies(vendorIdentification);
+            clearNativeCopies(attributeName);
+        }
+    }
+
     /** Creates a Set Constraints request from the required Constraints structure. */
     public static ClientBatchItem setConstraints(TtlvStructure constraints) {
         requireStructure(constraints, "Set Constraints");

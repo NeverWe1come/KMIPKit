@@ -901,6 +901,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     archive_response: ArchiveResponse | None = field(default=None, repr=False)
     destroy_response: DestroyResponse | None = field(default=None, repr=False)
     recover_response: RecoverResponse | None = field(default=None, repr=False)
+    delete_attribute_response: DeleteAttributeResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1454,6 +1455,16 @@ class AdjustAttributeResponse:
 
     def __repr__(self) -> str:
         return "AdjustAttributeResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DeleteAttributeResponse:
+    """Successful Delete Attribute response with its required Text String identifier."""
+
+    unique_identifier: str = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "DeleteAttributeResponse(unique_identifier=redacted)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -2265,6 +2276,13 @@ def _batch_result(
                     and int(metadata.operation) == 0x30
                 ):
                     adjust_attribute_response = _adjust_attribute_response(item)
+                delete_attribute_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x0F
+                ):
+                    delete_attribute_response = _delete_attribute_response(item)
                 set_constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2400,6 +2418,7 @@ def _batch_result(
                     archive_response=archive_response,
                     destroy_response=destroy_response,
                     recover_response=recover_response,
+                    delete_attribute_response=delete_attribute_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -3729,6 +3748,34 @@ def _adjust_attribute_response(
     return AdjustAttributeResponse(value)
 
 
+def _delete_attribute_response(
+    item: _ClientBatchItemResponse,
+) -> DeleteAttributeResponse:
+    present = ffi.new("uint8_t *")
+    identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
+    identifier.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    identifier.abi_version = 1
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_delete_attribute(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] != 1 or identifier.kind != 1 or identifier.reserved != 0:
+        errors.raise_for_status(4)
+    length = int(identifier.text_length)
+    if length and identifier.text_data == ffi.NULL:
+        errors.raise_for_status(4)
+    try:
+        value = (
+            bytes(ffi.buffer(identifier.text_data, length)).decode("utf-8", "strict")
+            if length
+            else ""
+        )
+    except UnicodeDecodeError:
+        errors.raise_for_status(4)
+    return DeleteAttributeResponse(value)
+
+
 def _set_constraints_response(
     item: _ClientBatchItemResponse,
 ) -> SetConstraintsResponse:
@@ -4643,6 +4690,7 @@ __all__ = [
     "LoginResponse",
     "DeriveKeyResponse",
     "DestroyResponse",
+    "DeleteAttributeResponse",
     "ExportResponse",
     "Client",
     "CredentialEncoding",

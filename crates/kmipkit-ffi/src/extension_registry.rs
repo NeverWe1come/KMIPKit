@@ -40,18 +40,18 @@ use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
-    CreateRequest, CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest,
-    GetAttributeListRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
-    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier, ValidateRequest,
+    CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DelegatedLoginRequest,
+    DeleteAttributeRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
+    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
+    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, NewAttribute, ObjectGroupMember,
+    ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError,
+    ProtocolErrorKind, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -4381,6 +4381,39 @@ pub extern "C" fn kmipkit_client_batch_item_adjust_attribute(
             adjustment_value,
         );
         *out = try_ffi!(batch_item_handle(ClientRequest::AdjustAttribute(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.13 Delete Attribute request. The Unique Identifier,
+/// Current Attribute Item, and Attribute Reference are independently optional;
+/// supplied handles and records are copied and remain caller-owned.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_delete_attribute(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    current_attribute: *mut kmipkit_ttlv_item_t,
+    attribute_reference: *const crate::kmipkit_attribute_reference_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let current_attribute = if current_attribute.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_required_item_handle(current_attribute)))
+        };
+        let attribute_reference = if attribute_reference.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_attribute_reference(attribute_reference)))
+        };
+        let request = DeleteAttributeRequest::new(
+            unique_identifier,
+            current_attribute.map(CurrentAttribute::new),
+            attribute_reference,
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::DeleteAttribute(request)));
         SUCCESS
     })
 }

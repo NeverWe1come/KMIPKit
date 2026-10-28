@@ -33,9 +33,7 @@ fn compiled_c_consumer_builds_delete_attribute_with_omitted_selectors() {
     let mut request_handle = ptr::null_mut();
     assert_eq!(
         // SAFETY: the C helper initializes this writable output slot before returning.
-        unsafe {
-            kmipkit_client_abi_c_consumer_build_delete_attribute(&raw mut request_handle)
-        },
+        unsafe { kmipkit_client_abi_c_consumer_build_delete_attribute(&raw mut request_handle) },
         1,
         "the C consumer can construct Delete Attribute with all optional selectors omitted"
     );
@@ -52,21 +50,21 @@ fn compiled_c_consumer_builds_delete_attribute_with_omitted_selectors() {
     assert!(request.unique_identifier().is_none());
     assert!(request.current_attribute().is_none());
     assert!(request.attribute_reference().is_none());
-    assert!(request
-        .to_ttlv_payload()
-        .expect("an empty optional-selector request is valid")
-        .view()
-        .children()
-        .is_empty());
+    assert!(
+        request
+            .to_ttlv_payload()
+            .expect("an empty optional-selector request is valid")
+            .view()
+            .children()
+            .is_empty()
+    );
 
     kmipkit_client_batch_item_release(request_handle);
 }
 
 #[test]
 fn delete_attribute_response_copies_success_identifier_and_hides_failure_payload() {
-    let request = || {
-        ClientRequest::DeleteAttribute(DeleteAttributeRequest::new(None, None, None))
-    };
+    let request = || ClientRequest::DeleteAttribute(DeleteAttributeRequest::new(None, None, None));
     let success = successful_cryptographic_item(
         request(),
         0x0f,
