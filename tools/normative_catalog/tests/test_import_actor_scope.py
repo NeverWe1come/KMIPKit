@@ -58,8 +58,11 @@ class ImportActorScopeTests(unittest.TestCase):
             for row in self.oracle["source_requirement_reviews"]
             if row["source_clause_id"] == SOURCE_CLAUSE_ID
         )
-        obligation = paragraph_review["source_obligations"][0]
-        self.assertEqual(obligation["actor"], "unresolved")
+        obligation = next(
+            row for row in paragraph_review["source_obligations"]
+            if row["source_keyword"] == "MUST"
+        )
+        self.assertEqual(obligation["actor"], "server/actor-ambiguous")
         self.assertEqual(obligation["project_actor_interpretation"], "server")
         self.assertEqual(obligation["scope_disposition"], "server_only")
         self.assertEqual(paragraph_review["expected_client_requirement_ids"], [])
