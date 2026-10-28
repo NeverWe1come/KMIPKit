@@ -15,6 +15,7 @@
 | FR-015 | T004, T012, T015 |
 | FR-016 | T004–T008, T015 |
 | FR-017 | T002, T014–T016 |
+| FR-018–FR-019; SC-009 | T020–T023 |
 | SC-008 | T016 |
 
 ## Phase 1: Design and setup
@@ -47,6 +48,13 @@
 - [x] T017 Refactor the changed-source coverage scope resolution into an explicit helper with C ABI precedence, clarify classifier record validation, and remove the unused job argument from Summary skip rendering. A new FFI regression test failed before the change and passed afterward; the multi-language coverage suite passed 16/16.
 - [x] T018 Re-run focused and full available verification, workflow/security review, coverage fail-closed checks, docs traceability, and `git diff --check`; record REFACTOR evidence and commit separately with `git commit -s`. Evidence: all scripts tests passed (254 tests, 26 optional skips); 206 normative catalog tests passed with 7 platform skips; 16 multi-language coverage tests and 67 impact/Summary/workflow tests passed; workflow YAML parsed; generators and docs report checked; `git diff --check` passed. Full `cargo llvm-cov` was attempted and is limited by Windows loopback socket denial (OS error 10013), recorded under T016.
 - [x] T019 Rebase on the latest remote `release/1.0.0`, confirm it is the merge base, verify the CI configuration change selects full CI, push the feature branch, and prepare a draft PR with Red/Green/Refactor evidence and known limitations. Never merge. Evidence: the original branch was rebased onto `dc7bb73` (its merge base), pushed, and opened as draft [PR #72](https://github.com/NeverWe1come/KMIPKit/pull/72), which records RED `b044c33`, GREEN `129a528`, REFACTOR `7adec7d`, and the Windows loopback coverage limitation. Its [hosted CI run 37971433833](https://github.com/NeverWe1come/KMIPKit/actions/runs/37971433833) passed all selected PR jobs and coverage gates before human review and merge. After the merge, the release checklist omitted this completion. On 2026-10-10, the remote release tip was `2fb2762b`; this follow-up branch starts exactly there, and rerunning the classifier on `dc7bb73..c4ea81bb` selected full CI, all 16 PR job groups, and all five coverage scopes. The focused impact and workflow contracts passed (21 tests).
+
+## Phase 5: Early full-CI feedback
+
+- [x] T020 Add failing impact-plan, Summary, and workflow-contract tests for full-CI preflight selection, visible failure, matrix gating, Python test fail-fast, and matrix cancellation. RED: commit `3b0061b9f`; of four focused tests, the existing documentation-only check passed and the three new tests failed because the preflight job and routing did not exist.
+- [x] T021 Add `fast-preflight` to full-CI selection and Summary; run focused classifier and normative-catalog checks on Linux; gate the Script Contracts matrix on preflight success; enable Python `unittest --failfast` and matrix `fail-fast: true`. GREEN: commit `a9a83ff4b`; focused classifier, Summary, and workflow contracts pass, and the four selected preflight tests pass locally in 2.153 seconds.
+- [x] T022 Update the approved behavior artifacts and testing guide, then run focused tests, the complete Python contract suites available locally, workflow/YAML checks, and `git diff --check`. Keep full platform checks and coverage thresholds unchanged. Evidence: all 280 `scripts/tests` tests passed (26 optional dependency skips); normative feature traceability passed 15/15 (one Windows symlink-permission skip); `git diff --check` passed. Profiling GitHub run `40670555546` showed 304 script tests in 4.832 seconds, versus 725 normative-catalog tests in 781.712 seconds; the preflight samples classifier and normative checks without replacing the full catalog run. No generated outputs or coverage thresholds changed.
+- [x] T023 Record Red, Green, and Refactor evidence in separate DCO-signed commits; update from `release/1.0.0`, push the feature branch, and prepare a draft PR. Never merge. Evidence: branch is based on current `origin/release/1.0.0` at `d14f6566c`; exact-tree classification selected all 17 PR job groups and all five coverage scopes without fallback; draft [PR #107](https://github.com/NeverWe1come/KMIPKit/pull/107) is open. Its initial hosted CI run `40675332194` was pending when this task record was written.
 
 ## Required Scenario Matrix
 

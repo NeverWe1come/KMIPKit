@@ -25,10 +25,17 @@ selected. The scheduled workflow is unchanged. Selective execution does not
 change the thresholds below; every selected report remains required, and a
 missing or malformed selected report fails the gate.
 
-The cross-platform `script-contracts` job runs a short preflight for the most
-recently failing normative-catalog regression before starting its full Python
-contract suites. This gives that known failure an early signal; the complete
-catalog suite still runs on Linux, Windows, and macOS and remains authoritative.
+Full pull-request CI starts with a visible Linux fast-preflight containing
+focused classifier and normative-catalog tests. Failure appears in the final
+Summary and prevents the Script Contracts matrix from starting. After a
+successful preflight, each cross-platform Script Contracts job also runs the
+most recently failing normative-catalog regression before its full Python
+contract suites. This gives that known failure an early signal while the full
+matrix and catalog suite on Linux, Windows, and macOS remain authoritative.
+Python `unittest` discovery stops at the first failed test, and the matrix
+cancels its remaining operating-system jobs after a failure. These preflights
+shorten the failure signal without changing the checks required for a passing
+full-CI run.
 
 ## Static analysis services
 

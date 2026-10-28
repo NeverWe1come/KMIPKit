@@ -29,6 +29,7 @@ if SUMMARY_PATH.is_file():
 class CiSummaryTests(unittest.TestCase):
     PR_JOBS = (
         "docs-contracts",
+        "fast-preflight",
         "core",
         "script-contracts",
         "language-c",
@@ -196,6 +197,19 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Core matrix", markdown)
         self.assertIn("FAIL", markdown)
         self.assertIn("CANCELLED", markdown)
+
+    def test_fast_preflight_failure_is_visible_and_blocks_script_contract_matrix(self) -> None:
+        summary_module = self.require_summary()
+        markdown, exit_code = summary_module.build_summary(
+            event_name="pull_request",
+            context=self.context(),
+            needs=self.pull_request_needs(**{"fast-preflight": "failure", "script-contracts": "skipped"}),
+        )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("Fast preflight", markdown)
+        self.assertIn("Script contracts", markdown)
+        self.assertIn("CI result: FAIL", markdown)
 
     def test_every_pull_request_job_failure_is_reported_and_fails_the_summary(self) -> None:
         summary_module = self.require_summary()
