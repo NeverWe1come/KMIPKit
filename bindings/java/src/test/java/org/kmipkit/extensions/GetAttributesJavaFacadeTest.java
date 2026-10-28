@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,6 +89,13 @@ final class GetAttributesJavaFacadeTest {
         assertTrue(ClientBatchItemResult.parseGetAttributesResponse(new Object[] {
             new long[] {0}, null, new long[] {0}
         }).isEmpty());
+    }
+
+    @Test
+    void successfulNoMatchResponseAcceptsTheUniqueIdentifierOnlyShape() {
+        assertDoesNotThrow(() -> ClientBatchItemResult.parseGetAttributesResponse(new Object[] {
+            new long[] {1}, "object-7", new long[] {0}
+        }));
     }
 
     @Test

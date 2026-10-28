@@ -201,6 +201,60 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
 }
 
 #[test]
+fn get_attributes_response_preserves_success_with_identifier_only_payload() {
+    let request = || {
+        ClientRequest::get_attributes(
+            GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_002f)])
+                .expect("the request reference is unique"),
+        )
+    };
+    let success = successful_cryptographic_item(
+        request(),
+        0x0b,
+        b"get-attributes-no-match",
+        vec![ttlv_item(0x0042_0094, 0x07, b"object-7")],
+    );
+    let mut present = 0;
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+    };
+    let mut attributes = ptr::dangling_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attributes(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut attributes,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1, "the operation completed successfully");
+    assert_eq!(
+        identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize)
+        },
+        b"object-7"
+    );
+    assert!(
+        attributes.is_null(),
+        "an omitted wire Attributes field must not be synthesized"
+    );
+    kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
 fn compiled_c_consumer_constructs_get_attributes_from_multiple_reference_forms() {
     assert_eq!(
         unsafe { kmipkit_client_abi_c_consumer_build_get_attributes_request() },
