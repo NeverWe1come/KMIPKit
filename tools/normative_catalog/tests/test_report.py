@@ -2745,6 +2745,21 @@ mod unrelated {
         self.assertIn("KMIPKIT-TEST-PROF-5-1-3-1", report)
         self.assertIn("No public claim", report)
 
+    def test_baseline_report_distinguishes_global_unavailable_profile_fixtures(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+        )
+
+        if "77 linked profile cases without local fixtures" in report:
+            self.fail("the report incorrectly attributes the broader fixture inventory to Baseline")
+        self.assertIn("77 additional linked case IDs", report)
+        self.assertIn("none of those cases is in Baseline Client's 16-case list", report)
+
     def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module
 
