@@ -1,5 +1,13 @@
 # Implementation Evidence
 
+## T086 merged specification approvals for implementation-only statuses
+
+- **Merged owner approval evidence**: `KMIPKIT-0019` was approved for implementation by specification PR #66, MERGED into `release/1.0.0` on `2026-10-09`, merged by maintainer NeverWe1come. The checked-in status also records a standing-instruction authorization; that status alone is not treated as specification approval.
+- **Merged owner approval evidence**: `KMIPKIT-0020` was approved for implementation by specification PR #67, MERGED into `release/1.0.0` on `2026-10-09`, merged by maintainer NeverWe1come. The checked-in status records autonomous implementation authorization; that status alone is not treated as specification approval.
+- **Merged owner approval evidence**: `KMIPKIT-0040` was approved for implementation by specification PR #86, MERGED into `release/1.0.0` on `2026-10-10`, merged by maintainer NeverWe1come. This records the merged specification review; it does not claim formal KMIP conformance, profile support, or certification.
+
+These records distinguish the human-merged specification scope from standing instructions that authorized autonomous implementation. The generator accepts the former as owner approval evidence and does not infer approval from an authorization-only status. Merged PRs #66, #67, and #86 do not represent separate line-by-line review of every later edit to those specifications.
+
 ## T039 owner approval evidence
 
 - **Merged owner approval evidence**: `KMIPKIT-0018` is approved for implementation by specification PR #65, MERGED into `release/1.0.0` on `2026-10-09`; the PR body gates implementation on approval and merge. The checked-in owner status remains `Status: Draft for independent human review`.

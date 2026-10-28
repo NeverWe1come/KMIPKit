@@ -68,8 +68,8 @@ The owner states and API readiness below were reconciled against the checked-in 
 - Total KMIP 2.1 client-initiated operation types: **57**.
 - In-scope `client_1_0` operations: **56**.
 - Linked to an owner specification in the active release line: **56**.
-- Linked to an approved/accepted owner: **45 operations**.
-- Linked to an unapproved candidate owner: **11 operations**.
+- Linked to an approved/accepted owner: **52 operations**.
+- Linked to an unapproved candidate owner: **4 operations**.
 - No owner specification linked: **0 operations**.
 - All other blocked API rows remain gated on an accepted owner contract, canonical Rust API, four-language mapping, and verification evidence. Get, Locate, Get Constraints, and Get Usage Allocation have T038/T048/T049 mapping evidence; T032 advances only §§6.1.8–6.1.10 after scoped evidence is recorded. T038 remains open for controller review. These status records do not establish formal OASIS conformance.
 

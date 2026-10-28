@@ -591,6 +591,20 @@ def _status_from_document(content: str) -> str:
     return status
 
 
+def _status_only_authorizes_implementation(status: str) -> bool:
+    """Return whether a status explicitly describes implementation authorization only."""
+    normalized = status.casefold()
+    return any(
+        marker in normalized
+        for marker in (
+            "autonomous implementation",
+            "standing direct instruction",
+            "not formal acceptance",
+            "implementation authorization, not",
+        )
+    )
+
+
 def _validate_approval_source(
     source: Any,
     root: Path,
@@ -620,11 +634,23 @@ def _validate_approval_source(
                 raise ManifestError("feature approval evidence refers to a different owner")
         spec_path = root / "specs" / parts[1] / "spec.md"
         _, spec_content = _manifest_file(root, PurePosixPath(*spec_path.relative_to(root).parts).as_posix())
+        status_match = re.search(
+            r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_content
+        )
+        if (
+            feature_id is not None
+            and status_match is not None
+            and _status_only_authorizes_implementation(status_match.group(1))
+            and not _has_merged_specification_approval_record(root, feature_id)
+        ):
+            raise ManifestError(
+                "manifest owner source requires merged specification approval evidence"
+            )
         actual_status = _status_from_document(spec_content)
         stale_status_covered_by_merged_pr = (
             recorded_status == "Approved"
             and actual_status.startswith("Draft")
-            and feature_id == "KMIPKIT-0018"
+            and feature_id is not None
             and _has_merged_specification_approval_record(root, feature_id)
         )
         if actual_status not in {"Approved", "Accepted"} and not stale_status_covered_by_merged_pr:
@@ -742,9 +768,13 @@ def _operation_owner_state(root: Path, owner_id: str | None) -> str:
     status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
     if status_match is None:
         raise ManifestError("operation owner specification has no recorded status")
-    if re.match(r"(?:Approved|Accepted)\b", status_match.group(1)):
+    status = status_match.group(1).strip()
+    merged_approval = _has_merged_specification_approval_record(root, owner_id)
+    if _status_only_authorizes_implementation(status):
+        return "approved" if merged_approval else "candidate"
+    if re.match(r"(?:Approved|Accepted)\b", status):
         return "approved"
-    if _has_merged_specification_approval_record(root, owner_id):
+    if merged_approval:
         return "approved"
     return "candidate"
 
@@ -761,16 +791,15 @@ def _has_merged_specification_approval_record(root: Path, owner_id: str) -> bool
         evidence = evidence_path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return False
-    required = (
-        f"`{owner_id}` is approved for implementation by specification PR #65",
-        "MERGED into `release/1.0.0` on `2026-10-09`",
-        "PR body gates implementation on approval and merge",
-        "checked-in owner status remains `Status: Draft for independent human review`",
+    owner_pattern = re.compile(
+        rf"`{re.escape(owner_id)}`.*specification PR #\d+.*"
+        r"MERGED into `release/1\.0\.0` on `\d{4}-\d{2}-\d{2}`.*"
+        r"(?:PR body gates implementation on approval and merge|merged by maintainer)",
+        re.IGNORECASE,
     )
     return any(
-        all(marker in line for marker in required)
+        "Merged owner approval evidence" in line and owner_pattern.search(line)
         for line in evidence.splitlines()
-        if "Merged owner approval evidence" in line
     )
 
 

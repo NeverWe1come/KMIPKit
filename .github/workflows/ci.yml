@@ -300,6 +300,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/api_manifest/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/extension_fixtures/generate.py --check
