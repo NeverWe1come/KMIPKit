@@ -177,7 +177,7 @@ impl GetAttributeListResponse {
         };
         for reference in references {
             payload
-                .try_push(reference.to_ttlv_item()?)
+                .try_push(reference.to_ttlv_response_item()?)
                 .map_err(model_error)?;
         }
         Ok(Some(payload))
