@@ -7981,3 +7981,19 @@ else:
 ```
 
 Self-review: the exception is limited to accepted recommendation categories, an accepted decision that explicitly names the requirement, and a requirement marked `deviated`. It does not alter protocol behavior, DEC-025, catalog/source records, generated files, or executable verification-reference validation. `bindings/java/target/` was present before this change and remains preserved. No Protocol files were changed, and no OASIS Test Case or profile-conformance claim is made.
+
+## Client Register Certificate fixture correction — Red (2026-10-28)
+
+The hosted CI run [`40617915477`](https://github.com/NeverWe1come/KMIPKit/actions/runs/40617915477) targets head `b25969c18dcac99d0ebde94e08a003cc4b6e965a`, which includes the Register Certificate Cryptographic Usage Mask validation change from `694b9a1e7`. The change correctly rejects Certificate Register requests without Cryptographic Usage Mask under KMIP Specification v2.1 §2.1 and §6.1.43 Table 293. Existing client tests that exercised unrelated response, placeholder, and transport behavior reused Certificate request fixtures that omitted that required attribute.
+
+The Red reproduction command was `cargo test --locked -p kmipkit-client --lib register_`. It ran 18 selected tests: 11 passed and these seven failed locally before fake transport because request validation returned `Validation` with `NotSent` delivery state:
+
+- `register_execution_tests::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it`
+- `register_execution_tests::register_failure_preserves_table_294_reason_without_retry`
+- `register_execution_tests::register_pending_preserves_correlation_without_implicit_poll`
+- `register_execution_tests::register_produces_id_placeholder_for_a_later_identifier_omitting_operation`
+- `register_execution_tests::register_sends_table_291_and_exposes_table_292_identifier_once`
+- `register_execution_tests::register_transport_failure_preserves_partial_write_delivery_without_retry`
+- `revoke_execution_tests::revoke_can_consume_a_preceding_register_id_placeholder`
+
+At capture time the hosted run showed failures in the Ubuntu and macOS Core and Coverage jobs, while the run as a whole was still in progress and `gh run view --log-failed` did not yet expose job logs. The hosted test log will be recorded with the Green/Refactor evidence once available. No production code, normative catalog, generated output, or OASIS source was changed for this fixture correction.
