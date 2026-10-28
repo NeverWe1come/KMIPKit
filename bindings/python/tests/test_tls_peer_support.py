@@ -13,7 +13,7 @@ from _test_support import (
     require_tls13_mtls_peer,
     start_tls13_mtls_peer,
 )
-from kmipkit import client
+from kmipkit import client, extensions
 from kmipkit._client_ffi import ffi
 
 
@@ -140,9 +140,7 @@ def test_unique_identifier_ttlv_fixture_preserves_native_callback_contract() -> 
         == 0
     )
     assert present == [1]
-    assert identifier_fields.kind == int(
-        client.extensions.UniqueIdentifierKind.TEXT_STRING
-    )
+    assert identifier_fields.kind == int(extensions.UniqueIdentifierKind.TEXT_STRING)
     assert bytes(
         ffi.buffer(identifier_fields.text_data, identifier_fields.text_length)
     ) == b"revoked-object"

@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Protocol
 
-from kmipkit import client
+from kmipkit import client, extensions
 from kmipkit._client_ffi import ffi
 
 _PEER_FAILURE_TYPES = (AssertionError, OSError, RuntimeError, ssl.SSLError)
@@ -192,6 +192,48 @@ def operation_response_message(
         response_fields.append(ttlv_structure(0x42007C, *payload_items))
     response_item = ttlv_structure(0x42000F, *response_fields)
     return ttlv_structure(0x42007B, header, response_item)
+
+
+class _OwnedTestTtlv:
+    def __init__(self) -> None:
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def unique_identifier_ttlv_response_test_fixture(
+    operation: str,
+    identifier: bytes,
+    native_ttlv_address: int,
+    release_ttlv: Callable[[object], None],
+) -> SimpleNamespace:
+    identifier_buffer = ffi.new("uint8_t[]", identifier)
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", native_ttlv_address)
+
+    def typed_response(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        output.text_data = identifier_buffer  # type: ignore[attr-defined]
+        output.text_length = len(identifier)  # type: ignore[attr-defined]
+        return 0
+
+    def ttlv_response(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = native_ttlv  # type: ignore[index]
+        return 0
+
+    return SimpleNamespace(
+        identifier_buffer=identifier_buffer,
+        native_ttlv=native_ttlv,
+        native_ttlv_address=native_ttlv_address,
+        owned_ttlv=_OwnedTestTtlv(),
+        response_symbols={
+            f"kmipkit_client_batch_item_response_{operation}": typed_response,
+            f"kmipkit_client_batch_item_response_{operation}_ttlv": ttlv_response,
+            "kmipkit_ttlv_structure_release": release_ttlv,
+        },
+    )
 
 
 def install_ticket_native_response(
