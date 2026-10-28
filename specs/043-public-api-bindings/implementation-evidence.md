@@ -5982,5 +5982,52 @@ reports. However, the authorized temporary coverage-threshold exception for
 PR #104 means minimum coverage thresholds were not enforced by this run; no
 coverage-threshold pass is claimed. Per T085, preserve the branch exception
 until the remaining KMIPKIT-0043 work is complete, then restore the gate and
-run every required coverage check before review. T074's coverage-threshold
-verification remains open with T085.
+run every required coverage check before review. T074 is complete under the authorized temporary waiver.
+T085 remains open to restore and enforce the coverage thresholds.
+
+### T074 exact-head completion and temporary coverage waiver (2026-10-28)
+
+Exact-head CI run `40683592904` completed on documentation head
+`dc1ffc8d2642838002a55a50191e0f1a4dd88921`: 35 jobs succeeded, 2 scheduled
+jobs were skipped, and none failed (17m33s). The preceding code head
+`9ed3a81824f4738df764992699c175c6559b3620` passed SonarCloud at 2.902472%
+new duplication (1,180 duplicated lines / 40,655 new lines), below the
+unchanged 3% threshold.
+
+Coverage producer and collection jobs ran and generated reports. Under the
+authorized temporary PR #104 exception, minimum coverage thresholds were not
+enforced; this evidence does not claim that coverage thresholds passed. Keep
+the waiver until remaining KMIPKIT-0043 work is complete. T085 remains open to
+restore and enforce all required coverage gates.
+
+### T073 manifest-backed documentation and package metadata reconciliation (2026-10-28)
+
+The current manifest snapshot was reconciled into the English and Spanish
+Java/Python package guides and the T071 checkpoint. It records 37 verified,
+8 declared, and 11 blocked `client_1_0` operation rows; 14 declared and 1
+blocked capability; and 886/11,392 public declarations are verified, 1,345 declared, and 9,161 blocked,
+with 792 approved exclusions. T071 remains open and the
+strict complete-manifest gate remains intentionally unsatisfied.
+
+The existing strict metadata checks confirm the five public Rust crate names
+against Cargo metadata, the Java coordinate `org.kmipkit:kmipkit-java` against
+Maven metadata (with the Gradle group checked), and Python `kmipkit` against
+`project.name`. They also confirm the eight manifest package-family IDs use
+the release line and that the available Cargo, Maven, and Python version
+sources match `1.0.0`. The C family version is sourced from the internal
+`kmipkit-ffi` crate; this does not establish an external C distribution name.
+The manifest value `kmipkit-c` remains unverified as an external identity.
+T073 stays open.
+
+Focused command: `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_official_package_versions_match_the_manifest_release_line tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_rust_package_name_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_python_package_name_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_rust_python_and_java_metadata_identity_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_checks_rust_python_and_java_package_version_sources tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs -v`. It passed all 22 tests after the documentation reconciliation; the initial run exposed two stale documentation assertions.
+
+| Verification | Command or evidence | Result |
+|---|---|---|
+| Package identity/version sources | Focused `test_manifest_v2` identity and version-source tests | Pass, 5 tests. |
+| Manifest-backed bilingual guides and T073 readiness contracts | `test_t073_doc_reconciliation` and `test_t030_package_docs` | Pass, 17 tests after updating the stale operation/status snapshot. |
+| Fixed generated outputs | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 outputs current; none edited. |
+| Whitespace | `git diff --check` | Pass. |
+
+This slice reconciles only values supported by the current manifest and package
+metadata. It does not certify external publication identities or close the
+remaining T073 audit.

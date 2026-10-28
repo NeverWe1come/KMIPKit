@@ -76,16 +76,17 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **15 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **11 / 56** siguen en
 estado `blocked`. **8** filas están en estado `declared`: Create, Create Key
 Pair, Create Split Key, Hash, MAC, MAC Verify, Sign y Signature Verify. Sus
 mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. **33** mapeos de operación están en estado `verified`:
-Certify, Check, Decrypt, Delegated Login, Derive Key, Discover Versions,
+parte del repositorio. **37** mapeos de operación están en estado `verified`:
+Activate, Archive, Certify, Check, Decrypt, Delegated Login, Derive Key,
+Destroy, Discover Versions,
 Encrypt, Export, Get, Get Constraints, Get Usage Allocation, Import, Interop,
-Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query,
+Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 RNG Retrieve, RNG Seed, Set Constraints, Set Defaults y Validate. Logout envía
 el Ticket proporcionado por el llamador; no añade credenciales a peticiones

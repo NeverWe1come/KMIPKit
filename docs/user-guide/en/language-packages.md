@@ -72,17 +72,18 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **15 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **11 / 56** remain `blocked`.
 **8** rows are `declared`: Create, Create Key Pair, Create Split Key, Hash, MAC,
 MAC Verify, Sign, and Signature Verify. Their four-language request and
 response mappings are recorded; `declared` is not evidence of complete
 operation conformance. Do not infer operation availability from types or
 implementation code elsewhere in the repository.
-**33** operation mappings are `verified`:
-Certify, Check, Decrypt, Delegated Login, Derive Key, Discover Versions,
+**37** operation mappings are `verified`:
+Activate, Archive, Certify, Check, Decrypt, Delegated Login, Derive Key,
+Destroy, Discover Versions,
 Encrypt, Export, Get, Get Constraints, Get Usage Allocation, Import,
 Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping,
-PKCS#11, Query, Register, Revoke, Re-certify, Re-key, Re-key Key Pair,
+PKCS#11, Query, Recover, Register, Revoke, Re-certify, Re-key, Re-key Key Pair,
 Re-Provision, RNG Retrieve, RNG Seed, Set Constraints, Set Defaults, and
 Validate. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
