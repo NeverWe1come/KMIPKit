@@ -2,9 +2,9 @@
 
 This guide explains how to read KMIPKit's client profile evidence and use its
 explicit profile-validation entry point. Baseline Client runtime selection is
-currently unavailable: three caller-owned `SHALL NOT` requirements lack
-category-appropriate negative behavior tests. Typed mappings alone do not
-prove those prohibitions are enforced.
+available for its 294 mapped requirements, including caller-state rules for
+KMIP Specification v2.1 §§4.38 and 4.59. This enables typed rule validation;
+it does not establish official conformance evidence or server acceptance.
 
 ## Explicit per-exchange selection
 
@@ -30,28 +30,77 @@ fn execute_for_profile(
 ```
 
 The method validates applicability, dependencies, and complete typed rule
-coverage before any transport write. Baseline selection fails closed while the
-three negative behavior tests are missing. Once selectable, requests can still
-fail a rule check before transport I/O; inspect structured failures with
+coverage before any transport write. This context-free entry point supplies no
+remote object state, so requests that require such facts fail closed. Use the
+context-aware entry point below for those requests. Any request can still fail
+a rule check before transport I/O; inspect structured failures with
 `ClientError::profile_validation_error()`. The ordinary `Client::execute`
 method remains unprofiled and does not select a hidden default. Passing local
 checks does not establish server interoperability, official test-suite
 success, or profile conformance.
+
+## Caller-attested object state
+
+For rules that depend on remote object state, supply a separate context for
+this exchange. Bind each state entry to the zero-based batch item and the exact
+Text String Unique Identifier used by that request:
+
+```rust,no_run
+use kmipkit::{
+    Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
+    ProfileValidationContext, ProfileValidationSelection,
+};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_with_object_state(
+    client: &mut Client,
+    batch: ClientBatch,
+    object_id: &str,
+    limits: &CodecLimits,
+) -> Result<ClientBatchResponse, ClientError> {
+    let selection = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"]);
+    let context = ProfileValidationContext::new().with_object_state(
+        0,
+        ProfileObjectState::new(object_id)
+            .with_original_creation_date_present(Some(true)),
+    );
+    client.execute_with_profiles_and_context(batch, &selection, &context, limits)
+}
+```
+
+Each fact uses `Option`: `Some(true)` and `Some(false)` are caller assertions;
+`None` means unknown. Missing, unknown, duplicate, or mismatched entries fail
+before transport writes. KMIPKit does not query or cache state, infer it from
+another batch item, or verify whether a caller assertion is true. Identifiers
+and state values are redacted from validation errors and debug output.
+
+For Original Creation Date, KMIP Specification v2.1 §4.38 permits Add when the
+caller attests that the attribute is absent. Table 106 marks it non-modifiable
+and non-deletable by the client, so Modify, Delete, and Set are rejected even
+when the caller reports it absent; after it is set, §4.38 also prohibits
+updates or deletion. For Usage Limits, §4.59 and Table 149 prohibit a Total
+change after protection use begins or after Get Usage Allocation under
+DEC-024. A Set that changes Total requires known-present Usage Limits and the
+current Total and Count, preserves Count, and rejects a malformed structure
+that omits a required member from §7.40 Table 392. The separate KMIPKIT-0016
+restriction on Add/Modify Usage Limits remains in force. These checks enforce
+the rule against caller-supplied facts; the application is responsible for
+providing trustworthy state.
 
 ## Current status
 
 KMIP Specification v2.1 §14.1 requires a client to conform to one or more
 client profiles. KMIPKit records Baseline Client as the initial 1.0 evidence
 target. Target membership is a project planning choice. Runtime validation is
-currently unavailable while category-appropriate evidence is incomplete; it
-does not establish profile support or satisfy the specification's conformance
-requirement.
+available for Baseline Client's 294 mapped requirements. This enables local
+rule checks; it does not establish profile support or satisfy the
+specification's conformance requirement.
 
 The Baseline Client catalog state is `evidence_incomplete`. All 16 mandatory
 official fixtures are pinned. T036 records 13 full deterministic client
-replays and 3 typed preflight blockers. The three negative-test gaps are
-separate from those official-case blockers. Seventy-seven other linked profile
-cases have no local fixture. KMIPKit does not recreate or infer absent fixture
+replays and 3 typed preflight blockers. Seventy-seven other linked profile
+cases have no local fixture. These fixture and replay gaps remain independent
+from local runtime validation. KMIPKit does not recreate or infer absent fixture
 contents.
 
 The typed mapping for archived Locate retrieval records a caller-directed
@@ -137,7 +186,8 @@ evidence state, linked tests, and fixture availability as separate facts:
   to establish. It does not turn the profile into a runtime option.
 - **Runtime validation** requires a complete typed mapping and an
   executable, keyword-appropriate test for every applicable requirement.
-  Missing or incomplete mappings keep selection unavailable.
+  Baseline Client currently meets this runtime gate; its official evidence
+  status remains incomplete.
 - **Evidence state** reflects the catalog's recorded evidence. A local report
   cannot upgrade it, and stale `evidence_complete` data is treated as
   incomplete.

@@ -7886,3 +7886,42 @@ Follow-up QA found that `KMIPKIT-REQ-SPEC-6.1.14-002` also listed its metadata-o
 | Independent review | QA confirmed the evidence, catalog note, report count, and hand-reviewed registry are synchronized after corrections. Security review found no actionable issue in the fail-closed and evidence-classification changes, including the final test-only `6.1.14-002` correction. |
 
 The full report suite's first run executed 70 tests: 68 passed, one failed on a stale expected mapping inventory, and one was skipped. The expected multiset now includes the latest T040 mappings and the summary asserts exactly three category-test gaps; the previously failing full-report test passes in isolation after the final inventory correction. The full 70-test suite has not been rerun on the final worktree. The pinned-source integrity check passed against `origin/release/1.0.0`; exact-head hosted CI remains pending publication. No production attribute policy or caller-state contract is added by this correction; the two §4.59 conditions still need an explicit, separately reviewed state-context contract before negative behavior tests can be implemented without inventing remote state.
+
+## T040 correction: state-aware prohibitions and runtime evidence (2026-10-28)
+
+This entry supersedes the 2026-10-27 correction note that Baseline runtime selection was unavailable and that the three prohibited rules lacked behavior tests. The caller-state contract is in `contracts/profile-validation.md`; it binds caller-attested facts to one exchange item and its exact object identifier, without caching or discovering server state.
+
+KMIP Specification v2.1 §4.38 together with Table 106 makes Original Creation Date non-modifiable and non-deletable by the client, including when the caller attests that it is absent. Add is accepted only with known-absent state. Modify, Delete, and Set are rejected for both known-present and known-absent state; unknown state fails closed. The added client regression `original_creation_date_non_add_mutation_with_known_absent_state_is_rejected` verifies request rejection, source attribution, and zero transport exchanges. Its focused Green run passed (1 test).
+
+KMIP Specification v2.1 §4.59 and Table 149 prohibit changing Usage Limits Total after protection use begins or after Get Usage Allocation, following DEC-024's conservative intersection. Changing Total requires known-present Usage Limits and current Total/Count; Count is preserved. The implementation validates the complete nested structure in §7.40 Table 392, including required Unit, while preserving unknown members. The regression `usage_limits_total_set_rejects_missing_required_unit_before_transport` verifies the malformed Set is rejected before transport (1 test); its valid-structure control `usage_limits_total_set_preserves_count_when_protection_has_not_started` passes (1 test). These paths retain exact requirement/clause IDs and do not expose request bodies or caller state in errors.
+
+The report's hand-reviewed typed-mapping inventory now contains both behavior tests for KMIPKIT-REQ-SPEC-4.38-003. Tests and bilingual guides distinguish runtime validation availability from the still-incomplete official conformance evidence. The full report suite passes after correcting stale assertions about mapping multiplicity and selected/runtime state.
+
+| Check | Result |
+|---|---|
+| Red — caller-state prohibitions | The known-absent Original Creation Date mutation test initially returned the context-required code instead of the source-attributed request rejection. The malformed Usage Limits Set initially reached transport (one exchange). Both expected failures were observed before the Green behavior changes. |
+| Green — focused client regressions | `cargo test -p kmipkit-client --all-features --locked original_creation_date_non_add_mutation_with_known_absent_state_is_rejected`, `... usage_limits_total_set_rejects_missing_required_unit_before_transport`, and `... usage_limits_total_set_preserves_count_when_protection_has_not_started` — PASS (1 test each). |
+| Normative report | `py -3 -B -m unittest tools.normative_catalog.tests.test_report -v` — PASS, 70 tests, one expected POSIX symlink skip. |
+| Rust packages | `cargo test -p kmipkit-protocol -p kmipkit-client --all-features --locked --quiet` — PASS: client 602 unit tests plus all listed integration/UI targets; protocol 1,200 unit tests plus integration targets and doctests. `cargo test -p kmipkit --all-features --locked --quiet` — PASS: public facade integration and doctests. |
+| Quality | `cargo fmt --all --check` and `cargo clippy -p kmipkit-protocol -p kmipkit-client --all-targets --all-features --locked -- -D warnings` — PASS. Clippy required boxing private profile/requirement ID storage as `Box<str>`; public getters and structured IDs are unchanged. |
+| Catalog and generated output | Strict catalog validation — PASS (4 sources, 1,411 clauses, 4,137 records). Profile generator check and `report.py --check --repo-root .` — PASS. The report shows 294/294 typed mappings and category evidence; runtime selection is available. |
+| Source integrity | `git diff --quiet origin/release/1.0.0 -- specification/oasis/kmip-2.1/upstream` — PASS; pinned OASIS sources are unchanged. |
+
+Baseline remains `evidence_incomplete`: T036 still records three mandatory official-case preflight blockers and 77 linked cases without local fixtures. Runtime rule checks and deterministic client replays do not establish server interoperability or formal profile conformance. Exact-head hosted CI, final independent QA/security review, and the remaining T036 fixture work are open; keep PR #90 in draft.
+
+## T040 QA follow-up: allocation with unchanged Count (2026-10-28)
+
+Independent QA identified a missing scenario proving that the general Usage Limits Total prohibition owns the case where Get Usage Allocation has occurred but Count did not change. The pinned KMIP Specification v2.1 §4.59 and Table 149 are applied under accepted DEC-024: Total is immutable after any allocation, while the narrower §4.59 paragraph-3 requirement KMIPKIT-REQ-SPEC-4.59-003-001 applies when allocation changed Count.
+
+Added usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition. It submits a well-formed Set Attribute with changed Total and unchanged Count, caller-attests allocation performed and Count unchanged, then asserts zero exchanges, NotSent, RequestRuleRejected, and exact KMIPKIT-REQ-SPEC-4.59-002 / KMIPKIT-CLAUSE-SPEC-4.59-002 attribution. The existing Count-changed scenario continues to assert the narrower 4.59-003-001 attribution.
+
+The profile-unit traceability regression was first run red and failed because the 4.59-002 mapping lacked this exact behavior-test reference. Green adds the test to TYPED_RULE_MAPPINGS, the catalog verification references, and the generated coverage report. The final typed registry and report tests pass.
+
+| Check | Result |
+|---|---|
+| Red — missing evidence link | cargo test -p kmipkit-protocol --all-features --locked profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition — failed as expected because the required behavior-test evidence was absent from the mapping. |
+| Green — behavior and traceability | Focused client regression and focused protocol mapping regression — PASS (1 test each); test_typed_rule_registry_accepts_final_baseline_caller_owned_mappings — PASS. |
+| Full report suite | py -3 -B -m unittest tools.normative_catalog.tests.test_report -v — PASS, 70 tests, one expected POSIX symlink skip. |
+| Full Rust suites | cargo test -p kmipkit-protocol -p kmipkit-client --all-features --locked --quiet — PASS: 603 client unit tests, 1,201 protocol unit tests, plus all listed integration/UI/doctest targets. |
+
+Final independent QA re-review found no remaining findings. Independent security review found no actionable issue in the caller-state validation, error redaction, or NotSent behavior. This closes the runtime evidence gaps in T040; Baseline remains evidence_incomplete until T036's three mandatory official-case blockers and 77 linked cases without local fixtures are resolved. No OASIS case pass, server interoperability, or profile-conformance claim is made.

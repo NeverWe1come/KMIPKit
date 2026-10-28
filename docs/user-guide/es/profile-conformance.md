@@ -2,10 +2,10 @@
 
 Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
 usar su punto de entrada explícito de validación. La selección runtime de
-Baseline Client todavía no está disponible: tres requisitos `SHALL NOT`
-dependientes del llamador carecen de pruebas negativas de comportamiento de la
-categoría adecuada. Los mappings tipados por sí solos no prueban que se hagan
-cumplir esas prohibiciones.
+Baseline Client está disponible para sus 294 requisitos mapeados, incluidas las
+reglas que dependen del estado del llamador en KMIP Specification v2.1 §§4.38
+y 4.59. Esto habilita la validación de reglas tipadas, pero no demuestra la
+evidencia oficial de conformidad ni la aceptación del servidor.
 
 ## Selección explícita por intercambio
 
@@ -31,29 +31,80 @@ fn execute_for_profile(
 ```
 
 El método valida aplicabilidad, dependencias y cobertura tipada completa antes
-de escribir en el transporte. La selección de Baseline falla de forma cerrada
-mientras falten esas tres pruebas negativas. Cuando vuelva a estar disponible,
-una petición aún podrá fallar una regla antes de acceder al transporte;
-consulta los errores estructurados con
-`ClientError::profile_validation_error()`. `Client::execute` sigue sin perfil y
-no selecciona un valor predeterminado oculto. Superar las comprobaciones
-locales no demuestra interoperabilidad con servidores, éxito en las pruebas
-oficiales ni conformidad del perfil.
+de escribir en el transporte. Esta entrada, sin contexto, no aporta el estado
+remoto del objeto; las peticiones que necesiten esos datos fallan de forma
+cerrada. Para ellas usa la entrada que acepta contexto descrita abajo. Cualquier
+petición aún puede incumplir una regla antes del transporte; consulta los
+errores estructurados con `ClientError::profile_validation_error()`.
+`Client::execute` sigue sin perfil y no selecciona un valor predeterminado
+oculto. Superar las comprobaciones locales no demuestra interoperabilidad con
+servidores, éxito en las pruebas oficiales ni conformidad del perfil.
+
+## Estado del objeto declarado por el llamador
+
+Para las reglas que dependen del estado remoto, proporciona un contexto separado
+para ese intercambio. Vincula cada entrada al índice de lote (empezando por
+cero) y al Unique Identifier de tipo Text String exacto de la petición:
+
+```rust,no_run
+use kmipkit::{
+    Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
+    ProfileValidationContext, ProfileValidationSelection,
+};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn execute_with_object_state(
+    client: &mut Client,
+    batch: ClientBatch,
+    object_id: &str,
+    limits: &CodecLimits,
+) -> Result<ClientBatchResponse, ClientError> {
+    let selection = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"]);
+    let context = ProfileValidationContext::new().with_object_state(
+        0,
+        ProfileObjectState::new(object_id)
+            .with_original_creation_date_present(Some(true)),
+    );
+    client.execute_with_profiles_and_context(batch, &selection, &context, limits)
+}
+```
+
+Cada hecho usa `Option`: `Some(true)` y `Some(false)` son afirmaciones del
+llamador; `None` significa desconocido. Las entradas ausentes, desconocidas,
+duplicadas o que no coincidan fallan antes de escribir en el transporte.
+KMIPKit no consulta ni almacena el estado, no lo deduce de otro elemento del
+lote ni verifica que la afirmación del llamador sea cierta. Los identificadores
+y valores de estado se ocultan en errores y en la salida de depuración.
+
+Para Original Creation Date, KMIP Specification v2.1 §4.38 permite Add si el
+llamador afirma que el atributo no existe. La Tabla 106 indica que el cliente
+no puede modificarlo ni eliminarlo, por lo que Modify, Delete y Set se rechazan
+incluso si el llamador afirma que está ausente; una vez establecido, §4.38
+también prohíbe actualizarlo o eliminarlo. Para Usage Limits, §4.59 y la
+Tabla 149 prohíben cambiar Total cuando ya empezó el uso de protección o
+después de Get Usage Allocation, según DEC-024. Un Set que cambie Total exige
+Usage Limits presente y conocido, los valores actuales de Total y Count,
+conserva Count y rechaza una estructura mal formada que omita un miembro
+obligatorio de §7.40 Tabla 392. Sigue vigente la restricción independiente de
+KMIPKIT-0016 para Add/Modify Usage Limits. La aplicación es responsable de
+aportar un estado fiable.
 
 ## Estado actual
 
 KMIP Specification v2.1 §14.1 exige que un cliente cumpla uno o más perfiles
 cliente. KMIPKit registra Baseline Client como objetivo inicial de 1.0 para el
 trabajo de evidencia. Esa selección es una decisión de planificación. La
-validación runtime sigue deshabilitada mientras falte evidencia de categoría;
-no demuestra conformidad ni satisface por sí sola el requisito del estándar.
+validación runtime está disponible para los 294 requisitos mapeados de Baseline
+Client. Esto habilita comprobaciones locales de reglas, pero no demuestra el
+soporte del perfil ni satisface por sí solo el requisito de conformidad del
+estándar.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales obligatorios están fijados en el repositorio. T036 registra
 13 reproducciones deterministas completas del cliente y 3 bloqueos previos al
-envío causados por la validación tipada. Las tres carencias de pruebas
-negativas son independientes de esos bloqueos oficiales. Otros 77 casos
-vinculados a perfiles no tienen fixture local. KMIPKit no reconstruye ni deduce
+envío causados por la validación tipada. Otros 77 casos vinculados a perfiles
+no tienen fixture local. Estas carencias de fixtures y reproducciones son
+independientes de la validación runtime local. KMIPKit no reconstruye ni deduce
 el contenido de fixtures ausentes.
 
 El mapping tipado para recuperar resultados archivados de Locate solo registra
@@ -145,7 +196,8 @@ catálogo, las pruebas enlazadas y la disponibilidad de fixtures:
   pretende establecer. No lo convierte en una opción de tiempo de ejecución.
 - **Validación en tiempo de ejecución** requiere una regla tipada completa y
   una prueba ejecutable y adecuada a la categoría de cada requisito aplicable.
-  Si falta una regla o está incompleta, la selección sigue deshabilitada.
+  Baseline Client ya cumple este control runtime; su estado de evidencia
+  oficial sigue incompleto.
 - **Estado de evidencia** refleja la evidencia registrada en el catálogo. Un
   informe local no puede mejorarlo; los datos obsoletos `evidence_complete`
   se tratan como incompletos.

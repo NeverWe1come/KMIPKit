@@ -61,14 +61,14 @@ For each KMIP 2.1 client profile, record:
 Inventory records keep profile applicability, selected target, runtime
 validation availability, catalog evidence state, fixture availability, and
 public claims separate. Baseline Client is the selected 1.0 evidence target;
-its 294-requirement closure has typed mappings, but explicit runtime selection
-remains unavailable because three caller-owned `SHALL NOT` requirements lack
-category-appropriate negative behavior tests. Its catalog `claim_state`
-remains `evidence_incomplete`. The 16 mandatory official XML fixtures are
-pinned in the repository. T036 records 13 full deterministic client replays
-and 3 typed preflight blockers; replay evidence does not establish server
-interoperability or profile conformance. No profile conformance claim is
-published by KMIPKIT-0010.
+its 294-requirement closure has typed mappings and category-appropriate
+negative behavior tests, so explicit runtime selection is available. Its catalog
+`claim_state` remains `evidence_incomplete`: the 16 mandatory official XML
+fixtures are pinned, while T036 records 13 full deterministic client replays
+and 3 typed preflight blockers. Seventy-seven other linked profile cases have
+no local fixture. Local runtime validation and replay evidence do not establish
+server interoperability or profile conformance. No profile conformance claim
+is published by KMIPKIT-0010.
 Other profile records retain their own catalog states; none of these fields is
 itself a public claim.
 
@@ -114,8 +114,9 @@ Use the following stages independently:
 
 Baseline remains ineligible for a formal profile claim because T036 still has
 three mandatory cases blocked before full replay and current protected-branch
-and app-token evidence has not been established. Runtime selection also stays
-blocked until the three missing negative behavior tests are implemented.
+and app-token evidence has not been established. Runtime selection being
+available means only that selected typed rules can be evaluated before and
+after an exchange; it does not close those external evidence gates.
 The registry also includes a mapping for Wrapped Secret Data under
 KMIPKIT-REQ-SPEC-2.7-001. See the
 [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for

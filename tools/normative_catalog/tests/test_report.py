@@ -2042,7 +2042,7 @@ mod unrelated {
             and len(row.split("|")) == 9
         )
         self.assertNotIn("category test references missing: 1", baseline_blocker_row)
-        self.assertIn("category test references missing: 3", baseline_blocker_row)
+        self.assertIn("no stable-input blockers", baseline_blocker_row)
 
     def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -2103,7 +2103,7 @@ mod unrelated {
         self.assertIn("Opaque Data Type", requirement_row)
         self.assertIn("6927-6945", requirement_row)
 
-    def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
+    def test_full_profile_report_keeps_evidence_incomplete_with_runtime_ready_baseline_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
@@ -2703,12 +2703,13 @@ mod unrelated {
                     "KMIPKIT-REQ-SPEC-7.31-001",
                     "KMIPKIT-REQ-SPEC-7.32-001",
                     "KMIPKIT-REQ-SPEC-7.32-001",
-                    # KMIPKIT-0010 T040: final Baseline mappings; the three
-                    # SHALL NOT rules intentionally remain without false
-                    # category evidence until state-aware enforcement exists.
+                    # KMIPKIT-0010 T040: final Baseline mappings, including
+                    # both state-aware negative tests for Original Creation Date.
                     *["KMIPKIT-REQ-SPEC-4-001-003"] * 11,
                     "KMIPKIT-REQ-SPEC-4.38-003",
+                    "KMIPKIT-REQ-SPEC-4.38-003",
                     "KMIPKIT-REQ-SPEC-4.57-005-002",
+                    "KMIPKIT-REQ-SPEC-4.59-002",
                     "KMIPKIT-REQ-SPEC-4.59-002",
                     "KMIPKIT-REQ-SPEC-4.59-003-001",
                     "KMIPKIT-REQ-SPEC-6.1.14-002",
@@ -2722,8 +2723,7 @@ mod unrelated {
             line for line in profile_state_section.splitlines()
             if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
         )
-        self.assertIn("| selected | false |", baseline_row)
-        self.assertIn("| selected | false | evidence\\_incomplete |", baseline_row)
+        self.assertIn("| selected | true | evidence\\_incomplete |", baseline_row)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)
@@ -2765,7 +2765,7 @@ mod unrelated {
         )
 
         self.assertIs(readiness["target_selected"], True)
-        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertIs(readiness["runtime_validation_available"], True)
         self.assertEqual("evidence_incomplete", readiness["effective_state"])
         self.assertIn("catalog claim_state evidence_complete is stale", readiness["blockers"])
         self.assertIs(readiness["published_claim"], False)

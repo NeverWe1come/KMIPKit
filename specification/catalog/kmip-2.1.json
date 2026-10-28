@@ -29798,7 +29798,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-TAG-4200BC"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.38-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
@@ -66622,8 +66624,12 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::usage_limits_structure_is_well_formed"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_set_rejects_missing_required_unit_before_transport"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes"
     },
@@ -83425,7 +83431,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. The three blocked mandatory official case replays and other evidence requirements also remain incomplete; this mapping does not establish a Profile conformance claim."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 still has three mandatory official case preflight blockers and 77 linked profile cases without local fixtures; this mapping does not establish a Profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-001",
@@ -83478,7 +83484,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. Baseline's 294-requirement closure has typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Mandatory official-case evidence also remains incomplete; this does not establish full Specification support or Profile conformance."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Mandatory official-case evidence remains incomplete; this does not establish full Specification support or Profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-002",
@@ -83584,7 +83590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 typed mappings and 291 category-test references; three prohibited rules lack negative behavior tests, so runtime selection remains unavailable. T036 also has three mandatory official-case blockers; no Profile conformance claim is made."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 still has three mandatory official case preflight blockers and 77 linked profile cases without local fixtures; no Profile conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
@@ -86716,7 +86722,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and test evidence. This verifies the readiness gate only; Baseline Client has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Official evidence also remains incomplete, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and category-appropriate test evidence. Baseline now has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Official fixture evidence remains incomplete, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
@@ -86769,7 +86775,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; Baseline Client has 294 typed mappings, but three prohibited rules lack category-appropriate negative behavior evidence, so runtime selection remains unavailable. Official conformance evidence also remains incomplete, so no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and category-appropriate executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; Baseline now has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Official conformance evidence remains incomplete, and no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.1-001",
@@ -90934,27 +90940,32 @@
       "source_keyword": "SHALL NOT",
       "normative_strength": "prohibited",
       "subject": "Original Creation Date immutability",
-      "summary": "Once set, the client must not delete or update Original Creation Date.",
+      "summary": "The client must not modify or delete Original Creation Date; once set, it must not update or delete it.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "After Original Creation Date has been set; the caller must know whether the remote object already has a value.",
+      "condition": "Table 106 marks the attribute non-modifiable and non-deletable by the client. Section 4.38 also prohibits deleting or updating it once set; the caller supplies state only to distinguish permitted Add when absent.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
       ],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/profile.rs"
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_immutability_as_caller_owned_prohibition",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_non_add_mutation_with_known_absent_state_is_rejected"
       ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.38 and Tables 105–106 permit the client to set Original Creation Date initially and prohibit changing or deleting it after it is set. Because remote object state is not retained by KMIPKit, the rule is a caller-owned condition for the selected Baseline optional attribute capability. The profile mapping test verifies the caller-owned disposition only; it does not inspect remote object state or enforce immutability locally."
+      "review_note": "KMIP Specification v2.1 §4.38 and Tables 105–106 permit Add when Original Creation Date is absent, mark the attribute non-modifiable and non-deletable by the client, and prohibit updates or deletion once set. The selected Baseline rule uses explicit exchange-scoped caller state bound to the exact request batch item and Unique Identifier; it rejects Modify, Delete, and Set for both known-present and known-absent state, and permits Add only when absent. Negative behavioral tests assert zero transport writes. Errors redact the identifier and caller state; KMIPKit does not infer or cache remote state."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.4-001",
@@ -92148,12 +92159,16 @@
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_set_preserves_count_when_protection_has_not_started"
       ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.59 prose prohibits changing Usage Limits Total after protection use begins, while Table 149 permits client modification only before Get Usage Allocation. Under DEC-024, the client applies the conservative intersection: either condition prohibits mutation. The source tension is recorded in KMIPKIT-DISC-055. The profile mapping test verifies the caller-owned state condition only; KMIPKit does not track remote protection use or allocation state."
+      "review_note": "KMIP Specification v2.1 §4.59 and Table 149 prohibit changing Usage Limits Total after protection use begins or Get Usage Allocation has been performed under accepted DEC-024. The caller supplies those facts and the current Total/Count for a Set that changes Total; the evaluator rejects before transport when a prohibition applies and permits the tested false-state case while preserving Count. It does not infer or cache server state. The existing KMIPKIT-0016 Add/Modify restriction remains independently enforced."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001",
@@ -92209,12 +92224,13 @@
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed"
       ],
       "negative_verification_required": true,
       "decision_id": "KMIPKIT-DEC-024",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit client changes to Usage Limits Total after Get Usage Allocation changes Count. This is a caller-owned remote-state condition; KMIPKIT-DISC-055 records the related prose/table tension. The profile mapping test verifies the caller-owned state condition only; KMIPKit does not track remote Count allocation state."
+      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 and Table 149 prohibit changing Usage Limits Total after Get Usage Allocation changes Count. The explicit exchange context binds that caller-attested condition to the request item and object identifier. The negative behavior test proves zero writes and exact 4.59-003-001 attribution only when Count changed; the evaluator does not infer or cache remote state."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-002",
@@ -92260,12 +92276,13 @@
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_usage_limits_count_in_add_and_modify_attribute",
-        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify"
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_set_cannot_change_count"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.59, paragraph 3, states that the Usage Limits Count value SHALL NOT be set or modified by the client through Add Attribute or Modify Attribute. Section 7.40 Table 392 defines Count as a member of the Usage Limits structure. The typed Baseline Client rule rejects Count in the New Attribute value for either operation, while this source clause does not prohibit Total or Unit by themselves and does not constrain unrelated operations. The linked profile test exercises both prohibited operations, allowed Total/Unit-only values, and an unrelated operation; the client execution test supplies negative pre-send evidence. The pinned official OASIS Test Cases inventory has no requirement-specific test ID for this clause, so no official OASIS Test Cases execution is claimed."
+      "review_note": "KMIP Specification v2.1 §4.59 paragraph 3 prohibits client Count writes through Add Attribute or Modify Attribute; Table 149 limits client-modifiable Usage Limits members to Total and Unit. The existing Add/Modify enforcement remains intact. For the explicitly supported Set path that changes Total, caller context and a behavior test require Count to remain unchanged; the test proves rejection before transport. This context does not override the KMIPKIT-0016 Add/Modify restriction."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.60-001",
