@@ -602,7 +602,9 @@ def _status_only_authorizes_implementation(status: str) -> bool:
     return re.search(
         r"\bautonomous\b"
         r"|\b(?:standing|direct)\s+(?:human\s+)?instruction\b"
+        r"|\bstanding\s+(?:direct\s+)?authorization\b"
         r"|\b(?:implementation|scope)\s+authorization\b"
+        r"|\bauthorizes?\s+(?:the\s+)?(?:defined\s+)?(?:feature\s+)?scope\s+for\s+implementation\b"
         r"|\bimplementation\s+only\b"
         r"|\b(?:acceptance|approval)\s+(?:is\s+)?pending\b"
         r"|\bnot\s+(?:formal(?:ly)?\s+)?acceptance\b"
