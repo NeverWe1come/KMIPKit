@@ -8140,4 +8140,15 @@ After T040 closed, T045's replay check was rerun. The test records 13 replayed p
 | Independent closeout review | Read-only review of `e38052ad8` | PASS: no remaining findings; Baseline remains `evidence_incomplete`. |
 | Immutable upstream sources | `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4` | PASS: pinned OASIS upstream sources match the release base. |
 
-T026, T043, and T056 remain open. PR #90 remains a draft until those separately tracked gates are complete.
+T026 and T043 remain open. T026 awaits protected-release evidence requiring repository administration; T043 restores the coverage thresholds after the remaining KMIPKIT-0010 gates are completed. PR #90 remains a draft.
+
+## KMIPKIT-0010 T056 exact-head closeout (2026-10-28)
+
+T056 is complete: the 14 requirements listed in the task have typed Baseline mappings and category-appropriate executable evidence, including credential shape, optional Authentication, declared response capacity, critical and non-critical Message Extensions, and caller-owned Hashed Password Timestamp monotonicity under OD-003. This does not claim Credential transmission, server-side authentication, official OASIS case execution, or Baseline profile conformance. Baseline remains evidence_incomplete for the separately tracked T036 fixture blockers.
+
+| Evidence | Run or revision | Result |
+|---|---|---|
+| Exact-head hosted CI | https://github.com/NeverWe1come/KMIPKit/actions/runs/40670555546, head be90b8548b9a37a6c6ed183660d68a7b2651a41c | PASS in 17m31s; 35 jobs passed, 2 schedule-only jobs skipped, zero failures. |
+| CodeQL and workflow audit | https://github.com/NeverWe1come/KMIPKit/actions/runs/40670555528; https://github.com/NeverWe1come/KMIPKit/actions/runs/40670555639 | PASS. |
+| SonarCloud | PR #90 check on the same head | PASS. |
+| Independent QA and security review | T056 evidence recorded above | PASS with no remaining findings. |
