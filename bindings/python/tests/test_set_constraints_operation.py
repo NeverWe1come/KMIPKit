@@ -1,38 +1,26 @@
 from __future__ import annotations
 
 import queue
-import socket
 import ssl
-import struct
 import threading
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from _test_support import mtls_transport_config, require_tls13_mtls_peer
+from _test_support import (
+    mtls_transport_config,
+    operation_response_message,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_structure,
+)
+
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _SET_CONSTRAINTS_ID = b"set-constraints-0"
-
-
-def _tlv_item(tag: int, item_type: int, value: bytes) -> bytes:
-    return (
-        tag.to_bytes(3, "big")
-        + bytes((item_type,))
-        + len(value).to_bytes(4, "big")
-        + value
-        + bytes((-len(value)) % 8)
-    )
-
-
-def _tlv_structure(tag: int, *children: bytes) -> bytes:
-    return _tlv_item(tag, 1, b"".join(children))
-
-
-def _tlv_enumeration(tag: int, value: int) -> bytes:
-    return _tlv_item(tag, 5, struct.pack(">I", value))
 
 
 def _set_constraints_response_message(
@@ -42,83 +30,31 @@ def _set_constraints_response_message(
     result_message: str | None = None,
     pending_correlation_value: bytes | None = None,
 ) -> bytes:
-    version = _tlv_structure(
-        0x420069,
-        _tlv_item(0x42006A, 2, struct.pack(">i", 2)),
-        _tlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    return operation_response_message(
+        0x37,
+        _SET_CONSTRAINTS_ID,
+        result_status=result_status,
+        result_reason=result_reason,
+        result_message=result_message,
+        pending_correlation_value=pending_correlation_value,
     )
-    header = _tlv_structure(
-        0x42007A,
-        version,
-        _tlv_item(0x420092, 9, struct.pack(">q", 1)),
-        _tlv_item(0x42000D, 2, struct.pack(">i", 1)),
-    )
-    response_fields = [
-        _tlv_enumeration(0x42005C, 0x37),
-        _tlv_item(0x420093, 8, _SET_CONSTRAINTS_ID),
-        _tlv_enumeration(0x42007F, result_status),
-    ]
-    if result_reason is not None:
-        response_fields.append(_tlv_enumeration(0x42007E, result_reason))
-    if result_message is not None:
-        response_fields.append(_tlv_item(0x42007D, 7, result_message.encode()))
-    if pending_correlation_value is not None:
-        response_fields.append(_tlv_item(0x420006, 8, pending_correlation_value))
-    if result_status in (0, 2):
-        response_fields.append(_tlv_structure(0x42007C))
-    response_item = _tlv_structure(0x42000F, *response_fields)
-    return _tlv_structure(0x42007B, header, response_item)
-
-
-def _read_exact(stream: ssl.SSLSocket, size: int) -> bytes:
-    output = bytearray()
-    while len(output) < size:
-        chunk = stream.recv(size - len(output))
-        if not chunk:
-            raise AssertionError("client closed before sending a complete request")
-        output.extend(chunk)
-    return bytes(output)
 
 
 def _start_set_constraints_mtls_peer(
     response_message: bytes | None = None,
 ) -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
-    listener = socket.socket()
-    listener.bind(("127.0.0.1", 0))
-    listener.listen(1)
-    listener.settimeout(10)
     received: list[bytes] = []
-    failures: queue.Queue[Exception] = queue.Queue()
 
-    def serve() -> None:
-        try:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.minimum_version = ssl.TLSVersion.TLSv1_3
-            context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(
-                _TLS_FIXTURES / "server-cert.pem", _TLS_FIXTURES / "server-key.pem"
-            )
-            context.load_verify_locations(cafile=_TLS_FIXTURES / "client-cert.pem")
-            context.verify_mode = ssl.CERT_REQUIRED
-            raw, _ = listener.accept()
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                require_tls13_mtls_peer(stream)
-                prefix = _read_exact(stream, 8)
-                message_length = int.from_bytes(prefix[4:8], "big")
-                received.append(prefix + _read_exact(stream, message_length))
-                stream.sendall(
-                    _set_constraints_response_message()
-                    if response_message is None
-                    else response_message
-                )
-        except Exception as error:  # noqa: BLE001 - report peer failures from the fixture thread.
-            failures.put(error)
-        finally:
-            listener.close()
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(
+            _set_constraints_response_message()
+            if response_message is None
+            else response_message
+        )
 
-    peer = threading.Thread(target=serve, daemon=True)
-    peer.start()
-    return listener.getsockname()[1], received, failures, peer
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    return port, received, failures, peer
 
 
 def _set_constraints_transport(port: int) -> client.TransportConfig:
@@ -243,8 +179,8 @@ def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_succe
 
         assert failures.empty(), "the loopback mTLS peer must complete its response"
         assert len(received) == 1
-        assert _tlv_enumeration(0x42005C, 0x37) in received[0]
-        assert _tlv_structure(0x420168) in received[0]
+        assert ttlv_enumeration(0x42005C, 0x37) in received[0]
+        assert ttlv_structure(0x420168) in received[0]
         assert result is not None and len(result.items) == 1
         item_result = result.items[0]
         assert item_result.operation == 0x37 and item_result.result_status == 0

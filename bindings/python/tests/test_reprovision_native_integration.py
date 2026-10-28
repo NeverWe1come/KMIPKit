@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import queue
-import socket
 import ssl
 import struct
 import threading
 from pathlib import Path
 from typing import NamedTuple
 
-from _test_support import mtls_transport_config, require_tls13_mtls_peer
+from _test_support import mtls_transport_config, read_ttlv_frame, start_tls13_mtls_peer
+
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -68,54 +68,16 @@ def _response_without_identifiers() -> bytes:
     return _structure(0x42007B, header, *items)
 
 
-def _read_exact(stream: ssl.SSLSocket, size: int) -> bytes:
-    output = bytearray()
-    while len(output) < size:
-        chunk = stream.recv(size - len(output))
-        if not chunk:
-            raise AssertionError("client closed before sending a complete request")
-        output.extend(chunk)
-    return bytes(output)
-
-
-def _read_frame(stream: ssl.SSLSocket) -> bytes:
-    header = _read_exact(stream, 8)
-    return header + _read_exact(stream, int.from_bytes(header[4:8], "big"))
-
-
 def _start_mtls_peer(
     response: bytes,
 ) -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
-    listener = socket.socket()
-    listener.bind(("127.0.0.1", 0))
-    listener.listen(1)
-    listener.settimeout(10)
-    port = listener.getsockname()[1]
     received: list[bytes] = []
-    failures: queue.Queue[Exception] = queue.Queue()
 
-    def serve() -> None:
-        try:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.minimum_version = ssl.TLSVersion.TLSv1_3
-            context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(
-                _FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem"
-            )
-            context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
-            context.verify_mode = ssl.CERT_REQUIRED
-            raw, _ = listener.accept()
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                require_tls13_mtls_peer(stream)
-                received.append(_read_frame(stream))
-                stream.sendall(response)
-        except Exception as error:  # noqa: BLE001 - surface peer errors in the test thread.
-            failures.put(error)
-        finally:
-            listener.close()
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(response)
 
-    peer = threading.Thread(target=serve, daemon=True)
-    peer.start()
+    port, failures, peer = start_tls13_mtls_peer(_FIXTURES, handle)
     return port, received, failures, peer
 
 

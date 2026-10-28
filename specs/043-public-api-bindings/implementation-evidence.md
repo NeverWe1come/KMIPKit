@@ -5806,3 +5806,28 @@ The SonarCloud per-file duplication response for PR 104 identifies repeated
 mTLS client configuration in the operation test files. The refactor targets
 that test-only setup; the 3% project gate remains unchanged and still requires
 an exact-head SonarCloud rerun.
+
+### T074 shared Python operation response and TLS peer fixtures (2026-10-28)
+
+The SonarCloud per-file duplication API identified repeated response encoding
+and TLS peer setup in the Set Defaults and Set Constraints operation tests, and
+shared mTLS peer blocks in Rekey Key Pair and Reprovision integration tests.
+The test support module now owns the common TTLV response encoding, full-frame
+reader, and one-connection TLS 1.3 mutual-authentication server setup. The
+operation wrappers continue to provide their own operation codes, batch IDs,
+response payloads, and request assertions. Peer-specific EOF messages remain
+configurable and unchanged.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `39625b9e1` | `tests/test_tls_peer_support.py` shared operation response fixture and TLS peer failure tests | Expected collection failure: the shared operation response builder did not yet exist. |
+| Green | `e3ba5cdcb` | `tests/test_tls_peer_support.py` | Pass, 8 tests; exact default wire bytes for Set Defaults and Set Constraints are preserved, and a real TLS 1.3 mTLS callback failure reaches the peer error queue. |
+| Red | `4f836230f` | `test_ttlv_frame_reader_preserves_operation_specific_eof_message` | Expected failure: the shared TTLV reader did not accept the existing Rekey Key Pair EOF wording. |
+| Green | `773cc079f` | `tests/test_tls_peer_support.py` | Pass, 9 tests; the shared reader retains caller-specific EOF text. |
+| Refactor | this commit | Focused native-backed mTLS integration and operation suite across 15 modules plus peer-support tests | Pass, 80 tests. The operation-specific expected response IDs/codes, payload checks, and lifecycle assertions remain in their tests. |
+| Refactor | this commit | Ruff `I001` check on changed test modules; `cargo fmt --all --check`; `git diff --check` | Pass. |
+| Refactor | this commit | API parity support and T076 mapping unit suites; manifest generator check | Pass, 55 tests; all 12 generated API outputs verified. |
+
+These changes are limited to Python test support and its test callers. The
+production facade and the 3% duplication threshold are unchanged; an exact-head
+SonarCloud rerun is still needed to measure the gate.
