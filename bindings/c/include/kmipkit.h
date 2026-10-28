@@ -1108,6 +1108,11 @@ int32_t kmipkit_client_batch_item_response_recover(kmipkit_client_batch_item_res
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_get_attribute_list(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates a KMIP 2.1 §6.1.20 Get Attributes request from an optional Text String Unique Identifier and ordered Attribute References.
+ * Duplicate identical Attribute References are invalid. The input array is borrowed and copied; a null Unique Identifier omits that optional field.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_get_attributes(const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_attribute_reference_v1_t * attribute_references, uint64_t attribute_reference_count, kmipkit_client_batch_item_t ** out_item);
 /* Returns a caller-owned generic TTLV copy of the successful Get Attribute List Response Payload, preserving Unique Identifier and ordered Attribute References.
  * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
  */
@@ -1119,6 +1124,12 @@ int32_t kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(kmipk
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_get_attribute_list(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_attribute_reference_v1_t * out_references, uint64_t capacity, uint64_t * out_count);
+/* Copies the successful Get Attributes Response Unique Identifier and direct Attributes contents to caller-owned generic TTLV.
+ * Repeated and unknown items retain wire order and raw values. Non-success results set present to 0 and the output handle to NULL.
+ * Release a non-NULL Attributes handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_get_attributes(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_ttlv_structure_t ** out_attributes);
 /* Creates a KMIP 2.1 §6.1.2 Add Attribute request. The optional Unique Identifier must be a Text String.
  * The New Attribute is one borrowed direct TTLV Item; KMIPKit copies it and the caller retains ownership.
  */

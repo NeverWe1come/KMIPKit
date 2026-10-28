@@ -62,7 +62,8 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
         panic!("the batch item contains Get Attributes");
     };
     let payload = request.to_ttlv_payload().expect("the request is valid");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 2);
     assert_eq!(fields[0].tag().raw(), 0x0042_013b);
     assert_eq!(fields[1].tag().raw(), 0x0042_013b);

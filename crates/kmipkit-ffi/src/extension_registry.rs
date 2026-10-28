@@ -43,7 +43,8 @@ use kmipkit_protocol::{
     CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DelegatedLoginRequest,
     DeleteAttributeRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
     DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
-    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
+    GetAttributesRequest, GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest,
+    InteropRequest,
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, NewAttribute, ObjectGroupMember,
     ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError,
@@ -148,6 +149,7 @@ const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_VALIDATE_INPUT_ITEMS: u64 = 100_000;
+const MAX_GET_ATTRIBUTES_REFERENCES: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
@@ -4335,6 +4337,38 @@ pub extern "C" fn kmipkit_client_batch_item_get_attribute_list(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_attribute_list(
             GetAttributeListRequest::new(identifier),
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.20 Get Attributes request from an optional Text
+/// String Unique Identifier and zero or more ordered Attribute References.
+/// The reference array is borrowed and copied; duplicate references are rejected.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_attributes(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let source_references = try_ffi!(input_array(
+            attribute_references,
+            attribute_reference_count,
+            MAX_GET_ATTRIBUTES_REFERENCES,
+        ));
+        let mut references = Vec::new();
+        try_ffi!(references
+            .try_reserve_exact(source_references.len())
+            .map_err(|_| ERROR_RESOURCE_LIMIT));
+        for reference in source_references {
+            references.push(try_ffi!(copy_attribute_reference(ptr::from_ref(reference))));
+        }
+        let request = try_ffi!(GetAttributesRequest::try_new(unique_identifier, references)
+            .map_err(|_| ERROR_INVALID_INPUT));
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_attributes(request)));
         SUCCESS
     })
 }

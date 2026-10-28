@@ -3115,6 +3115,81 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_
     })
 }
 
+/// Copies the successful Get Attributes identifier and direct Attributes as
+/// caller-owned generic TTLV. Non-success and other-operation results expose
+/// neither operation field. Repeated items retain their original order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get_attributes(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_attributes: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || out_attributes.is_null()
+            || !out_present.is_aligned()
+            || !out_unique_identifier.is_aligned()
+            || !out_attributes.is_aligned()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+            || ffi_output_ranges_overlap(out_present, out_attributes)
+            || ffi_output_ranges_overlap(out_unique_identifier, out_attributes)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let unique_identifier = scalar_out!(out_unique_identifier);
+        let attributes_output = out_slot!(out_attributes);
+        *present = 0;
+        *attributes_output = ptr::null_mut();
+        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let kmipkit_client::ClientBatchOutcome::GetAttributes(result) = item.outcome() else {
+            return SUCCESS;
+        };
+        let (Some(value), Some(attribute_set)) =
+            (result.unique_identifier(), result.attributes())
+        else {
+            return SUCCESS;
+        };
+
+        let mut attributes = Structure::new();
+        for attribute in attribute_set.as_items() {
+            let copy = match attribute.try_clone() {
+                Ok(copy) => copy,
+                Err(error) => return record_ffi_error(model_status(error)),
+            };
+            if let Err(error) = attributes.try_push(copy) {
+                return record_ffi_error(model_status(error));
+            }
+        }
+        let attributes_handle: *mut kmipkit_ttlv_structure_t = match try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(attributes),
+        ) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
+            release(attributes_handle, Kind::Structure);
+            return record_ffi_error(status);
+        }
+        *attributes_output = attributes_handle;
+        *present = 1;
+        SUCCESS
+    })
+}
+
 #[derive(Clone, Copy)]
 enum AttributeMutationResponseKind {
     Add,

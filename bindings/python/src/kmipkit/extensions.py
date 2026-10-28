@@ -14,7 +14,7 @@ generic TTLV intact; Python never infers identity by rescanning payload content.
 from __future__ import annotations
 
 import sys
-from collections.abc import Iterable, Iterator, Sized
+from collections.abc import Iterable, Iterator, Sequence, Sized
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
@@ -86,6 +86,7 @@ _MAX_TEXT_BYTES_PER_FIELD = 4_096
 _MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 _MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
+_MAX_ATTRIBUTE_REFERENCES = 100_000
 _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
     {
         "kmipkit_client_batch_item_pkcs11",
@@ -99,6 +100,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_rng_seed",
         "kmipkit_client_batch_item_set_constraints",
         "kmipkit_client_batch_item_set_defaults",
+        "kmipkit_client_batch_item_get_attributes",
         "kmipkit_client_batch_item_validate",
         "kmipkit_client_batch_item_activate",
         "kmipkit_client_batch_item_archive",
@@ -1929,6 +1931,24 @@ def _client_native_attribute_reference(
     return reference
 
 
+def _client_native_attribute_reference_array(
+    values: Sequence[AttributeReference],
+    staging_buffers: list[Any],
+) -> tuple[Any, int]:
+    """Build a bounded, ordered ABI array of borrowed Attribute References."""
+    snapshot = _bounded_snapshot(values, _MAX_ATTRIBUTE_REFERENCES)
+    if not snapshot:
+        return None, 0
+    references = _client_ffi.new(
+        "kmipkit_attribute_reference_v1_t[]", len(snapshot)
+    )
+    staging_buffers.append(references)
+    for index, value in enumerate(snapshot):
+        reference = _client_native_attribute_reference(value, staging_buffers)
+        references[index] = reference[0]
+    return references, len(snapshot)
+
+
 def _native_value(value: ttlv.Value | None) -> Any:
     if value is None:
         return ffi.NULL
@@ -2416,6 +2436,33 @@ def client_batch_item_get_attribute_list(
             "kmipkit_client_batch_item_t",
             "kmipkit_client_batch_item_get_attribute_list",
             (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_get_attributes(
+    unique_identifier: UniqueIdentifier | None,
+    attribute_references: Sequence[AttributeReference],
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.20 Get Attributes item with ordered references."""
+    if unique_identifier is not None and not (
+        isinstance(unique_identifier, UniqueIdentifier)
+        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        references, reference_count = _client_native_attribute_reference_array(
+            attribute_references, staging_buffers
+        )
+        if reference_count == 0:
+            references = None
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_get_attributes",
+            (identifier, references, reference_count),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -3453,6 +3500,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_get_attribute_list",
+    "client_batch_item_get_attributes",
     "client_batch_item_add_attribute",
     "client_batch_item_adjust_attribute",
     "client_batch_item_delete_attribute",

@@ -260,6 +260,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetAttributeListResponse(values, maxElements, maxMessageBytes);
     }
 
+    /** Returns the required identifier and ordered generic Attributes on success only. */
+    public Optional<GetAttributesResponse> getAttributesResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseGetAttributes);
+        return parseGetAttributesResponse(values);
+    }
+
     /** Returns the required Text String Unique Identifier from a successful Add Attribute. */
     public Optional<AddAttributeResponse> addAttributeResponse() {
         if (resultStatus() != 0) return Optional.empty();
@@ -1014,6 +1023,29 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful Get Attributes response with an owned, ordered generic Attributes structure. */
+    public static final class GetAttributesResponse implements AutoCloseable {
+        private final String uniqueIdentifier;
+        private final TtlvStructure attributes;
+
+        private GetAttributesResponse(String uniqueIdentifier, TtlvStructure attributes) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.attributes = attributes;
+        }
+
+        /** Returns the resolved Text String Unique Identifier. */
+        public String uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the ordered Attributes structure owned by this response. */
+        public TtlvStructure attributes() { return attributes; }
+
+        @Override public void close() { attributes.close(); }
+
+        @Override public String toString() {
+            return "GetAttributesResponse[uniqueIdentifier=redacted, attributes=redacted]";
         }
     }
 
@@ -2368,6 +2400,45 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlv.close();
             throw exception;
         }
+    }
+
+    static Optional<GetAttributesResponse> parseGetAttributesResponse(Object[] values) {
+        long ownedHandle = getAttributesResponseHandle(values);
+        boolean transferred = false;
+        try {
+            Object[] tuple = requireTuple(values, 3,
+                    "native Get Attributes response is invalid");
+            long[] fields = requireLongArray(tuple[0], 1,
+                    "native Get Attributes response is invalid");
+            long[] handles = requireLongArray(tuple[2], 1,
+                    "native Get Attributes response is invalid");
+            if (!responsePresent(fields)) {
+                if (tuple[1] != null || handles[0] != 0) {
+                    throw new InvalidInputException(
+                            "native absent Get Attributes response contains fields");
+                }
+                return Optional.empty();
+            }
+            if (!(tuple[1] instanceof String uniqueIdentifier) || handles[0] <= 0) {
+                throw new InvalidInputException("native Get Attributes response is incomplete");
+            }
+            TtlvStructure attributes = TtlvStructure.fromNative(handles[0], null);
+            ownedHandle = 0;
+            transferred = true;
+            return Optional.of(new GetAttributesResponse(uniqueIdentifier, attributes));
+        } finally {
+            if (!transferred && ownedHandle > 0) {
+                TtlvStructure.fromNative(ownedHandle, null).close();
+            }
+        }
+    }
+
+    private static long getAttributesResponseHandle(Object[] values) {
+        if (values != null && values.length > 2 && values[2] instanceof long[] handles
+                && handles.length > 0 && handles[0] > 0) {
+            return handles[0];
+        }
+        return 0;
     }
 
     static Optional<ObtainLeaseResponse> parseObtainLeaseResponse(Object[] values) {

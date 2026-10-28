@@ -742,6 +742,50 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a KMIP 2.1 §6.1.20 Get Attributes request with ordered references. */
+    public static ClientBatchItem getAttributes(
+            @Nullable UniqueIdentifier uniqueIdentifier, List<AttributeReference> attributeReferences) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Get Attributes Unique Identifier must be a Text String");
+        }
+        if (attributeReferences == null) {
+            throw new InvalidInputException("Get Attributes Attribute References are required");
+        }
+        List<AttributeReference> references = new ArrayList<>(attributeReferences);
+        for (AttributeReference reference : references) {
+            if (reference == null) {
+                throw new InvalidInputException(
+                        "Get Attributes Attribute Reference is required");
+            }
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        int[] referenceKinds = new int[references.size()];
+        long[] referenceTags = new long[references.size()];
+        byte[][] vendorIdentifications = new byte[references.size()][];
+        byte[][] attributeNames = new byte[references.size()][];
+        try {
+            for (int index = 0; index < references.size(); index++) {
+                AttributeReference reference = references.get(index);
+                referenceKinds[index] = reference.nativeKind();
+                referenceTags[index] = reference.nativeTagValue();
+                vendorIdentifications[index] = reference.nativeVendorIdentification();
+                attributeNames[index] = reference.nativeAttributeName();
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemGetAttributes(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier), referenceKinds, referenceTags,
+                    vendorIdentifications, attributeNames);
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+            clearNativeCopies(vendorIdentifications);
+            clearNativeCopies(attributeNames);
+        }
+    }
+
     /** Creates a KMIP 2.1 §6.1.2 Add Attribute item from a borrowed New Attribute Item. */
     public static ClientBatchItem addAttribute(TtlvItem newAttribute) {
         return addAttribute(null, newAttribute);
