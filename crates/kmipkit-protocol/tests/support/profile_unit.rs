@@ -23594,6 +23594,71 @@ fn profile_accepts_get_attributes_rng_parameters() {
 }
 
 #[test]
+// KMIP Specification v2.1 §§9.8 and 9.21 correlate reordered response items by Unique Batch Item ID.
+fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
+    let request = request_message_with_two_operation_payloads(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+        RNG_CREATE_OPERATION,
+        Structure::new(),
+    );
+    let result = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]]);
+    let valid_reordered_response = response_message_with_success_batch_payloads([
+        (RNG_CREATE_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (
+            GET_ATTRIBUTES_OPERATION,
+            b"first-item".to_vec(),
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_with_optional_fields(),
+                )])),
+            )]),
+        ),
+    ]);
+
+    result
+        .validate_response(&request, &valid_reordered_response)
+        .expect("reordered Get Attributes response is associated by batch ID");
+
+    let malformed_reordered_response = response_message_with_success_batch_payloads([
+        (RNG_CREATE_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (
+            GET_ATTRIBUTES_OPERATION,
+            b"first-item".to_vec(),
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    Value::integer(1),
+                )])),
+            )]),
+        ),
+    ]);
+    let error = result
+        .validate_response(&request, &malformed_reordered_response)
+        .expect_err("malformed reordered RNG Parameters are rejected");
+    assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
+    assert_eq!(
+        error.requirement_id(),
+        Some(RNG_PARAMETERS_REQUIREMENTS[3])
+    );
+
+    let missing_get_attributes_response = response_message_with_success_batch_payloads([(
+        RNG_CREATE_OPERATION,
+        b"second-item".to_vec(),
+        Structure::new(),
+    )]);
+    assert!(result
+        .validate_response(&request, &missing_get_attributes_response)
+        .is_err());
+}
+
+#[test]
 // KMIP Specification v2.1 §4.46: malformed client-supplied RNG values are rejected for all five creation operations.
 fn profile_rejects_malformed_rng_attributes_on_creation_operations() {
     let operation_groups = [

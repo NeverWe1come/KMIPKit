@@ -8089,3 +8089,11 @@ The shared §7.36 evaluator now validates caller-supplied RNG Parameters in Regi
 | Green — report contract | `python -B -m unittest tools.normative_catalog.tests.test_report` | PASS: 72 tests, one platform skip. |
 | Green — catalog and generated artifacts | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,142 records; generated profile metadata and coverage report are current. |
 | Refactor verification | `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+## T040 RNG response batch correlation — Red (2026-10-28)
+
+The security review noted that `client_rng_parameters_are_well_formed` paired Get Attributes requests and responses by position. KMIP Specification v2.1 §§9.8 and 9.21 permit response reordering when Unique Batch Item IDs correlate the items. The public profile-only validator should accept a valid reordered pair and still reject malformed or missing matched response evidence.
+
+| Phase | Command | Result |
+| --- | --- | --- |
+| Red | `cargo test -p kmipkit-protocol --lib --all-features profile_correlates_reordered_get_attributes_rng_responses_by_batch_id` | FAIL as expected: the valid reordered response was rejected as `ResponseRuleRejected` under `KMIPKIT-REQ-SPEC-7.36-003`. |
