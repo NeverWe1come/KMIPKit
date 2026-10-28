@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import csv
 import json
+import os
 import re
 import tempfile
 import unittest
@@ -16,6 +17,7 @@ import tools.normative_catalog.rust_source_analysis as rust_source_analysis
 from tools.normative_catalog.rust_source_analysis import (
     _rust_item_is_top_level,
     _rust_test_item_has_active_module_context,
+    _rust_test_item_contexts,
 )
 
 
@@ -174,7 +176,6 @@ def _requirements_by_id() -> dict[str, dict[str, str]]:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 
 
-@lru_cache(maxsize=512)
 def _read_confined_source(
     source_path: str,
     allowed_suffixes: frozenset[str],
@@ -197,9 +198,53 @@ def _read_confined_source(
         path.relative_to(root)
         if not path.is_file() or path.suffix not in allowed_suffixes:
             return None
+        fingerprint = _confined_source_fingerprint(path.stat())
+        if fingerprint[2] > MAX_TEST_SOURCE_BYTES:
+            return None
+        return _read_confined_source_snapshot(
+            source_path,
+            allowed_suffixes,
+            str(root),
+            str(path),
+            fingerprint,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return None
+
+
+def _confined_source_fingerprint(metadata: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        metadata.st_dev,
+        metadata.st_ino,
+        metadata.st_size,
+        metadata.st_mtime_ns,
+        metadata.st_ctime_ns,
+    )
+
+
+@lru_cache(maxsize=512)
+def _read_confined_source_snapshot(
+    source_path: str,
+    allowed_suffixes: frozenset[str],
+    root_path: str,
+    resolved_path: str,
+    fingerprint: tuple[int, int, int, int, int],
+) -> tuple[Path, str] | None:
+    """Reuse a source snapshot only while its confined file fingerprint is unchanged."""
+    root = Path(root_path)
+    path = Path(resolved_path)
+    try:
+        path.relative_to(root)
+        if Path(source_path).suffix not in allowed_suffixes or path.suffix not in allowed_suffixes:
+            return None
+        if _confined_source_fingerprint(path.stat()) != fingerprint:
+            return None
         with path.open("rb") as source_file:
             source_bytes = source_file.read(MAX_TEST_SOURCE_BYTES + 1)
-        if len(source_bytes) > MAX_TEST_SOURCE_BYTES:
+        if (
+            len(source_bytes) > MAX_TEST_SOURCE_BYTES
+            or _confined_source_fingerprint(path.stat()) != fingerprint
+        ):
             return None
         source = source_bytes.decode("utf-8")
     except (OSError, RuntimeError, ValueError, UnicodeDecodeError):
@@ -519,59 +564,74 @@ def _python_module_scope_uses_pytestmark(node: ast.AST) -> bool:
     )
 
 
+@lru_cache(maxsize=32)
+def _discoverable_rust_test_names(source: str) -> frozenset[str]:
+    """Index active, non-ignored Rust tests with one module-context scan."""
+    source = _strip_rust_comments_and_literals(source)
+    if source is None or not _rust_source_has_only_unconditionally_enabled_cfg(source):
+        return frozenset()
+
+    declaration = re.compile(
+        r"^\s*(?:async\s+)?fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(",
+        re.MULTILINE,
+    )
+    test_attribute = re.compile(r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$")
+    ignored_test_attribute = re.compile(r"^\s*#\[\s*ignore(?:\s*=.*)?\s*\]\s*$")
+    cfg_attribute = re.compile(r"^\s*#\[\s*cfg\((?P<condition>.*)\)\s*\]\s*$")
+    cfg_attr_marker = re.compile(r"^\s*#\[\s*cfg_attr\s*\(")
+
+    line_offsets: list[int] = []
+    offset = 0
+    for raw_line in source.splitlines(keepends=True):
+        line_offsets.append(offset)
+        offset += len(raw_line)
+
+    lines = source.splitlines()
+    candidates: list[tuple[str, int]] = []
+    for index, line in enumerate(lines):
+        declaration_match = declaration.match(line)
+        if declaration_match is None:
+            continue
+        cursor = index - 1
+        is_test = False
+        while cursor >= 0:
+            preceding_line = lines[cursor].strip()
+            if not preceding_line or preceding_line.startswith("//"):
+                cursor -= 1
+                continue
+            if preceding_line.startswith("#["):
+                if ignored_test_attribute.fullmatch(preceding_line):
+                    is_test = False
+                    break
+                if test_attribute.fullmatch(preceding_line):
+                    is_test = True
+                elif cfg_attr_marker.match(preceding_line):
+                    is_test = False
+                    break
+                elif cfg_match := cfg_attribute.fullmatch(preceding_line):
+                    if _rust_cfg_condition_is_enabled(cfg_match.group("condition")) is not True:
+                        is_test = False
+                        break
+                cursor -= 1
+                continue
+            break
+        if is_test:
+            candidates.append((declaration_match.group("name"), line_offsets[index]))
+
+    contexts = _rust_test_item_contexts(source, (item_start for _, item_start in candidates))
+    return frozenset(
+        name for name, item_start in candidates if contexts.get(item_start, False)
+    )
+
+
 @lru_cache(maxsize=4096)
 def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
     """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
     if path.suffix == ".rs":
-        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name):
-            return False
-        source = _strip_rust_comments_and_literals(source)
-        if source is None or not _rust_source_has_only_unconditionally_enabled_cfg(source):
-            return False
-        declaration = re.compile(
-            rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE
+        return bool(
+            re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name)
+            and test_name in _discoverable_rust_test_names(source)
         )
-        test_attribute = re.compile(
-            r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
-        )
-        ignored_test_attribute = re.compile(r"^\s*#\[\s*ignore(?:\s*=.*)?\s*\]\s*$")
-        cfg_attribute = re.compile(r"^\s*#\[\s*cfg\((?P<condition>.*)\)\s*\]\s*$")
-        cfg_attr_marker = re.compile(r"^\s*#\[\s*cfg_attr\s*\(")
-        lines = source.splitlines()
-        line_offsets: list[int] = []
-        offset = 0
-        for raw_line in source.splitlines(keepends=True):
-            line_offsets.append(offset)
-            offset += len(raw_line)
-        for index, line in enumerate(lines):
-            if (
-                not declaration.match(line)
-                or not _rust_test_item_has_active_module_context(source, line_offsets[index])
-            ):
-                continue
-            cursor = index - 1
-            is_test = False
-            while cursor >= 0:
-                preceding_line = lines[cursor].strip()
-                if not preceding_line or preceding_line.startswith("//"):
-                    cursor -= 1
-                    continue
-                if preceding_line.startswith("#["):
-                    if ignored_test_attribute.fullmatch(preceding_line):
-                        return False
-                    if test_attribute.fullmatch(preceding_line):
-                        is_test = True
-                    elif cfg_attr_marker.match(preceding_line):
-                        return False
-                    elif cfg_match := cfg_attribute.fullmatch(preceding_line):
-                        if _rust_cfg_condition_is_enabled(cfg_match.group("condition")) is not True:
-                            return False
-                    cursor -= 1
-                    continue
-                break
-            if is_test:
-                return True
-        return False
 
     if path.suffix == ".py":
         try:
@@ -753,7 +813,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         )
 
     def test_confined_source_cache_refreshes_after_file_changes(self) -> None:
-        _read_confined_source.cache_clear()
+        _read_confined_source_snapshot.cache_clear()
         try:
             with tempfile.TemporaryDirectory(dir=ROOT) as temporary_directory:
                 source_path = f"{Path(temporary_directory).name}/evidence.rs"
@@ -770,7 +830,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 self.assertEqual(first[1], first_source)
                 self.assertEqual(second[1], second_source)
         finally:
-            _read_confined_source.cache_clear()
+            _read_confined_source_snapshot.cache_clear()
 
     def test_accepted_recommendation_deviation_is_exempt_from_category_test(self) -> None:
         requirement_id = "KMIPKIT-REQ-EXAMPLE-001"

@@ -21,6 +21,7 @@ if __package__:
     from .rust_source_analysis import (
         _rust_item_is_top_level,
         _rust_test_item_has_active_module_context,
+        _rust_test_item_contexts,
     )
     from .safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 else:
@@ -28,6 +29,7 @@ else:
     from rust_source_analysis import (
         _rust_item_is_top_level,
         _rust_test_item_has_active_module_context,
+        _rust_test_item_contexts,
     )
     from safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 
@@ -840,40 +842,42 @@ def _rust_test_file_is_in_package_module_tree(repository: Path, test_path: Path)
     return test_path_resolved in reachable
 
 
-def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> bool:
-    """Require typed rule evidence to name an in-repository, active Rust test."""
-    test_path, separator, test_name = reference.partition("::")
-    if (
-        not separator
-        or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name)
-        or not test_path.endswith(".rs")
-    ):
-        return False
+@lru_cache(maxsize=64)
+def _typed_rust_test_source(repository_text: str, test_path: str) -> str | None:
+    """Read and sanitize each typed-evidence source file once per report run."""
     try:
-        source = safe_read_bytes(repository, test_path, max_bytes=1_048_576).decode("utf-8")
+        source = safe_read_bytes(Path(repository_text), test_path, max_bytes=1_048_576).decode("utf-8")
     except (PathSecurityError, UnicodeDecodeError):
-        return False
-    source = _strip_rust_comments_and_literals(source)
-    if source is None or not _rust_test_cfgs_are_active(source):
-        return False
-    if not _rust_test_file_is_in_package_module_tree(repository, repository / test_path):
-        return False
+        return None
+    return _strip_rust_comments_and_literals(source)
 
-    declaration = re.compile(rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE)
+
+@lru_cache(maxsize=32)
+def _typed_rust_test_names(source: str) -> frozenset[str]:
+    """Find active Rust test functions with one ordered module-context scan."""
+    if not _rust_test_cfgs_are_active(source):
+        return frozenset()
+
+    declaration = re.compile(
+        r"^\s*(?:async\s+)?fn\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(",
+        re.MULTILINE,
+    )
     test_attribute = re.compile(r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$")
     cfg_test_attribute = re.compile(r"^\s*#\[cfg\(\s*test\s*\)\]\s*$")
-    ignorable_attribute = re.compile(r"^\s*#\[(?:allow|expect|doc|must_use|inline)(?:\s*\([^]]*\))?\]\s*$")
+    ignorable_attribute = re.compile(
+        r"^\s*#\[(?:allow|expect|doc|must_use|inline)(?:\s*\([^]]*\))?\]\s*$"
+    )
     lines = source.splitlines()
-    line_offsets: list[int] = []
+    offsets: list[int] = []
     offset = 0
     for raw_line in source.splitlines(keepends=True):
-        line_offsets.append(offset)
+        offsets.append(offset)
         offset += len(raw_line)
+
+    candidates: list[tuple[str, int]] = []
     for index, line in enumerate(lines):
-        if (
-            not declaration.match(line)
-            or not _rust_test_item_has_active_module_context(source, line_offsets[index])
-        ):
+        declaration_match = declaration.match(line)
+        if declaration_match is None:
             continue
         cursor = index - 1
         is_test = False
@@ -886,15 +890,38 @@ def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> boo
                 is_test = True
                 cursor -= 1
                 continue
-            if cfg_test_attribute.fullmatch(preceding_line) or ignorable_attribute.fullmatch(preceding_line):
+            if cfg_test_attribute.fullmatch(preceding_line) or ignorable_attribute.fullmatch(
+                preceding_line
+            ):
                 cursor -= 1
                 continue
             if preceding_line.startswith("#["):
-                return False
+                is_test = False
             break
         if is_test:
-            return True
-    return False
+            candidates.append((declaration_match.group("name"), offsets[index]))
+
+    contexts = _rust_test_item_contexts(source, (item_start for _, item_start in candidates))
+    return frozenset(
+        name for name, item_start in candidates if contexts.get(item_start, False)
+    )
+
+
+def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> bool:
+    """Require typed rule evidence to name an in-repository, active Rust test."""
+    test_path, separator, test_name = reference.partition("::")
+    if (
+        not separator
+        or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name)
+        or not test_path.endswith(".rs")
+    ):
+        return False
+    source = _typed_rust_test_source(str(repository.resolve()), test_path)
+    if source is None or not _rust_test_cfgs_are_active(source):
+        return False
+    if not _rust_test_file_is_in_package_module_tree(repository, repository / test_path):
+        return False
+    return test_name in _typed_rust_test_names(source)
 
 
 def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
