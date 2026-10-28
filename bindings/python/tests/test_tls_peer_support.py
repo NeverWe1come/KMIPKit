@@ -203,3 +203,22 @@ def test_ticket_response_fixture_installs_operation_specific_native_symbols(
     assert getattr(client.lib, ttlv_symbol)(ffi.NULL, ttlv_present, ttlv_output) == 0
     assert ttlv_present[0] == 1
     assert ffi.cast("uintptr_t", ttlv_output[0]) == 24
+
+
+def test_batch_result_fixture_supplies_common_absent_response_symbols() -> None:
+    factory = getattr(_test_support, "batch_result_test_symbols", None)
+    assert callable(factory), "shared batch-result ABI fixture is required"
+
+    item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)
+    symbols = factory(ffi, item_pointer, lambda _item, _output: 0)
+    count = ffi.new("size_t *")
+    assert symbols["kmipkit_client_batch_response_item_count"](ffi.NULL, count) == 0
+    assert count[0] == 1
+
+    present = ffi.new("uint8_t *")
+    span = ffi.new("kmipkit_byte_span_v1_t *")
+    assert symbols["kmipkit_client_batch_item_response_unique_batch_item_id"](
+        item_pointer, present, span
+    ) == 0
+    assert present[0] == 0
+    assert span.data == ffi.NULL and span.length == 0
