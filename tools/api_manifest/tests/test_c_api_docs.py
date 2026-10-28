@@ -11,7 +11,7 @@ AUDIT_REPORT = (
     / "specs"
     / "043-public-api-bindings"
     / "reports"
-    / "binding-export-report-2026-10-22.json"
+    / "binding-export-report-2026-10-28.json"
 )
 
 
@@ -22,7 +22,7 @@ class CApiDocumentationTests(unittest.TestCase):
         self.assertIn("../../specification/api/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
-            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-22.json",
+            "../../specs/043-public-api-bindings/reports/binding-export-report-2026-10-28.json",
             documentation,
         )
         self.assertIn("audit_binding_exports.py", documentation)

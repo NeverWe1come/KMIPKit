@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-22.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-28.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -121,9 +121,9 @@ approved exact exclusion:
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 455 | 418 | 418 | 37 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 967 | 764 | 764 | 203 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 1,296 | 743 | 743 | 553 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 461 | 424 | 424 | 37 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 988 | 776 | 776 | 212 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 1,338 | 755 | 755 | 583 | 0 | 0 | 0 | 0 | yes |
 
 The Java audit accounts for the exact JNI bridge method
 `NativeExtensionRegistry.clientExecuteWithOptions` and the generated record
