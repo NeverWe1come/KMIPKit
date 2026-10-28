@@ -202,14 +202,13 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
     );
     assert_eq!(reference_count, 3);
-    assert_eq!(
-        unsafe {
-            std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize)
-        },
-        b"object-7"
-    );
+    assert_eq!(unique_identifier_text(&identifier), b"object-7");
 
-    let mut references = vec![empty_attribute_reference_record(); reference_count as usize];
+    let mut references = vec![
+        empty_attribute_reference_record();
+        usize::try_from(reference_count)
+            .expect("the test reference count fits usize")
+    ];
     assert_eq!(
         client_abi::kmipkit_client_batch_item_response_get_attribute_list(
             success,
@@ -227,38 +226,8 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG
     );
     assert_eq!(references[0].tag_value, 0x0054_0001);
-    assert_eq!(
-        references[1].kind,
-        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME
-    );
-    assert_eq!(
-        span_bytes(
-            references[1].vendor_identification_data,
-            references[1].vendor_identification_length,
-        ),
-        b"vendor".to_vec()
-    );
-    assert_eq!(
-        span_bytes(
-            references[1].attribute_name_data,
-            references[1].attribute_name_length
-        ),
-        b"Opaque.Name".to_vec()
-    );
-    assert_eq!(
-        span_bytes(
-            references[2].vendor_identification_data,
-            references[2].vendor_identification_length,
-        ),
-        b"vendor".to_vec()
-    );
-    assert_eq!(
-        span_bytes(
-            references[2].attribute_name_data,
-            references[2].attribute_name_length
-        ),
-        b"Opaque.Name".to_vec()
-    );
+    assert_attribute_name_reference(&references[1], b"vendor", b"Opaque.Name");
+    assert_attribute_name_reference(&references[2], b"vendor", b"Opaque.Name");
     assert_eq!(
         unsafe {
             kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(success, 1)
@@ -266,6 +235,35 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         1
     );
     kmipkit_client_batch_item_response_release(success);
+}
+
+fn assert_attribute_name_reference(
+    reference: &kmipkit_attribute_reference_v1_t,
+    vendor: &[u8],
+    name: &[u8],
+) {
+    assert_eq!(reference.kind, crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME);
+    assert_eq!(
+        span_bytes(
+            reference.vendor_identification_data,
+            reference.vendor_identification_length,
+        ),
+        vendor
+    );
+    assert_eq!(
+        span_bytes(
+            reference.attribute_name_data,
+            reference.attribute_name_length
+        ),
+        name
+    );
+}
+
+fn unique_identifier_text(identifier: &kmipkit_unique_identifier_v1_t) -> Vec<u8> {
+    let length =
+        usize::try_from(identifier.text_length).expect("the test identifier length fits usize");
+    // SAFETY: the ABI record points into the live response item in this test.
+    unsafe { std::slice::from_raw_parts(identifier.text_data, length).to_vec() }
 }
 
 #[test]
@@ -362,7 +360,7 @@ fn typed_get_attribute_list_hides_operation_fields_for_failure() {
 
 fn empty_unique_identifier_record() -> kmipkit_unique_identifier_v1_t {
     kmipkit_unique_identifier_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
         abi_version: 1,
         kind: 0,
         reserved: 0,
@@ -375,7 +373,7 @@ fn empty_unique_identifier_record() -> kmipkit_unique_identifier_v1_t {
 
 fn empty_attribute_reference_record() -> kmipkit_attribute_reference_v1_t {
     kmipkit_attribute_reference_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_attribute_reference_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
         abi_version: 1,
         kind: 0,
         reserved: 0,
@@ -388,10 +386,15 @@ fn empty_attribute_reference_record() -> kmipkit_attribute_reference_v1_t {
     }
 }
 
+fn abi_struct_size<T>() -> u32 {
+    u32::try_from(std::mem::size_of::<T>()).expect("ABI test record size fits u32")
+}
+
 fn span_bytes(data: *const u8, length: u64) -> Vec<u8> {
     if length == 0 {
         return Vec::new();
     }
+    let length = usize::try_from(length).expect("test response span length fits usize");
     // SAFETY: response spans borrow from the live response item in this test.
-    unsafe { std::slice::from_raw_parts(data, length as usize).to_vec() }
+    unsafe { std::slice::from_raw_parts(data, length).to_vec() }
 }

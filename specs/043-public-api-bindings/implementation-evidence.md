@@ -6131,6 +6131,8 @@ The manifest now maps the Rust `AttributeReference` type and its `tag`, `name`, 
 | Green | this commit | `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check` | Pass; pinned generator refreshed and verified all 12 outputs. |
 | Green | this commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | Pass; C 416/416, Java 764/764, Python 743/743 exact manifest matches. Every scan is complete with zero missing declarations, stale rows, kind mismatches, or issues. |
 | Green | this commit | `cargo fmt --all --check`; `git diff --check` | Pass after applying rustfmt to the handwritten Rust source and fixture. |
-| Refactor follow-up | pending | `cargo clippy -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings` | Current check identifies a long Rust test and checked-width conversions in its fixture helpers. These test-only findings are being extracted into focused helpers before the Refactor commit. |
+| Refactor | this commit | `cargo clippy -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings` | Pass after extracting name/UID assertions and using checked width conversions in test helpers. |
+| Refactor | this commit | `cargo fmt --all --check`; `git diff --check` | Pass. |
+| Refactor | this commit | Rerun the focused Rust FFI Get Attribute List tests and compiled C consumer test | Pass, 3 plus 1 tests after the helper-only refactor. |
 
 This is an incremental implementation checkpoint. T037 remains unchecked and open; the other five attribute operations remain unimplemented in this slice, and the KMIP 2.1 §6.1.20/Table 224 no-match gate remains unresolved.
