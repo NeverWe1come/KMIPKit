@@ -229,6 +229,26 @@ void throw_invalid_input(JNIEnv* env) noexcept {
     throw_java(env, "org/kmipkit/InvalidInputException", "native input is invalid");
 }
 
+struct TransportMaterialBudget {
+    uint64_t total_bytes = 0;
+
+    bool account(JNIEnv* env, jsize length) {
+        if (length <= 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+        const uint64_t bytes = static_cast<uint64_t>(length);
+        if (bytes > kMaximumTransportInputBytes
+                || total_bytes > kMaximumTransportInputBytes - bytes) {
+            throw_java(env, "org/kmipkit/ResourceLimitException",
+                    "transport material exceeds the bridge limit");
+            return false;
+        }
+        total_bytes += bytes;
+        return true;
+    }
+};
+
 void throw_client_operation_status(
         JNIEnv* env, int32_t status,
         kmipkit_ttlv_structure_t* response_ttlv = nullptr) noexcept {
@@ -833,6 +853,16 @@ private:
     std::vector<std::vector<uint8_t>>& values_;
 };
 
+bool preflight_java_bytes(JNIEnv* env, jbyteArray input, TransportMaterialBudget& budget) {
+    if (input == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    const jsize length = env->GetArrayLength(input);
+    if (env->ExceptionCheck()) return false;
+    return budget.account(env, length);
+}
+
 bool read_java_bytes(JNIEnv* env, jbyteArray input, std::vector<uint8_t>& output,
                      bool require_non_empty = true) {
     if (input == nullptr) {
@@ -855,6 +885,18 @@ bool read_java_bytes(JNIEnv* env, jbyteArray input, std::vector<uint8_t>& output
     return !env->ExceptionCheck();
 }
 
+bool read_transport_material_bytes(JNIEnv* env, jbyteArray input,
+        TransportMaterialBudget& budget, std::vector<uint8_t>& output) {
+    if (input == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    const jsize length = env->GetArrayLength(input);
+    if (env->ExceptionCheck() || !budget.account(env, length)) return false;
+    output.resize(static_cast<size_t>(length));
+    env->GetByteArrayRegion(input, 0, length, reinterpret_cast<jbyte*>(output.data()));
+    return !env->ExceptionCheck();
+}
 bool read_optional_java_bytes(JNIEnv* env, jbyteArray input,
         std::vector<uint8_t>& output, bool* present) {
     if (present == nullptr) {
@@ -938,15 +980,66 @@ bool read_optional_indicators(JNIEnv* env, jint raw_init, jint raw_final,
     return true;
 }
 
-bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
-        jobjectArray raw_bytes, bool allow_files, std::vector<OwnedTransportInput>& output) {
+bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
+        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget) {
     if (raw_sources == nullptr || raw_encodings == nullptr || raw_bytes == nullptr) {
         throw_invalid_input(env);
         return false;
     }
     const jsize count = env->GetArrayLength(raw_sources);
+    if (env->ExceptionCheck()) return false;
+    const jsize encoding_count = env->GetArrayLength(raw_encodings);
+    if (env->ExceptionCheck()) return false;
+    const jsize byte_count = env->GetArrayLength(raw_bytes);
+    if (env->ExceptionCheck()) return false;
     if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)
-            || env->GetArrayLength(raw_encodings) != count || env->GetArrayLength(raw_bytes) != count) {
+            || encoding_count != count || byte_count != count) {
+        throw_invalid_input(env);
+        return false;
+    }
+    std::vector<jint> sources(static_cast<size_t>(count));
+    std::vector<jint> encodings(static_cast<size_t>(count));
+    if (count != 0) {
+        env->GetIntArrayRegion(raw_sources, 0, count, sources.data());
+        env->GetIntArrayRegion(raw_encodings, 0, count, encodings.data());
+        if (env->ExceptionCheck()) return false;
+    }
+    for (jsize index = 0; index < count; ++index) {
+        if ((sources[static_cast<size_t>(index)] != static_cast<jint>(kTransportSourceMemory)
+                && (!allow_files || sources[static_cast<size_t>(index)]
+                    != static_cast<jint>(kTransportSourceFile)))
+                || (encodings[static_cast<size_t>(index)] != static_cast<jint>(kTransportEncodingPem)
+                    && encodings[static_cast<size_t>(index)] != static_cast<jint>(kTransportEncodingDer))) {
+            throw_invalid_input(env);
+            return false;
+        }
+        auto raw = static_cast<jbyteArray>(env->GetObjectArrayElement(raw_bytes, index));
+        if (raw == nullptr) {
+            throw_invalid_input(env);
+            return false;
+        }
+        const bool within_budget = preflight_java_bytes(env, raw, budget);
+        env->DeleteLocalRef(raw);
+        if (!within_budget) return false;
+    }
+    return true;
+}
+
+bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
+        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget,
+        std::vector<OwnedTransportInput>& output) {
+    if (raw_sources == nullptr || raw_encodings == nullptr || raw_bytes == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    const jsize count = env->GetArrayLength(raw_sources);
+    if (env->ExceptionCheck()) return false;
+    const jsize encoding_count = env->GetArrayLength(raw_encodings);
+    if (env->ExceptionCheck()) return false;
+    const jsize byte_count = env->GetArrayLength(raw_bytes);
+    if (env->ExceptionCheck()) return false;
+    if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)
+            || encoding_count != count || byte_count != count) {
         throw_invalid_input(env);
         return false;
     }
@@ -959,7 +1052,6 @@ bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_enc
     }
     output.clear();
     output.reserve(static_cast<size_t>(count));
-    uint64_t total_bytes = 0;
     for (jsize index = 0; index < count; ++index) {
         if ((sources[static_cast<size_t>(index)] != static_cast<jint>(kTransportSourceMemory)
                 && (!allow_files || sources[static_cast<size_t>(index)]
@@ -977,14 +1069,10 @@ bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_enc
         OwnedTransportInput item {
                 static_cast<uint32_t>(sources[static_cast<size_t>(index)]),
                 static_cast<uint32_t>(encodings[static_cast<size_t>(index)]), {}};
-        const bool copied = read_java_bytes(env, raw, item.bytes);
+        const bool copied = read_transport_material_bytes(env, raw, budget, item.bytes);
         env->DeleteLocalRef(raw);
         if (!copied) return false;
-        total_bytes += static_cast<uint64_t>(item.bytes.size());
-        if (total_bytes > kMaximumTransportInputBytes) {
-            throw_java(env, "org/kmipkit/ResourceLimitException", "transport material exceeds the bridge limit");
-            return false;
-        }
+
         output.push_back(std::move(item));
     }
     return true;
@@ -4149,23 +4237,39 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_transportConfig
             return static_cast<jlong>(0);
         }
 
+        if ((key_source != static_cast<jint>(kTransportSourceMemory)
+                && key_source != static_cast<jint>(kTransportSourceFile))
+                || (key_encoding != static_cast<jint>(kTransportEncodingPem)
+                    && key_encoding != static_cast<jint>(kTransportEncodingDer))) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        TransportMaterialBudget preflight_budget;
+        if (!preflight_transport_inputs(env, cert_sources, cert_encodings, cert_bytes, true,
+                    preflight_budget)
+                || !preflight_transport_inputs(env, trust_sources, trust_encodings, trust_bytes, true,
+                    preflight_budget)
+                || !preflight_transport_inputs(env, crl_sources, crl_encodings, crl_bytes, false,
+                    preflight_budget)
+                || !preflight_java_bytes(env, key_bytes, preflight_budget)) {
+            return static_cast<jlong>(0);
+        }
+
         std::vector<OwnedTransportInput> certificates, trust_certificates, revocation_lists;
-        if (!read_transport_inputs(env, cert_sources, cert_encodings, cert_bytes, true, certificates)
-                || !read_transport_inputs(env, trust_sources, trust_encodings, trust_bytes, true, trust_certificates)
-                || !read_transport_inputs(env, crl_sources, crl_encodings, crl_bytes, false, revocation_lists)) {
+        TransportMaterialBudget copy_budget;
+        if (!read_transport_inputs(env, cert_sources, cert_encodings, cert_bytes, true,
+                    copy_budget, certificates)
+                || !read_transport_inputs(env, trust_sources, trust_encodings, trust_bytes, true,
+                    copy_budget, trust_certificates)
+                || !read_transport_inputs(env, crl_sources, crl_encodings, crl_bytes, false,
+                    copy_budget, revocation_lists)) {
             return static_cast<jlong>(0);
         }
         std::vector<uint8_t> private_key;
         kmipkit::secure::VectorWiper private_key_wiper(private_key);
-        if ((key_source != static_cast<jint>(kTransportSourceMemory)
-                && key_source != static_cast<jint>(kTransportSourceFile))
-                || (key_encoding != static_cast<jint>(kTransportEncodingPem)
-                    && key_encoding != static_cast<jint>(kTransportEncodingDer))
-                || !read_java_bytes(env, key_bytes, private_key)) {
-            if (!env->ExceptionCheck()) throw_invalid_input(env);
+        if (!read_transport_material_bytes(env, key_bytes, copy_budget, private_key)) {
             return static_cast<jlong>(0);
         }
-
         std::vector<uint64_t> timeout_values;
         if (!read_long_array(env, raw_timeouts, 12, timeout_values, 12)) return static_cast<jlong>(0);
         auto cert_views = transport_input_views(certificates);
