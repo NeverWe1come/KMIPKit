@@ -642,21 +642,22 @@ def _is_accepted_recommendation_deviation(
     decisions_by_id: Mapping[str, Mapping[str, object]],
     category: str,
 ) -> bool:
+    if (
+        requirement.get("status") != "deviated"
+        or category not in _ACCEPTED_DEVIATION_CATEGORIES
+    ):
+        return False
+
     decision_id = requirement.get("decision_id")
-    decision = (
-        decisions_by_id.get(decision_id)
-        if isinstance(decision_id, str)
-        else None
-    )
-    decision_requirement_ids = (
-        decision.get("requirement_ids") if decision is not None else None
-    )
+    if not isinstance(decision_id, str):
+        return False
+    decision = decisions_by_id.get(decision_id)
+    if decision is None or decision.get("status") != "accepted":
+        return False
+
+    decision_requirement_ids = decision.get("requirement_ids")
     return (
-        requirement.get("status") == "deviated"
-        and category in _ACCEPTED_DEVIATION_CATEGORIES
-        and decision is not None
-        and decision.get("status") == "accepted"
-        and isinstance(decision_requirement_ids, list)
+        isinstance(decision_requirement_ids, list)
         and all(isinstance(value, str) for value in decision_requirement_ids)
         and requirement_id in decision_requirement_ids
     )
