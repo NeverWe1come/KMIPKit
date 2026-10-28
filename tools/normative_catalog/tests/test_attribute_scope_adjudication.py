@@ -47,7 +47,7 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
             for row in crosswalk
         ))
 
-    def test_derive_key_method_multiplicity_does_not_claim_a_client_actor(self) -> None:
+    def test_derive_key_method_multiplicity_uses_the_accepted_client_interpretation(self) -> None:
         catalog = _read(CATALOG_PATH)
         oracle = _read(ORACLE_PATH)
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-002"
@@ -57,13 +57,29 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
             if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.14-002"
         )
 
-        self.assertEqual(requirement["role"], "unclear")
-        self.assertEqual(requirement["scope_state"], "unclear")
-        self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+        crosswalk = next(
+            row for row in oracle["requirement_crosswalk"]
+            if row["requirement_id"] == requirement_id
+        )
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-026")
+        self.assertEqual(crosswalk["decision_id"], "KMIPKIT-DEC-026")
+        self.assertIn(requirement_id, review["expected_client_requirement_ids"])
         self.assertEqual(review["source_obligations"][0]["actor"], "unresolved")
-        self.assertEqual(review["source_obligations"][0]["scope_disposition"], "unresolved")
+        self.assertEqual(
+            review["source_obligations"][0]["project_actor_interpretation"],
+            "client",
+        )
+        self.assertEqual(review["source_obligations"][0]["scope_disposition"], "profile_conditional")
+        self.assertFalse(
+            any(
+                row.get("requirement_id") == requirement_id
+                for row in review["rejected_candidate_mappings"]
+            )
+        )
 
-    def test_derive_key_method_evidence_does_not_expand_client_profile_scope(self) -> None:
+    def test_derive_key_method_evidence_stays_with_the_baseline_profile(self) -> None:
         catalog = _read(CATALOG_PATH)
         oracle = _read(ORACLE_PATH)
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-002"
@@ -73,16 +89,19 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
             if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.14-002"
         )
 
-        self.assertEqual(requirement["role"], "unclear")
-        self.assertEqual(requirement["scope_state"], "unclear")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertEqual(requirement["feature_spec"], "KMIPKIT-0037")
         self.assertEqual(requirement["status"], "scoped_verified")
         self.assertTrue(requirement["implementation_refs"])
         self.assertTrue(requirement["verification_refs"])
-        self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
+        self.assertIn(requirement_id, review["expected_client_requirement_ids"])
         for profile in catalog["profiles"]:
             with self.subTest(profile_id=profile["profile_id"]):
-                self.assertNotIn(requirement_id, profile["requirement_ids"])
+                if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT":
+                    self.assertIn(requirement_id, profile["requirement_ids"])
+                else:
+                    self.assertNotIn(requirement_id, profile["requirement_ids"])
 
 
 if __name__ == "__main__":
