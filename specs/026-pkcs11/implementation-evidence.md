@@ -271,3 +271,17 @@ the default source/configuration and the default Rust/C/Java/Python path now
 exercises the public API. The successful loopback exchange verifies adapter
 behavior and is not interoperability evidence. `formalAcceptance` remains
 `false`; T022 remains open for two independent KMIP 2.1 server implementations.
+
+## T022 current-head local validation checkpoint (2026-10-28)
+
+On KMIPKIT-0043 head `84fbf90225b4f236e17e842696dfa1aeb5b0aab8`, the focused PKCS#11 Rust suites and normative catalog checks pass. The local package coverage run also completed after native Windows invocations regenerated stale `trybuild` manifests that had retained `/mnt/c/...` paths from a previous WSL run. No product source was changed to address that generated-artifact issue.
+
+| Check | Command | Result |
+|---|---|---|
+| Protocol PKCS#11 tests | `cargo test -p kmipkit-protocol --all-features pkcs11_operation_tests --locked --offline` | PASS: 16 tests. |
+| Client PKCS#11 tests | `cargo test -p kmipkit-client --all-features pkcs11_execution_tests --locked --offline` | PASS: 9 tests. |
+| Normative catalog | `python -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,044 records. |
+| Catalog report | `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: deterministic report is current. |
+| Protocol crate coverage | `cargo llvm-cov --package kmipkit-protocol --all-features --locked --offline --summary-only` | PASS: all package test targets ran; aggregate protocol line coverage is 92.54%. The scoped `crates/kmipkit-protocol/src/pkcs11.rs` result is 215/226 lines (95.13%). The protocol aggregate remains below the 95% minimum; this branch's temporary coverage waiver remains active, so no threshold pass is claimed. |
+
+This checkpoint does not run a live server exchange, establish an official PKCS#11 fixture result, or close T022. The task remains open until evidence from two independent KMIP 2.1 server implementations is available; no server support or conformance claim is inferred from local tests.
