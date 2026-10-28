@@ -6171,6 +6171,38 @@ cleanup:
     return 0;
 }
 
+int kmipkit_client_abi_c_consumer_build_get_attribute_list_request(void) {
+    kmipkit_client_batch_item_t *item = 0;
+    const int32_t status = kmipkit_client_batch_item_get_attribute_list(0, &item);
+    if (status != 0 || item == 0) {
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    return 1;
+}
+
+int kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
+    kmipkit_client_batch_item_response_t *item,
+    uint8_t expected_present) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    const int32_t status = kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+        item, &present, &response_ttlv);
+    if (status != 0 || present != expected_present) {
+        if (response_ttlv != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+        }
+        return 0;
+    }
+    if (expected_present != 0 && response_ttlv == 0) {
+        return 0;
+    }
+    if (response_ttlv != 0) {
+        kmipkit_ttlv_structure_release(response_ttlv);
+    }
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_validate_set_defaults_response_ttlv(
     kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
     static const uint32_t response_tags[] = {

@@ -45,6 +45,8 @@ mod query_ping_abi_tests;
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
 mod set_defaults_abi_tests;
+#[path = "get_attribute_list_abi_tests.rs"]
+mod get_attribute_list_abi_tests;
 
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;

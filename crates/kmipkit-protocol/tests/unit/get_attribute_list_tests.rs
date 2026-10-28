@@ -228,6 +228,28 @@ fn response_preserves_tag_form_attribute_references() {
 }
 
 #[test]
+fn successful_response_exposes_typed_payload_as_generic_ttlv() {
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([tag_reference(0x0042_002f)])),
+    );
+    let response = GetAttributeListResponse::try_from_response_item(response_item(&message))
+        .expect("Table 227 success is typed");
+
+    let payload = response
+        .to_ttlv_payload()
+        .expect("the typed response payload is representable")
+        .expect("a successful Get Attribute List has a payload");
+    assert_eq!(
+        payload.children().len(),
+        2,
+        "the typed response exposes the identifier and ordered Attribute References"
+    );
+}
+
+#[test]
 fn response_preserves_every_table_228_failure_reason_status_and_message() {
     // Table 228: Object Not Found, Attestation Failed, Attestation Required,
     // Feature Not Supported, Invalid Field, Invalid Message, Operation Not
