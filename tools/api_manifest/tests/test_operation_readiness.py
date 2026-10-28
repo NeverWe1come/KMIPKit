@@ -526,6 +526,54 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     feature_id="KMIPKIT-0012",
                 )
 
+    def test_delegated_maintainer_authorization_is_not_approval_without_merge_record(
+        self,
+    ) -> None:
+        cases = (
+            (
+                "KMIPKIT-0006",
+                "006-message-batch-model",
+                "Approved for implementation under delegated maintainer authorization; "
+                "see approval-record.md.",
+            ),
+            (
+                "KMIPKIT-0007",
+                "007-client-execution",
+                "Approved for implementation — delegated maintainer authorization, "
+                "independent reviews, and merge of correction PR #39 are recorded "
+                "in approval-record.md.",
+            ),
+            (
+                "KMIPKIT-0008",
+                "008-credentials-attestation",
+                "Approved for implementation under the delegated authorization "
+                "recorded in approval-record.md.",
+            ),
+        )
+        for feature_id, directory_name, status in cases:
+            with self.subTest(feature_id=feature_id), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                owner = root / "specs" / directory_name / "spec.md"
+                owner.parent.mkdir(parents=True)
+                owner.write_text(f"# Feature\n\n**Status**: {status}\n", encoding="utf-8")
+
+                self.assertEqual(
+                    "candidate", generate._operation_owner_state(root, feature_id)
+                )
+                with self.assertRaisesRegex(
+                    ManifestError, "merged specification approval"
+                ):
+                    generate._validate_approval_source(
+                        {
+                            "kind": "feature-specification",
+                            "path": f"specs/{directory_name}/spec.md",
+                            "status": "Approved",
+                            "evidence": f"**Status**: {status}",
+                        },
+                        root,
+                        feature_id=feature_id,
+                    )
+
     def test_check_rejects_standing_authorization_without_merged_owner_record(self) -> None:
         original_lookup = generate._has_merged_owner_approval_record
 
