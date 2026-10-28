@@ -264,6 +264,30 @@ fn successful_response_exposes_typed_payload_as_generic_ttlv() {
 }
 
 #[test]
+fn response_reencoding_preserves_unallocated_raw_tag_enumeration() {
+    const UNKNOWN_RAW_TAG: u32 = 0xFFFF_FFFE;
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([tag_reference(UNKNOWN_RAW_TAG)])),
+    );
+    let response = GetAttributeListResponse::try_from_response_item(response_item(&message))
+        .expect("response Enumeration values remain open and lossless");
+
+    let payload = response
+        .to_ttlv_payload()
+        .expect("response-only re-encoding preserves unallocated raw tag values")
+        .expect("successful response has a payload");
+    let view = payload.view();
+    let children = view.children();
+    assert_eq!(children.len(), 2);
+    assert!(children[1].with_value(|value| {
+        matches!(value, ValueView::Enumeration(raw) if *raw == UNKNOWN_RAW_TAG)
+    }));
+}
+
+#[test]
 fn response_preserves_every_table_228_failure_reason_status_and_message() {
     // Table 228: Object Not Found, Attestation Failed, Attestation Required,
     // Feature Not Supported, Invalid Field, Invalid Message, Operation Not
