@@ -8031,3 +8031,13 @@ The regression `test_baseline_report_distinguishes_global_unavailable_profile_fi
 | Diff whitespace | `git diff --check` | PASS before the Refactor/evidence documentation update; rerun on the final commit range before push. |
 
 The source audit checked the pinned KMIP Profiles v2.1 OS files and manifest. It confirmed 93 distinct linked case records, 16 Baseline cases with local fixtures, and 77 broader records without local fixtures. It also confirmed the open `KMIPKIT-DISC-027` label/href conflict: `CS-BC-M-13-21` and `CS-BC-M-14-21` both resolve to the `.14` href while the official package contains distinct `.13` and `.14` files. The ambiguous `.13` mapping remains unresolved; no file was assigned by inference and no upstream source was edited.
+
+## T045 Baseline fixture replay recheck (2026-10-28)
+
+After completing the Baseline typed mappings, the replay disposition suite was rerun:
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Baseline official fixture disposition | `cargo test --locked -p kmipkit-client --lib profile_fixture_replay_tests --all-features -- --nocapture` | PASS: 1 disposition test; 13 complete replays and exact `Validation/InvalidInput/NotSent` blockers for `BL-M-4-21`, `BL-M-7-21`, and `BL-M-10-21`; 602 unrelated client unit tests filtered out. |
+
+The first and third cases remain blocked because their pinned success fixtures omit fields required by KMIP Specification v2.1 §6.1.43 Table 293. The second remains blocked because it attempts the prohibited State change in §4.57 and the typed API has no generic send path. The Windows build emitted the existing non-fatal AWS-LC compiler-probe and missing-NASM warnings; the test executable still compiled and passed. T045 remains open until all three cases have admissible passing evidence; none was edited, reconstructed, or sent through an alternate path. Baseline stays `evidence_incomplete`, with no profile-conformance claim.

@@ -102,10 +102,12 @@ estándar.
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales obligatorios están fijados en el repositorio. T036 registra
 13 reproducciones deterministas completas del cliente y 3 bloqueos previos al
-envío causados por la validación tipada. Otros 77 casos vinculados a perfiles
-no tienen fixture local. Estas carencias de fixtures y reproducciones son
-independientes de la validación runtime local. KMIPKit no reconstruye ni deduce
-el contenido de fixtures ausentes.
+envío causados por la validación tipada. Por separado, el catálogo general de
+perfiles contiene 77 registros de casos sin archivos fixture locales (70
+obligatorios y 7 opcionales); ninguno pertenece a la lista de 16 casos de
+Baseline. Estas carencias de fixtures y reproducciones son independientes de
+la validación runtime local. KMIPKit no reconstruye ni deduce el contenido de
+fixtures ausentes.
 
 El mapping tipado para recuperar resultados archivados de Locate solo registra
 un flujo dirigido por la aplicación. El preflight del perfil comprueba un
