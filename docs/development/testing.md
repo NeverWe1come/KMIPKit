@@ -25,6 +25,11 @@ selected. The scheduled workflow is unchanged. Selective execution does not
 change the thresholds below; every selected report remains required, and a
 missing or malformed selected report fails the gate.
 
+The cross-platform `script-contracts` job runs a short preflight for the most
+recently failing normative-catalog regression before starting its full Python
+contract suites. This gives that known failure an early signal; the complete
+catalog suite still runs on Linux, Windows, and macOS and remains authoritative.
+
 ## Static analysis services
 
 The separate CodeQL workflow scans Rust, C/C++, Java, and Python on pushes to
