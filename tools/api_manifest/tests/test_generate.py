@@ -524,6 +524,28 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             header,
         )
 
+    def test_declared_c_macro_value_must_fit_its_fixed_width_type(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declaration = copy.deepcopy(
+            next(
+                row
+                for row in manifest["publicDeclarations"]
+                if row.get("declarationId") == "T037:attribute-reference-kind-tag:c"
+            )
+        )
+        declaration.update(
+            {
+                "declarationId": "T037:test-overflowing-c-macro:c",
+                "exportName": "KMIPKIT_TEST_OVERFLOWING_ATTRIBUTE_KIND",
+                "cValue": 256,
+                "cValueType": "uint8_t",
+            }
+        )
+        manifest["publicDeclarations"].append(declaration)
+
+        with self.assertRaises(generate.ManifestError):
+            generate.render_c_header(manifest)
+
     def test_versioned_fixed_width_values_render_declared_c_fields(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         type_name = "kmipkit_test_config_v1_t"
