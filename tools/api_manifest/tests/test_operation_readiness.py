@@ -25,6 +25,35 @@ LANGUAGES = ("rust", "c", "java", "python")
 AUTH_ONLY_OWNER_STATUS = (
     "Approved for autonomous implementation under a standing instruction"
 )
+DELEGATED_OWNER_STATUS_CASES = (
+    (
+        "KMIPKIT-0005",
+        "005-ttlv-wire-codec",
+        "Approved — the maintainer delegated execution and approval of this "
+        "plan without further manual intervention in the 2026-10-05 Codex "
+        "conversation. The exact approved specification and boundary "
+        "revisions are recorded in approval-record.md.",
+    ),
+    (
+        "KMIPKIT-0006",
+        "006-message-batch-model",
+        "Approved for implementation under delegated maintainer authorization; "
+        "see approval-record.md.",
+    ),
+    (
+        "KMIPKIT-0007",
+        "007-client-execution",
+        "Approved for implementation — delegated maintainer authorization, "
+        "independent reviews, and merge of correction PR #39 are recorded "
+        "in approval-record.md.",
+    ),
+    (
+        "KMIPKIT-0008",
+        "008-credentials-attestation",
+        "Approved for implementation under the delegated authorization "
+        "recorded in approval-record.md.",
+    ),
+)
 
 
 def _write_feature_spec(
@@ -544,36 +573,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_delegated_authorization_and_approval_statuses_require_merge_evidence(
         self,
     ) -> None:
-        cases = (
-            (
-                "KMIPKIT-0005",
-                "005-ttlv-wire-codec",
-                "Approved — the maintainer delegated execution and approval of this "
-                "plan without further manual intervention in the 2026-10-05 Codex "
-                "conversation. The exact approved specification and boundary "
-                "revisions are recorded in approval-record.md.",
-            ),
-            (
-                "KMIPKIT-0006",
-                "006-message-batch-model",
-                "Approved for implementation under delegated maintainer authorization; "
-                "see approval-record.md.",
-            ),
-            (
-                "KMIPKIT-0007",
-                "007-client-execution",
-                "Approved for implementation — delegated maintainer authorization, "
-                "independent reviews, and merge of correction PR #39 are recorded "
-                "in approval-record.md.",
-            ),
-            (
-                "KMIPKIT-0008",
-                "008-credentials-attestation",
-                "Approved for implementation under the delegated authorization "
-                "recorded in approval-record.md.",
-            ),
-        )
-        for feature_id, directory_name, status in cases:
+        for feature_id, directory_name, status in DELEGATED_OWNER_STATUS_CASES:
             with self.subTest(feature_id=feature_id), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 _write_feature_spec(root, directory_name, status)
