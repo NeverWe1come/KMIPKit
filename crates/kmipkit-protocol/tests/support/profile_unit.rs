@@ -15575,9 +15575,12 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
     assert!(
         readiness
             .blockers()
-            .contains(&ProfileReadinessBlocker::DuplicateRequirementRecord {
-                requirement_id: first
-            })
+            .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
+    );
+    assert!(
+        !readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
     );
     assert!(
         readiness
@@ -15585,11 +15588,13 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(readiness.target_selected());
-    assert!(!readiness.runtime_validation_available());
+    assert!(readiness.runtime_validation_available());
     assert!(
         readiness
             .blockers()
-            .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
+            .contains(&ProfileReadinessBlocker::DuplicateRequirementRecord {
+                requirement_id: first
+            })
     );
     assert_eq!(baseline.profile_id, readiness.profile_id());
     assert_eq!("evidence_incomplete", readiness.effective_state());
@@ -25468,10 +25473,11 @@ fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_beh
 #[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn profile_maps_original_creation_date_immutability_as_caller_owned_prohibition() {
-    assert_caller_owned_prohibition_has_no_behavior_evidence(
+    assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.38-003",
         "KMIPKIT-CLAUSE-SPEC-4.38-003",
         "original_creation_date_immutable_after_set_caller_asserted",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
     );
 }
 
@@ -25515,20 +25521,33 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
 fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
-    assert_caller_owned_prohibition_has_no_behavior_evidence(
+    assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-002",
         "KMIPKIT-CLAUSE-SPEC-4.59-002",
         "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 and Table 149; KMIPKIT-DEC-024.
+fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition() {
+    assert_caller_owned_contextual_prohibition_has_behavior_evidence(
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
+        "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
     );
 }
 
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
 fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
-    assert_caller_owned_prohibition_has_no_behavior_evidence(
+    assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-003-001",
         "KMIPKIT-CLAUSE-SPEC-4.59-003",
         "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+        "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
     );
 }
 
@@ -25567,10 +25586,11 @@ fn profile_maps_modify_attribute_existing_instance_as_optional_capability() {
     );
 }
 
-fn assert_caller_owned_prohibition_has_no_behavior_evidence(
+fn assert_caller_owned_contextual_prohibition_has_behavior_evidence(
     requirement_id: &str,
     source_clause_id: &str,
     capability: &'static str,
+    expected_test_id: &'static str,
 ) {
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -25587,25 +25607,15 @@ fn assert_caller_owned_prohibition_has_no_behavior_evidence(
         GeneratedVerificationCategory::ProhibitedBehavior
     );
     assert!(mapping.evaluator.is_none());
-    assert!(
-        mapping
-            .test_evidence
-            .iter()
-            .all(|evidence| evidence.kind != RuleTestKind::NegativeBehavior)
-    );
-    assert_eq!(
-        validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
-            .expect_err("metadata-only evidence cannot satisfy a SHALL NOT")
-            .code(),
-        ProfileValidationErrorCode::MissingCategoryTest
-    );
-    assert_eq!(
-        mapping.constraints,
-        &[RuleConstraint {
-            key: "client_profile_capability",
-            value: capability,
-        }]
-    );
+    assert!(super::is_contextual_rule_mapping(mapping.requirement_id));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == expected_test_id && evidence.kind == RuleTestKind::NegativeBehavior
+    }));
+    validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+        .expect("the contextual evaluator and executable negative evidence are complete");
+    assert!(mapping.constraints.iter().any(|constraint| {
+        constraint.key == "client_profile_capability" && constraint.value == capability
+    }));
 }
 
 fn assert_static_caller_owned_profile_rule_mapping(
