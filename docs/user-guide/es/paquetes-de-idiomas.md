@@ -76,19 +76,27 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **11 / 56** siguen en
-estado `blocked`. **8** filas están en estado `declared`: Create, Create Key
-Pair, Create Split Key, Hash, MAC, MAC Verify, Sign y Signature Verify. Sus
-mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
-`declared` no demuestra la conformidad completa de las operaciones. No se debe
-inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. **37** mapeos de operación están en estado `verified`:
-Activate, Archive, Certify, Check, Decrypt, Delegated Login, Derive Key,
-Destroy, Discover Versions,
-Encrypt, Export, Get, Get Constraints, Get Usage Allocation, Import, Interop,
-Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Recover,
+De las **56** filas de operaciones KMIP `client_1_0`, **4 / 56** siguen en
+estado `blocked`: Cancel, Poll, Process y Query Asynchronous Requests. Sus
+mapeos de API para cuatro lenguajes quedan sujetos a la aprobación de la
+especificación propietaria KMIPKIT-0009; la respuesta discutida de Query sigue
+como TTLV genérico mientras `KMIPKIT-DISC-039` permanezca abierta.
+**8** filas están en estado `declared`: Create, Create Key Pair, Create Split
+Key, Hash, MAC, MAC Verify, Sign y Signature Verify. Sus mapeos de solicitud
+y respuesta para cuatro lenguajes están registrados; `declared` no demuestra
+la conformidad completa de las operaciones. No se debe inferir que una
+operación está disponible porque haya tipos o código en otra parte del
+repositorio.
+**44** mapeos de operación están en estado `verified`:
+Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
+Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,
+Encrypt, Export, Get, Get Attribute List, Get Attributes, Get Constraints,
+Get Usage Allocation, Import, Interop, Join Split Key, Locate, Log, Login,
+Logout, Modify Attribute, Obtain Lease, PKCS#11, Ping, Query, Recover,
 Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
-RNG Retrieve, RNG Seed, Set Constraints, Set Defaults y Validate. Logout envía
+RNG Retrieve, RNG Seed, Set Attribute, Set Constraints, Set Defaults y
+Validate. Son mapeos de API; no afirman conformidad completa de las
+operaciones ni interoperabilidad con servidores. Logout envía
 el Ticket proporcionado por el llamador; no añade credenciales a peticiones
 posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
