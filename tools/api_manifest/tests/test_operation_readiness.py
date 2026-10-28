@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from unittest import mock
 
 from jsonschema import Draft202012Validator
 
@@ -522,6 +525,25 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     root,
                     feature_id="KMIPKIT-0012",
                 )
+
+    def test_check_rejects_standing_authorization_without_merged_owner_record(self) -> None:
+        original_lookup = generate._has_merged_owner_approval_record
+
+        def omit_owner_record(root: Path, owner_id: str) -> bool:
+            if owner_id == "KMIPKIT-0012":
+                return False
+            return original_lookup(root, owner_id)
+
+        diagnostic = io.StringIO()
+        with mock.patch.object(
+            generate,
+            "_has_merged_owner_approval_record",
+            side_effect=omit_owner_record,
+        ), redirect_stderr(diagnostic):
+            result = generate.main(["--repo-root", str(ROOT), "--check"])
+
+        self.assertEqual(2, result)
+        self.assertIn("manifest or path validation failed", diagnostic.getvalue())
 
     def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
