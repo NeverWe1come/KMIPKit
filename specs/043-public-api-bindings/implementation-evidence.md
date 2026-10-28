@@ -8,6 +8,18 @@
 
 These records distinguish the human-merged specification scope from standing instructions that authorized autonomous implementation. The generator accepts the former as owner approval evidence and does not infer approval from an authorization-only status. Merged PRs #66, #67, and #86 do not represent separate line-by-line review of every later edit to those specifications.
 
+### T086 — Enforce owner acceptance semantics
+
+The manifest generator now treats statuses that explicitly grant autonomous implementation under a standing instruction as candidates unless the active release contains a documented human-merged specification approval. Ready operation rows also reject authorization-only status evidence without that merge record. The operation dependency summary is reconciled to 52 approved owners and 4 candidates, as validated against all 56 rows. CI now runs the operation-readiness test module on each applicable pull request.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `e198c9468` | Focused autonomous-status and approval-evidence tests in `test_operation_readiness.py` | Expected failures: the owner resolver treated autonomous implementation authorization as approval, and the approval-source validator accepted that status without a merged specification record. A separate assertion showed merged PR #67 evidence was not recognized generically. |
+| Green | `cb1f2527c` | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | PASS: 21 readiness tests; all 12 generated outputs current. The dependency-check regression confirms an authorization-only owner cannot be represented as approved without a merge record. |
+| Refactor | `5df68dc75` | Same readiness test and generator-check commands; `git diff --check` | PASS: 21 readiness tests; all 12 generated outputs current; no whitespace errors after consolidating the authorization-only status fixture. |
+
+Additional local CI contracts passed: 308 script tests (26 skipped), 222 normative catalog tests (7 skipped), and 118 API manifest contract tests (1 skipped). The CI workflow now runs the readiness suite as part of Python contracts. Linux, Windows, macOS, and the full pull-request CI matrix remain subject to the PR run.
+
 ## T039 owner approval evidence
 
 - **Merged owner approval evidence**: `KMIPKIT-0018` is approved for implementation by specification PR #65, MERGED into `release/1.0.0` on `2026-10-09`; the PR body gates implementation on approval and merge. The checked-in owner status remains `Status: Draft for independent human review`.
