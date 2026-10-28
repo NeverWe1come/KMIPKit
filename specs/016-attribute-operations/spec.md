@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0016-attribute-operations`
 **Created**: 2026-10-08
-**Status**: Draft for independent human review
+**Status**: Approved
 **Input**: KMIPKit roadmap Phase D: implement the client-initiated attribute-operation family for KMIP 2.1.
 
 ## Normative scope

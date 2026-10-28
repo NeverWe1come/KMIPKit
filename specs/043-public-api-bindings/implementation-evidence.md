@@ -6072,3 +6072,25 @@ with 35 successful jobs, 2 scheduled skips, and 0 failures; CodeQL run
 `40697042527` and zizmor run `40697042170` also passed. The authorized
 coverage-threshold waiver remains unchanged: threshold enforcement was not
 performed and no threshold pass is claimed. T085 remains open.
+
+### T037 progress checkpoint — Get Attribute List only (2026-10-28)
+
+This checkpoint completes the four-language public mapping and parity fixture for the KMIP 2.1 Get Attribute List operation only. The owner feature `KMIPKIT-0016` is approved: its approval is evidenced by merged PR #58, merge commit `0fa129e1248e735343704fb662926a401585ed7c` (2026-10-08), and the existing T004 traceability record. The stale Draft status metadata in `specs/016-attribute-operations/spec.md` was corrected to Approved; no normative clause or scope was changed.
+
+The API exposes the successful response as an owned generic TTLV payload containing the Unique Identifier when present, followed by the ordered Attribute Reference entries. The operation facade submits one request without retry. Failure responses do not expose their raw response payload. Rust, C ABI, Java/JNI, and Python/CFFI mappings and parity fixtures are represented in `specification/api/public-api.json`; all generated outputs were refreshed using the pinned generator.
+
+T037 remains open and unchecked. This checkpoint covers Get Attribute List only; Add Attribute, Adjust Attribute, Delete Attribute, Modify Attribute, and Set Attribute mappings still require their own implementation and evidence. Get Attributes remains blocked for the no-match behavior pending resolution of the KMIP 2.1 §6.1.20 / Table 224 ambiguity; this change does not encode a resolution or claim readiness for that case.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `89f64f10a` | Focused Rust protocol/client, C ABI, Java, Python, and manifest tests against the pre-implementation API | Expected failures: missing TTLV projection, client facade, C ABI symbols, Java/Python facade and parsing, and manifest mapping. `git diff --check` passed. |
+| Green | pending | `cargo test -p kmipkit-protocol get_attribute_list_tests::successful_response_exposes_typed_payload_as_generic_ttlv --all-features --locked --offline` | Pass, 1 test. |
+| Green | pending | `cargo test -p kmipkit-client high_level_get_attribute_list_executes_one_request_without_retries --all-features --locked --offline` | Pass, 1 test. |
+| Green | pending | `cargo test -p kmipkit-ffi get_attribute_list_abi_tests --all-features --locked --offline` | Pass, 5 tests, including compiled C consumer. Windows AWS-LC probe/NASM and linker warnings were nonfatal. |
+| Green | pending | `gradlew.bat test --no-daemon --rerun-tasks --tests org.kmipkit.extensions.GetAttributeListJavaFacadeTest` from `bindings/java` | Pass; Gradle rebuilt the native JNI library and completed successfully. |
+| Green | pending | From `bindings/python`, with `VIRTUAL_ENV` set to `.venv-codex`, `KMIPKIT_NATIVE_LIBRARY` set to `target/debug/kmipkit_ffi.dll`, run `uv run --python 3.12 --no-project --with pytest --with cffi pytest tests/test_get_attribute_list_operation.py -q` | Pass, 3 tests. |
+| Green | pending | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. |
+| Green | pending | `python -B -m unittest tools.api_manifest.tests.test_get_attribute_list_parity_manifest -v` | Pass, 1 test. |
+| Refactor | pending | `cargo fmt --all --check` and `git diff --check` | Pass. |
+
+This is an implementation progress checkpoint, not completion of T037 or readiness of PR #104 for merge.

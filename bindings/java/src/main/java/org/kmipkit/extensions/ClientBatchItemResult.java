@@ -246,6 +246,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /** Returns the ordered generic Get Attribute List payload on success only. */
+    public Optional<GetAttributeListResponse> getAttributeListResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseGetAttributeList);
+        return parseGetAttributeListResponse(values);
+    }
+
     /**
      * Creates caller-owned local accounting from this live successful Get Usage Allocation
      * response. The exact positive request count and the caller-known Usage Limits Unit must be
@@ -1092,6 +1101,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "SetDefaultsResponse[fields=redacted]"; }
+    }
+
+    /** Successful Get Attribute List payload with an independently owned generic TTLV copy. */
+    public static final class GetAttributeListResponse implements AutoCloseable {
+        private final TtlvStructure responsePayloadTtlv;
+
+        private GetAttributeListResponse(TtlvStructure responsePayloadTtlv) {
+            this.responsePayloadTtlv = responsePayloadTtlv;
+        }
+
+        /** Returns Unique Identifier followed by ordered Attribute References. */
+        public TtlvStructure responsePayloadTtlv() { return responsePayloadTtlv; }
+
+        @Override public void close() { responsePayloadTtlv.close(); }
+
+        @Override public String toString() {
+            return "GetAttributeListResponse[responsePayloadTtlv=redacted]";
+        }
     }
 
     /** Successful §6.1.57 Validate response with its open indicator and complete ordered TTLV. */
@@ -2473,6 +2500,26 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Set Defaults response is invalid");
         }
         return Optional.of(new SetDefaultsResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<GetAttributeListResponse> parseGetAttributeListResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Get Attribute List response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Get Attribute List response is invalid");
+        long[] handles = requireLongArray(
+                tuple[1], 1, "native Get Attribute List response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent response contains payload");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native Get Attribute List response is invalid");
+        }
+        return Optional.of(new GetAttributeListResponse(
+                TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<ValidateResponse> parseValidateResponse(Object[] values) {

@@ -1,9 +1,35 @@
 from __future__ import annotations
 
+import ssl
+from pathlib import Path
+import threading
 from types import SimpleNamespace
+
+from _test_support import (
+    mtls_transport_config,
+    operation_response_message,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+)
 
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
+
+_TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+_GET_ATTRIBUTE_LIST_ID = b"get-attribute-list-0"
+
+
+def _get_attribute_list_response_message() -> bytes:
+    return operation_response_message(
+        0x0C,
+        _GET_ATTRIBUTE_LIST_ID,
+        payload_items=(
+            ttlv_item(0x0042_0094, 7, b"object-7"),
+            ttlv_enumeration(0x0042_013B, 0x0042_002F),
+        ),
+    )
 
 
 def test_get_attribute_list_builder_preserves_optional_unique_identifier(monkeypatch):
@@ -21,11 +47,13 @@ def test_get_attribute_list_builder_preserves_optional_unique_identifier(monkeyp
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
 
-    result = extensions.client_batch_item_get_attribute_list(None)
+    omitted_result = extensions.client_batch_item_get_attribute_list(None)
+    present_result = extensions.client_batch_item_get_attribute_list(object())
 
-    assert result == 73
+    assert omitted_result == present_result == 73
     assert calls == [
         ("kmipkit_client_batch_item_get_attribute_list", (ffi.NULL,)),
+        ("kmipkit_client_batch_item_get_attribute_list", (identifier_handle,)),
     ]
 
 
@@ -65,3 +93,53 @@ def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monke
     assert "123" not in repr(result)
     result.close()
     assert structure.closed
+
+
+def test_get_attribute_list_executes_once_over_native_mtls_client():
+    received: list[bytes] = []
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(_get_attribute_list_response_message())
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    configuration = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    response = None
+    request_item = None
+    batch_result = None
+    try:
+        with (
+            configuration,
+            client.Client.create(configuration, mtls_transport_config(port, _TLS_FIXTURES)) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            batch = client.Batch.create()
+            request_item = extensions.client_batch_item_get_attribute_list(
+                extensions.UniqueIdentifier.text_string("object-7")
+            )
+            batch.add_item(
+                extensions.with_unique_batch_item_id(request_item, _GET_ATTRIBUTE_LIST_ID)
+            )
+            request_item = None
+            batch_result = kmip.execute(batch, limits)
+
+        assert failures.empty(), "the mTLS peer must complete one Get Attribute List exchange"
+        assert len(received) == 1
+        assert ttlv_enumeration(0x42005C, 0x0C) in received[0]
+        assert batch_result is not None and len(batch_result.items) == 1
+        response = batch_result.items[0].get_attribute_list_response
+        assert isinstance(response, client.GetAttributeListResponse)
+        with ttlv.ttlv_structure_view(response.response_payload_ttlv) as view:
+            assert ttlv.ttlv_structure_view_item_count(view) == 2
+    finally:
+        if request_item is not None:
+            request_item.close()
+        if response is not None:
+            response.close()
+        if batch_result is not None:
+            batch_result.close()
+        peer.join(timeout=4)

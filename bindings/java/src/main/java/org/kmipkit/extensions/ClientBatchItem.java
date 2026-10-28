@@ -718,6 +718,30 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a §6.1.21 Get Attribute List request, optionally selecting an object. */
+    public static ClientBatchItem getAttributeList() {
+        return getAttributeList(null);
+    }
+
+    /** Creates Get Attribute List with its optional Text String Unique Identifier. */
+    public static ClientBatchItem getAttributeList(@Nullable UniqueIdentifier uniqueIdentifier) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Get Attribute List Unique Identifier must be a Text String");
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemGetAttributeList(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Set Constraints request from the required Constraints structure. */
     public static ClientBatchItem setConstraints(TtlvStructure constraints) {
         requireStructure(constraints, "Set Constraints");

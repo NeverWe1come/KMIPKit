@@ -2306,6 +2306,20 @@ def client_batch_item_get_constraints() -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_get_attribute_list(
+    unique_identifier: UniqueIdentifier | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.21 Get Attribute List item."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_get_attribute_list",
+            (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_set_constraints(constraints: ttlv.Structure) -> ClientBatchItem:
     """Create a Set Constraints item from KMIP 2.1 §6.1.52, Table 325."""
     native_constraints = _client_native_structure(constraints, required=True)
@@ -3259,6 +3273,7 @@ __all__ = [
     "client_batch_item_rekey_key_pair",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
+    "client_batch_item_get_attribute_list",
     "client_batch_item_set_constraints",
     "client_batch_item_set_defaults",
     "client_batch_item_interop",

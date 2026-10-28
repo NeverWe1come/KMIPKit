@@ -37,6 +37,8 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use super::*;
 use crate::kmipkit_byte_span_v1_t;
 
+#[path = "get_attribute_list_abi_tests.rs"]
+mod get_attribute_list_abi_tests;
 #[path = "lifecycle_operation_abi_tests.rs"]
 mod lifecycle_operation_abi_tests;
 #[path = "query_ping_abi_tests.rs"]
@@ -45,8 +47,6 @@ mod query_ping_abi_tests;
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
 mod set_defaults_abi_tests;
-#[path = "get_attribute_list_abi_tests.rs"]
-mod get_attribute_list_abi_tests;
 
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;

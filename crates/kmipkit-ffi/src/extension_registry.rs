@@ -41,16 +41,16 @@ use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
     CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    DestroyRequest, EncryptRequest, ExportRequest, GetConstraintsRequest, GetRequest,
-    GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest,
-    LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
-    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier, ValidateRequest,
+    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
+    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest,
+    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -4227,6 +4227,28 @@ pub extern "C" fn kmipkit_client_batch_item_get_constraints(
         let out = out_slot!(out_item);
         *out = try_ffi!(batch_item_handle(ClientRequest::GetConstraints(
             GetConstraintsRequest::new(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates a Get Attribute List request from KMIP 2.1 §6.1.21, Table 226.
+/// A null Unique Identifier omits the optional field.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_attribute_list(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let identifier = match identifier {
+            None => None,
+            Some(UniqueIdentifier::TextString(value)) => Some(value),
+            Some(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_attribute_list(
+            GetAttributeListRequest::new(identifier),
         )));
         SUCCESS
     })

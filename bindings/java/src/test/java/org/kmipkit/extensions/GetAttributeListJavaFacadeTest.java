@@ -20,8 +20,11 @@ import org.kmipkit.ttlv.TtlvValueView;
 final class GetAttributeListJavaFacadeTest {
     @Test
     void buildsGetAttributeListWithAnOmittedIdentifier() {
-        try (ClientBatchItem item = ClientBatchItem.getAttributeList()) {
-            assertNotNull(item);
+        try (ClientBatchItem omitted = ClientBatchItem.getAttributeList();
+                ClientBatchItem selected = ClientBatchItem.getAttributeList(
+                        org.kmipkit.extensions.UniqueIdentifier.textString("object-7"))) {
+            assertNotNull(omitted);
+            assertNotNull(selected);
         }
     }
 

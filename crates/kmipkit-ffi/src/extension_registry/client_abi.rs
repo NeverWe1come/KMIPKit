@@ -3033,6 +3033,49 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_constraints_ttlv(
     })
 }
 
+/// Copies the successful Get Attribute List response payload as generic TTLV.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::GetAttributeList(result) = item.outcome() {
+            let Some(structure) = try_ffi!(result.to_ttlv_payload().map_err(|_| ERROR_INTERNAL))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the complete generic response only from a successful Set Constraints result.
 /// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]

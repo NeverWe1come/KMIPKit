@@ -233,7 +233,10 @@ fn successful_response_exposes_typed_payload_as_generic_ttlv() {
         0,
         None,
         None,
-        Some(successful_payload([tag_reference(0x0042_002f)])),
+        Some(successful_payload([
+            tag_reference(TAG_FORM_REFERENCE),
+            tag_reference(TAG_FORM_REFERENCE),
+        ])),
     );
     let response = GetAttributeListResponse::try_from_response_item(response_item(&message))
         .expect("Table 227 success is typed");
@@ -242,11 +245,22 @@ fn successful_response_exposes_typed_payload_as_generic_ttlv() {
         .to_ttlv_payload()
         .expect("the typed response payload is representable")
         .expect("a successful Get Attribute List has a payload");
+    let payload_view = payload.view();
+    let children = payload_view.children();
+    assert_eq!(children.len(), 3);
     assert_eq!(
-        payload.children().len(),
-        2,
-        "the typed response exposes the identifier and ordered Attribute References"
+        children
+            .iter()
+            .map(|child| child.tag().raw())
+            .collect::<Vec<_>>(),
+        [UNIQUE_IDENTIFIER, ATTRIBUTE_REFERENCE, ATTRIBUTE_REFERENCE],
+        "the response payload preserves the Unique Identifier and repeated references in order"
     );
+    for reference in &children[1..] {
+        assert!(reference.with_value(|value| {
+            matches!(value, ValueView::Enumeration(raw) if *raw == TAG_FORM_REFERENCE)
+        }));
+    }
 }
 
 #[test]

@@ -11,7 +11,7 @@ from tools.api_manifest.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"
-OWNER_SPEC = "specs/016-attribute-operations/spec.md"
+OWNER_APPROVAL_EVIDENCE = "specs/016-attribute-operations/traceability.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -46,7 +46,7 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
-    "bindings/java/src/test/java/org/kmipkit/GetAttributeListJavaFacadeTest.java",
+    "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributeListJavaFacadeTest.java",
     "bindings/python/tests/test_get_attribute_list_operation.py",
     "tools/api_manifest/tests/test_get_attribute_list_parity_manifest.py",
 }
@@ -83,7 +83,13 @@ class GetAttributeListParityManifestTests(unittest.TestCase):
         self.assertEqual("verified", operation["apiState"])
         self.assertEqual("KMIPKIT-0016", operation["featureSpecId"])
         self.assertEqual("approved", operation["ownerDependency"]["state"])
-        self.assertEqual(OWNER_SPEC, operation["approvalEvidence"]["path"])
+        self.assertEqual(
+            OWNER_APPROVAL_EVIDENCE, operation["approvalEvidence"]["path"]
+        )
+        self.assertIn(
+            "0fa129e1248e735343704fb662926a401585ed7c",
+            operation["approvalEvidence"]["evidence"],
+        )
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
         self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
         for evidence in PARITY_EVIDENCE:
@@ -97,7 +103,7 @@ class GetAttributeListParityManifestTests(unittest.TestCase):
             languages=LANGUAGES,
             expected_mappings=EXPECTED_MAPPINGS,
             required_requirements=REQUIREMENTS,
-            expected_approval_source=OWNER_SPEC,
+            expected_approval_source=OWNER_APPROVAL_EVIDENCE,
         )
 
 

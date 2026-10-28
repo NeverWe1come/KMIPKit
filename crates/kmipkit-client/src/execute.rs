@@ -4684,6 +4684,24 @@ impl Client {
         )
     }
 
+    /// Executes one Get Attribute List request through one transport exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn get_attribute_list(
+        &mut self,
+        request: GetAttributeListRequest,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execute_one_typed_request(
+            ClientRequest::get_attribute_list(request),
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
     /// Executes one Set Constraints request through one transport exchange.
     ///
     /// # Errors
