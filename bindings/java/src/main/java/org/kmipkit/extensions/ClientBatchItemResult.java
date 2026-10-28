@@ -1105,11 +1105,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     /** Successful Get Attribute List payload with an independently owned generic TTLV copy. */
     public static final class GetAttributeListResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final List<AttributeReference> attributeReferences;
         private final TtlvStructure responsePayloadTtlv;
 
-        private GetAttributeListResponse(TtlvStructure responsePayloadTtlv) {
+        private GetAttributeListResponse(
+                UniqueIdentifier uniqueIdentifier,
+                List<AttributeReference> attributeReferences,
+                TtlvStructure responsePayloadTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.attributeReferences = List.copyOf(attributeReferences);
             this.responsePayloadTtlv = responsePayloadTtlv;
         }
+
+        /** Returns the exact typed Unique Identifier from the successful response. */
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns copied Attribute References in wire order, retaining duplicates. */
+        public List<AttributeReference> attributeReferences() { return attributeReferences; }
 
         /** Returns Unique Identifier followed by ordered Attribute References. */
         public TtlvStructure responsePayloadTtlv() { return responsePayloadTtlv; }
@@ -2503,23 +2516,66 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static Optional<GetAttributeListResponse> parseGetAttributeListResponse(Object[] values) {
-        Object[] tuple = requireTuple(values, 2, "native Get Attribute List response is invalid");
-        long[] fields = requireLongArray(
-                tuple[0], 1, "native Get Attribute List response is invalid");
-        long[] handles = requireLongArray(
-                tuple[1], 1, "native Get Attribute List response is invalid");
-        if (!responsePresent(fields)) {
-            if (handles[0] != 0) {
-                TtlvStructure.fromNative(handles[0], null).close();
-                throw new InvalidInputException("native absent response contains payload");
+        long ownedHandle = 0;
+        boolean transferred = false;
+        try {
+            Object[] tuple = requireTuple(values, 7,
+                    "native Get Attribute List response is invalid");
+            long[] fields = requireLongArray(tuple[0], 1,
+                    "native Get Attribute List response is invalid");
+            long[] kinds = requireNativeLongArray(tuple[2], "native reference kinds are invalid");
+            long[] tags = requireNativeLongArray(tuple[3], "native reference tags are invalid");
+            String[] vendors = requireNativeStringArray(tuple[4], "native reference vendors are invalid");
+            String[] names = requireNativeStringArray(tuple[5], "native reference names are invalid");
+            long[] handles = requireLongArray(tuple[6], 1,
+                    "native Get Attribute List response is invalid");
+            ownedHandle = handles[0] > 0 ? handles[0] : 0;
+            if (!responsePresent(fields)) {
+                if (tuple[1] != null || kinds.length != 0 || tags.length != 0
+                        || vendors.length != 0 || names.length != 0 || handles[0] != 0) {
+                    throw new InvalidInputException("native absent response contains fields");
+                }
+                return Optional.empty();
             }
-            return Optional.empty();
+            if (!(tuple[1] instanceof UniqueIdentifier identifier)
+                    || handles[0] <= 0 || kinds.length > MAX_NATIVE_ARRAY_ELEMENTS
+                    || tags.length != kinds.length || vendors.length != kinds.length
+                    || names.length != kinds.length) {
+                throw new InvalidInputException("native Get Attribute List response is invalid");
+            }
+            ArrayList<AttributeReference> references = new ArrayList<>(kinds.length);
+            for (int index = 0; index < kinds.length; index++) {
+                if (kinds[index] == 1 && vendors[index] == null && names[index] == null) {
+                    references.add(AttributeReference.tag(tags[index]));
+                } else if (kinds[index] == 2 && tags[index] == 0
+                        && vendors[index] != null && names[index] != null) {
+                    references.add(AttributeReference.name(vendors[index], names[index]));
+                } else {
+                    throw new InvalidInputException("native Attribute Reference is invalid");
+                }
+            }
+            TtlvStructure payload = TtlvStructure.fromNative(handles[0], null);
+            transferred = true;
+            return Optional.of(new GetAttributeListResponse(identifier, references, payload));
+        } finally {
+            if (!transferred && ownedHandle > 0) {
+                TtlvStructure.fromNative(ownedHandle, null).close();
+            }
         }
-        if (handles[0] <= 0) {
-            throw new InvalidInputException("native Get Attribute List response is invalid");
+    }
+
+    private static long[] requireNativeLongArray(Object value, String message) {
+        if (!(value instanceof long[] values) || values.length > MAX_NATIVE_ARRAY_ELEMENTS) {
+            throw new InvalidInputException(message);
         }
-        return Optional.of(new GetAttributeListResponse(
-                TtlvStructure.fromNative(handles[0], null)));
+        return values;
+    }
+
+    private static String[] requireNativeStringArray(Object value, String message) {
+        if (!(value instanceof String[] values) || values.length > MAX_NATIVE_ARRAY_ELEMENTS) {
+            throw new InvalidInputException(message);
+        }
+        return values;
     }
 
     static Optional<ValidateResponse> parseValidateResponse(Object[] values) {

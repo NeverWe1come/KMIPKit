@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <limits>
+#include <memory>
 #include <new>
 #include <string>
 #include <utility>
@@ -6085,38 +6086,188 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseGetAttributeList(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
         uint8_t present = 0;
-        kmipkit_ttlv_structure_t* response_payload_ttlv = nullptr;
-        const int32_t status =
-                kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
-                        from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
-                        &present, &response_payload_ttlv);
-        if (status != 0) {
-            throw_status(env, status);
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        uint64_t count = 0;
+        const int32_t typed_status = kmipkit_client_batch_item_response_get_attribute_list(
+                item, &present, &identifier, nullptr, 0, &count);
+        if (typed_status != 0) {
+            throw_status(env, typed_status);
             return static_cast<jobjectArray>(nullptr);
         }
-        if (present > 1 || (present == 1 && response_payload_ttlv == nullptr)
-                || (present == 0 && response_payload_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_payload_ttlv);
+        if (present > 1 || count > kMaximumNativeInputArrayElements
+                || (present == 0 && (identifier.kind != 0 || count != 0))) {
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
             return static_cast<jobjectArray>(nullptr);
         }
+
+        std::vector<kmipkit_attribute_reference_v1_t> references(static_cast<size_t>(count));
+        for (auto& reference : references) {
+            reference.struct_size = static_cast<uint32_t>(sizeof(reference));
+            reference.abi_version = 1;
+        }
+        if (present == 1 && count != 0) {
+            const int32_t fill_status = kmipkit_client_batch_item_response_get_attribute_list(
+                    item, &present, &identifier, references.data(), count, &count);
+            if (fill_status != 0) {
+                throw_status(env, fill_status);
+                return static_cast<jobjectArray>(nullptr);
+            }
+        }
+
+        kmipkit_ttlv_structure_t* response_payload_ttlv = nullptr;
+        uint8_t payload_present = 0;
+        const int32_t payload_status =
+                kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+                        item, &payload_present, &response_payload_ttlv);
+        if (payload_status != 0) {
+            throw_status(env, payload_status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        std::unique_ptr<kmipkit_ttlv_structure_t, decltype(&kmipkit_ttlv_structure_release)>
+                payload_owner(response_payload_ttlv, &kmipkit_ttlv_structure_release);
+        if (payload_present != present ||
+                (present == 1 && response_payload_ttlv == nullptr) ||
+                (present == 0 && response_payload_ttlv != nullptr)) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        jobject unique_identifier = nullptr;
+        std::vector<jlong> reference_kinds;
+        std::vector<jlong> reference_tags;
+        std::vector<jstring> vendors;
+        std::vector<jstring> names;
+        if (present == 1) {
+            if (identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+                    || identifier.text_length > static_cast<uint64_t>(INT32_MAX)
+                    || (identifier.text_length != 0 && identifier.text_data == nullptr)) {
+                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+                return static_cast<jobjectArray>(nullptr);
+            }
+            jstring identifier_text = nullptr;
+            if (!utf8_to_java_string(env, identifier.text_data, identifier.text_length,
+                    &identifier_text)) {
+                return static_cast<jobjectArray>(nullptr);
+            }
+            jclass identifier_class = env->FindClass("org/kmipkit/extensions/UniqueIdentifier");
+            if (identifier_class == nullptr) {
+                env->DeleteLocalRef(identifier_text);
+                return static_cast<jobjectArray>(nullptr);
+            }
+            jmethodID text_factory = env->GetStaticMethodID(identifier_class, "textString",
+                    "(Ljava/lang/String;)Lorg/kmipkit/extensions/UniqueIdentifier;");
+            if (text_factory == nullptr) {
+                env->DeleteLocalRef(identifier_class);
+                env->DeleteLocalRef(identifier_text);
+                return static_cast<jobjectArray>(nullptr);
+            }
+            unique_identifier = env->CallStaticObjectMethod(
+                    identifier_class, text_factory, identifier_text);
+            env->DeleteLocalRef(identifier_class);
+            env->DeleteLocalRef(identifier_text);
+            if (unique_identifier == nullptr || env->ExceptionCheck()) {
+                return static_cast<jobjectArray>(nullptr);
+            }
+
+            reference_kinds.reserve(references.size());
+            reference_tags.reserve(references.size());
+            vendors.reserve(references.size());
+            names.reserve(references.size());
+            for (const auto& reference : references) {
+                reference_kinds.push_back(static_cast<jlong>(reference.kind));
+                reference_tags.push_back(static_cast<jlong>(reference.tag_value));
+                if (reference.kind == 1 && reference.vendor_identification_length == 0
+                        && reference.attribute_name_length == 0) {
+                    vendors.push_back(nullptr);
+                    names.push_back(nullptr);
+                } else if (reference.kind == 2 && reference.tag_value == 0
+                        && reference.vendor_identification_length <= static_cast<uint64_t>(INT32_MAX)
+                        && reference.attribute_name_length <= static_cast<uint64_t>(INT32_MAX)
+                        && (reference.vendor_identification_length == 0
+                                || reference.vendor_identification_data != nullptr)
+                        && (reference.attribute_name_length == 0
+                                || reference.attribute_name_data != nullptr)) {
+                    jstring vendor = nullptr;
+                    jstring name = nullptr;
+                    if (!utf8_to_java_string(env, reference.vendor_identification_data,
+                                reference.vendor_identification_length, &vendor)
+                            || !utf8_to_java_string(env, reference.attribute_name_data,
+                                reference.attribute_name_length, &name)) {
+                        if (vendor != nullptr) env->DeleteLocalRef(vendor);
+                        if (name != nullptr) env->DeleteLocalRef(name);
+                        if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+                        for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
+                        for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
+                        return static_cast<jobjectArray>(nullptr);
+                    }
+                    vendors.push_back(vendor);
+                    names.push_back(name);
+                } else {
+                    if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+                    for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
+                    for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
+                    throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+                    return static_cast<jobjectArray>(nullptr);
+                }
+            }
+        }
+
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
-        if (fields == nullptr) {
-            kmipkit_ttlv_structure_release(response_payload_ttlv);
+        jlongArray kinds = make_long_array(env, reference_kinds);
+        jlongArray tags = make_long_array(env, reference_tags);
+        jclass string_class = env->FindClass("java/lang/String");
+        if (fields == nullptr || kinds == nullptr || tags == nullptr || string_class == nullptr) {
+            if (fields != nullptr) env->DeleteLocalRef(fields);
+            if (kinds != nullptr) env->DeleteLocalRef(kinds);
+            if (tags != nullptr) env->DeleteLocalRef(tags);
+            if (string_class != nullptr) env->DeleteLocalRef(string_class);
+            if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+            for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
+            for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
             return static_cast<jobjectArray>(nullptr);
         }
-        jlongArray response_payload_handle = make_long_array(
-                env, {to_java_handle(response_payload_ttlv)});
-        if (response_payload_handle == nullptr) {
+        jobjectArray vendor_array = env->NewObjectArray(static_cast<jsize>(vendors.size()),
+                string_class, nullptr);
+        jobjectArray name_array = env->NewObjectArray(static_cast<jsize>(names.size()),
+                string_class, nullptr);
+        env->DeleteLocalRef(string_class);
+        if (vendor_array == nullptr || name_array == nullptr) {
             env->DeleteLocalRef(fields);
-            kmipkit_ttlv_structure_release(response_payload_ttlv);
+            env->DeleteLocalRef(kinds);
+            env->DeleteLocalRef(tags);
+            if (vendor_array != nullptr) env->DeleteLocalRef(vendor_array);
+            if (name_array != nullptr) env->DeleteLocalRef(name_array);
+            if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+            for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
+            for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
             return static_cast<jobjectArray>(nullptr);
         }
-        jobjectArray result = make_object_array(env, {fields, response_payload_handle});
-        if (result == nullptr) kmipkit_ttlv_structure_release(response_payload_ttlv);
+        for (jsize index = 0; index < static_cast<jsize>(vendors.size()); ++index) {
+            env->SetObjectArrayElement(vendor_array, index, vendors[static_cast<size_t>(index)]);
+            env->SetObjectArrayElement(name_array, index, names[static_cast<size_t>(index)]);
+            if (env->ExceptionCheck()) break;
+        }
+        jlongArray response_payload_handle = make_long_array(env,
+                {to_java_handle(response_payload_ttlv)});
+        jobjectArray result = nullptr;
+        if (!env->ExceptionCheck() && response_payload_handle != nullptr) {
+            result = make_object_array(env, {fields, unique_identifier, kinds, tags,
+                    vendor_array, name_array, response_payload_handle});
+        }
+        if (result != nullptr) payload_owner.release();
         env->DeleteLocalRef(fields);
-        env->DeleteLocalRef(response_payload_handle);
+        env->DeleteLocalRef(kinds);
+        env->DeleteLocalRef(tags);
+        env->DeleteLocalRef(vendor_array);
+        env->DeleteLocalRef(name_array);
+        if (response_payload_handle != nullptr) env->DeleteLocalRef(response_payload_handle);
+        if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+        for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
+        for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
         return result;
     });
 }

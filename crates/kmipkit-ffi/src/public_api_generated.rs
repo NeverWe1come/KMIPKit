@@ -727,6 +727,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::ArchiveResponse::unique_identifier",
     ),
     (
+        "rust-observed-196bc7b35f566431f777",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeReference",
+    ),
+    (
+        "rust-observed-5f0fddd666969c4e8942",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeReference::tag",
+    ),
+    (
+        "rust-observed-7d8c18982833db313421",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeReference::name",
+    ),
+    (
+        "rust-observed-a3a15f44a005ab96b3de",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeReference::tag_value",
+    ),
+    (
+        "rust-observed-800cee7ed1159483f308",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttributeReference::name_parts",
+    ),
+    (
         "rust-observed-2e9dcb88b74ab66b88b0",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CreateResponse",

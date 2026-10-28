@@ -1423,8 +1423,10 @@ class GetConstraintsResponse:
 
 @dataclass(frozen=True, slots=True)
 class GetAttributeListResponse:
-    """Successful Get Attribute List response with an owned generic payload."""
+    """Successful Get Attribute List response with typed fields and owned generic payload."""
 
+    unique_identifier: extensions.UniqueIdentifier
+    attribute_references: tuple[extensions.AttributeReference, ...]
     response_payload_ttlv: ttlv.Structure = field(repr=False)
 
     def close(self) -> None:
@@ -3524,6 +3526,77 @@ def _get_constraints_response(
 def _get_attribute_list_response(
     item: _ClientBatchItemResponse,
 ) -> GetAttributeListResponse:
+    present = ffi.new("uint8_t *")
+    identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
+    identifier.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    identifier.abi_version = 1
+    count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_attribute_list(
+            item._pointer(), present, identifier, ffi.NULL, 0, count
+        )
+    )
+    if present[0] != 1 or count[0] > 100_000:
+        errors.raise_for_status(4)
+    if identifier.kind != 1 or identifier.reserved != 0:
+        errors.raise_for_status(4)
+    identifier_length = int(identifier.text_length)
+    if identifier_length and identifier.text_data == ffi.NULL:
+        errors.raise_for_status(4)
+    try:
+        identifier_text = (
+            bytes(ffi.buffer(identifier.text_data, identifier_length)).decode("utf-8", "strict")
+            if identifier_length
+            else ""
+        )
+    except UnicodeDecodeError:
+        errors.raise_for_status(4)
+    unique_identifier = extensions.UniqueIdentifier.text_string(identifier_text)
+
+    references_native = ffi.new(
+        "kmipkit_attribute_reference_v1_t[]", int(count[0])
+    ) if count[0] else ffi.NULL
+    for index in range(int(count[0])):
+        references_native[index].struct_size = ffi.sizeof("kmipkit_attribute_reference_v1_t")
+        references_native[index].abi_version = 1
+    fill_present = ffi.new("uint8_t *")
+    fill_count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_attribute_list(
+            item._pointer(), fill_present, identifier, references_native, count[0], fill_count
+        )
+    )
+    if fill_present[0] != 1 or fill_count[0] != count[0]:
+        errors.raise_for_status(4)
+
+    def decode_span(data: Any, length: int) -> str:
+        span_length = int(length)
+        if span_length and data == ffi.NULL:
+            errors.raise_for_status(4)
+        try:
+            value = bytes(ffi.buffer(data, span_length)) if span_length else b""
+            return value.decode("utf-8", "strict")
+        except UnicodeDecodeError:
+            errors.raise_for_status(4)
+
+    references: list[extensions.AttributeReference] = []
+    for index in range(int(count[0])):
+        value = references_native[index]
+        if value.reserved != 0 or value.reserved2 != 0:
+            errors.raise_for_status(4)
+        if value.kind == 1 and value.vendor_identification_data == ffi.NULL \
+                and value.vendor_identification_length == 0 \
+                and value.attribute_name_data == ffi.NULL and value.attribute_name_length == 0:
+            references.append(extensions.AttributeReference.tag(int(value.tag_value)))
+        elif value.kind == 2 and value.tag_value == 0:
+            vendor = decode_span(
+                value.vendor_identification_data, value.vendor_identification_length
+            )
+            name = decode_span(value.attribute_name_data, value.attribute_name_length)
+            references.append(extensions.AttributeReference.name(vendor, name))
+        else:
+            errors.raise_for_status(4)
+
     response_ttlv_present = ffi.new("uint8_t *")
     response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
     _raise_abi_status(
@@ -3543,7 +3616,9 @@ def _get_attribute_list_response(
     except Exception:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
-    return GetAttributeListResponse(response_payload_ttlv)
+    return GetAttributeListResponse(
+        unique_identifier, tuple(references), response_payload_ttlv
+    )
 
 
 def _set_constraints_response(

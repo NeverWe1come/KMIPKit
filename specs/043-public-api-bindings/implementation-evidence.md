@@ -6112,3 +6112,25 @@ Exact-head CI run `40710308719` exposed export-inventory gaps after the Get Attr
 | Refactor | this evidence commit | `git diff --check` after regeneration and report/documentation reconciliation | Pass. |
 
 The fix is limited to individual exclusions for the ten exact Python exports, exact JNI bridge and redacted-formatter entries, the two explicit Java overload signatures, and regeneration of the checked-in export report with `tools/api_manifest/audit_binding_exports.py`. No generic or wildcard exclusions are added.
+
+### T037 typed AttributeReference access in C, Java, and Python (2026-10-28)
+
+This increment closes the typed access gap identified by QA for the Get Attribute List response and shared `AttributeReference` model. The C ABI returns a fixed-width/versioned output record with raw tag values or borrowed name spans; Java and Python copy those spans into immutable/owned values before the response handle is released. All surfaces preserve unknown tag values, order, duplicate references, and keep the generic TTLV response available as a separate view. No Get Attributes no-match behavior is changed or claimed conformant.
+
+The manifest now maps the Rust `AttributeReference` type and its `tag`, `name`, `tag_value`, and `name_parts` functions to the C record fields and the Java/Python values. It also inventories every observed Java and Python public member of the new type, including dataclass-generated Python members. The approval source remains KMIPKIT-0016, merged by PR #58 at `0fa129e1248e735343704fb662926a401585ed7c`; normative scope was not changed.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `9cbbf375f` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_get_attribute_list_parity_manifest -v` | Expected failure: the new Java `AttributeReference` public methods were not included in the manifest operation mappings. |
+| Red | `06f89f869` | Same focused manifest parity test after adding Rust accessors and C record fields to the expected mapping | Expected failure: Rust `AttributeReference` accessors were still blocked/unmapped; the test failed on the Rust mapping set. |
+| Green | this commit | `cargo test -p kmipkit-ffi --features coverage-c-consumer typed_get_attribute_list --lib` | Pass, 3 tests: ordered duplicate names, unknown raw tag preservation, invalid versions/capacity, and failure-field hiding. |
+| Green | this commit | `cargo test -p kmipkit-ffi --features coverage-c-consumer compiled_c_consumer_reads_successful_response_payload_and_hides_failure_payload --lib` | Pass, 1 test; compiled C consumer validates typed response data and failure hiding. |
+| Green | this commit | `gradlew.bat test --tests org.kmipkit.extensions.GetAttributeListJavaFacadeTest` from `bindings/java` | Pass; JNI library was current and the Java facade test completed successfully. |
+| Green | this commit | Python `test_get_attribute_list_operation.py` with `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | Pass, 3 tests, including the mTLS integration scenario. |
+| Green | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_get_attribute_list_parity_manifest -v` | Pass, 1 test; approved mapping, response members, and evidence are present. |
+| Green | this commit | `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check` | Pass; pinned generator refreshed and verified all 12 outputs. |
+| Green | this commit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | Pass; C 416/416, Java 764/764, Python 743/743 exact manifest matches. Every scan is complete with zero missing declarations, stale rows, kind mismatches, or issues. |
+| Green | this commit | `cargo fmt --all --check`; `git diff --check` | Pass after applying rustfmt to the handwritten Rust source and fixture. |
+| Refactor follow-up | pending | `cargo clippy -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings` | Current check identifies a long Rust test and checked-width conversions in its fixture helpers. These test-only findings are being extracted into focused helpers before the Refactor commit. |
+
+This is an incremental implementation checkpoint. T037 remains unchecked and open; the other five attribute operations remain unimplemented in this slice, and the KMIP 2.1 §6.1.20/Table 224 no-match gate remains unresolved.

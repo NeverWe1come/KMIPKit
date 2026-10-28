@@ -129,6 +129,19 @@ ffi.cdef(
     } kmipkit_unique_identifier_v1_t;
 
     typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t kind;
+        uint32_t reserved;
+        uint32_t tag_value;
+        uint32_t reserved2;
+        const uint8_t *vendor_identification_data;
+        uint64_t vendor_identification_length;
+        const uint8_t *attribute_name_data;
+        uint64_t attribute_name_length;
+    } kmipkit_attribute_reference_v1_t;
+
+    typedef struct {
         int32_t major;
         int32_t minor;
     } kmipkit_protocol_version_v1_t;
@@ -694,6 +707,13 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_get_attribute_list(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        kmipkit_attribute_reference_v1_t *out_references,
+        uint64_t capacity,
+        uint64_t *out_count);
     int32_t kmipkit_client_batch_item_response_validate(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,

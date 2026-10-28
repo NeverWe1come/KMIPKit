@@ -6203,6 +6203,52 @@ int kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(
+    kmipkit_client_batch_item_response_t *item,
+    uint8_t expected_present) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t references[3] = {{0}};
+    uint8_t present = UINT8_C(9);
+    uint64_t count = UINT64_MAX;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    for (uint64_t index = 0; index < UINT64_C(3); ++index) {
+        references[index].struct_size = (uint32_t)sizeof(references[index]);
+        references[index].abi_version = 1;
+    }
+    if (item == 0 || expected_present > 1 ||
+        kmipkit_client_batch_item_response_get_attribute_list(
+            item, &present, &identifier, 0, 0, &count) != 0 ||
+        present != expected_present) {
+        return 0;
+    }
+    if (expected_present == 0) {
+        return count == 0 && identifier.kind == 0;
+    }
+    if (count != UINT64_C(3) || identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        identifier.text_length != UINT64_C(8) || identifier.text_data == 0 ||
+        memcmp(identifier.text_data, "object-7", 8) != 0) {
+        return 0;
+    }
+    if (kmipkit_client_batch_item_response_get_attribute_list(
+            item, &present, &identifier, references, UINT64_C(3), &count) != 0 ||
+        present != 1 || count != UINT64_C(3) ||
+        references[0].kind != UINT32_C(1) ||
+        references[0].tag_value != UINT32_C(0x00540001) ||
+        references[1].kind != UINT32_C(2) ||
+        references[2].kind != UINT32_C(2)) {
+        return 0;
+    }
+    return references[1].vendor_identification_length == UINT64_C(6) &&
+        memcmp(references[1].vendor_identification_data, "vendor", 6) == 0 &&
+        references[1].attribute_name_length == UINT64_C(11) &&
+        memcmp(references[1].attribute_name_data, "Opaque.Name", 11) == 0 &&
+        references[2].vendor_identification_length == UINT64_C(6) &&
+        memcmp(references[2].vendor_identification_data, "vendor", 6) == 0 &&
+        references[2].attribute_name_length == UINT64_C(11) &&
+        memcmp(references[2].attribute_name_data, "Opaque.Name", 11) == 0;
+}
+
 int kmipkit_client_abi_c_consumer_validate_set_defaults_response_ttlv(
     kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
     static const uint32_t response_tags[] = {

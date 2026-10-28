@@ -70,6 +70,9 @@ def test_get_attribute_list_builder_preserves_optional_unique_identifier(monkeyp
 
 def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monkeypatch):
     native_handle = ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    identifier_bytes = ffi.new("uint8_t[]", b"object-7")
+    vendor_bytes = ffi.new("uint8_t[]", b"vendor")
+    name_bytes = ffi.new("uint8_t[]", b"Opaque.Name")
 
     class OwnedStructure:
         closed = False
@@ -84,10 +87,29 @@ def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monke
         output[0] = native_handle
         return 0
 
+    def typed_response(_item, present, identifier, references, capacity, count):
+        present[0] = 1
+        identifier.kind = 1
+        identifier.text_data = identifier_bytes
+        identifier.text_length = 8
+        count[0] = 3
+        if references != ffi.NULL:
+            assert capacity == 3
+            references[0].kind = 1
+            references[0].tag_value = 0x0054_0001
+            for index in (1, 2):
+                references[index].kind = 2
+                references[index].vendor_identification_data = vendor_bytes
+                references[index].vendor_identification_length = 6
+                references[index].attribute_name_data = name_bytes
+                references[index].attribute_name_length = 11
+        return 0
+
     monkeypatch.setattr(
         client,
         "lib",
         SimpleNamespace(
+            kmipkit_client_batch_item_response_get_attribute_list=typed_response,
             kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv=response_ttlv
         ),
     )

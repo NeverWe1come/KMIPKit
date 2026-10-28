@@ -1,4 +1,5 @@
 use super::*;
+use crate::kmipkit_attribute_reference_v1_t;
 use kmipkit_client::ClientRequest;
 use kmipkit_protocol::GetAttributeListRequest;
 
@@ -6,6 +7,10 @@ use kmipkit_protocol::GetAttributeListRequest;
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attribute_list_request() -> i32;
     fn kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_present: u8,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
     ) -> i32;
@@ -147,6 +152,12 @@ fn compiled_c_consumer_reads_successful_response_payload_and_hides_failure_paylo
         unsafe { kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(failure, 0) },
         1
     );
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(failure, 0)
+        },
+        1
+    );
     kmipkit_client_batch_item_response_release(failure);
 }
 
@@ -186,10 +197,15 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         SUCCESS
     );
     assert_eq!(present, 1);
-    assert_eq!(identifier.kind, crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING);
+    assert_eq!(
+        identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
     assert_eq!(reference_count, 3);
     assert_eq!(
-        unsafe { std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize) },
+        unsafe {
+            std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize)
+        },
         b"object-7"
     );
 
@@ -206,20 +222,142 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         SUCCESS
     );
     assert_eq!(present, 1);
-    assert_eq!(references[0].kind, crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG);
-    assert_eq!(references[0].tag_value, 0x0054_0001);
-    assert_eq!(references[1].kind, crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME);
-    assert_eq!(span_bytes(references[1].vendor_identification), b"vendor".to_vec());
     assert_eq!(
-        span_bytes(references[1].attribute_name),
+        references[0].kind,
+        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG
+    );
+    assert_eq!(references[0].tag_value, 0x0054_0001);
+    assert_eq!(
+        references[1].kind,
+        crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME
+    );
+    assert_eq!(
+        span_bytes(
+            references[1].vendor_identification_data,
+            references[1].vendor_identification_length,
+        ),
+        b"vendor".to_vec()
+    );
+    assert_eq!(
+        span_bytes(
+            references[1].attribute_name_data,
+            references[1].attribute_name_length
+        ),
         b"Opaque.Name".to_vec()
     );
-    assert_eq!(span_bytes(references[2].vendor_identification), b"vendor".to_vec());
     assert_eq!(
-        span_bytes(references[2].attribute_name),
+        span_bytes(
+            references[2].vendor_identification_data,
+            references[2].vendor_identification_length,
+        ),
+        b"vendor".to_vec()
+    );
+    assert_eq!(
+        span_bytes(
+            references[2].attribute_name_data,
+            references[2].attribute_name_length
+        ),
         b"Opaque.Name".to_vec()
+    );
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(success, 1)
+        },
+        1
     );
     kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
+fn typed_get_attribute_list_rejects_short_capacity_and_bad_output_versions() {
+    let success = successful_cryptographic_item(
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        0x0c,
+        b"attribute-list-invalid-output",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"object-7"),
+            ttlv_enumeration(0x0042_013b, 0x0054_0001),
+            ttlv_enumeration(0x0042_013b, 0x0054_0002),
+            ttlv_enumeration(0x0042_013b, 0x0054_0003),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_record();
+    let mut references = [
+        empty_attribute_reference_record(),
+        empty_attribute_reference_record(),
+        empty_attribute_reference_record(),
+    ];
+    let mut count = 0;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            references.as_mut_ptr(),
+            2,
+            &raw mut count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 1);
+    assert_eq!(count, 3);
+
+    references[1].abi_version = 2;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            references.as_mut_ptr(),
+            references.len() as u64,
+            &raw mut count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    identifier.abi_version = 2;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            ptr::null_mut(),
+            0,
+            &raw mut count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
+fn typed_get_attribute_list_hides_operation_fields_for_failure() {
+    let failure = failed_cryptographic_item(
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        0x0c,
+        b"attribute-list-typed-failure",
+    );
+    let mut present = 1;
+    let mut identifier = empty_unique_identifier_record();
+    let mut count = 1;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+            failure,
+            &raw mut present,
+            &raw mut identifier,
+            ptr::null_mut(),
+            0,
+            &raw mut count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(count, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    assert_eq!(identifier.text_length, 0);
+    kmipkit_client_batch_item_response_release(failure);
 }
 
 fn empty_unique_identifier_record() -> kmipkit_unique_identifier_v1_t {
@@ -243,15 +381,17 @@ fn empty_attribute_reference_record() -> kmipkit_attribute_reference_v1_t {
         reserved: 0,
         tag_value: 0,
         reserved2: 0,
-        vendor_identification: byte_span(&[]),
-        attribute_name: byte_span(&[]),
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        attribute_name_data: ptr::null(),
+        attribute_name_length: 0,
     }
 }
 
-fn span_bytes(span: kmipkit_byte_span_v1_t) -> Vec<u8> {
-    if span.length == 0 {
+fn span_bytes(data: *const u8, length: u64) -> Vec<u8> {
+    if length == 0 {
         return Vec::new();
     }
     // SAFETY: response spans borrow from the live response item in this test.
-    unsafe { std::slice::from_raw_parts(span.data, span.length as usize).to_vec() }
+    unsafe { std::slice::from_raw_parts(data, length as usize).to_vec() }
 }

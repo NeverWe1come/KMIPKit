@@ -68,6 +68,7 @@ typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
 typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
 typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
 typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
+typedef struct kmipkit_attribute_reference_v1_t kmipkit_attribute_reference_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -151,6 +152,19 @@ struct kmipkit_client_batch_item_metadata_v2_t {
     uint32_t reserved;
     const uint8_t * result_message_data;
     uint64_t result_message_length;
+};
+
+struct kmipkit_attribute_reference_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t kind;
+    uint32_t reserved;
+    uint32_t tag_value;
+    uint32_t reserved2;
+    const uint8_t * vendor_identification_data;
+    uint64_t vendor_identification_length;
+    const uint8_t * attribute_name_data;
+    uint64_t attribute_name_length;
 };
 
 struct kmipkit_byte_span_v1_t {
@@ -1116,6 +1130,12 @@ int32_t kmipkit_client_batch_item_get_attribute_list(const kmipkit_unique_identi
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Copies the exact Unique Identifier and every Attribute Reference in response order, retaining duplicate entries and raw unknown tag values.
+ * Initialize each output record with its exact struct_size and ABI version 1. Use a null reference array and zero capacity to query the required count.
+ * Name spans and Text String Unique Identifier data are borrowed while the item response handle remains open. Non-success and other-operation results set out_present and out_count to zero.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_get_attribute_list(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_attribute_reference_v1_t * out_references, uint64_t capacity, uint64_t * out_count);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

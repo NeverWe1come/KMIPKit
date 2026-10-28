@@ -3076,6 +3076,207 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_
     })
 }
 
+/// Copies the successful Get Attribute List UID and ordered typed references.
+///
+/// Pass a null reference pointer with zero capacity to query the count. Text
+/// spans in the returned records are borrowed while `item` remains open.
+/// Output records must be initialized with their exact size and ABI version 1.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_references: *mut crate::kmipkit_attribute_reference_v1_t,
+    capacity: u64,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || out_count.is_null()
+            || !out_present.is_aligned()
+            || !out_unique_identifier.is_aligned()
+            || !out_count.is_aligned()
+            || (out_references.is_null() && capacity != 0)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let Ok(capacity) = usize::try_from(capacity) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(reference_bytes) =
+            capacity.checked_mul(std::mem::size_of::<crate::kmipkit_attribute_reference_v1_t>())
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if !out_references.is_null() && !out_references.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if ffi_output_ranges_overlap(out_present, out_unique_identifier)
+            || ffi_output_ranges_overlap(out_present, out_count)
+            || ffi_output_ranges_overlap(out_unique_identifier, out_count)
+            || (!out_references.is_null()
+                && (raw_output_ranges_overlap(
+                    out_references.cast(),
+                    reference_bytes,
+                    out_present.cast(),
+                    std::mem::size_of::<u8>(),
+                ) || raw_output_ranges_overlap(
+                    out_references.cast(),
+                    reference_bytes,
+                    out_unique_identifier.cast(),
+                    std::mem::size_of::<kmipkit_unique_identifier_v1_t>(),
+                ) || raw_output_ranges_overlap(
+                    out_references.cast(),
+                    reference_bytes,
+                    out_count.cast(),
+                    std::mem::size_of::<u64>(),
+                )))
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        *present = 0;
+        *count = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let kmipkit_client::ClientBatchOutcome::GetAttributeList(result) = item.outcome() else {
+            return SUCCESS;
+        };
+        let Some(unique_identifier) = result.unique_identifier() else {
+            return SUCCESS;
+        };
+        let Some(references) = result.attribute_references() else {
+            return SUCCESS;
+        };
+        let Ok(reference_count) = u64::try_from(references.len()) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        *present = 1;
+        *count = reference_count;
+        let identifier =
+            kmipkit_protocol::UniqueIdentifier::TextString(unique_identifier.to_owned());
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(&identifier)) {
+            return record_ffi_error(status);
+        }
+        if out_references.is_null() || capacity == 0 {
+            return SUCCESS;
+        }
+        if capacity < references.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        for offset in 0..references.len() {
+            let output =
+                // SAFETY: `out_references` is aligned and caller-owned; capacity was checked
+                // against the exact number of initialized response references.
+                unsafe { out_references.add(offset) };
+            if let Err(status) = validate_attribute_reference_output(output) {
+                return record_ffi_error(status);
+            }
+        }
+
+        for (offset, reference) in references.iter().enumerate() {
+            let output =
+                // SAFETY: `out_references` is aligned and caller-owned; capacity was checked
+                // against the exact number of initialized response references.
+                unsafe { out_references.add(offset) };
+            if let Err(status) = write_attribute_reference_v1(output, Some(reference)) {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: each output header passed preflight above.
+            }
+        }
+        SUCCESS
+    })
+}
+
+fn raw_output_ranges_overlap(
+    first: *mut u8,
+    first_length: usize,
+    second: *mut u8,
+    second_length: usize,
+) -> bool {
+    let first_start = first as usize;
+    let second_start = second as usize;
+    let Some(first_end) = first_start.checked_add(first_length) else {
+        return true;
+    };
+    let Some(second_end) = second_start.checked_add(second_length) else {
+        return true;
+    };
+    first_start < second_end && second_start < first_end
+}
+
+fn validate_attribute_reference_output(
+    output: *mut crate::kmipkit_attribute_reference_v1_t,
+) -> FfiResult<()> {
+    if output.is_null() || !output.is_aligned() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: `output` is non-null and aligned; the caller initializes the fixed header before
+    // calling, and both fields are within the public v1 record.
+    let (struct_size, abi_version) = unsafe {
+        (
+            std::ptr::addr_of!((*output).struct_size).read(),
+            std::ptr::addr_of!((*output).abi_version).read(),
+        )
+    };
+    if struct_size as usize != std::mem::size_of::<crate::kmipkit_attribute_reference_v1_t>()
+        || abi_version != 1
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(())
+}
+
+fn write_attribute_reference_v1(
+    output: *mut crate::kmipkit_attribute_reference_v1_t,
+    reference: Option<&kmipkit_protocol::AttributeReference>,
+) -> FfiResult<()> {
+    validate_attribute_reference_output(output)?;
+    // SAFETY: `validate_attribute_reference_output` verified the writable record's size/version.
+    let struct_size = unsafe { std::ptr::addr_of!((*output).struct_size).read() };
+    let mut value = crate::kmipkit_attribute_reference_v1_t {
+        struct_size,
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        tag_value: 0,
+        reserved2: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        attribute_name_data: ptr::null(),
+        attribute_name_length: 0,
+    };
+    if let Some(reference) = reference {
+        if let Some(tag_value) = reference.tag_value() {
+            value.kind = crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+            value.tag_value = tag_value;
+        } else if let Some((vendor_identification, attribute_name)) = reference.name_parts() {
+            value.kind = crate::KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME;
+            value.vendor_identification_data = vendor_identification.as_ptr();
+            value.vendor_identification_length =
+                u64::try_from(vendor_identification.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            value.attribute_name_data = attribute_name.as_ptr();
+            value.attribute_name_length =
+                u64::try_from(attribute_name.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        } else {
+            return Err(ERROR_INTERNAL);
+        }
+    }
+    // SAFETY: `output` is caller-owned writable memory with the validated v1 layout.
+    unsafe { output.write(value) };
+    Ok(())
+}
+
 /// Copies the complete generic response only from a successful Set Constraints result.
 /// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]

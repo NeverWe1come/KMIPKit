@@ -422,6 +422,42 @@ class UniqueIdentifier:
         return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
 
 
+@dataclass(frozen=True, slots=True)
+class AttributeReference:
+    """Lossless KMIP Attribute Reference in raw tag or exact name form."""
+
+    tag_value: int | None = None
+    vendor_identification: str | None = None
+    attribute_name: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.tag_value is not None:
+            _integer_range(self.tag_value, 0, 0xFFFF_FFFF)
+            if self.vendor_identification is not None or self.attribute_name is not None:
+                errors.raise_for_status(4)
+            return
+        if self.vendor_identification is None or self.attribute_name is None:
+            errors.raise_for_status(4)
+        _owned_bytes(self.vendor_identification, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        _owned_bytes(self.attribute_name, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        if not all(
+            character.isascii() and (character.isalnum() or character in "_.")
+            for character in self.vendor_identification
+        ):
+            errors.raise_for_status(4)
+
+    @classmethod
+    def tag(cls, raw_tag: int) -> AttributeReference:
+        return cls(tag_value=raw_tag)
+
+    @classmethod
+    def name(cls, vendor_identification: str, attribute_name: str) -> AttributeReference:
+        return cls(
+            vendor_identification=vendor_identification,
+            attribute_name=attribute_name,
+        )
+
+
 class SplitKeyReference(NativeHandle):
     """Owned per-occurrence Join Split Key identifier and caller-known threshold."""
 
@@ -3238,6 +3274,7 @@ __all__ = [
     "ExtensionRecognition",
     "ExtensionRegistryLimits",
     "ExtensionSchema",
+    "AttributeReference",
     "OpaqueObjectContext",
     "RegisteredExtensionValue",
     "RegisterRequest",

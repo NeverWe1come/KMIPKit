@@ -245,6 +245,26 @@ pub struct kmipkit_unique_identifier_v1_t {
     pub integer_value: i32,
 }
 
+/// One lossless KMIP Attribute Reference returned by a successful operation.
+/// Name-form spans are borrowed while the response handle remains open.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_attribute_reference_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub kind: u32,
+    pub reserved: u32,
+    pub tag_value: u32,
+    pub reserved2: u32,
+    pub vendor_identification_data: *const u8,
+    pub vendor_identification_length: u64,
+    pub attribute_name_data: *const u8,
+    pub attribute_name_length: u64,
+}
+
+pub const KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG: u32 = 1;
+pub const KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME: u32 = 2;
+
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING: u32 = 1;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION: u32 = 2;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER: u32 = 3;
