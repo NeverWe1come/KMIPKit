@@ -3,6 +3,7 @@ import socket
 import ssl
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import _test_support
 import pytest
@@ -111,6 +112,59 @@ def test_operation_response_fixture_builder_preserves_success_payload_fields() -
     assert builder(0x03, b"register-0", payload_items=payload_items).hex() == (
         "42007b01000000c842007a0100000048420069010000002042006a0200000004000000020000000042006b020000000400000001000000004200920900000008000000000000000142000d0200000004000000010000000042000f010000007042005c05000000040000000300000000420093080000000a72656769737465722d3000000000000042007f0500000004000000000000000042007c01000000304200940700000014726567697374657265642d7365727665722d69640000000054123408000000030100ff0000000000"
     )
+
+
+def test_unique_identifier_ttlv_fixture_preserves_native_callback_contract() -> None:
+    factory = getattr(_test_support, "unique_identifier_ttlv_response_test_fixture", None)
+    assert callable(factory), "shared unique-identifier TTLV fixture is required"
+    released: list[object] = []
+    fixture = factory("revoke", b"revoked-object", 42, released.append)
+
+    expected_symbols = {
+        "kmipkit_client_batch_item_response_revoke",
+        "kmipkit_client_batch_item_response_revoke_ttlv",
+        "kmipkit_ttlv_structure_release",
+    }
+    assert set(fixture.response_symbols) == expected_symbols
+
+    identifier_fields = SimpleNamespace(
+        kind=0,
+        text_data=ffi.NULL,
+        text_length=0,
+    )
+    present = [0]
+    assert (
+        fixture.response_symbols["kmipkit_client_batch_item_response_revoke"](
+            object(), present, identifier_fields
+        )
+        == 0
+    )
+    assert present == [1]
+    assert identifier_fields.kind == int(
+        client.extensions.UniqueIdentifierKind.TEXT_STRING
+    )
+    assert bytes(
+        ffi.buffer(identifier_fields.text_data, identifier_fields.text_length)
+    ) == b"revoked-object"
+
+    ttlv_present = [0]
+    ttlv_output = [ffi.NULL]
+    assert (
+        fixture.response_symbols[
+            "kmipkit_client_batch_item_response_revoke_ttlv"
+        ](object(), ttlv_present, ttlv_output)
+        == 0
+    )
+    assert ttlv_present == [1]
+    assert ttlv_output[0] == fixture.native_ttlv
+    release_value = object()
+    fixture.response_symbols["kmipkit_ttlv_structure_release"](release_value)
+    assert released == [release_value]
+    assert fixture.native_ttlv_address == 42
+
+    assert not fixture.owned_ttlv.closed
+    fixture.owned_ttlv.close()
+    assert fixture.owned_ttlv.closed
 
 
 def test_shared_tls_peer_reports_handler_failures() -> None:

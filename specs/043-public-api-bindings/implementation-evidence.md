@@ -5948,3 +5948,18 @@ No local Sonar scanner is installed. The last remote per-file API measurement
 was for the earlier pushed head; the duplication percentage for these newer
 refactors must be measured by the exact-head PR analysis after push. The 3%
 quality-gate threshold remains unchanged.
+
+### T074 Sonar follow-up: Register and Revoke response fixtures (2026-10-28)
+
+The exact-head SonarCloud API measurement for `bd874f160` reports 3.0907% new
+duplication (1,256 duplicated lines across 40,638 new lines), above the
+unchanged 3% gate. Its per-file duplication ranges show a shared Register and
+Revoke response setup (`test_register_operation.py:93+28` and
+`test_revoke_operation.py:109+28`) and repeated Revoke callbacks
+(`test_revoke_operation.py:121+18` and `:249+18`). These blocks install the
+same typed text identifier and owned TTLV pointer callbacks; operation names,
+response semantics, and each test's success/error assertions remain distinct.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | this commit | From `bindings/python`: focused pytest for `test_unique_identifier_ttlv_fixture_preserves_native_callback_contract` | Expected failure: the shared unique-identifier/TTLV fixture factory does not yet exist. |
