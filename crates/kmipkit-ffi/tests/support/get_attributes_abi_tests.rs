@@ -3,12 +3,22 @@ use crate::kmipkit_attribute_reference_v1_t;
 use kmipkit_client::ClientRequest;
 use kmipkit_protocol::{AttributeReference, GetAttributesRequest};
 
+fn abi_struct_size<T>() -> u32 {
+    u32::try_from(std::mem::size_of::<T>()).expect("test ABI record size fits u32")
+}
+
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attributes_request() -> i32;
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_get_attributes_no_match_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(
+        item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
 }
 
@@ -18,7 +28,7 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
     let name_attribute = b"Comment";
     let mut references = [
         kmipkit_attribute_reference_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_attribute_reference_v1_t>() as u32,
+            struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
             abi_version: 1,
             kind: 1,
             reserved: 0,
@@ -30,7 +40,7 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
             attribute_name_length: 0,
         },
         kmipkit_attribute_reference_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_attribute_reference_v1_t>() as u32,
+            struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
             abi_version: 1,
             kind: 2,
             reserved: 0,
@@ -67,17 +77,14 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
     assert_eq!(fields.len(), 2);
     assert_eq!(fields[0].tag().raw(), 0x0042_013b);
     assert_eq!(fields[1].tag().raw(), 0x0042_013b);
-    assert_eq!(
-        fields[0].with_value(|value| matches!(
-            value,
-            kmipkit_ttlv::ValueView::Enumeration(tag) if *tag == 0x0042_002f
-        )),
-        true
-    );
+    assert!(fields[0].with_value(|value| matches!(
+        value,
+        kmipkit_ttlv::ValueView::Enumeration(tag) if *tag == 0x0042_002f
+    )));
     kmipkit_client_batch_item_release(item);
 
     let duplicate_record = || kmipkit_attribute_reference_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_attribute_reference_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_attribute_reference_v1_t>(),
         abi_version: 1,
         kind: 1,
         reserved: 0,
@@ -128,7 +135,7 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     );
     let mut present = 0;
     let mut identifier = kmipkit_unique_identifier_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
         abi_version: 1,
         kind: 0,
         reserved: 0,
@@ -151,7 +158,10 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     assert_eq!(identifier.kind, 1);
     assert_eq!(
         unsafe {
-            std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize)
+            std::slice::from_raw_parts(
+                identifier.text_data,
+                usize::try_from(identifier.text_length).expect("fixture length fits usize"),
+            )
         },
         b"object-7"
     );
@@ -171,7 +181,7 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     let failure = failed_cryptographic_item(request(), 0x0b, b"get-attributes-failure");
     let mut present = 9;
     let mut identifier = kmipkit_unique_identifier_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
         abi_version: 1,
         kind: 9,
         reserved: 0,
@@ -216,7 +226,7 @@ fn get_attributes_response_preserves_success_with_identifier_only_payload() {
     );
     let mut present = 0;
     let mut identifier = kmipkit_unique_identifier_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
         abi_version: 1,
         kind: 0,
         reserved: 0,
@@ -243,7 +253,10 @@ fn get_attributes_response_preserves_success_with_identifier_only_payload() {
     );
     assert_eq!(
         unsafe {
-            std::slice::from_raw_parts(identifier.text_data, identifier.text_length as usize)
+            std::slice::from_raw_parts(
+                identifier.text_data,
+                usize::try_from(identifier.text_length).expect("fixture length fits usize"),
+            )
         },
         b"object-7"
     );
@@ -251,6 +264,66 @@ fn get_attributes_response_preserves_success_with_identifier_only_payload() {
         attributes.is_null(),
         "an omitted wire Attributes field must not be synthesized"
     );
+    assert_eq!(
+        // SAFETY: the successful result stays live while the compiled C consumer observes it.
+        unsafe { kmipkit_client_abi_c_consumer_validate_get_attributes_no_match_response(success) },
+        1,
+        "C callers can distinguish successful UID-only no-match responses"
+    );
+    kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
+fn get_attributes_response_preserves_present_empty_attributes_for_c_consumers() {
+    let request = ClientRequest::get_attributes(
+        GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_002f)])
+            .expect("the request reference is unique"),
+    );
+    let success = successful_cryptographic_item(
+        request,
+        0x0b,
+        b"get-attributes-empty-structure",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"object-7"),
+            ttlv_structure(0x0042_0125, []),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+    };
+    let mut attributes = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attributes(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut attributes,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!attributes.is_null());
+    let handle = reference_handle(attributes, Kind::Structure)
+        .expect("present-empty Attributes remains a caller-owned structure");
+    let HandleValue::Structure(structure) = &handle.value else {
+        panic!("the accessor returns a structure handle");
+    };
+    assert!(structure.view().children().is_empty());
+    assert_eq!(
+        // SAFETY: the C consumer reads the copied result while `success` remains live.
+        unsafe { kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(success) },
+        1,
+        "the compiled C consumer distinguishes a present empty structure from omission"
+    );
+    kmipkit_ttlv_structure_release(attributes);
     kmipkit_client_batch_item_response_release(success);
 }
 

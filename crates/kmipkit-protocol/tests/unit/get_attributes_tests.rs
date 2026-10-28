@@ -471,10 +471,6 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
     let malformed_payloads = [
         Structure::new(),
         structure([item(ATTRIBUTES, Value::structure(Structure::new()))]),
-        structure([item(
-            UNIQUE_IDENTIFIER,
-            Value::text_string(OBJECT_IDENTIFIER.to_owned()),
-        )]),
         structure([
             item(UNIQUE_IDENTIFIER, Value::integer(17)),
             item(ATTRIBUTES, Value::structure(Structure::new())),
@@ -517,7 +513,7 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
         let message = response_message(0, None, None, Some(payload));
         assert!(
             GetAttributesResponse::try_from_response_item(response_item(&message)).is_err(),
-            "Table 224 requires one Unique Identifier followed by one Attributes Structure"
+            "only a Text String identifier followed by an optional Attributes Structure is accepted"
         );
     }
 }

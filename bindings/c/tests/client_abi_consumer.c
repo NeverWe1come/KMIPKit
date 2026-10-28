@@ -6300,6 +6300,51 @@ int kmipkit_client_abi_c_consumer_validate_get_attributes_response(
     return valid;
 }
 
+int kmipkit_client_abi_c_consumer_validate_get_attributes_no_match_response(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_ttlv_structure_t *attributes = 0;
+    uint8_t present = UINT8_C(9);
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    if (item == 0 || kmipkit_client_batch_item_response_get_attributes(
+            item, &present, &identifier, &attributes) != 0) {
+        if (attributes != 0) kmipkit_ttlv_structure_release(attributes);
+        return 0;
+    }
+    return present == 1 && attributes == 0 &&
+        identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == UINT64_C(8) && identifier.text_data != 0 &&
+        memcmp(identifier.text_data, "object-7", 8) == 0;
+}
+
+int kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint8_t present = UINT8_C(9);
+    uint64_t count = UINT64_MAX;
+    int valid = 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    if (item == 0 ||
+        kmipkit_client_batch_item_response_get_attributes(
+            item, &present, &identifier, &attributes) != 0 ||
+        present != 1 || attributes == 0 ||
+        kmipkit_ttlv_structure_view(attributes, &view) != 0 || view == 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != 0) {
+        goto cleanup;
+    }
+    valid = identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == UINT64_C(8) && identifier.text_data != 0 &&
+        memcmp(identifier.text_data, "object-7", 8) == 0;
+cleanup:
+    if (view != 0) kmipkit_ttlv_structure_view_release(view);
+    if (attributes != 0) kmipkit_ttlv_structure_release(attributes);
+    return valid;
+}
+
 int kmipkit_client_abi_c_consumer_validate_set_defaults_response_ttlv(
     kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
     static const uint32_t response_tags[] = {
@@ -6717,6 +6762,131 @@ int kmipkit_client_abi_c_consumer_validate_add_attribute_response(
     identifier.struct_size = (uint32_t)sizeof(identifier);
     identifier.abi_version = UINT32_C(1);
     if (kmipkit_client_batch_item_response_add_attribute(
+            response, &present, &identifier) != 0 || present != expected_present) {
+        return 0;
+    }
+    if (expected_present == 0) {
+        return identifier.kind == 0 && identifier.text_data == 0 &&
+            identifier.text_length == 0;
+    }
+    return identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == (uint64_t)(sizeof(expected_identifier) - 1) &&
+        identifier.text_data != 0 &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+}
+
+static int modify_attribute_create_item(
+    kmipkit_codec_limits_t *limits,
+    const uint8_t *text,
+    uint64_t text_length,
+    kmipkit_ttlv_item_t **out_item) {
+    kmipkit_ttlv_structure_t *fields = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    int result = 0;
+
+    if (limits == 0 || text == 0 || out_item == 0) return 0;
+    *out_item = 0;
+    if (kmipkit_ttlv_structure_create(&fields) != 0 ||
+        kmipkit_ttlv_value_text_string(limits, text, text_length, &value) != 0 ||
+        !add_attribute_append_value(limits, &fields, UINT32_C(0x4200c0), &value) ||
+        kmipkit_ttlv_value_enumeration(UINT32_C(1), &value) != 0 ||
+        !add_attribute_append_value(limits, &fields, UINT32_C(0x4200c1), &value) ||
+        kmipkit_ttlv_value_structure(fields, limits, &value) != 0) {
+        goto cleanup;
+    }
+    fields = 0;
+    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200bf), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_item_create(tag, value, limits, out_item) != 0) {
+        goto cleanup;
+    }
+    value = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_structure_release(fields);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_build_modify_attribute(
+    kmipkit_client_batch_item_t **out_request) {
+    static const uint8_t identifier_text[] = "object-7";
+    static const uint8_t current_text[] = "selected current value";
+    static const uint8_t new_text[] = "replacement value";
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_item_t *current_attribute = 0;
+    kmipkit_ttlv_item_t *new_attribute = 0;
+    kmipkit_ttlv_structure_t *current_input_check = 0;
+    kmipkit_ttlv_structure_t *updated_current_check = 0;
+    kmipkit_ttlv_structure_t *new_input_check = 0;
+    kmipkit_ttlv_structure_t *updated_new_check = 0;
+    kmipkit_client_batch_item_t *request = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    int result = 0;
+
+    if (out_request == 0) return 0;
+    *out_request = 0;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        !modify_attribute_create_item(
+            limits, current_text, (uint64_t)(sizeof(current_text) - 1),
+            &current_attribute) ||
+        !modify_attribute_create_item(
+            limits, new_text, (uint64_t)(sizeof(new_text) - 1), &new_attribute)) {
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    if (kmipkit_client_batch_item_modify_attribute(
+            &identifier, current_attribute, new_attribute, &request) != 0 ||
+        request == 0 ||
+        kmipkit_ttlv_structure_create(&current_input_check) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_with_item(
+            current_input_check, current_attribute, limits, &updated_current_check) != 0) {
+        goto cleanup;
+    }
+    current_input_check = 0;
+    if (kmipkit_ttlv_structure_create(&new_input_check) != 0 ||
+        kmipkit_ttlv_structure_with_item(
+            new_input_check, new_attribute, limits, &updated_new_check) != 0) {
+        goto cleanup;
+    }
+    new_input_check = 0;
+    *out_request = request;
+    request = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(request);
+    kmipkit_ttlv_structure_release(updated_new_check);
+    kmipkit_ttlv_structure_release(new_input_check);
+    kmipkit_ttlv_structure_release(updated_current_check);
+    kmipkit_ttlv_structure_release(current_input_check);
+    kmipkit_ttlv_item_release(new_attribute);
+    kmipkit_ttlv_item_release(current_attribute);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_modify_attribute_response(
+    kmipkit_client_batch_item_response_t *response, uint8_t expected_present) {
+    static const uint8_t expected_identifier[] = "object-7";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = UINT8_C(9);
+
+    if (response == 0 || expected_present > 1) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_modify_attribute(
             response, &present, &identifier) != 0 || present != expected_present) {
         return 0;
     }

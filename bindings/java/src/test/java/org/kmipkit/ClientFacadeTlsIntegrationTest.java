@@ -363,6 +363,88 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void modifyAttributeRoundTripPreservesBorrowedInputsAndTypedResponseOverMutualTls()
+            throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry(
+                "kmipkit-test-server",
+                testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD,
+                new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, modifyAttributeResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-modify-attribute-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvItem currentAttribute = registerTtlvItem(
+                        0x4200fd,
+                        TtlvValue.TextString("old comment".getBytes(StandardCharsets.UTF_8), limits),
+                        limits);
+                TtlvItem newAttribute = addAttributeNameItem(limits);
+                ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            ClientBatchItem modifyAttribute = ClientBatchItem.modifyAttribute(
+                    UniqueIdentifier.textString("object-7"), currentAttribute, newAttribute);
+            assertTrue(currentAttribute.nativeHandleOwner().get() != 0,
+                    "Modify Attribute borrows its Current Attribute input");
+            assertTrue(newAttribute.nativeHandleOwner().get() != 0,
+                    "Modify Attribute borrows its New Attribute input");
+            batch.add(modifyAttribute);
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x0e, result.operation());
+                assertEquals(0, result.resultStatus());
+                ClientBatchItemResult.ModifyAttributeResponse mapped =
+                        result.modifyAttributeResponse().orElseThrow();
+                assertEquals("modified-object-1", mapped.uniqueIdentifier());
+            }
+            assertTrue(currentAttribute.nativeHandleOwner().get() != 0,
+                    "the caller retains its Current Attribute Item after execution");
+            assertTrue(newAttribute.nativeHandleOwner().get() != 0,
+                    "the caller retains its New Attribute Item after execution");
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, enumeration(0x42005c, 0x0e));
+        assertContains(request,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
+        assertContains(request, structure(0x42013c,
+                item(0x4200fd, 7, "old comment".getBytes(StandardCharsets.UTF_8))));
+        assertContains(request, structure(0x42013d,
+                structure(0x42000a,
+                        item(0x4200a5, 7, "new name".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x4200a6, 1))));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
     void deleteAttributeRoundTripPreservesSelectorsAndTypedResponseOverMutualTls()
             throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
@@ -490,7 +572,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult result = response.itemAt(0);
                     ClientBatchItemResult.GetAttributesResponse mapped =
                             result.getAttributesResponse().orElseThrow();
-                    TtlvStructureView attributesView = mapped.attributes().view()) {
+                    TtlvStructureView attributesView = mapped.attributes().orElseThrow().view()) {
                 assertEquals(0x0b, result.operation());
                 assertEquals(0, result.resultStatus());
                 assertEquals("object-7", mapped.uniqueIdentifier());
@@ -509,6 +591,63 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, structure(0x42013b,
                 item(0x42009d, 7, "KMIPKit".getBytes(StandardCharsets.UTF_8)),
                 item(0x42000a, 7, "Comment".getBytes(StandardCharsets.UTF_8))));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
+    void getAttributesNoMatchOverMutualTlsPreservesOmittedAttributes() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry(
+                "kmipkit-test-server",
+                testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD,
+                new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, getAttributesNoMatchResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-get-attributes-no-match-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        CodecLimits limits = CodecLimits.defaults();
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.getAttributes(
+                    UniqueIdentifier.textString("object-7"),
+                    List.of(AttributeReference.tag(0x42002f))));
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0);
+                    ClientBatchItemResult.GetAttributesResponse mapped =
+                            result.getAttributesResponse().orElseThrow()) {
+                assertEquals(0, result.resultStatus());
+                assertEquals("object-7", mapped.uniqueIdentifier());
+                assertTrue(mapped.attributes().isEmpty());
+            }
+            peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
         assertTrue(peer.isDone());
     }
 
@@ -4610,6 +4749,18 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, responseItem);
     }
 
+    private static byte[] modifyAttributeResponseMessage() throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "modified-object-1".getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x0e), enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static byte[] deleteAttributeResponseMessage() throws Exception {
         byte[] version = structure(0x420069,
                 item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
@@ -4631,6 +4782,18 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42002f, 9, longInteger(7)), item(0x42002f, 9, longInteger(19)));
         byte[] payload = structure(0x42007c,
                 item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)), attributes);
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x0b), enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] getAttributesNoMatchResponseMessage() throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x0b), enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);

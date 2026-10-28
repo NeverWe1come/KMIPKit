@@ -77,7 +77,7 @@ final class GetAttributesJavaFacadeTest {
         assertEquals("object-7", response.uniqueIdentifier());
         assertTrue(response.toString().contains("uniqueIdentifier=redacted"));
         assertTrue(response.toString().contains("attributes=redacted"));
-        try (response; TtlvStructureView view = response.attributes().view()) {
+        try (response; TtlvStructureView view = response.attributes().orElseThrow().view()) {
             assertEquals(2, view.itemCount());
             assertEquals(7, longIntegerAt(view, 0));
             assertEquals(19, longIntegerAt(view, 1));
@@ -93,9 +93,30 @@ final class GetAttributesJavaFacadeTest {
 
     @Test
     void successfulNoMatchResponseAcceptsTheUniqueIdentifierOnlyShape() {
-        assertDoesNotThrow(() -> ClientBatchItemResult.parseGetAttributesResponse(new Object[] {
-            new long[] {1}, "object-7", new long[] {0}
-        }));
+        ClientBatchItemResult.GetAttributesResponse response = assertDoesNotThrow(() ->
+                ClientBatchItemResult.parseGetAttributesResponse(new Object[] {
+                    new long[] {1}, "object-7", new long[] {0}
+                }).orElseThrow());
+        try (response) {
+            assertEquals("object-7", response.uniqueIdentifier());
+            assertTrue(response.attributes().isEmpty());
+        }
+    }
+
+    @Test
+    void successfulResponsePreservesPresentEmptyAttributesStructure() {
+        TtlvStructure attributes = TtlvStructure.create();
+        long handle = attributes.nativeHandleOwner().transfer();
+        ClientBatchItemResult.GetAttributesResponse response =
+                ClientBatchItemResult.parseGetAttributesResponse(new Object[] {
+                    new long[] {1}, "object-7", new long[] {handle}
+                }).orElseThrow();
+
+        try (response;
+                TtlvStructureView view = response.attributes().orElseThrow().view()) {
+            assertEquals("object-7", response.uniqueIdentifier());
+            assertEquals(0, view.itemCount());
+        }
     }
 
     @Test

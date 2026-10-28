@@ -3,6 +3,18 @@ use kmipkit_client::ClientRequest;
 use kmipkit_protocol::{ModifyAttributeRequest, NewAttribute};
 use kmipkit_ttlv::{Item, RawTag, Value, ValueView};
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+// SAFETY: these declarations match the C consumer helpers compiled by `build.rs`.
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_build_modify_attribute(
+        out_request: *mut *mut kmipkit_client_batch_item_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_modify_attribute_response(
+        response: *mut kmipkit_client_batch_item_response_t,
+        expected_present: u8,
+    ) -> i32;
+}
+
 fn item_handle(raw_tag: u32, text: &str) -> *mut kmipkit_ttlv_item_t {
     let tag = RawTag::new(raw_tag)
         .expect("test attribute tag fits the KMIP tag field")
@@ -129,6 +141,45 @@ fn modify_attribute_constructor_preserves_omitted_current_attribute() {
 }
 
 #[test]
+fn compiled_c_consumer_builds_modify_attribute_and_preserves_borrowed_inputs() {
+    let mut request_handle = ptr::null_mut();
+    assert_eq!(
+        // SAFETY: the C helper initializes the writable output slot before returning.
+        unsafe { kmipkit_client_abi_c_consumer_build_modify_attribute(&raw mut request_handle) },
+        1,
+        "the C constructor copies both Attribute Items and preserves caller ownership"
+    );
+    assert!(!request_handle.is_null());
+
+    let handle = reference_handle(request_handle, Kind::BatchItem)
+        .expect("the C consumer returns a Modify Attribute batch item");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the returned C handle contains a batch item");
+    };
+    let ClientRequest::ModifyAttribute(request) = batch_item.request() else {
+        panic!("the C consumer constructs Modify Attribute");
+    };
+    assert_eq!(request.unique_identifier(), Some("object-7"));
+    assert!(request.current_attribute().is_some());
+    let payload = request
+        .to_ttlv_payload()
+        .expect("the C-built Modify Attribute payload is valid");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0042_0094, 0x0042_013C, 0x0042_013D]
+    );
+    assert!(fields[1].with_value(|value| matches!(value, ValueView::Structure(_))));
+    assert!(fields[2].with_value(|value| matches!(value, ValueView::Structure(_))));
+
+    kmipkit_client_batch_item_release(request_handle);
+}
+
+#[test]
 fn modify_attribute_response_copies_success_identifier_and_hides_failure_fields() {
     let request = || {
         let tag = RawTag::new(0x0042_000d)
@@ -170,6 +221,12 @@ fn modify_attribute_response_copies_success_identifier_and_hides_failure_fields(
         },
         b"object-7"
     );
+    assert_eq!(
+        // SAFETY: `success` remains live while the C consumer reads its typed response.
+        unsafe { kmipkit_client_abi_c_consumer_validate_modify_attribute_response(success, 1) },
+        1,
+        "a C consumer reads the successful Modify Attribute identifier"
+    );
     kmipkit_client_batch_item_response_release(success);
 
     let failure = failed_cryptographic_item(request(), 0x0e, b"modify-attribute-failure");
@@ -187,6 +244,12 @@ fn modify_attribute_response_copies_success_identifier_and_hides_failure_fields(
     assert_eq!(identifier.kind, 0);
     assert!(identifier.text_data.is_null());
     assert_eq!(identifier.text_length, 0);
+    assert_eq!(
+        // SAFETY: `failure` remains live while the C consumer checks absent typed fields.
+        unsafe { kmipkit_client_abi_c_consumer_validate_modify_attribute_response(failure, 0) },
+        1,
+        "a C consumer observes no typed fields for a failed operation"
+    );
     kmipkit_client_batch_item_response_release(failure);
 }
 
