@@ -1144,8 +1144,9 @@ int32_t kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(kmipk
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_get_attribute_list(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_attribute_reference_v1_t * out_references, uint64_t capacity, uint64_t * out_count);
-/* Copies the successful Get Attributes Response Unique Identifier and direct Attributes contents to caller-owned generic TTLV.
- * Repeated and unknown items retain wire order and raw values. Non-success results set present to 0 and the output handle to NULL.
+/* Copies the successful Get Attributes response Unique Identifier and optional direct Attributes Structure to caller-owned generic TTLV.
+ * Per KMIP 2.1 §6.1.20, Attributes may be absent when none of the requested attributes exists; a present empty Structure remains distinguishable.
+ * The present output reports operation success. A NULL Attributes output can therefore accompany present=1; non-success results set present=0.
  * Release a non-NULL Attributes handle with kmipkit_ttlv_structure_release.
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-007, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
@@ -1176,11 +1177,21 @@ int32_t kmipkit_client_batch_item_response_adjust_attribute(kmipkit_client_batch
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_delete_attribute(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * current_attribute, const kmipkit_attribute_reference_v1_t * attribute_reference, kmipkit_client_batch_item_t ** out_item);
+/* Creates a KMIP 2.1 §6.1.34 Modify Attribute request. The optional Text String Unique Identifier and Current Attribute are independent; New Attribute is required.
+ * Supplied Attribute Item handles are borrowed and copied by the call; the caller retains ownership.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_modify_attribute(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * current_attribute, kmipkit_ttlv_item_t * new_attribute, kmipkit_client_batch_item_t ** out_item);
 /* Copies the required Text String Unique Identifier from a successful Delete Attribute response.
  * The output Text String span is borrowed while the response item handle remains open; non-success and other-operation results set present to zero.
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-005, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_delete_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Copies the required Text String Unique Identifier from a successful Modify Attribute response.
+ * The output Text String span is borrowed while the response item handle remains open; non-success and other-operation results set present to zero.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_modify_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

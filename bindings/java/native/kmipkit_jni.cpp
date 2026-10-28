@@ -118,6 +118,11 @@ int32_t kmipkit_client_batch_item_get(
 int32_t kmipkit_client_batch_item_locate(
         uint8_t, int32_t, uint8_t, int32_t, uint8_t, uint32_t, uint8_t, uint32_t,
         kmipkit_ttlv_structure_t*, kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_modify_attribute(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_item_t*,
+        kmipkit_ttlv_item_t*, kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_response_modify_attribute(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
@@ -2562,6 +2567,40 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
             return kmipkit_client_batch_item_delete_attribute(
                     identifier_pointer, current_attribute, reference_pointer, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemModifyAttribute(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_current_attribute, jlong raw_new_attribute) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_new_attribute == 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> identifier_text;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)) {
+            return static_cast<jlong>(0);
+        }
+        if (identifier_present
+                && identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        kmipkit_ttlv_item_t* current_attribute = raw_current_attribute == 0
+                ? nullptr : from_java_handle<kmipkit_ttlv_item_t>(raw_current_attribute);
+        kmipkit_ttlv_item_t* new_attribute =
+                from_java_handle<kmipkit_ttlv_item_t>(raw_new_attribute);
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_modify_attribute(
+                    identifier_pointer, current_attribute, new_attribute, output);
         });
     });
 }
@@ -6595,8 +6634,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 && identifier.enumeration_value == 0 && identifier.integer_value == 0;
         if (present > 1 || (present == 0
                     && (!empty_identifier || raw_attributes != nullptr))
-                || (present == 1 && (raw_attributes == nullptr
-                    || identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+                || (present == 1 && (identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
                     || identifier.reserved != 0 || identifier.enumeration_value != 0
                     || identifier.integer_value != 0
                     || identifier.text_length > static_cast<uint64_t>(INT32_MAX)
@@ -6747,6 +6785,51 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                     &unique_identifier)) {
                 return static_cast<jobjectArray>(nullptr);
             }
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, unique_identifier});
+        env->DeleteLocalRef(fields);
+        if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseModifyAttribute(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        const int32_t status = kmipkit_client_batch_item_response_modify_attribute(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        const bool empty_identifier = identifier.kind == 0 && identifier.reserved == 0
+                && identifier.text_data == nullptr && identifier.text_length == 0
+                && identifier.enumeration_value == 0 && identifier.integer_value == 0;
+        if (present > 1 || (present == 0 && !empty_identifier)
+                || (present == 1
+                    && (identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+                        || identifier.reserved != 0 || identifier.enumeration_value != 0
+                        || identifier.integer_value != 0
+                        || identifier.text_length > static_cast<uint64_t>(INT32_MAX)
+                        || (identifier.text_length != 0 && identifier.text_data == nullptr)))) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        jstring unique_identifier = nullptr;
+        if (present == 1 && !utf8_to_java_string(env, identifier.text_data,
+                    identifier.text_length, &unique_identifier)) {
+            return static_cast<jobjectArray>(nullptr);
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
         if (fields == nullptr) {

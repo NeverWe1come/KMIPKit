@@ -296,6 +296,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseDeleteAttributeResponse(values);
     }
 
+    /** Returns the required Text String Unique Identifier from a successful Modify Attribute. */
+    public Optional<ModifyAttributeResponse> modifyAttributeResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseModifyAttribute);
+        return parseModifyAttributeResponse(values);
+    }
+
     /**
      * Creates caller-owned local accounting from this live successful Get Usage Allocation
      * response. The exact positive request count and the caller-known Usage Limits Unit must be
@@ -1026,12 +1035,16 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
-    /** Successful Get Attributes response with an owned, ordered generic Attributes structure. */
+    /**
+     * Successful Get Attributes response. The ordered generic Attributes structure may be absent
+     * when none of the requested attributes exists; a present empty structure remains distinct.
+     */
     public static final class GetAttributesResponse implements AutoCloseable {
         private final String uniqueIdentifier;
-        private final TtlvStructure attributes;
+        private final @Nullable TtlvStructure attributes;
 
-        private GetAttributesResponse(String uniqueIdentifier, TtlvStructure attributes) {
+        private GetAttributesResponse(
+                String uniqueIdentifier, @Nullable TtlvStructure attributes) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.attributes = attributes;
         }
@@ -1039,10 +1052,10 @@ public final class ClientBatchItemResult implements AutoCloseable {
         /** Returns the resolved Text String Unique Identifier. */
         public String uniqueIdentifier() { return uniqueIdentifier; }
 
-        /** Returns the ordered Attributes structure owned by this response. */
-        public TtlvStructure attributes() { return attributes; }
+        /** Returns the ordered Attributes structure when the response includes that field. */
+        public Optional<TtlvStructure> attributes() { return Optional.ofNullable(attributes); }
 
-        @Override public void close() { attributes.close(); }
+        @Override public void close() { if (attributes != null) attributes.close(); }
 
         @Override public String toString() {
             return "GetAttributesResponse[uniqueIdentifier=redacted, attributes=redacted]";
@@ -1243,6 +1256,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "DeleteAttributeResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful Modify Attribute response with its required copied Text String identifier. */
+    public static final class ModifyAttributeResponse {
+        private final String uniqueIdentifier;
+
+        private ModifyAttributeResponse(String uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        /** Returns the copied Text String Unique Identifier. */
+        public String uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "ModifyAttributeResponse[uniqueIdentifier=redacted]";
         }
     }
 
@@ -2419,8 +2448,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 }
                 return Optional.empty();
             }
-            if (!(tuple[1] instanceof String uniqueIdentifier) || handles[0] <= 0) {
+            if (!(tuple[1] instanceof String uniqueIdentifier) || handles[0] < 0) {
                 throw new InvalidInputException("native Get Attributes response is incomplete");
+            }
+            if (handles[0] == 0) {
+                return Optional.of(new GetAttributesResponse(uniqueIdentifier, null));
             }
             TtlvStructure attributes = TtlvStructure.fromNative(handles[0], null);
             ownedHandle = 0;
@@ -2774,6 +2806,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Delete Attribute identifier is invalid");
         }
         return Optional.of(new DeleteAttributeResponse(uniqueIdentifier));
+    }
+
+    static Optional<ModifyAttributeResponse> parseModifyAttributeResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2,
+                "native Modify Attribute response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1,
+                "native Modify Attribute response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null) {
+                throw new InvalidInputException(
+                        "native absent Modify Attribute response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (!(tuple[1] instanceof String uniqueIdentifier)) {
+            throw new InvalidInputException("native Modify Attribute identifier is invalid");
+        }
+        return Optional.of(new ModifyAttributeResponse(uniqueIdentifier));
     }
 
     private static long[] requireNativeLongArray(Object value, String message) {

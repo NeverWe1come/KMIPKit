@@ -7,7 +7,7 @@ KMIPKit provides typed Rust request and response models for the seven client-ini
 | Add Attribute | Optional Unique Identifier; one New Attribute | Unique Identifier |
 | Adjust Attribute | Optional Unique Identifier; Attribute Reference; Adjustment Type; optional Adjustment Value | Unique Identifier |
 | Delete Attribute | Optional Unique Identifier, Current Attribute, and Attribute Reference | Unique Identifier |
-| Get Attributes | Optional Unique Identifier and ordered Attribute References; an empty reference list requests all attributes | Unique Identifier and ordered direct attribute Items |
+| Get Attributes | Optional Unique Identifier and ordered Attribute References; an empty reference list requests all attributes | Unique Identifier; Attributes is omitted when none of the requested attributes exist, while a present empty Structure remains distinguishable |
 | Get Attribute List | Optional Unique Identifier | Unique Identifier and ordered Attribute References |
 | Modify Attribute | Optional Unique Identifier and Current Attribute; one New Attribute | Unique Identifier |
 | Set Attribute | Optional Unique Identifier; one New Attribute | Unique Identifier |

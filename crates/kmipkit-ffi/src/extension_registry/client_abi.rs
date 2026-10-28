@@ -3157,31 +3157,33 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attributes(
         let kmipkit_client::ClientBatchOutcome::GetAttributes(result) = item.outcome() else {
             return SUCCESS;
         };
-        let (Some(value), Some(attribute_set)) =
-            (result.unique_identifier(), result.attributes())
-        else {
+        let Some(value) = result.unique_identifier() else {
             return SUCCESS;
         };
 
-        let mut attributes = Structure::new();
-        for attribute in attribute_set.as_items() {
-            let copy = match attribute.try_clone() {
-                Ok(copy) => copy,
-                Err(error) => return record_ffi_error(model_status(error)),
+        let attributes_handle: *mut kmipkit_ttlv_structure_t =
+            if let Some(attribute_set) = result.attributes() {
+                let mut attributes = Structure::new();
+                for attribute in attribute_set.as_items() {
+                    let copy = match attribute.try_clone() {
+                        Ok(copy) => copy,
+                        Err(error) => return record_ffi_error(model_status(error)),
+                    };
+                    if let Err(error) = attributes.try_push(copy) {
+                        return record_ffi_error(model_status(error));
+                    }
+                }
+                match try_make_handle(Kind::Structure, HandleValue::Structure(attributes)) {
+                    Ok(handle) => handle,
+                    Err(status) => return record_ffi_error(status),
+                }
+            } else {
+                ptr::null_mut()
             };
-            if let Err(error) = attributes.try_push(copy) {
-                return record_ffi_error(model_status(error));
-            }
-        }
-        let attributes_handle: *mut kmipkit_ttlv_structure_t = match try_make_handle(
-            Kind::Structure,
-            HandleValue::Structure(attributes),
-        ) {
-            Ok(handle) => handle,
-            Err(status) => return record_ffi_error(status),
-        };
         if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            release(attributes_handle, Kind::Structure);
+            if !attributes_handle.is_null() {
+                release(attributes_handle, Kind::Structure);
+            }
             return record_ffi_error(status);
         }
         *attributes_output = attributes_handle;
@@ -3195,6 +3197,7 @@ enum AttributeMutationResponseKind {
     Add,
     Adjust,
     Delete,
+    Modify,
 }
 
 fn attribute_mutation_response_identifier(
@@ -3213,6 +3216,10 @@ fn attribute_mutation_response_identifier(
         (
             AttributeMutationResponseKind::Delete,
             kmipkit_client::ClientBatchOutcome::DeleteAttribute(response),
+        ) => response.unique_identifier(),
+        (
+            AttributeMutationResponseKind::Modify,
+            kmipkit_client::ClientBatchOutcome::ModifyAttribute(response),
         ) => response.unique_identifier(),
         _ => None,
     }
@@ -3253,6 +3260,52 @@ pub extern "C" fn kmipkit_client_batch_item_response_add_attribute(
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Add,
+        ) else {
+            return SUCCESS;
+        };
+        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
+            return record_ffi_error(status);
+        }
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the successful Modify Attribute response's required Text String
+/// Unique Identifier. The borrowed text remains valid while `item` is open;
+/// non-success and other-operation results set `out_present` to zero.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_modify_attribute(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || !out_present.is_aligned()
+            || !out_unique_identifier.is_aligned()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let unique_identifier = scalar_out!(out_unique_identifier);
+        *present = 0;
+        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(value) = attribute_mutation_response_identifier(
+            item.outcome(),
+            AttributeMutationResponseKind::Modify,
         ) else {
             return SUCCESS;
         };

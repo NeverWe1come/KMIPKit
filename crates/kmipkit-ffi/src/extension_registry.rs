@@ -42,17 +42,17 @@ use kmipkit_protocol::{
     AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
     CreateRequest, CreateSplitKeyRequest, CurrentAttribute, DecryptRequest, DelegatedLoginRequest,
     DeleteAttributeRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
-    GetAttributesRequest, GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest,
-    InteropRequest,
-    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, NewAttribute, ObjectGroupMember,
-    ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError,
-    ProtocolErrorKind, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
-    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
-    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest,
+    InteropRequest, JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType,
+    LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
+    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -4360,14 +4360,18 @@ pub extern "C" fn kmipkit_client_batch_item_get_attributes(
             MAX_GET_ATTRIBUTES_REFERENCES,
         ));
         let mut references = Vec::new();
-        try_ffi!(references
-            .try_reserve_exact(source_references.len())
-            .map_err(|_| ERROR_RESOURCE_LIMIT));
+        try_ffi!(
+            references
+                .try_reserve_exact(source_references.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
         for reference in source_references {
             references.push(try_ffi!(copy_attribute_reference(ptr::from_ref(reference))));
         }
-        let request = try_ffi!(GetAttributesRequest::try_new(unique_identifier, references)
-            .map_err(|_| ERROR_INVALID_INPUT));
+        let request = try_ffi!(
+            GetAttributesRequest::try_new(unique_identifier, references)
+                .map_err(|_| ERROR_INVALID_INPUT)
+        );
         *out = try_ffi!(batch_item_handle(ClientRequest::get_attributes(request)));
         SUCCESS
     })
@@ -4448,6 +4452,35 @@ pub extern "C" fn kmipkit_client_batch_item_delete_attribute(
             attribute_reference,
         );
         *out = try_ffi!(batch_item_handle(ClientRequest::DeleteAttribute(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.34 Modify Attribute request. Current Attribute is
+/// optional and New Attribute is required. Supplied item handles are copied,
+/// while omission of Current Attribute is preserved for server-side selection.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_modify_attribute(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    current_attribute: *mut kmipkit_ttlv_item_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let current_attribute = if current_attribute.is_null() {
+            None
+        } else {
+            Some(try_ffi!(copy_required_item_handle(current_attribute)))
+        };
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = ModifyAttributeRequest::new(
+            unique_identifier,
+            current_attribute.map(CurrentAttribute::new),
+            NewAttribute::new(new_attribute),
+        );
+        *out = try_ffi!(batch_item_handle(ClientRequest::ModifyAttribute(request)));
         SUCCESS
     })
 }

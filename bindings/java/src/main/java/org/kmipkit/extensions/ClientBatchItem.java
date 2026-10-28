@@ -915,6 +915,39 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a KMIP 2.1 §6.1.34 Modify Attribute request. */
+    public static ClientBatchItem modifyAttribute(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvItem currentAttribute,
+            TtlvItem newAttribute) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Modify Attribute Unique Identifier must be a Text String");
+        }
+        if (newAttribute == null) {
+            throw new InvalidInputException("Modify Attribute New Attribute is required");
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        NativeHandle[] owners = currentAttribute == null
+                ? new NativeHandle[] {newAttribute.nativeHandleOwner()}
+                : new NativeHandle[] {
+                    currentAttribute.nativeHandleOwner(), newAttribute.nativeHandleOwner()
+                };
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withValues(owners, handles ->
+                    NativeExtensionRegistry.clientBatchItemModifyAttribute(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier),
+                            currentAttribute == null ? 0 : handles[0],
+                            handles[currentAttribute == null ? 0 : 1]));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Set Constraints request from the required Constraints structure. */
     public static ClientBatchItem setConstraints(TtlvStructure constraints) {
         requireStructure(constraints, "Set Constraints");

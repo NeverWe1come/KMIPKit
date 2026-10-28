@@ -29083,8 +29083,9 @@
           "internal"
         ],
         "documentation": [
-          "Copies the successful Get Attributes Response Unique Identifier and direct Attributes contents to caller-owned generic TTLV.",
-          "Repeated and unknown items retain wire order and raw values. Non-success results set present to 0 and the output handle to NULL.",
+          "Copies the successful Get Attributes response Unique Identifier and optional direct Attributes Structure to caller-owned generic TTLV.",
+          "Per KMIP 2.1 §6.1.20, Attributes may be absent when none of the requested attributes exists; a present empty Structure remains distinguishable.",
+          "The present output reports operation success. A NULL Attributes output can therefore accompany present=1; non-success results set present=0.",
           "Release a non-NULL Attributes handle with kmipkit_ttlv_structure_release."
         ]
       },
@@ -29742,6 +29743,145 @@
       "ordering": "not-applicable"
     },
     {
+      "id": "client_batch_item_modify_attribute",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_client_batch_item_modify_attribute",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "*const kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "current_attribute",
+            "type": "*mut kmipkit_ttlv_item_t"
+          },
+          {
+            "name": "new_attribute",
+            "type": "*mut kmipkit_ttlv_item_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_modify_attribute",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "current_attribute",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "new_attribute",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_item_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates a KMIP 2.1 §6.1.34 Modify Attribute request. The optional Text String Unique Identifier and Current Attribute are independent; New Attribute is required.",
+          "Supplied Attribute Item handles are borrowed and copied by the call; the caller retains ownership."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "modifyAttribute",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "currentAttribute",
+            "type": "TtlvItem"
+          },
+          {
+            "name": "newAttribute",
+            "type": "TtlvItem"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemModifyAttribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_modify_attribute",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "current_attribute",
+            "type": "ttlv.TtlvItem | None"
+          },
+          {
+            "name": "new_attribute",
+            "type": "ttlv.TtlvItem"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_modify_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
       "id": "client_batch_item_response_delete_attribute",
       "requirementIds": [
         "KMIPKIT-0016-FR-001",
@@ -29841,6 +29981,109 @@
           "internal"
         ],
         "returnType": "DeleteAttributeResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_modify_attribute",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_modify_attribute",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_unique_identifier",
+            "type": "*mut kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_modify_attribute",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_unique_identifier",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies the required Text String Unique Identifier from a successful Modify Attribute response.",
+          "The output Text String span is borrowed while the response item handle remains open; non-success and other-operation results set present to zero."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "modifyAttributeResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseModifyAttribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<ModifyAttributeResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.modify_attribute_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_modify_attribute",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ModifyAttributeResponse | None"
       },
       "ordering": "not-applicable"
     }
@@ -72126,14 +72369,57 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::ModifyAttributeResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
       "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0016",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-e5810b0b87486e654755",
@@ -72168,14 +72454,57 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ModifyAttributeResponse::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
       "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0016",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse.unique_identifier"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-eb292fa06230faab20f1",
@@ -80914,14 +81243,57 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientBatchOutcome::ModifyAttribute",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
       "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::ModifyAttribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.modify_attribute_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-0aa1fbbe32ad121e3b79",
@@ -84292,14 +84664,57 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientRequest::modify_attribute",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
       "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0016",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::modify_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-990faad3061ce682bdeb",
@@ -314674,10 +315089,6 @@
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_get_attributes_operation.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py"
-      ],
-      "javaSignatures": [
-        "public static org.kmipkit.extensions.ClientBatchItem getAttributeList()",
-        "public static org.kmipkit.extensions.ClientBatchItem getAttributeList(org.kmipkit.extensions.UniqueIdentifier)"
       ]
     },
     {
@@ -315254,6 +315665,576 @@
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_get_attributes_operation.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:constructor:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_modify_attribute",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::modify_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:constructor:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::modify_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:constructor:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_modify_attribute",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::modify_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.modifyAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_modify_attribute"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:response:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::ModifyAttribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.modify_attribute_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:response:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.modify_attribute_response",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::ModifyAttribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.modify_attribute_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:result:type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:result:type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.ModifyAttributeResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:result:typed:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_modify_attribute",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::ModifyAttribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.modifyAttributeResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.modify_attribute_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:result:uniqueIdentifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.uniqueIdentifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse.unique_identifier"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
+      ]
+    },
+    {
+      "declarationId": "T037:modifyAttribute:result:uniqueIdentifier:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.unique_identifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+      "requirementIds": [
+        "KMIPKIT-0016-FR-001",
+        "KMIPKIT-0016-FR-002",
+        "KMIPKIT-0016-FR-008",
+        "KMIPKIT-0016-FR-010",
+        "KMIPKIT-0016-FR-011",
+        "KMIPKIT-0016-FR-012",
+        "KMIPKIT-0016-FR-013",
+        "KMIPKIT-0016-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ModifyAttributeResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_modify_attribute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ModifyAttributeResponse.unique_identifier"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs"
       ]
     }
   ],
@@ -325795,6 +326776,342 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The DeleteAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated dataclass metadata."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__dataclass_fields__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__dataclass_params__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__delattr__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__eq__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__hash__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__init__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__match_args__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__repr__",
+      "reason": "This exact repr method returns only a redacted diagnostic summary and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The formatter redacts the identifier and attribute contents; the typed result fields remain separately inventoried."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__setattr__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.__slots__",
+      "reason": "This exact member is dataclass-generated Python introspection or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The typed result fields are inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetAttributesResponse.close",
+      "reason": "This exact close method releases the optional caller-owned TTLV structure through the already mapped structure lifecycle; it is a Python wrapper convenience, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. Cross-language ownership is represented by the typed Attributes field and TTLV structure lifecycle mapping."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__dataclass_fields__",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated dataclass metadata."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__dataclass_params__",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated dataclass metadata."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__delattr__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__eq__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__hash__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__init__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__match_args__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__repr__",
+      "reason": "This exact repr method returns only a redacted diagnostic summary and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The formatter redacts the Unique Identifier; the typed unique_identifier property remains separately inventoried."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__setattr__",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated record behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ModifyAttributeResponse.__slots__",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The ModifyAttributeResponse.unique_identifier value is inventoried separately; this exact member covers only generated dataclass metadata."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetAttributes",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Get Attributes facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetAttributes",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Get Attributes facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemModifyAttribute",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Modify Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseModifyAttribute",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Modify Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.toString",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. This exact GetAttributesResponse formatter intentionally redacts the response identifier and is not an independent cross-language capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ModifyAttributeResponse.toString",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. This exact ModifyAttributeResponse formatter intentionally redacts the response identifier and is not an independent cross-language capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.close",
+      "reason": "This exact close method releases the optional caller-owned generic TTLV structure through the already mapped generic TTLV structure lifecycle; it is a Java wrapper convenience, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0016-FR-008, KMIPKIT-0043-FR-021, and T037. Closing a successful result releases its optional Attributes handle through the existing TTLV structure lifecycle."
     }
   ],
   "apiLevels": [
@@ -326852,7 +328169,7 @@
       "name": "Get Attributes",
       "section": "6.1.20",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0016"
@@ -326901,7 +328218,15 @@
           "T037:getAttributes:result:uniqueIdentifier:python",
           "T037:getAttributes:result:attributes:python"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_attributes_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetAttributesJavaFacadeTest.java",
+        "bindings/python/tests/test_get_attributes_operation.py",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
@@ -327686,12 +329011,51 @@
       "name": "Modify Attribute",
       "section": "6.1.34",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "Four-language client API mapping remains unverified.",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0016"
-      }
+      },
+      "featureSpecId": "KMIPKIT-0016",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/016-attribute-operations/traceability.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      },
+      "declarations": {
+        "rust": [
+          "rust-observed-3469e046a8f0f8e44ab3",
+          "rust-observed-8633eaa6f156f28bda5b",
+          "rust-observed-35c06134bbda46f1d1d6",
+          "rust-observed-94f3bc3729b22291c910"
+        ],
+        "c": [
+          "T037:modifyAttribute:constructor:c",
+          "T037:modifyAttribute:result:typed:c"
+        ],
+        "java": [
+          "T037:modifyAttribute:constructor:java",
+          "T037:modifyAttribute:response:java",
+          "T037:modifyAttribute:result:type:java",
+          "T037:modifyAttribute:result:uniqueIdentifier:java"
+        ],
+        "python": [
+          "T037:modifyAttribute:constructor:python",
+          "T037:modifyAttribute:response:python",
+          "T037:modifyAttribute:result:type:python",
+          "T037:modifyAttribute:result:uniqueIdentifier:python"
+        ]
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/modify_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ModifyAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_modify_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",

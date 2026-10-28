@@ -903,6 +903,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     destroy_response: DestroyResponse | None = field(default=None, repr=False)
     recover_response: RecoverResponse | None = field(default=None, repr=False)
     delete_attribute_response: DeleteAttributeResponse | None = field(default=None, repr=False)
+    modify_attribute_response: ModifyAttributeResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1440,14 +1441,15 @@ class GetAttributeListResponse:
 
 @dataclass(frozen=True, slots=True, repr=False)
 class GetAttributesResponse:
-    """Successful Get Attributes response with its copied fields and owned Attributes."""
+    """Successful Get Attributes response, preserving whether Attributes was present."""
 
     unique_identifier: str = field(repr=False)
-    attributes: ttlv.Structure = field(repr=False)
+    attributes: ttlv.Structure | None = field(repr=False)
 
     def close(self) -> None:
-        """Release the caller-owned generic Attributes structure."""
-        self.attributes.close()
+        """Release the caller-owned generic Attributes structure when present."""
+        if self.attributes is not None:
+            self.attributes.close()
 
     def __repr__(self) -> str:
         return "GetAttributesResponse(unique_identifier=redacted, attributes=redacted)"
@@ -1461,6 +1463,16 @@ class AddAttributeResponse:
 
     def __repr__(self) -> str:
         return "AddAttributeResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ModifyAttributeResponse:
+    """Successful Modify Attribute response with its required Text String identifier."""
+
+    unique_identifier: str = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "ModifyAttributeResponse(unique_identifier=redacted)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -2306,6 +2318,13 @@ def _batch_result(
                     and int(metadata.operation) == 0x0F
                 ):
                     delete_attribute_response = _delete_attribute_response(item)
+                modify_attribute_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x0E
+                ):
+                    modify_attribute_response = _modify_attribute_response(item)
                 set_constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2443,6 +2462,7 @@ def _batch_result(
                     destroy_response=destroy_response,
                     recover_response=recover_response,
                     delete_attribute_response=delete_attribute_response,
+                    modify_attribute_response=modify_attribute_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -3735,16 +3755,18 @@ def _get_attributes_response(
         )
     )
     attributes_handle = attributes_output[0]
-    if present[0] != 1 or attributes_handle == ffi.NULL:
+    if present[0] != 1:
         if attributes_handle != ffi.NULL:
             lib.kmipkit_ttlv_structure_release(attributes_handle)
         errors.raise_for_status(4)
     if identifier.kind != 1 or identifier.reserved != 0:
-        lib.kmipkit_ttlv_structure_release(attributes_handle)
+        if attributes_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(attributes_handle)
         errors.raise_for_status(4)
     identifier_length = int(identifier.text_length)
     if identifier_length and identifier.text_data == ffi.NULL:
-        lib.kmipkit_ttlv_structure_release(attributes_handle)
+        if attributes_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(attributes_handle)
         errors.raise_for_status(4)
     try:
         unique_identifier = (
@@ -3755,8 +3777,11 @@ def _get_attributes_response(
             else ""
         )
     except UnicodeDecodeError:
-        lib.kmipkit_ttlv_structure_release(attributes_handle)
+        if attributes_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(attributes_handle)
         errors.raise_for_status(4)
+    if attributes_handle == ffi.NULL:
+        return GetAttributesResponse(unique_identifier, None)
     try:
         attributes = ttlv._structure_from_native_address(
             int(ffi.cast("uintptr_t", attributes_handle))
@@ -3844,6 +3869,34 @@ def _delete_attribute_response(
     except UnicodeDecodeError:
         errors.raise_for_status(4)
     return DeleteAttributeResponse(value)
+
+
+def _modify_attribute_response(
+    item: _ClientBatchItemResponse,
+) -> ModifyAttributeResponse:
+    present = ffi.new("uint8_t *")
+    identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
+    identifier.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    identifier.abi_version = 1
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_modify_attribute(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] != 1 or identifier.kind != 1 or identifier.reserved != 0:
+        errors.raise_for_status(4)
+    length = int(identifier.text_length)
+    if length and identifier.text_data == ffi.NULL:
+        errors.raise_for_status(4)
+    try:
+        value = (
+            bytes(ffi.buffer(identifier.text_data, length)).decode("utf-8", "strict")
+            if length
+            else ""
+        )
+    except UnicodeDecodeError:
+        errors.raise_for_status(4)
+    return ModifyAttributeResponse(value)
 
 
 def _set_constraints_response(
@@ -4777,6 +4830,7 @@ __all__ = [
     "GetConstraintsResponse",
     "GetAttributeListResponse",
     "GetAttributesResponse",
+    "ModifyAttributeResponse",
     "SetConstraintsResponse",
     "SetDefaultsResponse",
     "ValidateResponse",

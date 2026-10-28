@@ -83,9 +83,11 @@ impl GetAttributesRequest {
 
 /// The typed result of one Get Attributes response batch item.
 ///
-/// Successful responses contain the required Unique Identifier and the ordered
-/// direct attribute Items in Table 224's Attributes Structure. Other KMIP
-/// statuses retain the common result and have no typed response payload.
+/// Successful responses contain the required Unique Identifier and may contain
+/// the ordered direct attribute Items in Table 224's Attributes Structure. The
+/// §6.1.20 no-match prose permits a response payload containing only the Unique
+/// Identifier; `None` preserves that shape, while `Some(empty)` preserves a
+/// present empty Attributes Structure. Other KMIP statuses have no typed payload.
 pub struct GetAttributesResponse {
     result: KmipOperationResult,
     unique_identifier: Option<String>,
@@ -95,12 +97,11 @@ pub struct GetAttributesResponse {
 impl GetAttributesResponse {
     /// Converts one already validated KMIPKIT-0006 response item.
     ///
-    /// Successful payload parsing follows OASIS KMIP v2.1 §6.1.20, Table 224,
-    /// and preserves direct attribute multiplicity and wire order. The pinned
-    /// prose says a no-match response contains only Unique Identifier, while
-    /// Table 224 requires Attributes; `KMIPKit` follows the approved table-shaped
-    /// contract and accepts its empty Attributes Structure without inventing
-    /// Items.
+    /// Successful payload parsing follows OASIS KMIP v2.1 §6.1.20 and Table 224,
+    /// preserving direct attribute multiplicity and wire order. The no-match
+    /// prose explicitly permits only Unique Identifier, although Table 224 marks
+    /// Attributes required. The parser accepts both normative shapes and
+    /// preserves the distinction between an absent and empty Attributes field.
     ///
     /// # Errors
     ///
@@ -136,7 +137,7 @@ impl GetAttributesResponse {
         Ok(Self {
             result,
             unique_identifier: Some(unique_identifier),
-            attributes: Some(attributes),
+            attributes,
         })
     }
 
@@ -152,11 +153,11 @@ impl GetAttributesResponse {
         self.unique_identifier.as_deref()
     }
 
-    /// Returns the ordered direct attributes for a successful response.
-    ///
-    /// An empty set is returned when the server represents a no-match response
-    /// using the Attributes field required by Table 224. Non-success results
-    /// return `None`.
+    /// Returns the ordered direct attributes when the response contains the
+    /// Table 224 Attributes field. A no-match response that follows §6.1.20
+    /// prose has no Attributes field; a present empty Structure returns an
+    /// empty set. Non-success results also return `None`; inspect [`Self::result`]
+    /// to distinguish those cases.
     #[must_use]
     pub const fn attributes(&self) -> Option<&AttributeSet> {
         self.attributes.as_ref()
@@ -245,18 +246,23 @@ impl Error for GetAttributesError {
 
 fn parse_success_payload(
     payload: &StructureView<'_>,
-) -> Result<(String, AttributeSet), GetAttributesError> {
+) -> Result<(String, Option<AttributeSet>), GetAttributesError> {
     let fields = payload.children();
-    if fields.len() != 2
-        || fields[0].tag().raw() != UNIQUE_IDENTIFIER_TAG
-        || fields[1].tag().raw() != ATTRIBUTES_TAG
-    {
+    if !(fields.len() == 1 || fields.len() == 2) || fields[0].tag().raw() != UNIQUE_IDENTIFIER_TAG {
         return Err(GetAttributesError::MalformedSuccessPayload);
     }
 
     let unique_identifier = fields[0]
         .with_value(|value| copy_text_string(&value))
         .ok_or(GetAttributesError::MalformedSuccessPayload)?;
+
+    if fields.len() == 1 {
+        return Ok((unique_identifier, None));
+    }
+
+    if fields[1].tag().raw() != ATTRIBUTES_TAG {
+        return Err(GetAttributesError::MalformedSuccessPayload);
+    }
 
     let attributes = fields[1]
         .with_value(|value| match value {
@@ -265,7 +271,7 @@ fn parse_success_payload(
         })
         .ok_or(GetAttributesError::MalformedSuccessPayload)??;
 
-    Ok((unique_identifier, attributes))
+    Ok((unique_identifier, Some(attributes)))
 }
 
 fn parse_attributes(structure: &StructureView<'_>) -> Result<AttributeSet, GetAttributesError> {
