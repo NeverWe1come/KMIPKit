@@ -26,7 +26,10 @@ from tools.normative_catalog.validate import (
     validate_source_table_contracts,
 )
 from tools.normative_catalog.audit_sources import _CandidateParser, _decode_document, audit_document
-from tools.normative_catalog.tests import test_feature_traceability
+if __package__:
+    from . import test_feature_traceability
+else:
+    import test_feature_traceability
 from tools.normative_catalog.report import PROFILE_RULE_SOURCE, load_typed_rule_mappings
 from tools.normative_catalog.attribute_policy_source import expected_attribute_policies
 import tools.normative_catalog.validate as catalog_validate

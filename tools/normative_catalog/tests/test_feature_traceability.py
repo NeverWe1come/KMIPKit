@@ -9,6 +9,7 @@ import re
 import tempfile
 import unittest
 from collections.abc import Mapping
+from functools import lru_cache
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from tools.normative_catalog.rust_source_analysis import (
@@ -172,6 +173,7 @@ def _requirements_by_id() -> dict[str, dict[str, str]]:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 
 
+@lru_cache(maxsize=512)
 def _read_confined_source(
     source_path: str,
     allowed_suffixes: frozenset[str],
@@ -516,6 +518,7 @@ def _python_module_scope_uses_pytestmark(node: ast.AST) -> bool:
     )
 
 
+@lru_cache(maxsize=4096)
 def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> bool:
     """Recognize runner-shaped Rust/Python tests, not their assertion semantics."""
     if path.suffix == ".rs":
