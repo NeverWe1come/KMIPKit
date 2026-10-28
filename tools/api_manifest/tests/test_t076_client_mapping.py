@@ -2198,6 +2198,32 @@ class T076ClientMappingTests(unittest.TestCase):
             "verified Set Attribute mapping cites the executable binding evidence",
         )
 
+    def test_set_attribute_java_overloads_and_jni_bridges_are_exactly_accounted(self) -> None:
+        declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["declarationId"] == "T037:setAttribute:constructor:java"
+        )
+        self.assertEqual(
+            [
+                "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.ttlv.TtlvItem)",
+                "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem)",
+            ],
+            declaration.get("javaSignatures"),
+            "both Set Attribute facade overloads need explicit signature evidence",
+        )
+
+        exclusion_names = {
+            row["exportName"] for row in self.manifest["approvedExclusions"]
+        }
+        self.assertTrue(
+            {
+                "org.kmipkit.NativeExtensionRegistry.clientBatchItemSetAttribute",
+                "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetAttribute",
+            }.issubset(exclusion_names),
+            "raw-handle JNI bridges are not standalone Java product capabilities",
+        )
+
     def test_get_attributes_declarations_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit_client_batch_item_get_attributes",
