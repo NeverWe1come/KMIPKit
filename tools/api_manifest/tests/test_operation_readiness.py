@@ -541,10 +541,18 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     feature_id="KMIPKIT-0012",
                 )
 
-    def test_delegated_maintainer_authorization_is_not_approval_without_merge_record(
+    def test_delegated_authorization_and_approval_statuses_require_merge_evidence(
         self,
     ) -> None:
         cases = (
+            (
+                "KMIPKIT-0005",
+                "005-ttlv-wire-codec",
+                "Approved — the maintainer delegated execution and approval of this "
+                "plan without further manual intervention in the 2026-10-05 Codex "
+                "conversation. The exact approved specification and boundary "
+                "revisions are recorded in approval-record.md.",
+            ),
             (
                 "KMIPKIT-0006",
                 "006-message-batch-model",
