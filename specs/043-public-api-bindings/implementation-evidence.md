@@ -5891,3 +5891,22 @@ socket to cancel a blocked `accept`, and it suppresses that intentional-close
 
 The listener setup remains a separate duplication cluster because its exposed
 cancellation contract differs from the shared one-connection fixture.
+
+### T074 common Python batch-response ABI stubs (2026-10-28)
+
+The SonarCloud per-file API found repeated one-item batch-response ABI setup in
+Get Usage Allocation, Derive Key, and Certify operation tests. A shared test
+fixture now supplies the common item count/accessor, metadata callback,
+absent optional spans, empty Discover Versions response, and absent Create
+response stubs. Each operation retains its own response callback, metadata
+values, release tracking, and behavioral assertions.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `4d0aa9bf8` | `test_batch_result_fixture_supplies_common_absent_response_symbols` | Expected failure: the shared batch-result ABI fixture did not yet exist. |
+| Green | `d35be9fdd` | `tests/test_tls_peer_support.py` | Pass, 13 tests; common no-response flags and absent span fields are checked. |
+| Refactor | this commit | Get Usage Allocation, Derive Key, Certify, and support tests | Pass, 59 tests; operation-specific response mappings and ownership checks remain. |
+| Refactor | this commit | Ruff `I001` on changed test modules; `git diff --check` | Pass. |
+
+The refactor is limited to test fixtures and callers; no production facade code
+changed.

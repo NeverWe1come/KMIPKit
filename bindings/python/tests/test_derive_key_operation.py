@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+from _test_support import batch_result_test_symbols
 
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
@@ -156,31 +157,9 @@ def test_batch_result_maps_derive_key_response_only_on_success(
         return 0
 
     fake = SimpleNamespace(
-        kmipkit_client_batch_response_release=lambda _ptr: None,
-        kmipkit_client_batch_item_response_release=lambda _ptr: None,
-        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
-        kmipkit_client_batch_response_item_at=lambda _ptr, _index, output: output.__setitem__(0, item_pointer) or 0,
-        kmipkit_client_batch_item_response_metadata_v2=metadata,
-        kmipkit_client_batch_item_response_unique_batch_item_id=lambda _item, present, span: (
-            present.__setitem__(0, 0) or setattr(span, "data", ffi.NULL) or setattr(span, "length", 0) or 0
-        ),
-        kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, span: (
-            present.__setitem__(0, 0) or setattr(span, "data", ffi.NULL) or setattr(span, "length", 0) or 0
-        ),
-        kmipkit_client_batch_item_response_discover_versions_supported_versions=lambda _item, present, _values, _capacity, count: (
-            present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
-        ),
+        **batch_result_test_symbols(ffi, item_pointer, metadata),
         kmipkit_client_batch_item_response_derive_key=derive_key_response,
         kmipkit_client_batch_item_response_derive_key_ttlv=derive_key_ttlv,
-        kmipkit_client_batch_item_response_create=lambda _item, present, object_type, _identifier: (
-            present.__setitem__(0, 0) or object_type.__setitem__(0, 0) or 0
-        ),
-        kmipkit_client_batch_item_response_create_key_pair=lambda _item, present, _private, _public: (
-            present.__setitem__(0, 0) or 0
-        ),
-        kmipkit_client_batch_item_response_create_split_key_count=lambda _item, present, count: (
-            present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
-        ),
     )
     monkeypatch.setattr(client, "lib", fake)
 
