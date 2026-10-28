@@ -5874,3 +5874,20 @@ error, and cleanup assertions.
 
 The fixture changes affect tests only; the production Python facade remains
 unchanged.
+
+### T074 shared TTLV frame reader in Rekey and RNG tests (2026-10-28)
+
+The SonarCloud duplication API identified a repeated full-frame read loop in
+the native Rekey and RNG integration tests. Both now use the shared frame
+reader while retaining the existing EOF error text. The peer server setup is
+left local in these two tests because cleanup exposes and closes the listening
+socket to cancel a blocked `accept`, and it suppresses that intentional-close
+`OSError`; the general fixture owns its listener and reports peer errors.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Refactor | this commit | Native-backed `test_rekey_native_integration.py` and `test_rng_native_integration.py` | Pass, 3 tests; request framing and peer cancellation behavior remain intact. |
+| Refactor | this commit | Ruff `I001` on both modules; `git diff --check` | Pass. |
+
+The listener setup remains a separate duplication cluster because its exposed
+cancellation contract differs from the shared one-connection fixture.

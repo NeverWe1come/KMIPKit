@@ -9,7 +9,11 @@ import struct
 import threading
 from pathlib import Path
 
-from _test_support import mtls_transport_config, require_tls13_mtls_peer
+from _test_support import (
+    mtls_transport_config,
+    read_ttlv_frame,
+    require_tls13_mtls_peer,
+)
 
 from kmipkit import client, extensions, ttlv
 
@@ -73,21 +77,6 @@ def _rekey_response_message() -> bytes:
     return _ttlv_structure(0x42007B, header, success, failure, pending)
 
 
-def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
-    output = bytearray()
-    while len(output) < length:
-        chunk = stream.recv(length - len(output))
-        if not chunk:
-            raise AssertionError("client closed before sending a full TTLV frame")
-        output.extend(chunk)
-    return bytes(output)
-
-
-def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
-    header = _read_exact(stream, 8)
-    return header + _read_exact(stream, int.from_bytes(header[4:8], "big"))
-
-
 def _item_tags(structure: ttlv.Structure) -> tuple[int, ...]:
     with ttlv.ttlv_structure_view(structure) as view:
         return _view_item_tags(view)
@@ -122,7 +111,12 @@ def _start_mtls_peer() -> tuple[int, list[bytes], queue.Queue[BaseException], th
             raw, _address = listener.accept()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 require_tls13_mtls_peer(stream)
-                received_requests.append(_read_ttlv_frame(stream))
+                received_requests.append(
+                    read_ttlv_frame(
+                        stream,
+                        eof_message="client closed before sending a full TTLV frame",
+                    )
+                )
                 stream.sendall(_rekey_response_message())
         except OSError as failure:
             if listener.fileno() != -1:
