@@ -305,6 +305,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseModifyAttributeResponse(values);
     }
 
+    /** Returns the required Text String Unique Identifier from a successful Set Attribute. */
+    public Optional<SetAttributeResponse> setAttributeResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseSetAttribute);
+        return parseSetAttributeResponse(values);
+    }
+
     /**
      * Creates caller-owned local accounting from this live successful Get Usage Allocation
      * response. The exact positive request count and the caller-known Usage Limits Unit must be
@@ -1272,6 +1281,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "ModifyAttributeResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful Set Attribute response with its required copied Text String identifier. */
+    public static final class SetAttributeResponse {
+        private final String uniqueIdentifier;
+
+        private SetAttributeResponse(String uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        /** Returns the copied Text String Unique Identifier. */
+        public String uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "SetAttributeResponse[uniqueIdentifier=redacted]";
         }
     }
 
@@ -2824,6 +2849,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Modify Attribute identifier is invalid");
         }
         return Optional.of(new ModifyAttributeResponse(uniqueIdentifier));
+    }
+
+    static Optional<SetAttributeResponse> parseSetAttributeResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2,
+                "native Set Attribute response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1,
+                "native Set Attribute response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null) {
+                throw new InvalidInputException(
+                        "native absent Set Attribute response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (!(tuple[1] instanceof String uniqueIdentifier)) {
+            throw new InvalidInputException("native Set Attribute identifier is invalid");
+        }
+        return Optional.of(new SetAttributeResponse(uniqueIdentifier));
     }
 
     private static long[] requireNativeLongArray(Object value, String message) {
