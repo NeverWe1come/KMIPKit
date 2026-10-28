@@ -209,19 +209,16 @@ impl LocalDnsFixture {
 }
 
 fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
-    bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
-        UdpSocket::bind,
-    )
+    bind_local_dns_sockets_with(|address| TcpListener::bind(address), UdpSocket::bind)
 }
 
 fn bind_local_dns_sockets_with(
-    mut bind_tcp: impl FnMut() -> io::Result<TcpListener>,
+    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<TcpListener>,
     mut bind_udp: impl FnMut(SocketAddr) -> io::Result<UdpSocket>,
 ) -> io::Result<(UdpSocket, TcpListener)> {
     let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
     loop {
-        let tcp_listener = match bind_tcp() {
+        let tcp_listener = match bind_tcp(SocketAddr::from((Ipv4Addr::LOCALHOST, 0))) {
             Ok(listener) => listener,
             Err(error) => {
                 retry_socket_pair_bind(&mut attempts_remaining, error)?;

@@ -124,7 +124,7 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
     let _guard = lock_network_fixture();
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || {
+        |address| {
             attempts += 1;
             if attempts == 1 {
                 Err(io::Error::new(
@@ -132,7 +132,7 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
                     "simulated Windows excluded TCP port",
                 ))
             } else {
-                TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+                TcpListener::bind(address)
             }
         },
         UdpSocket::bind,
@@ -151,11 +151,39 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 }
 
 #[test]
+fn uses_udp_ephemeral_port_when_tcp_ephemeral_ports_are_excluded() {
+    let _guard = lock_network_fixture();
+    let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
+        |address| {
+            if address.port() == 0 {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated TCP excluded ephemeral-port range",
+                ))
+            } else {
+                TcpListener::bind(address)
+            }
+        },
+        UdpSocket::bind,
+    )
+    .expect("UDP should allocate a usable port when TCP port-zero allocation is excluded");
+
+    assert_eq!(
+        udp_socket
+            .local_addr()
+            .expect("UDP socket has a local address"),
+        tcp_listener
+            .local_addr()
+            .expect("TCP listener binds the UDP-selected port")
+    );
+}
+
+#[test]
 fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
     let _guard = lock_network_fixture();
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        |address| TcpListener::bind(address),
         |address| {
             attempts += 1;
             if attempts == 1 {
@@ -187,9 +215,9 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
     let mut attempts = 0;
     let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        |address| {
             tcp_attempts += 1;
-            TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+            TcpListener::bind(address)
         },
         |_address| {
             attempts += 1;
@@ -211,7 +239,7 @@ fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
     let _guard = lock_network_fixture();
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        |address| TcpListener::bind(address),
         |_address| {
             attempts += 1;
             Err(io::Error::new(
@@ -230,7 +258,7 @@ fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
 fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
@@ -249,7 +277,7 @@ fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
 fn does_not_retry_permanent_dns_fixture_tcp_bind_errors() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
