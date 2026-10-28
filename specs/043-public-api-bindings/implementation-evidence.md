@@ -5928,3 +5928,23 @@ connection before responses are released.
 | Red | `7532b9640` | GitHub Actions run `40678012821`, Windows stable job `122781473690` | Failed at `crates/kmipkit-test-support/tests/transport_fixtures.rs:148`: `peak_active_tcp_requests_per_connection() >= 2`; source inspection confirms the assertion races the later TCP metric update. |
 | Green | `981e062cd` | `cargo test -p kmipkit-test-support --test transport_fixtures` | Pass, all 7 fixture tests; the multiplexing case also passed 20 consecutive focused runs after adding the bounded active-request wait. |
 | Refactor | this commit | `cargo fmt --all --check`; `git diff --check` | Pass; the change is test-only and leaves transport and fixture metric ordering unchanged. |
+
+### T074 aggregate verification for shared Python test fixtures (2026-10-28)
+
+The combined native-backed suites for ticket, frame-reader, and batch-response
+fixture callers pass after the shared setup refactors. The API parity corpus
+and generator also remain current. Ruff import sorting was applied only to the
+eight changed Python test modules it flagged; no operation assertions or
+production facade code changed.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Refactor | `c2e270a8b` | From `bindings/python`, with `PYTHONPATH=src` and `KMIPKIT_NATIVE_LIBRARY` set to the worktree's `target/debug/kmipkit_ffi.dll`: focused pytest on `test_tls_peer_support.py`, Login, Delegated Login, Rekey, RNG, Certify, Derive Key, and Get Usage Allocation | Pass, 90 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v` | Pass, 72 tests. |
+| Refactor | this commit | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated API outputs verified. |
+| Refactor | this commit | Ruff `I001` on the changed Python test modules; `cargo fmt --all --check`; `git diff --check` | Pass. |
+
+No local Sonar scanner is installed. The last remote per-file API measurement
+was for the earlier pushed head; the duplication percentage for these newer
+refactors must be measured by the exact-head PR analysis after push. The 3%
+quality-gate threshold remains unchanged.
