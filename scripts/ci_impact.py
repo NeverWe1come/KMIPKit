@@ -19,6 +19,7 @@ MAX_PLAN_OUTPUT_BYTES = 60_000
 
 PULL_REQUEST_JOB_IDS = (
     "docs-contracts",
+    "fast-preflight",
     "core",
     "script-contracts",
     "language-c",
