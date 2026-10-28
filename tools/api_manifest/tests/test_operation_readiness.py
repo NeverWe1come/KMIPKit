@@ -405,6 +405,46 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     feature_id="KMIPKIT-0020",
                 )
 
+    def test_plain_status_line_cannot_bypass_authorization_approval_check(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = f"Status: {AUTH_ONLY_OWNER_STATUS}."
+            owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
+                generate._validate_approval_source(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/020-query-ping/spec.md",
+                        "status": "Approved",
+                        "evidence": status,
+                    },
+                    root,
+                    feature_id="KMIPKIT-0020",
+                )
+
+    def test_pending_acceptance_wording_requires_merged_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = "**Status**: Approved for implementation only; acceptance pending."
+            owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
+                generate._validate_approval_source(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/020-query-ping/spec.md",
+                        "status": "Approved",
+                        "evidence": status,
+                    },
+                    root,
+                    feature_id="KMIPKIT-0020",
+                )
+
     def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -448,6 +488,33 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 ManifestError, "owner state differs from its specification"
             ):
                 generate._validate_operation_dependencies(operations, root)
+
+    def test_historical_merge_record_does_not_approve_rejected_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Query and Ping\n\n**Status**: Rejected after review.\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0020` was approved "
+                "for implementation by specification PR #67, MERGED into "
+                "`release/1.0.0` on `2026-10-09`, merged by maintainer NeverWe1come.\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "candidate", generate._operation_owner_state(root, "KMIPKIT-0020")
+            )
 
     def test_merged_spec_pr_allows_manifest_source_with_stale_draft_status(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
