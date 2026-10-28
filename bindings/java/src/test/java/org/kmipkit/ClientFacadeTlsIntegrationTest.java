@@ -96,6 +96,35 @@ final class ClientFacadeTlsIntegrationTest {
     Path temporaryDirectory;
 
     @Test
+    void nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups() throws Exception {
+        Path keyStorePath = temporaryDirectory.resolve("jni-input-budget.p12");
+        createKeyStore(keyStorePath, "jni-input-budget");
+        KeyStore keyStore = loadKeyStore(keyStorePath);
+        byte[] certificatePem = pem("CERTIFICATE", certificate(keyStore, "jni-input-budget").getEncoded());
+        byte[] privateKeyPem = pem("PRIVATE KEY",
+                ((PrivateKey) keyStore.getKey("jni-input-budget", STORE_PASSWORD)).getEncoded());
+        byte[] revocationListPem = pem("X509 CRL", testCrlDer());
+        byte[] clientCertificate = Arrays.copyOf(certificatePem, 6 * 1024 * 1024);
+        byte[] trustCertificate = Arrays.copyOf(certificatePem, 5 * 1024 * 1024);
+        byte[] revocationList = Arrays.copyOf(revocationListPem, 5 * 1024 * 1024);
+        Arrays.fill(clientCertificate, certificatePem.length, clientCertificate.length, (byte) ' ');
+        Arrays.fill(trustCertificate, certificatePem.length, trustCertificate.length, (byte) ' ');
+        Arrays.fill(revocationList, revocationListPem.length, revocationList.length, (byte) ' ');
+
+        assertThrows(ResourceLimitException.class, () -> {
+            long handle = NativeExtensionRegistry.transportConfigCreate(
+                    1, "127.0.0.1", 5696, 2,
+                    new int[] {1}, new int[] {1}, new byte[][] {clientCertificate},
+                    1, 1, privateKeyPem,
+                    new int[] {1}, new int[] {1}, new byte[][] {trustCertificate},
+                    new int[] {1}, new int[] {1}, new byte[][] {revocationList},
+                    null, null, new long[12], 4096);
+            if (handle != 0) {
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TRANSPORT_CONFIGURATION, handle);
+            }
+        });
+    }
+    @Test
     void nativeAdapterAcceptsCredentialModesAndHttpsTlsNameOverride() throws Exception {
         Path keyStorePath = temporaryDirectory.resolve("native-adapter.p12");
         createKeyStore(keyStorePath, "native-adapter");
