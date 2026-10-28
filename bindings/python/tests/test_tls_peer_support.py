@@ -14,6 +14,7 @@ from _test_support import (
 )
 
 from kmipkit import client
+from kmipkit._client_ffi import ffi
 
 
 class FakeTlsPeer:
@@ -154,3 +155,51 @@ def test_ttlv_frame_reader_preserves_operation_specific_eof_message() -> None:
         reader(ClosedStream(), eof_message="client closed before full request")
 
     assert str(failure.value) == "client closed before full request"
+
+
+@pytest.mark.parametrize(
+    ("operation", "response_symbol", "ttlv_symbol"),
+    [
+        (
+            "login",
+            "kmipkit_client_batch_item_response_login",
+            "kmipkit_client_batch_item_response_login_ttlv",
+        ),
+        (
+            "delegated_login",
+            "kmipkit_client_batch_item_response_delegated_login",
+            "kmipkit_client_batch_item_response_delegated_login_ttlv",
+        ),
+    ],
+)
+def test_ticket_response_fixture_installs_operation_specific_native_symbols(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+    response_symbol: str,
+    ttlv_symbol: str,
+) -> None:
+    installer = getattr(_test_support, "install_ticket_native_response", None)
+    assert callable(installer), "shared ticket response fixture is required"
+    installer(
+        monkeypatch,
+        operation,
+        ticket_type=0xFEED_BEEF,
+        ticket_value=b"ticket-fixture",
+    )
+
+    present = ffi.new("uint8_t *")
+    ticket_present = ffi.new("uint8_t *")
+    ticket_type = ffi.new("uint32_t *")
+    ticket_value = ffi.new("kmipkit_byte_span_v1_t *")
+    assert getattr(client.lib, response_symbol)(
+        ffi.NULL, present, ticket_present, ticket_type, ticket_value
+    ) == 0
+    assert present[0] == ticket_present[0] == 1
+    assert ticket_type[0] == 0xFEED_BEEF
+    assert ffi.buffer(ticket_value.data, int(ticket_value.length))[:] == b"ticket-fixture"
+
+    ttlv_present = ffi.new("uint8_t *")
+    ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    assert getattr(client.lib, ttlv_symbol)(ffi.NULL, ttlv_present, ttlv_output) == 0
+    assert ttlv_present[0] == 1
+    assert ffi.cast("uintptr_t", ttlv_output[0]) == 24
