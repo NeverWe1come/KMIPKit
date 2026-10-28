@@ -2711,6 +2711,7 @@ def _client_native_unique_identifier(
     identifier, _owner = _native_unique_identifier(value, staging_buffers)
     if value is None:
         return _client_ffi.NULL
+    staging_buffers.append(identifier)
     return _client_ffi.cast(
         "kmipkit_unique_identifier_v1_t *",
         int(ffi.cast("uintptr_t", identifier)),

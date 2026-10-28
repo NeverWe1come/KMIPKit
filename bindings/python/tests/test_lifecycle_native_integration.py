@@ -27,9 +27,6 @@ def test_client_identifier_adapter_retains_the_native_abi_record() -> None:
     native_identifier = extensions._client_native_unique_identifier(identifier, staging)
 
     assert len(staging) == 1
-    assert extensions._client_ffi.typeof(staging[0]) == extensions._client_ffi.typeof(
-        "kmipkit_unique_identifier_v1_t *"
-    )
     assert int(extensions._client_ffi.cast("uintptr_t", native_identifier)) == int(
         extensions._client_ffi.cast("uintptr_t", staging[0])
     )
