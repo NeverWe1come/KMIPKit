@@ -720,6 +720,28 @@ class FeatureTraceabilityTests(unittest.TestCase):
         for offset, indexed_result in contexts.items():
             self.assertEqual(indexed_result, _rust_test_item_has_active_module_context(source, offset))
 
+    def test_rust_evidence_names_reuse_one_source_index(self) -> None:
+        source = (
+            "#[cfg(test)]\n"
+            "mod tests {\n"
+            "    #[test]\n"
+            "    fn first_evidence() {}\n"
+            "    #[test]\n"
+            "    fn second_evidence() {}\n"
+            "}\n"
+        )
+        discoverable_names = globals().get("_discoverable_rust_test_names")
+        self.assertIsNotNone(discoverable_names, "Rust evidence should share one source index")
+        if discoverable_names is None:
+            return
+
+        discoverable_names.cache_clear()
+        first = discoverable_names(source)
+        second = discoverable_names(source)
+
+        self.assertIs(first, second, "repeated evidence lookups should reuse one parsed source index")
+        self.assertEqual(first, frozenset({"first_evidence", "second_evidence"}))
+
     def test_repeated_confined_source_reads_reuse_the_same_snapshot(self) -> None:
         source_path = "crates/kmipkit-protocol/tests/support/profile_unit.rs"
         first = _read_confined_test_source(source_path)
