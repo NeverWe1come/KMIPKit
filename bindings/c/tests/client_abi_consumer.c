@@ -6702,6 +6702,44 @@ int kmipkit_client_abi_c_consumer_validate_adjust_attribute_response(
         memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
 }
 
+int kmipkit_client_abi_c_consumer_build_delete_attribute(
+    kmipkit_client_batch_item_t **out_request) {
+    kmipkit_client_batch_item_t *request = 0;
+
+    if (out_request == 0) return 0;
+    *out_request = 0;
+    if (kmipkit_client_batch_item_delete_attribute(0, 0, 0, &request) != 0 ||
+        request == 0) {
+        kmipkit_client_batch_item_release(request);
+        return 0;
+    }
+    *out_request = request;
+    return 1;
+}
+
+int kmipkit_client_abi_c_consumer_validate_delete_attribute_response(
+    kmipkit_client_batch_item_response_t *response, uint8_t expected_present) {
+    static const uint8_t expected_identifier[] = "deleted-object-1";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = UINT8_C(9);
+
+    if (response == 0 || expected_present > 1) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_delete_attribute(
+            response, &present, &identifier) != 0 || present != expected_present) {
+        return 0;
+    }
+    if (expected_present == 0) {
+        return identifier.kind == 0 && identifier.text_data == 0 &&
+            identifier.text_length == 0;
+    }
+    return identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == (uint64_t)(sizeof(expected_identifier) - 1) &&
+        identifier.text_data != 0 &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+}
+
 int kmipkit_client_abi_c_consumer_build_adjust_attribute(
     kmipkit_client_batch_item_t **out_request) {
     kmipkit_attribute_reference_v1_t reference = {0};
