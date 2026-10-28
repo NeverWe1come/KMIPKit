@@ -6031,33 +6031,41 @@ Focused command: `uv run --python 3.12 --no-project --with-requirements tools/ap
 This slice reconciles only values supported by the current manifest and package
 metadata. It does not certify external publication identities or close the
 remaining T073 audit.
+### T076 Java/JNI byte-array aggregate preflight (2026-10-28)
 
-### T076 Java JNI aggregate transport-material preflight (2026-10-28)
+A direct JNI call to the transport constructor could copy certificate, key,
+trust, and CRL byte-array payloads under separate 16 MiB per-group checks. The
+typed Java builder already limits the aggregate byte-array payload length to
+16 MiB, but the JNI boundary did not. JNI now preflights the lengths of all four
+byte-array groups before copying any of them, then uses a fresh
+`TransportBridgeByteBudget` to check each actual array length immediately before
+allocation/copy. This second check remains bounded if Java replaces an array
+element between the metadata and copy passes. Generic JNI byte-array callers
+retain their previous behavior.
 
-A direct call to the internal JNI transport constructor could copy client
-certificates, private key, trust certificates, and revocation lists under
-separate 16 MiB per-group checks. The typed Java builder already enforced one
-aggregate 16 MiB limit, but the JNI boundary did not. The bridge now reads and
-validates all group metadata and byte-array lengths before copying material,
-using one preflight budget across all four groups. A separate fresh budget
-checks each actual array length immediately before allocation/copy, keeping the
-bound safe if Java replaces an array element between the two passes. Existing
-generic JNI byte-array callers retain their prior empty-input behavior.
+This is a bridge-copy limit on Java `byte[]` payload lengths. With a memory
+source those bytes are certificate/key/CRL material; with a file source the
+array contains encoded path bytes, not file contents. Rust loads file contents
+after JNI and separately enforces 16 MiB per client-certificate list, trust
+list, and revocation-list group, plus its private-key limit. Those Rust checks
+do not create one aggregate limit across the contents of multiple file-backed
+groups.
 
-The regression directly exercises `NativeExtensionRegistry.transportConfigCreate`
-with valid PEM certificate, key, trust, and CRL inputs whose individual groups
-are under the limit and whose combined length exceeds it. This bypasses the
-higher-level Java builder, which already rejects such a configuration.
+The regression directly calls `NativeExtensionRegistry.transportConfigCreate`
+with memory-source PEM inputs whose individual groups are below the cap and
+whose combined byte-array payload length exceeds it. It bypasses the
+higher-level Java builder, which already rejects the aggregate.
 
 | Phase | Commit | Command or check | Result |
 |---|---|---|---|
-| Red | `1a65bce22` | `mvn --batch-mode --file bindings/java/pom.xml '-Dexec.skip=true' '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` against the pre-fix JNI library | Expected failure: the direct JNI call returned a transport configuration instead of throwing `ResourceLimitException`; the combined material exceeded 16 MiB. |
-| Green | `ee8951e82` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` | Pass, 1 test; Windows JNI bridge rebuilt and rejected the over-budget inputs. |
-| Refactor | this commit | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest,TransportConfigurationBoundaryTest,ClientFacadeContractTest' test` | Pass, 66 tests: TLS integration 34, transport boundary 18, shared client contract 14; JNI bridge rebuilt. |
-| Refactor | this commit | `git diff --check` | Pass. |
+| Red | `1a65bce22` | `mvn --batch-mode --file bindings/java/pom.xml '-Dexec.skip=true' '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` against the pre-fix JNI library | Expected failure: the direct JNI call returned a transport configuration instead of throwing `ResourceLimitException`; the combined byte-array payload length exceeded 16 MiB. |
+| Green | `ee8951e82` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` | Pass, 1 test; Windows JNI bridge rebuilt and rejected the over-budget payload. |
+| Refactor | `474422dd1` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest,TransportConfigurationBoundaryTest,ClientFacadeContractTest' test` | Pass, 66 tests: TLS integration 34, transport boundary 18, shared client contract 14; JNI bridge rebuilt. |
+| Refactor | `474422dd1` | `git diff --check` | Pass. |
+| Exact-head CI | `474422dd1` | [Run 40694895609](https://github.com/NeverWe1come/KMIPKit/actions/runs/40694895609), with CodeQL `40694895558` and zizmor `40694895705` | Pass, 35 CI jobs succeeded, 2 scheduled skips, 0 failures; CodeQL, zizmor, and SonarCloud passed. |
 
-The bridge shares transport source/encoding/count validation between the
-preflight and copy passes. It preserves the Java/C ABI and does not alter
-production transport behavior for inputs within the approved bound. Red, Green,
-and Refactor commits are DCO-signed. Exact-head CI for these follow-up commits
-remains pending after push; the coverage-threshold waiver is unchanged.
+The source/encoding/count checks are shared between the preflight and copy
+passes. Red, Green, and Refactor commits are DCO-signed. This scope-clarifying
+rename/evidence update does not change behavior; its exact-head CI is pending.
+The authorized coverage-threshold waiver remains unchanged; no threshold pass
+is claimed and T085 remains open.

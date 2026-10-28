@@ -229,7 +229,8 @@ void throw_invalid_input(JNIEnv* env) noexcept {
     throw_java(env, "org/kmipkit/InvalidInputException", "native input is invalid");
 }
 
-struct TransportMaterialBudget {
+// Bounds Java byte-array payloads copied through JNI; file contents are loaded later by Rust.
+struct TransportBridgeByteBudget {
     uint64_t total_bytes = 0;
 
     bool account(JNIEnv* env, jsize length) {
@@ -853,7 +854,7 @@ private:
     std::vector<std::vector<uint8_t>>& values_;
 };
 
-bool preflight_java_bytes(JNIEnv* env, jbyteArray input, TransportMaterialBudget& budget) {
+bool preflight_java_bytes(JNIEnv* env, jbyteArray input, TransportBridgeByteBudget& budget) {
     if (input == nullptr) {
         throw_invalid_input(env);
         return false;
@@ -886,7 +887,7 @@ bool read_java_bytes(JNIEnv* env, jbyteArray input, std::vector<uint8_t>& output
 }
 
 bool read_transport_material_bytes(JNIEnv* env, jbyteArray input,
-        TransportMaterialBudget& budget, std::vector<uint8_t>& output) {
+        TransportBridgeByteBudget& budget, std::vector<uint8_t>& output) {
     if (input == nullptr) {
         throw_invalid_input(env);
         return false;
@@ -1019,7 +1020,7 @@ bool read_transport_input_metadata(JNIEnv* env, jintArray raw_sources,
 }
 
 bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
-        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget) {
+        jobjectArray raw_bytes, bool allow_files, TransportBridgeByteBudget& budget) {
     std::vector<jint> sources;
     std::vector<jint> encodings;
     if (!read_transport_input_metadata(
@@ -1041,7 +1042,7 @@ bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray ra
 }
 
 bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
-        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget,
+        jobjectArray raw_bytes, bool allow_files, TransportBridgeByteBudget& budget,
         std::vector<OwnedTransportInput>& output) {
     std::vector<jint> sources;
     std::vector<jint> encodings;
@@ -4233,7 +4234,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_transportConfig
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        TransportMaterialBudget preflight_budget;
+        TransportBridgeByteBudget preflight_budget;
         if (!preflight_transport_inputs(env, cert_sources, cert_encodings, cert_bytes, true,
                     preflight_budget)
                 || !preflight_transport_inputs(env, trust_sources, trust_encodings, trust_bytes, true,
@@ -4245,7 +4246,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_transportConfig
         }
 
         std::vector<OwnedTransportInput> certificates, trust_certificates, revocation_lists;
-        TransportMaterialBudget copy_budget;
+        TransportBridgeByteBudget copy_budget;
         if (!read_transport_inputs(env, cert_sources, cert_encodings, cert_bytes, true,
                     copy_budget, certificates)
                 || !read_transport_inputs(env, trust_sources, trust_encodings, trust_bytes, true,
