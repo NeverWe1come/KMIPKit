@@ -1995,6 +1995,51 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("compiler-provided enum", exclusion["reason"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_attribute_operations_java_bridges_and_formatters_are_exactly_excluded(self) -> None:
+        bridge_exports = {
+            f"org.kmipkit.NativeExtensionRegistry.{name}"
+            for name in (
+                "clientBatchItemActivate",
+                "clientBatchItemArchive",
+                "clientBatchItemDestroy",
+                "clientBatchItemGetAttributeList",
+                "clientBatchItemRecover",
+                "clientBatchItemResponseActivate",
+                "clientBatchItemResponseArchive",
+                "clientBatchItemResponseDestroy",
+                "clientBatchItemResponseGetAttributeList",
+                "clientBatchItemResponseRecover",
+            )
+        }
+        redacted_formatters = {
+            f"org.kmipkit.extensions.ClientBatchItemResult.{name}.toString"
+            for name in (
+                "ActivateResponse",
+                "ArchiveResponse",
+                "DestroyResponse",
+                "GetAttributeListResponse",
+                "RecoverResponse",
+            )
+        }
+        expected = bridge_exports | redacted_formatters
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+        for export_name in sorted(bridge_exports):
+            with self.subTest(bridge=export_name):
+                exclusion = exclusions[export_name]
+                self.assertIn("raw-handle JNI bridge", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+        for export_name in sorted(redacted_formatters):
+            with self.subTest(redacted_formatter=export_name):
+                exclusion = exclusions[export_name]
+                self.assertIn("redacted", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit.client.BatchItemResult.operation": {
