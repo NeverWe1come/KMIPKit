@@ -6,9 +6,11 @@ import threading
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Protocol
 
 from kmipkit import client
+from kmipkit._client_ffi import ffi
 
 _PEER_FAILURE_TYPES = (AssertionError, OSError, RuntimeError, ssl.SSLError)
 
@@ -190,3 +192,48 @@ def operation_response_message(
         response_fields.append(ttlv_structure(0x42007C, *payload_items))
     response_item = ttlv_structure(0x42000F, *response_fields)
     return ttlv_structure(0x42007B, header, response_item)
+
+
+def install_ticket_native_response(
+    monkeypatch: object,
+    operation: str,
+    *,
+    present: int = 1,
+    ticket_present: int = 1,
+    ticket_type: int = 7,
+    ticket_value: bytes = b"ticket-secret",
+    span_length: int | None = None,
+    ttlv_present: int = 1,
+    ttlv_pointer: int = 24,
+    released: list[int] | None = None,
+) -> None:
+    """Install a fake Login or Delegated Login response ABI for binding tests."""
+    native_value = ffi.new("uint8_t[]", ticket_value) if ticket_value else ffi.NULL
+
+    def response(_item: object, out_present: object, out_ticket_present: object, out_ticket_type: object, out_value: object) -> int:
+        out_present[0] = present
+        out_ticket_present[0] = ticket_present
+        out_ticket_type[0] = ticket_type
+        out_value.data = native_value
+        out_value.length = len(ticket_value) if span_length is None else span_length
+        return 0
+
+    def response_ttlv(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = ttlv_present
+        output[0] = ffi.cast("kmipkit_ttlv_structure_t *", ttlv_pointer)
+        return 0
+
+    def release(pointer: object) -> None:
+        if released is not None:
+            released.append(int(ffi.cast("uintptr_t", pointer)))
+
+    response_symbol = f"kmipkit_client_batch_item_response_{operation}"
+    response_ttlv_symbol = f"{response_symbol}_ttlv"
+    library = SimpleNamespace(
+        **{
+            response_symbol: response,
+            response_ttlv_symbol: response_ttlv,
+            "kmipkit_ttlv_structure_release": release,
+        }
+    )
+    monkeypatch.setattr(client, "lib", library)
