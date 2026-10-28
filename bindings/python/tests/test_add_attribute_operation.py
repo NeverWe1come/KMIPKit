@@ -28,7 +28,7 @@ def _add_attribute_response_message() -> bytes:
     )
 
 
-def test_add_attribute_builder_preserves_identifier_and_transfers_new_attribute(
+def test_add_attribute_builder_preserves_identifier_and_borrows_new_attribute(
     monkeypatch,
 ):
     calls: list[tuple[str, tuple[object, ...], tuple[int, ...]]] = []
@@ -69,12 +69,12 @@ def test_add_attribute_builder_preserves_identifier_and_transfers_new_attribute(
         (
             "kmipkit_client_batch_item_add_attribute",
             (omitted_identifier, attribute_handle),
-            (1,),
+            (),
         ),
         (
             "kmipkit_client_batch_item_add_attribute",
             (present_identifier, attribute_handle),
-            (1,),
+            (),
         ),
     ]
 
@@ -101,6 +101,7 @@ def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
     value_tag = ttlv.raw_tag_try_checked(raw_value_tag)
     raw_type_tag = ttlv.raw_tag_from_raw(0x0042_00A6)
     type_tag = ttlv.raw_tag_try_checked(raw_type_tag)
+    new_attribute = None
     try:
         name_value = ttlv.ttlv_item_create(
             value_tag, ttlv.ttlv_value_text_string(b"new name", limits), limits
@@ -123,7 +124,7 @@ def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
         ):
             batch = client.Batch.create()
             request_item = extensions.client_batch_item_add_attribute(None, new_attribute)
-            new_attribute = None
+            assert new_attribute._pointer() != extensions.ffi.NULL
             batch.add_item(
                 extensions.with_unique_batch_item_id(request_item, _ADD_ATTRIBUTE_ID)
             )
@@ -150,6 +151,8 @@ def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
     finally:
         if request_item is not None:
             request_item.close()
+        if new_attribute is not None:
+            new_attribute.close()
         if batch_result is not None:
             batch_result.close()
         limits.close()
