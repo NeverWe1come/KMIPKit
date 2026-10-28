@@ -9,7 +9,7 @@ import struct
 import threading
 from pathlib import Path
 
-from _test_support import require_tls13_mtls_peer
+from _test_support import capture_peer_failures, require_tls13_mtls_peer
 
 from kmipkit import client, extensions, ttlv
 
@@ -96,26 +96,25 @@ def test_logout_uses_native_cffi_and_exposes_success_response_presence() -> None
     listener.listen(1)
     listener.settimeout(3)
     port = listener.getsockname()[1]
-    peer_failures: queue.Queue[Exception] = queue.Queue()
+    peer_failures: queue.Queue[BaseException] = queue.Queue()
     received_requests: list[bytes] = []
 
     def serve_logout_response() -> None:
         try:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.minimum_version = ssl.TLSVersion.TLSv1_3
-            context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(
-                _FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem"
-            )
-            context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
-            context.verify_mode = ssl.CERT_REQUIRED
-            raw, _address = listener.accept()
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                require_tls13_mtls_peer(stream)
-                received_requests.append(_read_ttlv_frame(stream))
-                stream.sendall(_logout_response_message())
-        except (AssertionError, OSError, ssl.SSLError) as failure:
-            peer_failures.put(failure)
+            with capture_peer_failures(peer_failures):
+                context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                context.minimum_version = ssl.TLSVersion.TLSv1_3
+                context.maximum_version = ssl.TLSVersion.TLSv1_3
+                context.load_cert_chain(
+                    _FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem"
+                )
+                context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
+                context.verify_mode = ssl.CERT_REQUIRED
+                raw, _address = listener.accept()
+                with raw, context.wrap_socket(raw, server_side=True) as stream:
+                    require_tls13_mtls_peer(stream)
+                    received_requests.append(_read_ttlv_frame(stream))
+                    stream.sendall(_logout_response_message())
         finally:
             listener.close()
 
