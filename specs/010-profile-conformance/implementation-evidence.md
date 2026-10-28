@@ -7943,7 +7943,7 @@ The distinct Red and Green commits are DCO-signed. No code cleanup was needed af
 
 ## Traceability contract follow-up: accepted recommendation deviations (2026-10-28)
 
-CI run `40613266640` failed only `FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`. Its blanket empty-set assertion rejected `KMIPKIT-REQ-SPEC-4.57-005-002`, although accepted decision `KMIPKIT-DEC-025` includes the requirement and records caller-owned guidance with no behavior-test or enforcement claim. The profile report already classifies accepted deviations separately. The traceability test now exempts a missing category test only when the requirement is `deviated`, its decision is `accepted` and includes the requirement ID, and the mapped category is a recommendation category. All other missing category tests remain failures.
+Documentation contracts / traceability in CI run `40613266640` failed at `FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`. Its blanket empty-set assertion rejected `KMIPKIT-REQ-SPEC-4.57-005-002`, although accepted decision `KMIPKIT-DEC-025` includes the requirement and records caller-owned guidance with no behavior-test or enforcement claim. The profile report already classifies accepted deviations separately. The three script-contract jobs were still running when cancellation was requested, so their results are unknown. The traceability test now exempts a missing category test only when the requirement is `deviated`, its decision is `accepted` and includes the requirement ID, and the mapped category is a recommendation category. All other missing category tests remain failures.
 
 The filter receives the category only after the test derives it from the catalog keyword and confirms the typed mapping matches it. Existing implementation-reference and executable `verification_refs` checks still run for every mapped requirement before the category-evidence assertion.
 
@@ -7955,9 +7955,10 @@ The filter receives the category only after the test derives it from the catalog
 | Diff and lint | — | `git diff --check`; `python -m ruff check tools/normative_catalog/tests/test_feature_traceability.py` | `git diff --check` passed. Ruff is not installed (`No module named ruff`); repository CI defines no Python formatter or linter. |
 | Full focused integration | — | `python -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | Locally CPU-bound with no output after approximately 2 minutes 30 seconds; interrupted without a result. Run this check in hosted CI. |
 
-The local Red reproducer's PowerShell command was `@' ... '@ | python -`; its Python input was:
+The exact PowerShell command for the local Red reproduction was:
 
-```python
+```powershell
+@'
 import json
 from pathlib import Path
 from tools.normative_catalog.report import load_typed_rule_mappings
@@ -7976,6 +7977,7 @@ except AssertionError as error:
     print(f'AssertionError: {error}')
 else:
     raise SystemExit('expected the original contract assertion to fail')
+'@ | python -
 ```
 
 Self-review: the exception is limited to accepted recommendation categories, an accepted decision that explicitly names the requirement, and a requirement marked `deviated`. It does not alter protocol behavior, DEC-025, catalog/source records, generated files, or executable verification-reference validation. `bindings/java/target/` was present before this change and remains preserved. No Protocol files were changed, and no OASIS Test Case or profile-conformance claim is made.
