@@ -27,6 +27,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
     private static final int MAX_VALIDATE_INPUT_ITEMS = 100_000;
     private static final int MAX_SPLIT_KEY_REFERENCES = 100_000;
+    private static final int MAX_GET_ATTRIBUTES_REFERENCES = 100_000;
     private static final long MAX_TTLV_ITEM_LENGTH = 0xffff_ffffL;
 
     private final NativeHandle handle;
@@ -752,6 +753,10 @@ public final class ClientBatchItem implements AutoCloseable {
         }
         if (attributeReferences == null) {
             throw new InvalidInputException("Get Attributes Attribute References are required");
+        }
+        if (attributeReferences.size() > MAX_GET_ATTRIBUTES_REFERENCES) {
+            throw new ResourceLimitException(
+                    "Get Attributes reference count exceeds the configured limit");
         }
         List<AttributeReference> references = new ArrayList<>(attributeReferences);
         for (AttributeReference reference : references) {
