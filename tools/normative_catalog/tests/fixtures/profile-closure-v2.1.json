@@ -75169,21 +75169,14 @@
           "project_actor_interpretation": "client"
         }
       ],
-      "rejected_candidate_mappings": [
-        {
-          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-002",
-          "claimed_keyword": "MAY",
-          "source_review": "The subject is some derivation methods; the pinned source does not assign this optionality to the client.",
-          "expected_disposition": "reject_client_actor_inference"
-        }
-      ],
+      "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.14-002"
       ],
       "applies_to": [
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
       ],
-      "review_note": "The MAY modifies some derivation methods, not an expressly identified endpoint. Preserve the candidate as unresolved and exclude it from the client profile closure pending source interpretation. KMIP Specification v2.1 §6.1.14 defines Derive Key as a client request and describes request fields selected by the client. Multiple input identifiers are an optional request capability; the server performs the derivation and KMIPKit does not derive key material locally."
+      "review_note": "The MAY modifies some derivation methods, and the source does not assign the actor. KMIPKIT-DEC-026 assigns this optional input capability to the client because §6.1.14 defines fields in a Derive Key request and the caller selects the inputs. The server performs derivation; KMIPKit does not derive key material locally."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
