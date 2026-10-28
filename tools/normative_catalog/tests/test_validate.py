@@ -36,6 +36,8 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 ROOT = Path(__file__).resolve().parents[3]
 CLIENT_ATTRIBUTED_SOURCE_ACTORS = {
+    "implementations",
+    "kmip implementation conformant to this specification",
     "kmip servers and clients",
     "a client or server conformant to this profile",
     "client",
@@ -16774,6 +16776,10 @@ class CatalogValidationTests(unittest.TestCase):
                     and (
                         reviewed_scope in {"client_1_0", "profile_conditional"}
                         or reviewed_scope == "client_1_0 + server_only (split/shared)"
+                        or (
+                            reviewed_scope == "mixed"
+                            and obligation.get("project_actor_interpretation") == "client"
+                        )
                     )
                 ):
                     reviewed_client_ids.add(candidate_id)
