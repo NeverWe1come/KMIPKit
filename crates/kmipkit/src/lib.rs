@@ -2,23 +2,31 @@
 //!
 //! ## Per-exchange profile validation
 //!
-//! A profile selection is explicit for each call. The helper below accepts a
-//! configured client and a caller-built typed batch:
+//! A profile selection and any caller-known object state are explicit for
+//! each call. State is attached to the exact batch item and object ID:
 //!
 //! ```no_run
 //! use kmipkit::{
-//!     Client, ClientBatch, ClientBatchResponse, ClientError, ProfileValidationSelection,
+//!     Client, ClientBatch, ClientBatchResponse, ClientError, ProfileObjectState,
+//!     ProfileValidationContext, ProfileValidationSelection,
 //! };
 //! use kmipkit_ttlv::codec::CodecLimits;
 //!
 //! fn execute_for_profile(
 //!     client: &mut Client,
 //!     batch: ClientBatch,
+//!     batch_item_index: usize,
+//!     unique_identifier: &str,
 //!     limits: &CodecLimits,
 //! ) -> Result<ClientBatchResponse, ClientError> {
 //!     let selection =
 //!         ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"]);
-//!     client.execute_with_profiles(batch, &selection, limits)
+//!     let context = ProfileValidationContext::new().with_object_state(
+//!         batch_item_index,
+//!         ProfileObjectState::new(unique_identifier)
+//!             .with_original_creation_date_present(Some(true)),
+//!     );
+//!     client.execute_with_profiles_and_context(batch, &selection, &context, limits)
 //! }
 //! ```
 #![forbid(unsafe_code)]
@@ -107,11 +115,12 @@ pub use kmipkit_protocol::{
     GetConstraintsError, GetConstraintsRequest, GetConstraintsResponse, GetUsageAllocationError,
     GetUsageAllocationRequest, GetUsageAllocationResponse, KmipOperationResult, LoginError,
     LoginRequest, LoginResponse, LogoutError, LogoutRequest, LogoutResponse, PollRequest,
-    ProcessRequest, ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
-    ProfileValidationResult, ProfileValidationSelection, ProtocolCauseCategory, ProtocolError,
-    ProtocolErrorKind, QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus,
-    ResultValidationError, RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError,
-    RngSeedRequest, RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
+    ProcessRequest, ProfileObjectState, ProfileTransport, ProfileValidationContext,
+    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    QueryAsyncRequestsRequest, ResultMessage, ResultReason, ResultStatus, ResultValidationError,
+    RngRetrieveError, RngRetrieveRequest, RngRetrieveResponse, RngSeedError, RngSeedRequest,
+    RngSeedResponse, SecretBytes, SetConstraintsError, SetConstraintsRequest,
     SetConstraintsResponse, SetDefaultsError, SetDefaultsRequest, SetDefaultsResponse, Ticket,
     TicketType, TicketValidationError, TicketValidationErrorKind,
 };

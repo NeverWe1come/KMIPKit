@@ -29,14 +29,14 @@ use kmipkit_protocol::{
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
     PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProfileTransport, ProfileValidationError, ProfileValidationResult,
-    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
-    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
-    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
-    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
-    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
-    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest,
-    RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
+    ProcessResponse, ProfileTransport, ProfileValidationContext, ProfileValidationError,
+    ProfileValidationResult, ProfileValidationSelection, ProtocolCauseCategory, ProtocolError,
+    ProtocolErrorKind, ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
+    QueryRequest, QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest,
+    RecertifyResponse, RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse,
+    RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage,
+    ResponseBatchItemView, ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse,
+    RngRetrieveRequest, RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
     SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
     SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
     SignatureVerifyResponse, UniqueIdentifier,
@@ -3732,11 +3732,32 @@ pub(super) trait ProfileExchangeValidator {
 
     fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError>;
 
+    fn validate_request_with_context(
+        &self,
+        request: &RequestMessage,
+        _context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        self.validate_request(request)
+    }
+
+    fn includes_original_creation_date_rule(&self) -> bool {
+        false
+    }
+
     fn validate_response(
         &self,
         request: &RequestMessage,
         response: &ResponseMessage,
     ) -> Result<(), ProfileValidationError>;
+
+    fn validate_response_with_context(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+        _context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        self.validate_response(request, response)
+    }
 }
 
 impl ProfileExchangeValidator for ProfileValidationResult {
@@ -3751,12 +3772,35 @@ impl ProfileExchangeValidator for ProfileValidationResult {
         Self::validate_request(self, request)
     }
 
+    fn validate_request_with_context(
+        &self,
+        request: &RequestMessage,
+        context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_request_with_context(self, request, context)
+    }
+
+    fn includes_original_creation_date_rule(&self) -> bool {
+        self.requirement_ids()
+            .iter()
+            .any(|id| id == "KMIPKIT-REQ-SPEC-4.38-003")
+    }
+
     fn validate_response(
         &self,
         request: &RequestMessage,
         response: &ResponseMessage,
     ) -> Result<(), ProfileValidationError> {
         Self::validate_response(self, request, response)
+    }
+
+    fn validate_response_with_context(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+        context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_response_with_context(self, request, response, context)
     }
 }
 
@@ -3949,7 +3993,60 @@ impl Client {
         let profiles = selection.validate().map_err(|error| {
             ClientError::profile_validation(error, RequestDeliveryState::NotSent)
         })?;
-        self.execute_inner(batch, limits, request_options, Some(&profiles))
+        self.execute_inner_with_context(
+            batch,
+            limits,
+            request_options,
+            Some(&profiles),
+            &ProfileValidationContext::new(),
+        )
+    }
+
+    /// Executes one typed request batch with profile selection and explicit
+    /// caller-attested object state bound to this exchange's batch items.
+    /// `KMIPKit` never infers or caches these facts.
+    ///
+    /// # Errors
+    ///
+    /// Returns profile, protocol, or transport errors. Caller-state failures
+    /// occur before transport I/O and redact object identifiers and values.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles_and_context(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        context: &ProfileValidationContext,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_with_profiles_and_context_and_options(
+            batch,
+            selection,
+            context,
+            limits,
+            &RequestOptions::default(),
+        )
+    }
+
+    /// Executes one typed request batch with explicit profile selection,
+    /// caller-attested state, and per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same failures as
+    /// [`Self::execute_with_profiles_and_context`], preserving delivery state.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles_and_context_and_options(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        context: &ProfileValidationContext,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let profiles = selection.validate().map_err(|error| {
+            ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+        })?;
+        self.execute_inner_with_context(batch, limits, request_options, Some(&profiles), context)
     }
 
     /// Executes the shared exchange path with an already selected profile validator.
@@ -3959,6 +4056,23 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
         profiles: Option<&dyn ProfileExchangeValidator>,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_inner_with_context(
+            batch,
+            limits,
+            request_options,
+            profiles,
+            &ProfileValidationContext::new(),
+        )
+    }
+
+    fn execute_inner_with_context(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+        profiles: Option<&dyn ProfileExchangeValidator>,
+        profile_context: &ProfileValidationContext,
     ) -> Result<ClientBatchResponse, ClientError> {
         if let Some(profiles) = profiles {
             profiles
@@ -3982,7 +4096,15 @@ impl Client {
                 error,
             )
         })?;
-        validate_attribute_mutation_policy(&batch)?;
+        let mutation_policy = if let Some(profiles) = profiles {
+            Some(validate_attribute_mutation_policy(
+                &batch,
+                profiles.includes_original_creation_date_rule(),
+            ))
+        } else {
+            validate_attribute_mutation_policy(&batch, false)?;
+            None
+        };
 
         let request_identities = batch
             .items
@@ -4002,10 +4124,13 @@ impl Client {
         };
         if let Some(profiles) = profiles {
             profiles
-                .validate_request(&request_message)
+                .validate_request_with_context(&request_message, profile_context)
                 .map_err(|error| {
                     ClientError::profile_validation(error, RequestDeliveryState::NotSent)
                 })?;
+        }
+        if let Some(mutation_policy) = mutation_policy {
+            mutation_policy?;
         }
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
@@ -4039,7 +4164,11 @@ impl Client {
             (profiles, profile_request, profile_response)
         {
             profiles
-                .validate_response(&profile_request, &profile_response)
+                .validate_response_with_context(
+                    &profile_request,
+                    &profile_response,
+                    profile_context,
+                )
                 .map_err(|error| ClientError::profile_validation(error, response_delivery_state))?;
         }
 
@@ -5942,12 +6071,13 @@ impl fmt::Display for SourceBackedMutationProhibited {
 
 impl Error for SourceBackedMutationProhibited {}
 
-fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientError> {
-    if batch
-        .items
-        .iter()
-        .any(|item| request_mutation_is_prohibited(&item.request))
-    {
+fn validate_attribute_mutation_policy(
+    batch: &ClientBatch,
+    allow_profile_validated_creation_date_add: bool,
+) -> Result<(), ClientError> {
+    if batch.items.iter().any(|item| {
+        request_mutation_is_prohibited(&item.request, allow_profile_validated_creation_date_add)
+    }) {
         Err(ClientError::validation(
             ClientCauseCategory::InvalidInput,
             RequestDeliveryState::NotSent,
@@ -5958,10 +6088,21 @@ fn validate_attribute_mutation_policy(batch: &ClientBatch) -> Result<(), ClientE
     }
 }
 
-fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
+fn request_mutation_is_prohibited(
+    request: &ClientRequest,
+    allow_profile_validated_creation_date_add: bool,
+) -> bool {
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+
     match request {
         ClientRequest::AddAttribute(request) => {
-            new_attribute_is_prohibited(request.new_attribute(), ClientAttributeMutation::Add)
+            let attribute = request.new_attribute().item();
+            !(allow_profile_validated_creation_date_add
+                && attribute.tag().raw() == ORIGINAL_CREATION_DATE)
+                && new_attribute_is_prohibited(
+                    request.new_attribute(),
+                    ClientAttributeMutation::Add,
+                )
         }
         ClientRequest::AdjustAttribute(request) => attribute_reference_is_prohibited(
             request.attribute_reference(),

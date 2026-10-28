@@ -290,8 +290,8 @@ pub use execute::{
     ClientRequest, ClientResponseView, PendingOutcome,
 };
 pub use kmipkit_protocol::{
-    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
-    ProfileValidationSelection,
+    ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
+    ProfileValidationErrorCode, ProfileValidationSelection,
 };
 pub use kmipkit_transport::RequestOptions;
 

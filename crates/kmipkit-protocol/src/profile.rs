@@ -55,6 +55,10 @@ pub enum ProfileValidationErrorCode {
     ResponseRuleRejected,
     /// The configured transport violates a selected profile rule.
     TransportConstraintRejected,
+    /// Caller state required by a selected profile rule is missing or unknown.
+    ProfileStateContextRequired,
+    /// Caller state cannot be bound uniquely to the request object identifier.
+    ProfileStateBindingMismatch,
 }
 
 impl ProfileValidationErrorCode {
@@ -78,6 +82,8 @@ impl ProfileValidationErrorCode {
             Self::RequestRuleRejected => "request_rule_rejected",
             Self::ResponseRuleRejected => "response_rule_rejected",
             Self::TransportConstraintRejected => "transport_constraint_rejected",
+            Self::ProfileStateContextRequired => "profile_state_context_required",
+            Self::ProfileStateBindingMismatch => "profile_state_binding_mismatch",
         }
     }
 }
@@ -118,6 +124,173 @@ impl ProfileTransport {
 #[derive(Clone, Eq, PartialEq)]
 pub struct ProfileValidationSelection {
     profile_ids: Vec<String>,
+}
+
+/// Caller-attested state for one concrete KMIP object during one exchange.
+///
+/// Each fact is optional: `None` means unknown and profile validation fails
+/// closed if that fact is needed. Values and the object identifier are redacted
+/// from Debug output.
+#[derive(Clone, Eq, PartialEq)]
+pub struct ProfileObjectState {
+    unique_identifier: String,
+    original_creation_date_present: Option<bool>,
+    usage_limits_present: Option<bool>,
+    protection_use_started: Option<bool>,
+    get_usage_allocation_performed: Option<bool>,
+    get_usage_allocation_changed_count: Option<bool>,
+    usage_limits_total: Option<i64>,
+    usage_limits_count: Option<i64>,
+}
+
+impl ProfileObjectState {
+    /// Creates state bound to an exact Text String Unique Identifier.
+    #[must_use]
+    pub fn new(unique_identifier: impl Into<String>) -> Self {
+        Self {
+            unique_identifier: unique_identifier.into(),
+            original_creation_date_present: None,
+            usage_limits_present: None,
+            protection_use_started: None,
+            get_usage_allocation_performed: None,
+            get_usage_allocation_changed_count: None,
+            usage_limits_total: None,
+            usage_limits_count: None,
+        }
+    }
+
+    /// Attests whether Original Creation Date is present; `None` is unknown.
+    #[must_use]
+    pub const fn with_original_creation_date_present(mut self, present: Option<bool>) -> Self {
+        self.original_creation_date_present = present;
+        self
+    }
+
+    /// Attests whether Usage Limits is present; `None` is unknown.
+    #[must_use]
+    pub const fn with_usage_limits_present(mut self, present: Option<bool>) -> Self {
+        self.usage_limits_present = present;
+        self
+    }
+
+    /// Attests whether protection use has begun; `None` is unknown.
+    #[must_use]
+    pub const fn with_protection_use_started(mut self, started: Option<bool>) -> Self {
+        self.protection_use_started = started;
+        self
+    }
+
+    /// Attests whether Get Usage Allocation has been performed; `None` is unknown.
+    #[must_use]
+    pub const fn with_get_usage_allocation_performed(mut self, performed: Option<bool>) -> Self {
+        self.get_usage_allocation_performed = performed;
+        self
+    }
+
+    /// Attests whether Get Usage Allocation changed Count; `None` is unknown.
+    #[must_use]
+    pub const fn with_get_usage_allocation_changed_count(mut self, changed: Option<bool>) -> Self {
+        self.get_usage_allocation_changed_count = changed;
+        self
+    }
+
+    /// Supplies the current Usage Limits Total when known.
+    #[must_use]
+    pub const fn with_usage_limits_total(mut self, total: Option<i64>) -> Self {
+        self.usage_limits_total = total;
+        self
+    }
+
+    /// Supplies the current Usage Limits Count when known.
+    #[must_use]
+    pub const fn with_usage_limits_count(mut self, count: Option<i64>) -> Self {
+        self.usage_limits_count = count;
+        self
+    }
+}
+
+impl fmt::Debug for ProfileObjectState {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ProfileObjectState")
+            .field("unique_identifier", &"[REDACTED]")
+            .field("state", &"[REDACTED]")
+            .finish()
+    }
+}
+
+/// Caller-attested object state for one profile-validated exchange.
+///
+/// State is never cached, fetched, or inferred by `KMIPKit`. A context entry is
+/// matched to the exact request Unique Identifier; missing or duplicate
+/// entries fail closed when a rule needs them.
+#[derive(Clone, Default, Eq, PartialEq)]
+pub struct ProfileValidationContext {
+    object_states: Vec<ProfileObjectStateEntry>,
+}
+
+#[derive(Clone, Eq, PartialEq)]
+struct ProfileObjectStateEntry {
+    batch_item_index: usize,
+    state: ProfileObjectState,
+}
+
+impl ProfileValidationContext {
+    /// Creates an empty context. Any request requiring remote state fails closed.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            object_states: Vec::new(),
+        }
+    }
+
+    /// Adds caller-attested state for one zero-based request batch item.
+    #[must_use]
+    pub fn with_object_state(mut self, batch_item_index: usize, state: ProfileObjectState) -> Self {
+        self.object_states.push(ProfileObjectStateEntry {
+            batch_item_index,
+            state,
+        });
+        self
+    }
+
+    fn state_for(
+        &self,
+        batch_item_index: usize,
+        unique_identifier: &str,
+    ) -> Result<&ProfileObjectState, StateBinding> {
+        let mut matching = self
+            .object_states
+            .iter()
+            .filter(|entry| entry.batch_item_index == batch_item_index);
+        let Some(entry) = matching.next() else {
+            return Err(StateBinding::Missing);
+        };
+        if matching.next().is_some() {
+            return Err(StateBinding::Duplicate);
+        }
+        if entry.state.unique_identifier != unique_identifier {
+            return Err(StateBinding::Mismatch);
+        }
+        Ok(&entry.state)
+    }
+}
+
+impl fmt::Debug for ProfileValidationContext {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ProfileValidationContext")
+            .field("object_state_count", &self.object_states.len())
+            .field("object_states", &"[REDACTED]")
+            .finish()
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum StateBinding {
+    Missing,
+    Duplicate,
+    Mismatch,
 }
 
 impl ProfileValidationSelection {
@@ -243,9 +416,11 @@ impl ProfileValidationResult {
     /// Evaluates selected rules that can be observed in one outbound KMIP
     /// [`RequestMessage`].
     ///
-    /// This standalone method cannot validate caller-owned context that is not
-    /// encoded in TTLV. An `Ok` result alone does not establish operation-level
-    /// requirements that depend on that context. The typed
+    /// This convenience method uses an empty caller-state context and fails
+    /// closed if the request requires remote object facts. Use
+    /// [`Self::validate_request_with_context`] to supply those facts. An `Ok`
+    /// result alone does not establish requirements that remain caller-owned.
+    /// The typed
     /// `Client::execute_with_profiles` path validates operation-local request
     /// rules before an exchange, but it cannot infer remote object attributes
     /// or other context that the caller has not supplied. In particular, it
@@ -265,6 +440,34 @@ impl ProfileValidationResult {
     /// evaluator rejects the request or the validated registry is no longer
     /// complete.
     pub fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        self.validate_request_with_context(request, &ProfileValidationContext::new())
+    }
+
+    /// Evaluates the outbound request and rules that require caller-attested
+    /// object state for this exchange.
+    ///
+    /// Context entries are matched to concrete Text String Unique Identifiers
+    /// in their exact batch items. Missing/unknown facts fail closed, and no
+    /// state is inferred from other items or exchanges.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable source-backed error for an invalid request, missing or
+    /// mismatched state context, or a state-conditioned prohibited action.
+    pub fn validate_request_with_context(
+        &self,
+        request: &RequestMessage,
+        context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            if let Some(mapping) = CONTEXTUAL_RULE_MAPPINGS
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id)
+            {
+                let profile_id = self.profile_id_for_requirement(requirement_id);
+                (mapping.evaluator)(request, context, profile_id)?;
+            }
+        }
         self.evaluate_rules(
             Some(request),
             None,
@@ -290,6 +493,31 @@ impl ProfileValidationResult {
         request: &RequestMessage,
         response: &ResponseMessage,
     ) -> Result<(), ProfileValidationError> {
+        self.validate_response_with_context(request, response, &ProfileValidationContext::new())
+    }
+
+    /// Evaluates response behavior and the original request using the same
+    /// caller-attested state supplied for the exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable source-backed error when request context or a mapped
+    /// response rule is invalid.
+    pub fn validate_response_with_context(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+        context: &ProfileValidationContext,
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            if let Some(mapping) = CONTEXTUAL_RULE_MAPPINGS
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id)
+            {
+                let profile_id = self.profile_id_for_requirement(requirement_id);
+                (mapping.evaluator)(request, context, profile_id)?;
+            }
+        }
         self.evaluate_rules(
             Some(request),
             Some((request, response)),
@@ -319,7 +547,9 @@ impl ProfileValidationResult {
                 ));
             };
             let Some(evaluator) = mapping.evaluator else {
-                if is_configuration_only_mapping(mapping) {
+                if is_configuration_only_mapping(mapping)
+                    || is_contextual_rule_mapping(mapping.requirement_id)
+                {
                     continue;
                 }
                 return Err(ProfileValidationError::for_rule_requirement(
@@ -487,7 +717,7 @@ impl ProfileReadinessBlocker {
 ///     .expect("Baseline Client is in the generated catalog");
 ///
 /// assert!(readiness.target_selected());
-/// assert!(!readiness.runtime_validation_available());
+/// assert!(readiness.runtime_validation_available());
 /// assert_eq!(readiness.effective_state(), "evidence_incomplete");
 /// assert!(!readiness.published_claim());
 /// assert!(readiness
@@ -730,6 +960,639 @@ struct TypedRuleMapping {
     evaluator: Option<RuleEvaluator>,
     test_evidence: &'static [RuleTestEvidence],
     constraints: &'static [RuleConstraint],
+}
+
+type ContextRuleEvaluator =
+    fn(&RequestMessage, &ProfileValidationContext, &str) -> Result<(), ProfileValidationError>;
+
+#[derive(Clone, Copy)]
+struct ContextualRuleMapping {
+    requirement_id: &'static str,
+    evaluator: ContextRuleEvaluator,
+}
+
+const CONTEXTUAL_RULE_MAPPINGS: &[ContextualRuleMapping] = &[
+    ContextualRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.38-003",
+        evaluator: validate_original_creation_date_context,
+    },
+    ContextualRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",
+        evaluator: validate_usage_limits_protection_context,
+    },
+    ContextualRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-002",
+        evaluator: validate_usage_limits_count_context,
+    },
+    ContextualRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-001",
+        evaluator: validate_usage_limits_allocation_context,
+    },
+];
+
+fn is_contextual_rule_mapping(requirement_id: &str) -> bool {
+    CONTEXTUAL_RULE_MAPPINGS
+        .iter()
+        .any(|mapping| mapping.requirement_id == requirement_id)
+}
+
+fn validate_original_creation_date_context(
+    request: &RequestMessage,
+    context: &ProfileValidationContext,
+    profile_id: &str,
+) -> Result<(), ProfileValidationError> {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
+
+    for (index, batch_item) in request.batch_items().enumerate() {
+        let Some(operation) = batch_item.operation() else {
+            continue;
+        };
+        if !matches!(
+            operation,
+            ADD_ATTRIBUTE_OPERATION
+                | ADJUST_ATTRIBUTE_OPERATION
+                | DELETE_ATTRIBUTE_OPERATION
+                | MODIFY_ATTRIBUTE_OPERATION
+                | SET_ATTRIBUTE_OPERATION
+        ) {
+            continue;
+        }
+
+        let targets_attribute = batch_item.with_request_payload(|payload| {
+            payload_targets_attribute(&payload, operation, ORIGINAL_CREATION_DATE)
+        });
+        let Some(Ok(true)) = targets_attribute else {
+            if matches!(targets_attribute, Some(Err(()))) {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+            continue;
+        };
+
+        let result = batch_item.with_request_payload(|payload| {
+            let state = bound_object_state(
+                &payload,
+                context,
+                profile_id,
+                REQUIREMENT_ID,
+                CLAUSE_ID,
+                index,
+            )?;
+            match state.original_creation_date_present {
+                Some(false) if operation == ADD_ATTRIBUTE_OPERATION => Ok(()),
+                Some(true) if operation == ADD_ATTRIBUTE_OPERATION => Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )),
+                Some(true | false) => Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )),
+                None => Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )),
+            }
+        });
+        match result {
+            Some(result) => result?,
+            None => {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_usage_limits_protection_context(
+    request: &RequestMessage,
+    context: &ProfileValidationContext,
+    profile_id: &str,
+) -> Result<(), ProfileValidationError> {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-002";
+
+    for (index, batch_item) in request.batch_items().enumerate() {
+        let Some(operation) = batch_item.operation() else {
+            continue;
+        };
+        let result = batch_item.with_request_payload(|payload| {
+            let requested = request_usage_total_mutation(&payload, operation).map_err(|()| {
+                context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )
+            })?;
+            let Some(requested) = requested else {
+                return Ok(());
+            };
+            let state = bound_object_state(
+                &payload,
+                context,
+                profile_id,
+                REQUIREMENT_ID,
+                CLAUSE_ID,
+                index,
+            )?;
+            let changed = usage_total_is_changed(requested, operation, state).map_err(|code| {
+                context_rule_error(code, profile_id, REQUIREMENT_ID, CLAUSE_ID, index)
+            })?;
+            if !changed {
+                return Ok(());
+            }
+            let protection_started = state.protection_use_started.ok_or_else(|| {
+                context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )
+            })?;
+            let allocation_performed = state.get_usage_allocation_performed.ok_or_else(|| {
+                context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )
+            })?;
+            if allocation_performed && state.get_usage_allocation_changed_count == Some(true) {
+                // The narrower paragraph-3 rule owns this exact trigger.
+                return Ok(());
+            }
+            if protection_started || allocation_performed {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+            Ok(())
+        });
+        match result {
+            Some(result) => result?,
+            None => {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_usage_limits_count_context(
+    request: &RequestMessage,
+    context: &ProfileValidationContext,
+    profile_id: &str,
+) -> Result<(), ProfileValidationError> {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+
+    for (index, batch_item) in request.batch_items().enumerate() {
+        if batch_item.operation() != Some(SET_ATTRIBUTE_OPERATION) {
+            continue;
+        }
+        let result = batch_item.with_request_payload(|payload| {
+            let requested_count =
+                usage_limits_count_in_wrapper(&payload, NEW_ATTRIBUTE).map_err(|()| {
+                    context_rule_error(
+                        ProfileValidationErrorCode::RequestRuleRejected,
+                        profile_id,
+                        REQUIREMENT_ID,
+                        CLAUSE_ID,
+                        index,
+                    )
+                })?;
+            let Some(requested_count) = requested_count else {
+                return Ok(());
+            };
+            let state = bound_object_state(
+                &payload,
+                context,
+                profile_id,
+                REQUIREMENT_ID,
+                CLAUSE_ID,
+                index,
+            )?;
+            if state.usage_limits_present != Some(true) {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+            let current_count = state.usage_limits_count.ok_or_else(|| {
+                context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )
+            })?;
+            if requested_count != current_count {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+            Ok(())
+        });
+        match result {
+            Some(result) => result?,
+            None => {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_usage_limits_allocation_context(
+    request: &RequestMessage,
+    context: &ProfileValidationContext,
+    profile_id: &str,
+) -> Result<(), ProfileValidationError> {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+
+    for (index, batch_item) in request.batch_items().enumerate() {
+        let Some(operation) = batch_item.operation() else {
+            continue;
+        };
+        let result = batch_item.with_request_payload(|payload| {
+            let requested = request_usage_total_mutation(&payload, operation).map_err(|()| {
+                context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                )
+            })?;
+            let Some(requested) = requested else {
+                return Ok(());
+            };
+            let state = bound_object_state(
+                &payload,
+                context,
+                profile_id,
+                REQUIREMENT_ID,
+                CLAUSE_ID,
+                index,
+            )?;
+            let changed = usage_total_is_changed(requested, operation, state).map_err(|code| {
+                context_rule_error(code, profile_id, REQUIREMENT_ID, CLAUSE_ID, index)
+            })?;
+            if !changed {
+                return Ok(());
+            }
+            if state.get_usage_allocation_changed_count == Some(true) {
+                if state.get_usage_allocation_performed != Some(true) {
+                    return Err(context_rule_error(
+                        ProfileValidationErrorCode::ProfileStateBindingMismatch,
+                        profile_id,
+                        REQUIREMENT_ID,
+                        CLAUSE_ID,
+                        index,
+                    ));
+                }
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::RequestRuleRejected,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+            Ok(())
+        });
+        match result {
+            Some(result) => result?,
+            None => {
+                return Err(context_rule_error(
+                    ProfileValidationErrorCode::ProfileStateContextRequired,
+                    profile_id,
+                    REQUIREMENT_ID,
+                    CLAUSE_ID,
+                    index,
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn context_rule_error(
+    code: ProfileValidationErrorCode,
+    profile_id: &str,
+    requirement_id: &str,
+    clause_id: &'static str,
+    item_index: usize,
+) -> ProfileValidationError {
+    ProfileValidationError::for_rule_requirement(code, profile_id, requirement_id, clause_id, None)
+        .with_batch_item_index(item_index)
+}
+
+fn bound_object_state<'a>(
+    payload: &StructureView<'_>,
+    context: &'a ProfileValidationContext,
+    profile_id: &str,
+    requirement_id: &str,
+    clause_id: &'static str,
+    item_index: usize,
+) -> Result<&'a ProfileObjectState, ProfileValidationError> {
+    let unique_identifier = match field_presence(payload, UNIQUE_IDENTIFIER) {
+        FieldPresence::Unique(item) => item.with_value(|value| match value {
+            ValueView::TextString(value) if !value.is_empty() => Some(value.to_owned()),
+            _ => None,
+        }),
+        FieldPresence::Missing | FieldPresence::Duplicate => None,
+    };
+    let Some(unique_identifier) = unique_identifier else {
+        return Err(context_rule_error(
+            ProfileValidationErrorCode::ProfileStateBindingMismatch,
+            profile_id,
+            requirement_id,
+            clause_id,
+            item_index,
+        ));
+    };
+    context
+        .state_for(item_index, &unique_identifier)
+        .map_err(|binding| {
+            let code = match binding {
+                StateBinding::Missing => ProfileValidationErrorCode::ProfileStateContextRequired,
+                StateBinding::Duplicate | StateBinding::Mismatch => {
+                    ProfileValidationErrorCode::ProfileStateBindingMismatch
+                }
+            };
+            context_rule_error(code, profile_id, requirement_id, clause_id, item_index)
+        })
+}
+
+fn payload_targets_attribute(
+    payload: &StructureView<'_>,
+    operation: u32,
+    attribute_tag: u32,
+) -> Result<bool, ()> {
+    match operation {
+        ADD_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+            attribute_wrapper_targets(payload, NEW_ATTRIBUTE, attribute_tag)
+        }
+        MODIFY_ATTRIBUTE_OPERATION => {
+            Ok(
+                attribute_wrapper_targets(payload, CURRENT_ATTRIBUTE, attribute_tag)?
+                    || attribute_wrapper_targets(payload, NEW_ATTRIBUTE, attribute_tag)?,
+            )
+        }
+        DELETE_ATTRIBUTE_OPERATION => {
+            Ok(
+                attribute_wrapper_targets(payload, CURRENT_ATTRIBUTE, attribute_tag)?
+                    || reference_targets_attribute(payload, attribute_tag)?,
+            )
+        }
+        ADJUST_ATTRIBUTE_OPERATION => reference_targets_attribute(payload, attribute_tag),
+        _ => Ok(false),
+    }
+}
+
+fn attribute_wrapper_targets(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+    attribute_tag: u32,
+) -> Result<bool, ()> {
+    match field_presence(payload, wrapper_tag) {
+        FieldPresence::Missing => Ok(false),
+        FieldPresence::Duplicate => Err(()),
+        FieldPresence::Unique(wrapper) => wrapper.with_value(|value| match value {
+            ValueView::Structure(attributes) => Ok(attributes
+                .children()
+                .iter()
+                .any(|attribute| attribute.tag().raw() == attribute_tag)),
+            _ => Err(()),
+        }),
+    }
+}
+
+fn reference_targets_attribute(
+    payload: &StructureView<'_>,
+    attribute_tag: u32,
+) -> Result<bool, ()> {
+    match field_presence(payload, ATTRIBUTE_REFERENCE) {
+        FieldPresence::Missing => Ok(false),
+        FieldPresence::Duplicate => Err(()),
+        FieldPresence::Unique(reference) => {
+            let reference = AttributeReference::try_from_ttlv_item(reference).map_err(|_| ())?;
+            if let Some(tag) = reference.tag_value() {
+                return Ok(tag == attribute_tag);
+            }
+            let Some((vendor, name)) = reference.name_parts() else {
+                return Err(());
+            };
+            Ok(vendor.is_empty()
+                && matches!(
+                    (attribute_tag, name),
+                    (ORIGINAL_CREATION_DATE, "Original Creation Date")
+                        | (USAGE_LIMITS_ATTRIBUTE, "Usage Limits")
+                ))
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum UsageTotalMutation {
+    Set(i64),
+    Remove,
+    Indeterminate,
+}
+
+fn request_usage_total_mutation(
+    payload: &StructureView<'_>,
+    operation: u32,
+) -> Result<Option<UsageTotalMutation>, ()> {
+    match operation {
+        DELETE_ATTRIBUTE_OPERATION => {
+            if attribute_wrapper_targets(payload, CURRENT_ATTRIBUTE, USAGE_LIMITS_ATTRIBUTE)?
+                || reference_targets_attribute(payload, USAGE_LIMITS_ATTRIBUTE)?
+            {
+                Ok(Some(UsageTotalMutation::Remove))
+            } else {
+                Ok(None)
+            }
+        }
+        ADJUST_ATTRIBUTE_OPERATION => {
+            if reference_targets_attribute(payload, USAGE_LIMITS_ATTRIBUTE)? {
+                Ok(Some(UsageTotalMutation::Indeterminate))
+            } else {
+                Ok(None)
+            }
+        }
+        ADD_ATTRIBUTE_OPERATION | MODIFY_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+            let new_total = usage_total_in_wrapper(payload, NEW_ATTRIBUTE)?;
+            if new_total.is_some() {
+                return Ok(new_total);
+            }
+            if operation == MODIFY_ATTRIBUTE_OPERATION
+                && attribute_wrapper_targets(payload, CURRENT_ATTRIBUTE, USAGE_LIMITS_ATTRIBUTE)?
+            {
+                return Ok(Some(UsageTotalMutation::Remove));
+            }
+            Ok(None)
+        }
+        _ => Ok(None),
+    }
+}
+
+fn usage_total_in_wrapper(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+) -> Result<Option<UsageTotalMutation>, ()> {
+    let wrapper = match field_presence(payload, wrapper_tag) {
+        FieldPresence::Missing => return Ok(None),
+        FieldPresence::Duplicate => return Err(()),
+        FieldPresence::Unique(wrapper) => wrapper,
+    };
+    wrapper.with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            let mut matching = attributes
+                .children()
+                .iter()
+                .filter(|attribute| attribute.tag().raw() == USAGE_LIMITS_ATTRIBUTE);
+            let Some(usage_limits) = matching.next() else {
+                return Ok(None);
+            };
+            if matching.next().is_some() {
+                return Err(());
+            }
+            usage_limits.with_value(|value| match value {
+                ValueView::Structure(fields) => {
+                    let FieldPresence::Unique(total) = field_presence(&fields, USAGE_LIMITS_TOTAL)
+                    else {
+                        return Err(());
+                    };
+                    total.with_value(|value| match value {
+                        ValueView::LongInteger(total) => Ok(Some(UsageTotalMutation::Set(*total))),
+                        _ => Err(()),
+                    })
+                }
+                _ => Err(()),
+            })
+        }
+        _ => Err(()),
+    })
+}
+
+fn usage_limits_count_in_wrapper(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+) -> Result<Option<i64>, ()> {
+    let wrapper = match field_presence(payload, wrapper_tag) {
+        FieldPresence::Missing => return Ok(None),
+        FieldPresence::Duplicate => return Err(()),
+        FieldPresence::Unique(wrapper) => wrapper,
+    };
+    wrapper.with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            let mut matching = attributes
+                .children()
+                .iter()
+                .filter(|attribute| attribute.tag().raw() == USAGE_LIMITS_ATTRIBUTE);
+            let Some(usage_limits) = matching.next() else {
+                return Ok(None);
+            };
+            if matching.next().is_some() {
+                return Err(());
+            }
+            usage_limits.with_value(|value| match value {
+                ValueView::Structure(fields) => {
+                    if !usage_limits_structure_is_well_formed(&fields) {
+                        return Err(());
+                    }
+                    match field_presence(&fields, USAGE_LIMITS_COUNT) {
+                        FieldPresence::Unique(count) => count.with_value(|value| match value {
+                            ValueView::LongInteger(count) => Ok(Some(*count)),
+                            _ => Err(()),
+                        }),
+                        FieldPresence::Missing | FieldPresence::Duplicate => Err(()),
+                    }
+                }
+                _ => Err(()),
+            })
+        }
+        _ => Err(()),
+    })
+}
+
+fn usage_total_is_changed(
+    requested: UsageTotalMutation,
+    operation: u32,
+    state: &ProfileObjectState,
+) -> Result<bool, ProfileValidationErrorCode> {
+    match requested {
+        UsageTotalMutation::Indeterminate => {
+            Err(ProfileValidationErrorCode::ProfileStateContextRequired)
+        }
+        UsageTotalMutation::Remove => match state.usage_limits_present {
+            Some(true) => Ok(true),
+            Some(false) => Ok(false),
+            None => Err(ProfileValidationErrorCode::ProfileStateContextRequired),
+        },
+        UsageTotalMutation::Set(total) => match state.usage_limits_present {
+            Some(false) if operation == ADD_ATTRIBUTE_OPERATION => Ok(false),
+            Some(false) | None => Err(ProfileValidationErrorCode::ProfileStateContextRequired),
+            Some(true) => {
+                let current_total = state
+                    .usage_limits_total
+                    .ok_or(ProfileValidationErrorCode::ProfileStateContextRequired)?;
+                Ok(total != current_total)
+            }
+        },
+    }
 }
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
@@ -6992,7 +7855,14 @@ fn client_read_only_attribute_modification_is_not_requested(
 
         batch_item
             .with_request_payload(|payload| match operation {
-                ADD_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+                ADD_ATTRIBUTE_OPERATION => {
+                    attribute_fields_allow_client_add_with_creation_date_exception(
+                        &payload,
+                        NEW_ATTRIBUTE,
+                        mutation,
+                    )
+                }
+                SET_ATTRIBUTE_OPERATION => {
                     attribute_fields_allow_client_mutation(&payload, NEW_ATTRIBUTE, mutation)
                 }
                 ADJUST_ATTRIBUTE_OPERATION => {
@@ -7092,6 +7962,28 @@ fn attribute_fields_allow_client_mutation(
             field.with_value(|value| match value {
                 ValueView::Structure(attributes) => attributes.children().iter().all(|attribute| {
                     !client_attribute_mutation_is_prohibited(attribute.tag().raw(), mutation)
+                }),
+                _ => false,
+            })
+        })
+}
+
+fn attribute_fields_allow_client_add_with_creation_date_exception(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+
+    payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == wrapper_tag)
+        .all(|field| {
+            field.with_value(|value| match value {
+                ValueView::Structure(attributes) => attributes.children().iter().all(|attribute| {
+                    attribute.tag().raw() == ORIGINAL_CREATION_DATE
+                        || !client_attribute_mutation_is_prohibited(attribute.tag().raw(), mutation)
                 }),
                 _ => false,
             })
@@ -9398,7 +10290,16 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
-        test_evidence: &[],
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "usage_limits_total_immutable_after_protection_begins_caller_asserted",
@@ -9410,7 +10311,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
-        test_evidence: &[],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "usage_limits_total_immutable_after_count_allocation_caller_asserted",
@@ -9750,7 +10654,16 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
-        test_evidence: &[],
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_non_add_mutation_with_known_absent_state_is_rejected",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[RuleConstraint {
             key: "client_profile_capability",
             value: "original_creation_date_immutable_after_set_caller_asserted",
@@ -13130,11 +14043,12 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ProfileValidationError {
     code: ProfileValidationErrorCode,
-    profile_id: Option<String>,
-    requirement_id: Option<String>,
+    profile_id: Option<Box<str>>,
+    requirement_id: Option<Box<str>>,
     source_clause_id: Option<&'static str>,
     source_gap_id: Option<&'static str>,
     source_gap_locator: Option<&'static str>,
+    batch_item_index: Option<usize>,
 }
 
 fn catalogued_source_gap_locator(source_gap_id: &str) -> Option<&'static str> {
@@ -13153,6 +14067,7 @@ impl ProfileValidationError {
             source_clause_id: None,
             source_gap_id: None,
             source_gap_locator: None,
+            batch_item_index: None,
         }
     }
 
@@ -13172,11 +14087,12 @@ impl ProfileValidationError {
     fn for_profile(code: ProfileValidationErrorCode, profile_id: &str) -> Self {
         Self {
             code,
-            profile_id: Some(profile_id.to_owned()),
+            profile_id: Some(profile_id.into()),
             requirement_id: None,
             source_clause_id: None,
             source_gap_id: None,
             source_gap_locator: None,
+            batch_item_index: None,
         }
     }
 
@@ -13188,11 +14104,12 @@ impl ProfileValidationError {
     ) -> Self {
         Self {
             code,
-            profile_id: Some(profile_id.to_owned()),
-            requirement_id: Some(requirement_id.to_owned()),
+            profile_id: Some(profile_id.into()),
+            requirement_id: Some(requirement_id.into()),
             source_clause_id,
             source_gap_id: None,
             source_gap_locator: None,
+            batch_item_index: None,
         }
     }
 
@@ -13214,6 +14131,11 @@ impl ProfileValidationError {
         error.source_gap_id = source_gap_id;
         error.source_gap_locator = source_gap_id.and_then(catalogued_source_gap_locator);
         error
+    }
+
+    fn with_batch_item_index(mut self, index: usize) -> Self {
+        self.batch_item_index = Some(index);
+        self
     }
 
     /// Returns the stable machine-readable failure code.
@@ -13251,6 +14173,12 @@ impl ProfileValidationError {
     pub const fn source_gap_locator(&self) -> Option<&'static str> {
         self.source_gap_locator
     }
+
+    /// Returns the zero-based request batch item for a contextual failure.
+    #[must_use]
+    pub const fn batch_item_index(&self) -> Option<usize> {
+        self.batch_item_index
+    }
 }
 
 impl fmt::Display for ProfileValidationError {
@@ -13273,6 +14201,9 @@ impl fmt::Display for ProfileValidationError {
             if let Some(source_gap_locator) = self.source_gap_locator {
                 write!(formatter, " at {source_gap_locator}")?;
             }
+        }
+        if let Some(batch_item_index) = self.batch_item_index {
+            write!(formatter, "; batch item {batch_item_index}")?;
         }
         Ok(())
     }
@@ -13544,7 +14475,10 @@ fn validate_mapping(
     {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
-    if mapping.evaluator.is_none() && !is_configuration_only_mapping(mapping) {
+    if is_contextual_rule_mapping(mapping.requirement_id) {
+        // The context-aware evaluator is maintained separately so ordinary
+        // message-only evaluators cannot accidentally invent remote state.
+    } else if mapping.evaluator.is_none() && !is_configuration_only_mapping(mapping) {
         return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
     }
 

@@ -169,9 +169,9 @@ pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
 pub use profile::{
-    ProfileEvidenceReadiness, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
-    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection,
+    ProfileEvidenceReadiness, ProfileEvidenceRecord, ProfileObjectState, ProfileReadiness,
+    ProfileReadinessBlocker, ProfileTransport, ProfileValidationContext, ProfileValidationError,
+    ProfileValidationErrorCode, ProfileValidationResult, ProfileValidationSelection,
 };
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
