@@ -8166,3 +8166,9 @@ T056 is complete: the 14 requirements listed in the task have typed Baseline map
 | CodeQL and workflow audit | https://github.com/NeverWe1come/KMIPKit/actions/runs/40670555528; https://github.com/NeverWe1come/KMIPKit/actions/runs/40670555639 | PASS. |
 | SonarCloud | PR #90 check on the same head | PASS. |
 | Independent QA and security review | T056 evidence recorded above | PASS with no remaining findings. |
+
+## KMIPKIT-0010 exact-head CI after release-base sync (2026-10-28)
+
+The DCO merge commit `662f776b7a472610798d0cd4d1715e9939340606` syncs `release/1.0.0` commit `6c9f577fcc1e5a9322b22e06de6102f111e06347` into the feature branch. Exact-head PR CI [run 40686772197](https://github.com/NeverWe1come/KMIPKit/actions/runs/40686772197) completed with conclusion `success`: 35 jobs succeeded, 3 jobs were skipped, and none failed. The skipped jobs were informational nightly branch coverage, the active-release-schedule dependency job, and `Profile evidence / protected release aggregate`. Fast preflight, JNI coverage/Linux, Core/Windows Rust 1.94, and Script Contracts on Ubuntu, Windows, and macOS all passed. The earlier JNI coverage abort and Windows DNS socket-allocation failures were not reproduced in this run.
+
+This was a `pull_request` run. The protected-release aggregate was skipped by design, so this exact-head CI result does not prove the App-backed installation token or the live release branch-protection API response. T026 remains open solely for the eligible protected `push` evidence and external repository administration prerequisites recorded in `tasks.md`; no secret or protection setting was accessed or changed in this follow-up. T043 remains open until the temporary coverage-threshold exception can be removed after the remaining KMIPKIT-0010 gates. PR #90 remains open as a draft, with GitHub reporting a clean merge state.
