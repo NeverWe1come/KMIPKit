@@ -752,6 +752,26 @@ class FeatureTraceabilityTests(unittest.TestCase):
             "repeated evidence references should reuse the validated source snapshot",
         )
 
+    def test_confined_source_cache_refreshes_after_file_changes(self) -> None:
+        _read_confined_source.cache_clear()
+        try:
+            with tempfile.TemporaryDirectory(dir=ROOT) as temporary_directory:
+                source_path = f"{Path(temporary_directory).name}/evidence.rs"
+                path = ROOT / source_path
+                first_source = "#[test]\nfn old_evidence() {}\n"
+                second_source = "#[test]\nfn refreshed_evidence_with_a_longer_name() {}\n"
+                path.write_bytes(first_source.encode("utf-8"))
+                first = _read_confined_test_source(source_path)
+                path.write_bytes(second_source.encode("utf-8"))
+                second = _read_confined_test_source(source_path)
+
+                self.assertIsNotNone(first)
+                self.assertIsNotNone(second)
+                self.assertEqual(first[1], first_source)
+                self.assertEqual(second[1], second_source)
+        finally:
+            _read_confined_source.cache_clear()
+
     def test_accepted_recommendation_deviation_is_exempt_from_category_test(self) -> None:
         requirement_id = "KMIPKIT-REQ-EXAMPLE-001"
         result = _missing_category_tests_without_accepted_deviation(
