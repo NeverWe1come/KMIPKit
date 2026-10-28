@@ -316763,6 +316763,10 @@
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_set_attribute_operation.py",
         "tools/api_manifest/tests/test_t076_client_mapping.py"
+      ],
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.ttlv.TtlvItem)",
+        "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem)"
       ]
     },
     {
@@ -328252,6 +328256,30 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. This exact SetAttributeResponse formatter intentionally redacts the response identifier and is not an independent cross-language capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSetAttribute",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, T037, and T037. The Set Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetAttribute",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, T037, and T037. The Set Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability."
     }
   ],
   "apiLevels": [

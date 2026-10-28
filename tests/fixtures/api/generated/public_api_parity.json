@@ -11028,6 +11028,30 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetAttributeResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, T037, and T037. The Set Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSetAttribute",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, T037, and T037. The Set Attribute facade exposes this operation through typed Java methods; this exact native method is internal handle plumbing without an independent API capability.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetAttribute",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
     }
   ],
   "capabilities": [
@@ -168459,6 +168483,10 @@
       "declarationId": "T037:setAttribute:constructor:java",
       "declarationState": "declared",
       "exportName": "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.ttlv.TtlvItem)",
+        "public static org.kmipkit.extensions.ClientBatchItem setAttribute(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {
