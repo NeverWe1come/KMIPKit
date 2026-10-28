@@ -7940,3 +7940,42 @@ KMIPKIT-REQ-SPEC-6.1.43-007 covers the required attributes for a Managed Cryptog
 | Diff validation | `git diff --check` | PASS. |
 
 The distinct Red and Green commits are DCO-signed. No code cleanup was needed after Green; this DCO-signed Refactor/documentation commit records the evidence. No T036 fixture, catalog, generated artifact, or pinned OASIS source was changed. T036's three mandatory preflight blockers and 77 cases without local fixtures remain open; this fix makes no official Test Case or profile-conformance claim.
+
+## Traceability contract follow-up: accepted recommendation deviations (2026-10-28)
+
+CI run `40613266640` failed only `FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`. Its blanket empty-set assertion rejected `KMIPKIT-REQ-SPEC-4.57-005-002`, although accepted decision `KMIPKIT-DEC-025` includes the requirement and records caller-owned guidance with no behavior-test or enforcement claim. The profile report already classifies accepted deviations separately. The traceability test now exempts a missing category test only when the requirement is `deviated`, its decision is `accepted` and includes the requirement ID, and the mapped category is a recommendation category. All other missing category tests remain failures.
+
+The filter receives the category only after the test derives it from the catalog keyword and confirms the typed mapping matches it. Existing implementation-reference and executable `verification_refs` checks still run for every mapped requirement before the category-evidence assertion.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `5b9587b58` | CI run `40613266640`; direct reproduction of the original `missing_category_test_ids == set()` assertion using the catalog and `load_typed_rule_mappings` | Expected failure: `AssertionError: {'KMIPKIT-REQ-SPEC-4.57-005-002'}`. The focused regression covers accepted deviations and ordinary or invalid exceptions; the integration assertion remained unchanged at this stage. |
+| Green | `f901b17d1` | `python -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_accepted_recommendation_deviation_is_exempt_from_category_test tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_missing_category_test_requires_accepted_recommendation_deviation` | PASS: 2 tests. The structural assertion now rejects every missing category test outside a validated accepted recommendation deviation. |
+| Refactor | `f79808e3a` | Same focused regression command; `python -m py_compile tools/normative_catalog/tests/test_feature_traceability.py` | PASS: 2 tests; Python syntax check passed. Simplified the accepted-deviation predicate with early validation returns. |
+| Diff and lint | — | `git diff --check`; `python -m ruff check tools/normative_catalog/tests/test_feature_traceability.py` | `git diff --check` passed. Ruff is not installed (`No module named ruff`); repository CI defines no Python formatter or linter. |
+| Full focused integration | — | `python -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | Locally CPU-bound with no output after approximately 2 minutes 30 seconds; interrupted without a result. Run this check in hosted CI. |
+
+The local Red reproducer's PowerShell command was `@' ... '@ | python -`; its Python input was:
+
+```python
+import json
+from pathlib import Path
+from tools.normative_catalog.report import load_typed_rule_mappings
+
+root = Path.cwd()
+catalog = json.loads((root / 'specification/catalog/kmip-2.1.json').read_text(encoding='utf-8'))
+requirements = {row['requirement_id']: row for row in catalog['requirements']}
+missing_category_test_ids = {
+    mapping['requirement_id']
+    for mapping in load_typed_rule_mappings(root)
+    if mapping['test_id'] is None and mapping['requirement_id'] in requirements
+}
+try:
+    assert missing_category_test_ids == set(), missing_category_test_ids
+except AssertionError as error:
+    print(f'AssertionError: {error}')
+else:
+    raise SystemExit('expected the original contract assertion to fail')
+```
+
+Self-review: the exception is limited to accepted recommendation categories, an accepted decision that explicitly names the requirement, and a requirement marked `deviated`. It does not alter protocol behavior, DEC-025, catalog/source records, generated files, or executable verification-reference validation. `bindings/java/target/` was present before this change and remains preserved. No Protocol files were changed, and no OASIS Test Case or profile-conformance claim is made.
