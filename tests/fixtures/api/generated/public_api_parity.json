@@ -41270,7 +41270,7 @@
       "section": "6.1.1"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
         "kind": "feature-specification",
@@ -41308,11 +41308,21 @@
         "specId": "KMIPKIT-0016",
         "state": "approved"
       },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ],
       "scope": "client_1_0",
       "section": "6.1.2"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
         "kind": "feature-specification",
@@ -41350,6 +41360,15 @@
         "specId": "KMIPKIT-0016",
         "state": "approved"
       },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ],
       "scope": "client_1_0",
       "section": "6.1.3"
     },
@@ -165396,7 +165415,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165453,7 +165473,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165514,7 +165535,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165571,7 +165593,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165628,7 +165651,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165685,7 +165709,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165742,7 +165767,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165799,7 +165825,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165856,7 +165883,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165913,7 +165941,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -165970,7 +165999,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166027,7 +166057,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166084,7 +166115,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166141,7 +166173,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166198,7 +166231,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166255,7 +166289,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166312,7 +166347,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166369,7 +166405,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166426,7 +166463,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -166483,7 +166521,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [

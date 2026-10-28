@@ -313647,7 +313647,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -313704,7 +313705,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -313761,7 +313763,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ],
       "javaSignatures": [
         "public static org.kmipkit.extensions.ClientBatchItem addAttribute(org.kmipkit.ttlv.TtlvItem)",
@@ -313822,7 +313825,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -313879,7 +313883,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -313936,7 +313941,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -313993,7 +313999,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314050,7 +314057,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314107,7 +314115,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314164,7 +314173,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314221,7 +314231,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314278,7 +314289,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314335,7 +314347,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314392,7 +314405,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314449,7 +314463,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314506,7 +314521,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314563,7 +314579,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314620,7 +314637,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314677,7 +314695,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -314734,7 +314753,8 @@
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
-        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
     },
     {
@@ -328382,7 +328402,7 @@
       "name": "Add Attribute",
       "section": "6.1.2",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0016"
@@ -328417,14 +328437,24 @@
           "T037:addAttribute:result:type:python",
           "T037:addAttribute:result:uniqueIdentifier:python"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/AddAttributeJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
       "name": "Adjust Attribute",
       "section": "6.1.3",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0016"
@@ -328459,7 +328489,16 @@
           "T037:adjustAttribute:result:type:python",
           "T037:adjustAttribute:result:uniqueIdentifier:python"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
+        "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_add_attribute_operation.py",
+        "tools/api_manifest/tests/test_t076_client_mapping.py",
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
