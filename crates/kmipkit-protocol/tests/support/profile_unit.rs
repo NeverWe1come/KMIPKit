@@ -23323,11 +23323,24 @@ fn profile_rejects_malformed_original_creation_date() {
 const RANDOM_NUMBER_GENERATOR_TAG: u32 = 0x0042_00DE;
 const RNG_PARAMETERS_TAG: u32 = 0x0042_00D9;
 const RNG_ALGORITHM_TAG: u32 = 0x0042_00DA;
+const RNG_CRYPT_ALGORITHM_TAG: u32 = 0x0042_0028;
+const RNG_CRYPT_LENGTH_TAG: u32 = 0x0042_002A;
+const RNG_HASHING_ALGORITHM_TAG: u32 = 0x0042_0038;
+const RNG_RECOMMENDED_CURVE_TAG: u32 = 0x0042_0075;
+const RNG_DRBG_ALGORITHM_TAG: u32 = 0x0042_00DB;
+const RNG_FIPS186_VARIATION_TAG: u32 = 0x0042_00DC;
+const RNG_PREDICTION_RESISTANCE_TAG: u32 = 0x0042_00DD;
 const RANDOM_NUMBER_GENERATOR_ADD_OPERATION: u32 = 0x0000_000D;
 const RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] = [
     "KMIPKIT-REQ-SPEC-4.46-001-001",
     "KMIPKIT-REQ-SPEC-4.46-001-002",
+];
+const RNG_PARAMETERS_REQUIREMENTS: [&str; 4] = [
+    "KMIPKIT-REQ-SPEC-7.36-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-002",
+    "KMIPKIT-REQ-SPEC-7.36-003",
 ];
 
 fn random_number_generator_structure() -> Value {
@@ -23335,6 +23348,19 @@ fn random_number_generator_structure() -> Value {
         RNG_ALGORITHM_TAG,
         Value::enumeration(1),
     )]))
+}
+
+fn random_number_generator_with_optional_fields() -> Value {
+    Value::structure(structure([
+        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+        tagged(RNG_CRYPT_ALGORITHM_TAG, Value::enumeration(3)),
+        tagged(RNG_CRYPT_LENGTH_TAG, Value::integer(256)),
+        tagged(RNG_HASHING_ALGORITHM_TAG, Value::enumeration(1)),
+        tagged(RNG_DRBG_ALGORITHM_TAG, Value::enumeration(1)),
+        tagged(RNG_RECOMMENDED_CURVE_TAG, Value::enumeration(1)),
+        tagged(RNG_FIPS186_VARIATION_TAG, Value::enumeration(1)),
+        tagged(RNG_PREDICTION_RESISTANCE_TAG, Value::boolean(true)),
+    ]))
 }
 
 fn register_random_number_generator_request(value: Option<Value>) -> crate::RequestMessage {
@@ -23404,6 +23430,54 @@ fn profile_maps_register_and_add_attribute_random_number_generator_capabilities(
 }
 
 #[test]
+// KMIP Specification v2.1 §7.36 Table 388; §4.46 assigns client-supplied RNG values to Register/Add Attribute.
+fn profile_maps_shared_rng_parameters_to_client_request_rules() {
+    let expected = [
+        (
+            RNG_PARAMETERS_REQUIREMENTS[0],
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+            "profile_accepts_rng_parameters_with_optional_fields",
+        ),
+        (
+            RNG_PARAMETERS_REQUIREMENTS[1],
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            "profile_accepts_register_random_number_generator",
+        ),
+        (
+            RNG_PARAMETERS_REQUIREMENTS[2],
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            "profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
+        ),
+        (
+            RNG_PARAMETERS_REQUIREMENTS[3],
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+            "profile_accepts_rng_parameters_with_optional_fields",
+        ),
+    ];
+
+    for (requirement_id, category, evidence_kind, evidence_test) in expected {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id);
+        assert!(mapping.is_some(), "{requirement_id} has a typed profile rule");
+        if let Some(mapping) = mapping {
+            assert_eq!(
+                mapping.source_clause_id,
+                requirement_id.replace("REQ-SPEC", "CLAUSE-SPEC")
+            );
+            assert_eq!(mapping.verification_category, category);
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.kind == evidence_kind && evidence.test_id.ends_with(evidence_test)
+            }));
+        }
+    }
+}
+
+#[test]
 // KMIP Specification v2.1 §4.46 allows setting Random Number Generator on Register.
 fn profile_accepts_register_random_number_generator() {
     let omitted = register_random_number_generator_request(None);
@@ -23426,6 +23500,79 @@ fn profile_accepts_add_attribute_random_number_generator() {
     table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[1]])
         .validate_request(&request)
         .expect("Add Attribute may carry Random Number Generator");
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 permits optional RNG fields and requires their table-defined TTLV types.
+fn profile_accepts_rng_parameters_with_optional_fields() {
+    let register = register_random_number_generator_request(Some(
+        random_number_generator_with_optional_fields(),
+    ));
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_request(&register)
+        .expect("Register preserves the caller's known optional RNG Parameters fields");
+
+    let add_attribute = add_attribute_random_number_generator_request(
+        random_number_generator_with_optional_fields(),
+    );
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_request(&add_attribute)
+        .expect("Add Attribute preserves the caller's known optional RNG Parameters fields");
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 requires RNG Algorithm and §11.49 defines Unspecified as value 1.
+fn profile_accepts_unspecified_rng_algorithm_when_details_are_unknown() {
+    let request = register_random_number_generator_request(Some(Value::structure(structure([
+        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+    ]))));
+
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[2]])
+        .validate_request(&request)
+        .expect("Unspecified is a valid explicit RNG Algorithm value");
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 assigns Cryptographic Length the TTLV Integer type.
+fn profile_rejects_rng_parameters_with_malformed_optional_field_type() {
+    let request = add_attribute_random_number_generator_request(Value::structure(structure([
+        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+        tagged(RNG_CRYPT_LENGTH_TAG, Value::enumeration(256)),
+    ])));
+
+    let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_request(&request)
+        .expect_err("Cryptographic Length in RNG Parameters is an Integer");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 requires one RNG Algorithm in every RNG Parameters structure.
+fn profile_rejects_rng_parameters_without_rng_algorithm() {
+    let request = register_random_number_generator_request(Some(Value::structure(structure([]))));
+
+    let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[1]])
+        .validate_request(&request)
+        .expect_err("RNG Parameters cannot omit RNG Algorithm");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[1]));
+}
+
+#[test]
+// KMIP Specification v2.1 §7.36 Table 388 defines each known RNG Parameters field at most once.
+fn profile_rejects_duplicate_rng_optional_field() {
+    let request = add_attribute_random_number_generator_request(Value::structure(structure([
+        tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+        tagged(RNG_CRYPT_ALGORITHM_TAG, Value::enumeration(3)),
+        tagged(RNG_CRYPT_ALGORITHM_TAG, Value::enumeration(4)),
+    ])));
+
+    let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_request(&request)
+        .expect_err("known optional RNG Parameters fields are singleton fields");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
 }
 
 #[test]
