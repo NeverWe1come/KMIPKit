@@ -2090,11 +2090,6 @@ class T076ClientMappingTests(unittest.TestCase):
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),
                 )
-                self.assertIn(
-                    "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
-                    declaration["parityEvidenceIds"],
-                    "the client execution contract exercises Set Attribute response mapping",
-                )
         operation = next(
             row
             for row in self.manifest["operations"]
@@ -2183,6 +2178,11 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),
+                )
+                self.assertIn(
+                    "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
+                    declaration["parityEvidenceIds"],
+                    "the client execution contract exercises Set Attribute response mapping",
                 )
         operation = next(
             row
