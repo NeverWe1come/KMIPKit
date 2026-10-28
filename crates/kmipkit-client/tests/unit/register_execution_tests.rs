@@ -84,6 +84,7 @@ fn register_request() -> RegisterRequest {
     RegisterRequest::new(
         ObjectType::from_raw(1),
         AttributeSet::try_new([
+            test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
             test_item(CERTIFICATE_LENGTH, Value::integer(512)),
             test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
             test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
@@ -804,6 +805,7 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
         nested,
         [
             vec![
+                CRYPTOGRAPHIC_USAGE_MASK,
                 CERTIFICATE_LENGTH,
                 CRYPTOGRAPHIC_ALGORITHM,
                 CRYPTOGRAPHIC_LENGTH,
@@ -919,6 +921,7 @@ fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() 
     let request = RegisterRequest::new(
         ObjectType::from_raw(1),
         AttributeSet::try_new([
+            test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
             test_item(CERTIFICATE_TYPE, Value::enumeration(1)),
             test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
             test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
