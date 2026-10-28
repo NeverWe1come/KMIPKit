@@ -45,6 +45,8 @@ mod adjust_attribute_abi_tests;
 mod delete_attribute_abi_tests;
 #[path = "get_attribute_list_abi_tests.rs"]
 mod get_attribute_list_abi_tests;
+#[path = "get_attributes_abi_tests.rs"]
+mod get_attributes_abi_tests;
 #[path = "lifecycle_operation_abi_tests.rs"]
 mod lifecycle_operation_abi_tests;
 #[path = "query_ping_abi_tests.rs"]

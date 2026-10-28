@@ -2085,6 +2085,47 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
 
+    def test_get_attributes_declarations_have_exact_four_language_mappings(self) -> None:
+        expected = {
+            "kmipkit_client_batch_item_get_attributes",
+            "kmipkit_client_batch_item_response_get_attributes",
+            "org.kmipkit.extensions.ClientBatchItem.getAttributes",
+            "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.uniqueIdentifier",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetAttributesResponse.attributes",
+            "kmipkit.extensions.client_batch_item_get_attributes",
+            "kmipkit.client.GetAttributesResponse",
+            "kmipkit.client.GetAttributesResponse.unique_identifier",
+            "kmipkit.client.GetAttributesResponse.attributes",
+            "kmipkit.client.BatchItemResult.get_attributes_response",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(declarations))
+        for export_name in sorted(expected):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                    declaration["capabilityId"],
+                )
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+        operation = next(
+            row
+            for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"
+        )
+        self.assertEqual("verified", operation["apiState"])
+        self.assertNotIn("blockedReason", operation)
+
     def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit.client.BatchItemResult.operation": {
