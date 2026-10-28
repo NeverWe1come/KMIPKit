@@ -5854,3 +5854,23 @@ The local environment has no `sonar-scanner` or `sonar` CLI and no
 per-file SonarCloud API remains the source for the pre-refactor duplication
 ranges; the exact-head quality gate must be reevaluated by PR CI. The project
 3% threshold remains unchanged.
+
+### T074 Login and Delegated Login Python ticket fixtures (2026-10-28)
+
+The SonarCloud per-file duplication response showed matching native-response
+fixture setup and success-response tests in the Login and Delegated Login test
+modules. A shared ticket response installer now configures the operation
+specific CFFI response symbols and TTLV pointer while preserving the caller's
+presence flags, raw ticket type, ticket bytes, span length, and release
+callbacks. Each operation test continues to own its response-class, redaction,
+error, and cleanup assertions.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `134801039` | `test_ticket_response_fixture_installs_operation_specific_native_symbols` | Expected failure: the common Login/Delegated Login installer did not yet exist. |
+| Green | `97208e4dd` | `tests/test_tls_peer_support.py` | Pass, 12 tests; both operation symbol pairs return the configured ticket bytes and TTLV pointer. |
+| Refactor | this commit | Login, Delegated Login, and TLS peer-support tests | Pass, 40 tests; the two operation modules delegate common native fixture setup while their assertions stay operation specific. |
+| Refactor | this commit | Ruff `I001` on changed test modules; `git diff --check` | Pass. |
+
+The fixture changes affect tests only; the production Python facade remains
+unchanged.

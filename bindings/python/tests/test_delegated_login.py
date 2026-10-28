@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from functools import partial
 from types import SimpleNamespace
 
 import pytest
+from _test_support import install_ticket_native_response
 
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
@@ -103,21 +105,6 @@ def test_delegated_login_requires_generic_rights_structure() -> None:
 
 def test_delegated_login_response_preserves_unknown_ticket_type_and_redacts_value(monkeypatch) -> None:
     secret = b"ticket-value-must-not-appear-in-repr"
-    native_secret = ffi.new("uint8_t[]", secret)
-    pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
-
-    def response(_item, present, ticket_present, ticket_type, ticket_value) -> int:
-        present[0] = 1
-        ticket_present[0] = 1
-        ticket_type[0] = 0xFEED_BEEF
-        ticket_value.data = native_secret
-        ticket_value.length = len(secret)
-        return 0
-
-    def response_ttlv(_item, present, output) -> int:
-        present[0] = 1
-        output[0] = pointer
-        return 0
 
     class OwnedStructure:
         closed = False
@@ -126,14 +113,8 @@ def test_delegated_login_response_preserves_unknown_ticket_type_and_redacts_valu
             self.closed = True
 
     ticket_ttlv = OwnedStructure()
-    monkeypatch.setattr(
-        client,
-        "lib",
-        SimpleNamespace(
-            kmipkit_client_batch_item_response_delegated_login=response,
-            kmipkit_client_batch_item_response_delegated_login_ttlv=response_ttlv,
-            kmipkit_ttlv_structure_release=lambda _pointer: None,
-        ),
+    _install_delegated_login_native_response(
+        monkeypatch, ticket_type=0xFEED_BEEF, ticket_value=secret
     )
     monkeypatch.setattr(
         client.ttlv, "_structure_from_native_address", lambda _address: ticket_ttlv
@@ -204,46 +185,9 @@ def test_absent_delegated_login_response_maps_to_none(monkeypatch) -> None:
     assert client._delegated_login_response(SimpleNamespace(_pointer=lambda: object())) is None
 
 
-def _install_delegated_login_native_response(
-    monkeypatch,
-    *,
-    present: int = 1,
-    ticket_present: int = 1,
-    ticket_type: int = 7,
-    ticket_value: bytes = b"ticket-secret",
-    span_length: int | None = None,
-    ttlv_present: int = 1,
-    ttlv_pointer: int = 24,
-    released: list[int] | None = None,
-) -> None:
-    native_value = ffi.new("uint8_t[]", ticket_value) if ticket_value else ffi.NULL
-
-    def response(_item, out_present, out_ticket_present, out_ticket_type, out_value) -> int:
-        out_present[0] = present
-        out_ticket_present[0] = ticket_present
-        out_ticket_type[0] = ticket_type
-        out_value.data = native_value
-        out_value.length = len(ticket_value) if span_length is None else span_length
-        return 0
-
-    def response_ttlv(_item, out_present, output) -> int:
-        out_present[0] = ttlv_present
-        output[0] = ffi.cast("kmipkit_ttlv_structure_t *", ttlv_pointer)
-        return 0
-
-    monkeypatch.setattr(
-        client,
-        "lib",
-        SimpleNamespace(
-            kmipkit_client_batch_item_response_delegated_login=response,
-            kmipkit_client_batch_item_response_delegated_login_ttlv=response_ttlv,
-            kmipkit_ttlv_structure_release=lambda pointer: (
-                released.append(int(ffi.cast("uintptr_t", pointer)))
-                if released is not None
-                else None
-            ),
-        ),
-    )
+_install_delegated_login_native_response = partial(
+    install_ticket_native_response, operation="delegated_login"
+)
 
 
 def test_delegated_login_response_rejects_inconsistent_flags_and_spans(monkeypatch) -> None:
