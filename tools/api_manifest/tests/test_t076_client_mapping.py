@@ -2046,6 +2046,45 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("redacted", exclusion["reason"].lower())
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_delete_attribute_declarations_have_exact_four_language_mappings(self) -> None:
+        expected = {
+            "kmipkit_client_batch_item_delete_attribute",
+            "kmipkit_client_batch_item_response_delete_attribute",
+            "org.kmipkit.extensions.ClientBatchItem.deleteAttribute",
+            "org.kmipkit.extensions.ClientBatchItemResult.deleteAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.DeleteAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.DeleteAttributeResponse.uniqueIdentifier",
+            "kmipkit.extensions.client_batch_item_delete_attribute",
+            "kmipkit.client.DeleteAttributeResponse",
+            "kmipkit.client.DeleteAttributeResponse.unique_identifier",
+            "kmipkit.client.BatchItemResult.delete_attribute_response",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(declarations))
+        for export_name in sorted(expected):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+                    declaration["capabilityId"],
+                )
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+        operation = next(
+            row
+            for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+        )
+        self.assertEqual("verified", operation["apiState"])
+        self.assertNotIn("blockedReason", operation)
+
     def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit.client.BatchItemResult.operation": {
