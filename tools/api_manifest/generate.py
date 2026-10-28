@@ -33,6 +33,20 @@ MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 MAX_RELEASE_METADATA_BYTES = 1024 * 1024
+_AUTHORIZATION_ONLY_STATUS_PATTERN = re.compile(
+    r"\bautonomous\b"
+    r"|\b(?:standing|direct)\s+(?:human\s+)?instruction\b"
+    r"|\bstanding\s+(?:direct\s+)?authorization\b"
+    r"|\b(?:implementation|scope)\s+authorization\b"
+    r"|\bauthorizes?\s+(?:the\s+)?(?:defined\s+)?(?:feature\s+)?scope\s+for\s+implementation\b"
+    r"|\bimplementation\s+only\b"
+    r"|\b(?:acceptance|approval)\s+(?:is\s+)?pending\b"
+    r"|\bnot\s+(?:formal(?:ly)?\s+)?acceptance\b"
+    r"|\bnot\s+(?:yet\s+|formally\s+)?accepted\b"
+    r"|\bawaiting\s+(?:formal\s+)?acceptance\b"
+    r"|\bdoes\s+not\s+(?:claim|constitute|represent)\s+(?:formal\s+)?acceptance\b",
+    re.IGNORECASE,
+)
 OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",
@@ -599,21 +613,7 @@ def _status_from_document(content: str) -> str:
 
 def _status_only_authorizes_implementation(status: str) -> bool:
     """Return whether a status explicitly describes implementation authorization only."""
-    return re.search(
-        r"\bautonomous\b"
-        r"|\b(?:standing|direct)\s+(?:human\s+)?instruction\b"
-        r"|\bstanding\s+(?:direct\s+)?authorization\b"
-        r"|\b(?:implementation|scope)\s+authorization\b"
-        r"|\bauthorizes?\s+(?:the\s+)?(?:defined\s+)?(?:feature\s+)?scope\s+for\s+implementation\b"
-        r"|\bimplementation\s+only\b"
-        r"|\b(?:acceptance|approval)\s+(?:is\s+)?pending\b"
-        r"|\bnot\s+(?:formal(?:ly)?\s+)?acceptance\b"
-        r"|\bnot\s+(?:yet\s+|formally\s+)?accepted\b"
-        r"|\bawaiting\s+(?:formal\s+)?acceptance\b"
-        r"|\bdoes\s+not\s+(?:claim|constitute|represent)\s+(?:formal\s+)?acceptance\b",
-        status,
-        re.IGNORECASE,
-    )
+    return _AUTHORIZATION_ONLY_STATUS_PATTERN.search(status) is not None
 
 
 def _validate_approval_source(
