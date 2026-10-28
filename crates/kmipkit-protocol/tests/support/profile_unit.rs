@@ -23332,6 +23332,14 @@ const RNG_FIPS186_VARIATION_TAG: u32 = 0x0042_00DC;
 const RNG_PREDICTION_RESISTANCE_TAG: u32 = 0x0042_00DD;
 const RANDOM_NUMBER_GENERATOR_ADD_OPERATION: u32 = 0x0000_000D;
 const RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const RNG_CREATE_OPERATION: u32 = 0x0000_0001;
+const RNG_CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const RNG_DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
+const RNG_REKEY_OPERATION: u32 = 0x0000_0004;
+const RNG_REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
+const RNG_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+const RNG_PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+const RNG_PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
 const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] = [
     "KMIPKIT-REQ-SPEC-4.46-001-001",
     "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -23398,6 +23406,20 @@ fn add_attribute_random_number_generator_request(value: Value) -> crate::Request
                 Value::structure(structure([tagged(RANDOM_NUMBER_GENERATOR_TAG, value)])),
             ),
         ]),
+    )
+}
+
+fn request_with_random_number_generator_attribute(
+    operation: u32,
+    attribute_group: u32,
+    value: Value,
+) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        operation,
+        structure([tagged(
+            attribute_group,
+            Value::structure(structure([tagged(RANDOM_NUMBER_GENERATOR_TAG, value)])),
+        )]),
     )
 }
 
@@ -23483,6 +23505,81 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             }));
         }
     }
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46: malformed client-supplied RNG values are rejected for all five creation operations.
+fn profile_rejects_malformed_rng_attributes_on_creation_operations() {
+    let operation_groups = [
+        (RNG_CREATE_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (RNG_CREATE_KEY_PAIR_OPERATION, [
+            RNG_COMMON_ATTRIBUTES,
+            RNG_PRIVATE_KEY_ATTRIBUTES,
+            RNG_PUBLIC_KEY_ATTRIBUTES,
+        ]),
+        (RNG_DERIVE_KEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (RNG_REKEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (RNG_REKEY_KEY_PAIR_OPERATION, [
+            RNG_COMMON_ATTRIBUTES,
+            RNG_PRIVATE_KEY_ATTRIBUTES,
+            RNG_PUBLIC_KEY_ATTRIBUTES,
+        ]),
+    ];
+
+    for (operation, groups) in operation_groups {
+        for group in groups.into_iter().filter(|group| *group != 0) {
+            let request = request_with_random_number_generator_attribute(
+                operation,
+                group,
+                Value::integer(7),
+            );
+            let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+                .validate_request(&request)
+                .expect_err("creation operations reject malformed RNG attributes in every group");
+            assert_eq!(
+                error.code(),
+                ProfileValidationErrorCode::RequestRuleRejected
+            );
+            assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
+        }
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §§6.1.20 and 7.36: malformed returned RNG Parameters are rejected.
+fn profile_rejects_malformed_rng_parameters_in_get_attributes_response() {
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("rng-response-target".to_owned()),
+            ),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    Value::integer(7),
+                )])),
+            ),
+        ]),
+    );
+
+    let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_response(&request, &response)
+        .expect_err("Get Attributes rejects a malformed returned Random Number Generator");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
 }
 
 #[test]
