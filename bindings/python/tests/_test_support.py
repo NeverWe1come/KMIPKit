@@ -1,6 +1,9 @@
 import queue
+import socket
 import ssl
-from collections.abc import Iterator
+import struct
+import threading
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Protocol
@@ -14,6 +17,8 @@ class _TlsPeer(Protocol):
     def version(self) -> str | None: ...
 
     def getpeercert(self, binary_form: bool = False) -> bytes | None: ...
+
+    def recv(self, size: int) -> bytes: ...
 
 
 @contextmanager
@@ -61,3 +66,115 @@ def require_tls13_mtls_peer(stream: _TlsPeer) -> None:
     peer_certificate = stream.getpeercert(binary_form=True)
     if not peer_certificate:
         raise RuntimeError("test TLS peer did not authenticate a client certificate")
+
+
+def start_tls13_mtls_peer(
+    fixtures: Path,
+    handler: Callable[[ssl.SSLSocket], None],
+    *,
+    backlog: int = 1,
+    timeout_seconds: float = 10,
+) -> tuple[int, queue.Queue[Exception], threading.Thread]:
+    """Start one TLS 1.3 mutual-authentication peer for a test callback."""
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen(backlog)
+    listener.settimeout(timeout_seconds)
+    port = listener.getsockname()[1]
+    failures: queue.Queue[Exception] = queue.Queue()
+
+    def serve() -> None:
+        try:
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_3
+            context.maximum_version = ssl.TLSVersion.TLSv1_3
+            context.load_cert_chain(
+                fixtures / "server-cert.pem", fixtures / "server-key.pem"
+            )
+            context.load_verify_locations(cafile=fixtures / "client-cert.pem")
+            context.verify_mode = ssl.CERT_REQUIRED
+            raw, _address = listener.accept()
+            with raw, context.wrap_socket(raw, server_side=True) as stream:
+                try:
+                    require_tls13_mtls_peer(stream)
+                    handler(stream)
+                except Exception as error:  # noqa: BLE001 - preserve callback failures before TLS close.
+                    failures.put(error)
+        except Exception as error:  # noqa: BLE001 - report peer failures to the test thread.
+            failures.put(error)
+        finally:
+            listener.close()
+
+    peer = threading.Thread(target=serve, daemon=True)
+    peer.start()
+    return port, failures, peer
+
+
+def read_exact(stream: _TlsPeer, size: int) -> bytes:
+    output = bytearray()
+    while len(output) < size:
+        chunk = stream.recv(size - len(output))
+        if not chunk:
+            raise AssertionError("client closed before sending a complete request")
+        output.extend(chunk)
+    return bytes(output)
+
+
+def read_ttlv_frame(stream: _TlsPeer) -> bytes:
+    header = read_exact(stream, 8)
+    return header + read_exact(stream, int.from_bytes(header[4:8], "big"))
+
+
+def ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
+    return (
+        tag.to_bytes(3, "big")
+        + bytes((item_type,))
+        + len(value).to_bytes(4, "big")
+        + value
+        + bytes((-len(value)) % 8)
+    )
+
+
+def ttlv_structure(tag: int, *children: bytes) -> bytes:
+    return ttlv_item(tag, 1, b"".join(children))
+
+
+def ttlv_enumeration(tag: int, value: int) -> bytes:
+    return ttlv_item(tag, 5, struct.pack(">I", value))
+
+
+def operation_response_message(
+    operation: int,
+    batch_id: bytes,
+    *,
+    result_status: int = 0,
+    result_reason: int | None = None,
+    result_message: str | None = None,
+    pending_correlation_value: bytes | None = None,
+) -> bytes:
+    version = ttlv_structure(
+        0x420069,
+        ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+        ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    )
+    header = ttlv_structure(
+        0x42007A,
+        version,
+        ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+        ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
+    )
+    response_fields = [
+        ttlv_enumeration(0x42005C, operation),
+        ttlv_item(0x420093, 8, batch_id),
+        ttlv_enumeration(0x42007F, result_status),
+    ]
+    if result_reason is not None:
+        response_fields.append(ttlv_enumeration(0x42007E, result_reason))
+    if result_message is not None:
+        response_fields.append(ttlv_item(0x42007D, 7, result_message.encode()))
+    if pending_correlation_value is not None:
+        response_fields.append(ttlv_item(0x420006, 8, pending_correlation_value))
+    if result_status in (0, 2):
+        response_fields.append(ttlv_structure(0x42007C))
+    response_item = ttlv_structure(0x42000F, *response_fields)
+    return ttlv_structure(0x42007B, header, response_item)

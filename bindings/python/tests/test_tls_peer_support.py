@@ -12,6 +12,7 @@ from _test_support import (
     require_tls13_mtls_peer,
     start_tls13_mtls_peer,
 )
+
 from kmipkit import client
 
 
@@ -101,11 +102,15 @@ def test_operation_response_fixture_builder_preserves_expected_wire_bytes(
 
 def test_shared_tls_peer_reports_handler_failures() -> None:
     fixtures = Path(__file__).parent / "fixtures" / "login-mtls"
-    peer_failure: queue.Queue[BaseException] = queue.Queue()
     expected_failure = RuntimeError("peer handler failed")
+    handler_finished = threading.Event()
 
-    def fail_after_handshake(_stream: ssl.SSLSocket) -> None:
-        raise expected_failure
+    def fail_after_handshake(stream: ssl.SSLSocket) -> None:
+        try:
+            assert stream.recv(1) == b"x"
+            raise expected_failure
+        finally:
+            handler_finished.set()
 
     port, failures, peer = start_tls13_mtls_peer(fixtures, fail_after_handshake)
     context = ssl.create_default_context(
@@ -115,8 +120,9 @@ def test_shared_tls_peer_reports_handler_failures() -> None:
     context.minimum_version = ssl.TLSVersion.TLSv1_3
     context.maximum_version = ssl.TLSVersion.TLSv1_3
     with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
-        with context.wrap_socket(raw, server_hostname="127.0.0.1"):
-            pass
+        with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
+            stream.sendall(b"x")
+            assert handler_finished.wait(timeout=5)
 
     peer.join(timeout=5)
     assert not peer.is_alive()
