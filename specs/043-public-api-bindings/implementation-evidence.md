@@ -6083,14 +6083,14 @@ T037 remains open and unchecked. This checkpoint covers Get Attribute List only;
 
 | Phase | Commit | Command or check | Result |
 |---|---|---|---|
-| Red | `89f64f10a` | Focused Rust protocol/client, C ABI, Java, Python, and manifest tests against the pre-implementation API | Expected failures: missing TTLV projection, client facade, C ABI symbols, Java/Python facade and parsing, and manifest mapping. `git diff --check` passed. |
-| Green | pending | `cargo test -p kmipkit-protocol get_attribute_list_tests::successful_response_exposes_typed_payload_as_generic_ttlv --all-features --locked --offline` | Pass, 1 test. |
-| Green | pending | `cargo test -p kmipkit-client high_level_get_attribute_list_executes_one_request_without_retries --all-features --locked --offline` | Pass, 1 test. |
-| Green | pending | `cargo test -p kmipkit-ffi get_attribute_list_abi_tests --all-features --locked --offline` | Pass, 5 tests, including compiled C consumer. Windows AWS-LC probe/NASM and linker warnings were nonfatal. |
-| Green | pending | `gradlew.bat test --no-daemon --rerun-tasks --tests org.kmipkit.extensions.GetAttributeListJavaFacadeTest` from `bindings/java` | Pass; Gradle rebuilt the native JNI library and completed successfully. |
-| Green | pending | From `bindings/python`, with `VIRTUAL_ENV` set to `.venv-codex`, `KMIPKIT_NATIVE_LIBRARY` set to `target/debug/kmipkit_ffi.dll`, run `uv run --python 3.12 --no-project --with pytest --with cffi pytest tests/test_get_attribute_list_operation.py -q` | Pass, 3 tests. |
-| Green | pending | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. |
-| Green | pending | `python -B -m unittest tools.api_manifest.tests.test_get_attribute_list_parity_manifest -v` | Pass, 1 test. |
-| Refactor | pending | `cargo fmt --all --check` and `git diff --check` | Pass. |
+| Red | `89f64f10a` | `cargo test -p kmipkit-protocol get_attribute_list_tests::successful_response_exposes_typed_payload_as_generic_ttlv --all-features --locked --offline`; `cargo test -p kmipkit-client high_level_get_attribute_list_executes_one_request_without_retries --all-features --locked --offline`; `cargo test -p kmipkit-ffi get_attribute_list_abi_tests --all-features --locked --offline`; Java `GetAttributeListJavaFacadeTest`; Python `test_get_attribute_list_operation.py`; manifest parity test | Expected failures against the pre-implementation API: missing TTLV projection, client facade, C ABI symbols, Java/Python facade and parsing, and manifest mapping. `git diff --check` passed. |
+| Green | `f3f796cf4` | `cargo test -p kmipkit-protocol get_attribute_list_tests::successful_response_exposes_typed_payload_as_generic_ttlv --all-features --locked --offline` | Pass, 1 test. |
+| Green | `f3f796cf4` | `cargo test -p kmipkit-client high_level_get_attribute_list_executes_one_request_without_retries --all-features --locked --offline` | Pass, 1 test. |
+| Green | `f3f796cf4` | `cargo test -p kmipkit-ffi get_attribute_list_abi_tests --all-features --locked --offline` | Pass, 5 tests, including compiled C consumer. Windows AWS-LC probe/NASM and linker warnings were nonfatal. |
+| Green | `f3f796cf4` | `gradlew.bat test --no-daemon --rerun-tasks --tests org.kmipkit.extensions.GetAttributeListJavaFacadeTest` from `bindings/java` | Pass; Gradle rebuilt the native JNI library and completed successfully. |
+| Green | `f3f796cf4` | From `bindings/python`, with `VIRTUAL_ENV` set to `.venv-codex`, `KMIPKIT_NATIVE_LIBRARY` set to `target/debug/kmipkit_ffi.dll`, run `uv run --python 3.12 --no-project --with pytest --with cffi pytest tests/test_get_attribute_list_operation.py -q` | Pass, 3 tests. |
+| Green | `f3f796cf4` | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. |
+| Green | `f3f796cf4` | `python -B -m unittest tools.api_manifest.tests.test_get_attribute_list_parity_manifest -v` | Pass, 1 test. |
+| Refactor | this evidence commit | `cargo fmt --all --check` and `git diff --check` after the four-language API and generated output changes | Pass. |
 
 This is an implementation progress checkpoint, not completion of T037 or readiness of PR #104 for merge.
