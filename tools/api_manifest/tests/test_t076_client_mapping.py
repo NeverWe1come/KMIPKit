@@ -1525,6 +1525,21 @@ class T076ClientMappingTests(unittest.TestCase):
         validate_response_repr_exclusion = {
             "kmipkit.client.ValidateResponse.__repr__"
         }
+        get_attribute_list_response_dataclass_exclusions = {
+            f"kmipkit.client.GetAttributeListResponse.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__repr__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1552,6 +1567,7 @@ class T076ClientMappingTests(unittest.TestCase):
             | set_defaults_response_dataclass_exclusions
             | validate_response_dataclass_exclusions
             | validate_response_repr_exclusion
+            | get_attribute_list_response_dataclass_exclusions
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1608,6 +1624,13 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("representation", exclusion["reason"])
                     self.assertIn("T069", exclusion["evidence"])
                     self.assertIn("KMIPKIT-0042-FR-005", exclusion["evidence"])
+                elif path in get_attribute_list_response_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn(
+                        "not an independent cross-language product capability",
+                        exclusion["reason"],
+                    )
+                    self.assertIn("T037", exclusion["evidence"])
                 elif path in log_response_repr_exclusion:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])

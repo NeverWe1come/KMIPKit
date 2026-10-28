@@ -94,6 +94,38 @@ class CApiDocumentationTests(unittest.TestCase):
                     "checked-in audit report must match the current manifest",
                 )
 
+    def test_get_attribute_list_c_exports_are_present_in_checked_in_report(self) -> None:
+        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        c_package = next(
+            package for package in report["packages"]
+            if package["packageId"] == "c-kmipkit"
+        )
+        c_declarations = {
+            row["exportName"]
+            for row in manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+            and not (
+                row["declarationState"] == "blocked"
+                and row["kind"] != "c-symbol"
+            )
+        }
+        expected = {
+            "kmipkit_client_batch_item_get_attribute_list",
+            "kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv",
+        }
+
+        self.assertTrue(
+            expected <= c_declarations,
+            f"Get Attribute List exports missing from manifest: {sorted(expected - c_declarations)}",
+        )
+        self.assertTrue(c_package["matchesManifest"])
+        self.assertEqual(len(c_declarations), c_package["counts"]["manifest"])
+
 
 if __name__ == "__main__":
     unittest.main()

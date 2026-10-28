@@ -6094,3 +6094,14 @@ T037 remains open and unchecked. This checkpoint covers Get Attribute List only;
 | Refactor | this evidence commit | `cargo fmt --all --check` and `git diff --check` after the four-language API and generated output changes | Pass. |
 
 This is an implementation progress checkpoint, not completion of T037 or readiness of PR #104 for merge.
+
+### T037 export-audit follow-up — Red evidence (2026-10-28)
+
+Exact-head CI run `40710308719` exposed two export-inventory gaps after the Get Attribute List mapping. The failed Ubuntu Python-contract job `122893905451` reported `GetAttributeListResponse.__match_args__` and `__dataclass_params__` as unclassified. A local inventory reproduced all ten generated dataclass members. The checked-in C/Java/Python audit report also predates the new C declarations: its C manifest count is 394 while the current manifest contains 404 countable C declarations. Existing response-dataclass records and the export audit tool provide the established exact-exclusion and report-generation patterns. These generated Python members are implementation metadata/value methods, not additional cross-language API capabilities.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | pending | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v` | Expected failure: ten `GetAttributeListResponse` dataclass-generated members were unclassified. |
+| Red | pending | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_c_api_docs.CApiDocumentationTests.test_get_attribute_list_c_exports_are_present_in_checked_in_report -v` | Expected failure: current manifest has 404 countable C declarations; checked-in report still records 394. |
+
+The fix is limited to individual exclusions for those ten exact Python exports and regeneration of the checked-in export report with `tools/api_manifest/audit_binding_exports.py`. No generic or wildcard exclusions are added.
