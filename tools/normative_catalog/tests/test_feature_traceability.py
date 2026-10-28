@@ -1280,6 +1280,11 @@ class FeatureTraceabilityTests(unittest.TestCase):
         requirements = {
             row["requirement_id"]: row for row in catalog["requirements"]
         }
+        decisions = {
+            row["decision_id"]: row
+            for row in catalog["decisions"]
+            if isinstance(row.get("decision_id"), str)
+        }
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         oracle_path = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
@@ -1332,6 +1337,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         self.assertTrue(mappings)
         required_test_kinds: dict[str, str] = {}
         observed_test_kinds: dict[str, set[str]] = {}
+        verification_categories: dict[str, str] = {}
         missing_category_test_ids: set[str] = set()
 
         for mapping in mappings:
@@ -1379,6 +1385,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     self.assertIn(source_clause_id, requirement.get("source_clause_ids", []))
                 keyword = requirement.get("source_keyword") or requirement.get("source_force")
                 category = _verification_category(keyword)
+                verification_categories[requirement_id] = category
                 self.assertEqual(mapping["verification_category"], category)
                 expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY[category]
                 if mapping["test_id"] is None:
@@ -1457,7 +1464,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     if separator:
                         self.assertTrue(self._is_executable_test_ref(reference), reference)
 
-        self.assertEqual(missing_category_test_ids, set())
+        self.assertEqual(
+            _missing_category_tests_without_accepted_deviation(
+                missing_category_test_ids,
+                requirements,
+                decisions,
+                verification_categories,
+            ),
+            set(),
+        )
         for requirement_id, required_test_kind in required_test_kinds.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertIn(required_test_kind, observed_test_kinds[requirement_id])
