@@ -312259,19 +312259,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientRequest::add_attribute"
+          "name": "kmipkit_client::ClientRequest::adjust_attribute"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_add_attribute"
+          "name": "kmipkit_client_batch_item_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute"
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.client_batch_item_add_attribute"
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute"
         }
       },
       "parityEvidenceIds": [
@@ -312279,10 +312279,6 @@
         "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_add_attribute_operation.py",
         "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs"
-      ],
-      "javaSignatures": [
-        "public static org.kmipkit.extensions.ClientBatchItem addAttribute(org.kmipkit.ttlv.TtlvItem)",
-        "public static org.kmipkit.extensions.ClientBatchItem addAttribute(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.TtlvItem)"
       ]
     },
     {
@@ -312320,19 +312316,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AddAttributeResponse"
+          "name": "kmipkit_protocol::AdjustAttributeResponse"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.AddAttributeResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.AdjustAttributeResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AddAttributeResponse"
+          "name": "kmipkit.client.AdjustAttributeResponse"
         }
       },
       "parityEvidenceIds": [
@@ -312377,19 +312373,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AddAttributeResponse::unique_identifier"
+          "name": "kmipkit_protocol::AdjustAttributeResponse::unique_identifier"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.AddAttributeResponse.uniqueIdentifier"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.AdjustAttributeResponse.uniqueIdentifier"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AddAttributeResponse.unique_identifier"
+          "name": "kmipkit.client.AdjustAttributeResponse.unique_identifier"
         }
       },
       "parityEvidenceIds": [
@@ -312434,19 +312430,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchOutcome::AddAttribute"
+          "name": "kmipkit_client::ClientBatchOutcome::AdjustAttribute"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.addAttributeResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.adjustAttributeResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.add_attribute_response"
+          "name": "kmipkit.client.BatchItemResult.adjust_attribute_response"
         }
       },
       "parityEvidenceIds": [
@@ -312491,19 +312487,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AddAttributeResponse"
+          "name": "kmipkit_protocol::AdjustAttributeResponse"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.AddAttributeResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.AdjustAttributeResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AddAttributeResponse"
+          "name": "kmipkit.client.AdjustAttributeResponse"
         }
       },
       "parityEvidenceIds": [
@@ -312548,19 +312544,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-protocol",
-          "name": "kmipkit_protocol::AddAttributeResponse::unique_identifier"
+          "name": "kmipkit_protocol::AdjustAttributeResponse::unique_identifier"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.AddAttributeResponse.uniqueIdentifier"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.AdjustAttributeResponse.uniqueIdentifier"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.AddAttributeResponse.unique_identifier"
+          "name": "kmipkit.client.AdjustAttributeResponse.unique_identifier"
         }
       },
       "parityEvidenceIds": [
@@ -312605,19 +312601,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientBatchOutcome::AddAttribute"
+          "name": "kmipkit_client::ClientBatchOutcome::AdjustAttribute"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_response_add_attribute"
+          "name": "kmipkit_client_batch_item_response_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.addAttributeResponse"
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.adjustAttributeResponse"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.client.BatchItemResult.add_attribute_response"
+          "name": "kmipkit.client.BatchItemResult.adjust_attribute_response"
         }
       },
       "parityEvidenceIds": [
@@ -312662,19 +312658,19 @@
       "languageMappings": {
         "rust": {
           "packageId": "rust-kmipkit-client",
-          "name": "kmipkit_client::ClientRequest::add_attribute"
+          "name": "kmipkit_client::ClientRequest::adjust_attribute"
         },
         "c": {
           "packageId": "c-kmipkit",
-          "name": "kmipkit_client_batch_item_add_attribute"
+          "name": "kmipkit_client_batch_item_adjust_attribute"
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.addAttribute"
+          "name": "org.kmipkit.extensions.ClientBatchItem.adjustAttribute"
         },
         "python": {
           "packageId": "python-kmipkit",
-          "name": "kmipkit.extensions.client_batch_item_add_attribute"
+          "name": "kmipkit.extensions.client_batch_item_adjust_attribute"
         }
       },
       "parityEvidenceIds": [

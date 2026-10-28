@@ -54,7 +54,7 @@ public final class AttributeReference {
     }
 
     /** Returns whether this reference uses the raw tag form. */
-    public boolean isTag() {
+    boolean isTag() {
         return kind == KIND_TAG;
     }
 
