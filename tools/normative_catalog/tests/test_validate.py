@@ -35,6 +35,23 @@ _is_discoverable_positive_test = test_feature_traceability._is_discoverable_posi
 
 
 ROOT = Path(__file__).resolve().parents[3]
+CLIENT_ATTRIBUTED_SOURCE_ACTORS = {
+    "kmip servers and clients",
+    "a client or server conformant to this profile",
+    "client",
+    "client + server",
+    "client and server",
+    "client and server; stable label maps the client restriction",
+    "client assigns names; uniqueness is scoped to one server",
+    "client decoder when the x.509 certificate issuer attribute is supported",
+    "client decoder when the x.509 certificate subject attribute is supported",
+    "client request; server evaluates locate criterion",
+    "client_requester",
+    "clients",
+    "either server or client",
+    "receiver (client or server)",
+    "tape library clients and servers",
+}
 PROFILE_EVIDENCE_FOR_DEFERRED_OWNER_REQUIREMENTS = frozenset(
     {
         # KMIPKIT-0007 defers countdown-derived timestamp generation, while
@@ -16749,7 +16766,7 @@ class CatalogValidationTests(unittest.TestCase):
                     continue
                 reviewed_scope = obligation["scope_disposition"]
                 actor_is_client_attributed = (
-                    obligation["actor"] != "unresolved"
+                    obligation["actor"].casefold() in CLIENT_ATTRIBUTED_SOURCE_ACTORS
                     or obligation.get("project_actor_interpretation") == "client"
                 )
                 if (
