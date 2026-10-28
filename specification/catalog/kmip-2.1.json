@@ -83431,7 +83431,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; this mapping does not establish a Profile conformance claim."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 maps the general Profiles §6 claim gate to complete normative closure and explicit selection. The generated profile readiness summary reports current Baseline typed mappings, category-appropriate evidence, and runtime-selection status. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; this mapping does not establish a Profile conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-001",
@@ -83484,7 +83484,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Mandatory official-case evidence remains incomplete; this does not establish full Specification support or Profile conformance."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 1 KMIP Specification dependency as a closure gate. The generated profile readiness summary reports current Baseline typed mappings, category-appropriate evidence, and runtime-selection status. Mandatory official-case evidence remains incomplete; this does not establish full Specification support or Profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-002",
@@ -83590,7 +83590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. Baseline has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; no Profile conformance claim is made."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing. KMIPKIT-0010 records the §6.1 item 3 Baseline Client conditions (§5.1.1) as an evidence gate. The generated profile readiness summary reports current Baseline typed mappings, category-appropriate evidence, and runtime-selection status. T036 records 13 complete replays and three typed preflight blockers among Baseline's 16 linked cases. Separately, the broader Profiles catalog has 77 linked case records without local fixtures (70 mandatory, 7 optional); none belongs to Baseline's 16-case list; no Profile conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-6.1-004",
@@ -86722,7 +86722,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and category-appropriate test evidence. Baseline now has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Official fixture evidence remains incomplete, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and category-appropriate test evidence. The generated profile readiness summary reports current Baseline typed mappings, category-appropriate evidence, and runtime-selection status. Official fixture evidence remains incomplete, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
@@ -86775,7 +86775,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and category-appropriate executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; Baseline now has 294 of 294 typed mappings with category-appropriate evidence, so runtime selection is available. Official conformance evidence remains incomplete, and no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
+      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and category-appropriate executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; the generated profile readiness summary reports current Baseline typed mappings, category-appropriate evidence, and runtime-selection status. Official conformance evidence remains incomplete, and no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.1-001",
