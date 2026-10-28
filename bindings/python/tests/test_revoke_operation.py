@@ -18,8 +18,8 @@ from _test_support import (
     ttlv_enumeration,
     ttlv_item,
     ttlv_structure,
+    unique_identifier_ttlv_response_test_fixture,
 )
-
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -105,44 +105,16 @@ def test_revoke_rejects_compromise_date_for_other_reason_before_send() -> None:
 
 
 def test_revoke_success_response_preserves_identifier_and_owned_ttlv(monkeypatch) -> None:
-    identifier = b"revoked-object"
-    identifier_buffer = ffi.new("uint8_t[]", identifier)
-    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 42)
-
-    class OwnedStructure:
-        def __init__(self) -> None:
-            self.closed = False
-
-        def close(self) -> None:
-            self.closed = True
-
-    owned = OwnedStructure()
-
-    def typed(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
-        output.text_data = identifier_buffer
-        output.text_length = len(identifier)
-        return 0
-
-    def get_ttlv(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output[0] = native_ttlv
-        return 0
-
-    monkeypatch.setattr(
-        client,
-        "lib",
-        SimpleNamespace(
-            kmipkit_client_batch_item_response_revoke=typed,
-            kmipkit_client_batch_item_response_revoke_ttlv=get_ttlv,
-            kmipkit_ttlv_structure_release=lambda _value: None,
-        ),
+    fixture = unique_identifier_ttlv_response_test_fixture(
+        "revoke", b"revoked-object", 42, lambda _value: None
     )
+    native_ttlv = fixture.native_ttlv
+    owned = fixture.owned_ttlv
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**fixture.response_symbols))
     monkeypatch.setattr(
         ttlv,
         "_structure_from_native_address",
-        lambda address: owned if address == 42 else None,
+        lambda address: owned if address == fixture.native_ttlv_address else None,
     )
 
     response = client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
@@ -241,32 +213,12 @@ def test_revoke_response_releases_malformed_ttlv_handle(monkeypatch) -> None:
 
 
 def test_revoke_response_releases_handle_when_ttlv_wrapper_fails(monkeypatch) -> None:
-    identifier = b"revoke-response"
-    identifier_buffer = ffi.new("uint8_t[]", identifier)
-    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 44)
     released: list[object] = []
-
-    def typed(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
-        output.text_data = identifier_buffer
-        output.text_length = len(identifier)
-        return 0
-
-    def get_ttlv(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output[0] = native_ttlv
-        return 0
-
-    monkeypatch.setattr(
-        client,
-        "lib",
-        SimpleNamespace(
-            kmipkit_client_batch_item_response_revoke=typed,
-            kmipkit_client_batch_item_response_revoke_ttlv=get_ttlv,
-            kmipkit_ttlv_structure_release=lambda value: released.append(value),
-        ),
+    fixture = unique_identifier_ttlv_response_test_fixture(
+        "revoke", b"revoke-response", 44, released.append
     )
+    native_ttlv = fixture.native_ttlv
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**fixture.response_symbols))
     monkeypatch.setattr(
         ttlv,
         "_structure_from_native_address",

@@ -16,8 +16,8 @@ from _test_support import (
     start_tls13_mtls_peer,
     ttlv_enumeration,
     ttlv_item,
+    unique_identifier_ttlv_response_test_fixture,
 )
-
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -89,44 +89,15 @@ def _response_item() -> SimpleNamespace:
 def test_register_success_response_preserves_identifier_and_owned_ttlv(
     monkeypatch,
 ) -> None:
-    identifier = b"registered-object"
-    identifier_buffer = ffi.new("uint8_t[]", identifier)
-    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 42)
-
-    class OwnedStructure:
-        def __init__(self) -> None:
-            self.closed = False
-
-        def close(self) -> None:
-            self.closed = True
-
-    owned = OwnedStructure()
-
-    def typed(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
-        output.text_data = identifier_buffer
-        output.text_length = len(identifier)
-        return 0
-
-    def get_ttlv(_item: object, present: object, output: object) -> int:
-        present[0] = 1
-        output[0] = native_ttlv
-        return 0
-
-    monkeypatch.setattr(
-        client,
-        "lib",
-        SimpleNamespace(
-            kmipkit_client_batch_item_response_register=typed,
-            kmipkit_client_batch_item_response_register_ttlv=get_ttlv,
-            kmipkit_ttlv_structure_release=lambda _value: None,
-        ),
+    fixture = unique_identifier_ttlv_response_test_fixture(
+        "register", b"registered-object", 42, lambda _value: None
     )
+    owned = fixture.owned_ttlv
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**fixture.response_symbols))
     monkeypatch.setattr(
         ttlv,
         "_structure_from_native_address",
-        lambda address: owned if address == 42 else None,
+        lambda address: owned if address == fixture.native_ttlv_address else None,
     )
 
     response = client._register_response(_response_item())
