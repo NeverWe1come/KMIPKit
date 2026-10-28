@@ -2772,6 +2772,47 @@ mod unrelated {
             if fragment not in notes:
                 self.fail(f"generated profile report is missing the fixture-scope clarification: {fragment}")
 
+    def test_baseline_test_case_evidence_matches_oasis_minimum(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+        )
+
+        baseline_test_requirement = next(
+            line
+            for line in report.splitlines()
+            if line.startswith("| KMIPKIT-REQ-PROF-6.1-004 |")
+        )
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-PROF-6.1-004"
+        )
+        note = requirement["review_note"]
+        self.assertEqual(
+            requirement["summary"],
+            "Support one or more Baseline Mandatory Test Cases KMIP v2 (5.1.3 and 5.6.3).",
+        )
+        self.assertIn("one or more Baseline Mandatory Test Cases", note)
+        self.assertIn("not all 16", note)
+        self.assertIn(
+            "fully completes 10 of 13 BL-M cases and all 3 SKLC-M cases",
+            note,
+        )
+        self.assertIn(
+            "BL-M-4-21, BL-M-7-21, and BL-M-10-21 remain pinned but blocked before full replay",
+            note,
+        )
+        self.assertIn(
+            "not formal OASIS test execution, external server interoperability, or a Profile claim",
+            note,
+        )
+        self.assertIn("KMIPKIT-TEST-PROF-5-1-3-4", baseline_test_requirement)
+
     def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
         from tools.normative_catalog import report as report_module
 
