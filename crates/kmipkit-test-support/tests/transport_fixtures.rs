@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::io;
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, TcpStream, UdpSocket};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use kmipkit_test_support::{
     DnsQueryType, EphemeralPki, LocalDnsFixture, LoopbackTcpListener, PkiFixtureError,
@@ -145,6 +145,7 @@ fn local_dns_fixture_tracks_multiplexed_tcp_requests_per_connection() {
         .expect("both length-prefixed TCP DNS questions are written");
 
     wait_for_question_count(&fixture, name, DnsQueryType::A, 2);
+    wait_for_active_tcp_requests(&fixture, 2);
     assert!(fixture.peak_active_tcp_requests_per_connection() >= 2);
     assert_eq!(fixture.active_tcp_requests(), 2);
     fixture.release_responses();
@@ -241,6 +242,14 @@ fn wait_for_question_count(
         std::thread::sleep(Duration::from_millis(2));
     }
     assert_eq!(fixture.query_count(name, query_type), expected);
+}
+
+fn wait_for_active_tcp_requests(fixture: &LocalDnsFixture, expected: usize) {
+    let deadline = Instant::now() + Duration::from_secs(2);
+    while fixture.active_tcp_requests() != expected && Instant::now() < deadline {
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    assert_eq!(fixture.active_tcp_requests(), expected);
 }
 
 fn query_dns(server: SocketAddr, hostname: &str, record_type: u16) -> io::Result<Vec<u8>> {
