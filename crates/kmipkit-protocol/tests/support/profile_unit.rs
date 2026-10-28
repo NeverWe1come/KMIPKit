@@ -23593,6 +23593,21 @@ fn profile_accepts_get_attributes_rng_parameters() {
         .expect("Get Attributes response preserves well-formed RNG Parameters");
 }
 
+fn assert_rng_response_rule_rejected(
+    result: &crate::ProfileValidationResult,
+    request: &crate::RequestMessage,
+    response: &crate::ResponseMessage,
+) {
+    let error = result
+        .validate_response(request, response)
+        .expect_err("invalid response association or RNG Parameters are rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
+}
+
 #[test]
 // KMIP Specification v2.1 §§9.8 and 9.21 correlate reordered response items by Unique Batch Item ID.
 fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
@@ -23624,12 +23639,11 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
             )]),
         ),
     ]);
-
     result
         .validate_response(&request, &valid_reordered_response)
         .expect("reordered Get Attributes response is associated by batch ID");
 
-    let malformed_reordered_response = response_message_with_success_batch_payloads([
+    let malformed_response = response_message_with_success_batch_payloads([
         (
             RNG_CREATE_OPERATION,
             b"second-item".to_vec(),
@@ -23648,7 +23662,7 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
         ),
     ]);
     let error = result
-        .validate_response(&request, &malformed_reordered_response)
+        .validate_response(&request, &malformed_response)
         .expect_err("malformed reordered RNG Parameters are rejected");
     assert_eq!(
         error.code(),
@@ -23656,16 +23670,55 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
     );
     assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
 
-    let missing_get_attributes_response = response_message_with_success_batch_payloads([(
+    let missing_response = response_message_with_success_batch_payloads([(
         RNG_CREATE_OPERATION,
         b"second-item".to_vec(),
         Structure::new(),
     )]);
-    assert!(
-        result
-            .validate_response(&request, &missing_get_attributes_response)
-            .is_err()
+    assert_rng_response_rule_rejected(&result, &request, &missing_response);
+}
+
+#[test]
+// KMIP Specification v2.1 §§9.8 and 9.21 reject unknown and repeated response correlation IDs.
+fn profile_rejects_mismatched_or_duplicate_rng_response_batch_ids() {
+    let request = request_message_with_two_operation_payloads(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+        RNG_CREATE_OPERATION,
+        Structure::new(),
     );
+    let result = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]]);
+    let mismatched_id_response = response_message_with_success_batch_payloads([
+        (
+            GET_ATTRIBUTES_OPERATION,
+            b"unknown-item".to_vec(),
+            Structure::new(),
+        ),
+        (
+            RNG_CREATE_OPERATION,
+            b"second-item".to_vec(),
+            Structure::new(),
+        ),
+    ]);
+    let duplicate_id_response = response_message_with_success_batch_payloads([
+        (
+            GET_ATTRIBUTES_OPERATION,
+            b"first-item".to_vec(),
+            Structure::new(),
+        ),
+        (
+            RNG_CREATE_OPERATION,
+            b"first-item".to_vec(),
+            Structure::new(),
+        ),
+    ]);
+
+    for response in [mismatched_id_response, duplicate_id_response] {
+        assert_rng_response_rule_rejected(&result, &request, &response);
+    }
 }
 
 #[test]
