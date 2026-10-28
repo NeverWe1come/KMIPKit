@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
@@ -39,6 +41,24 @@ final class GetAttributesJavaFacadeTest {
                 null, List.of(AttributeReference.tag(0x0042_002f)))) {
             assertNotNull(item);
         }
+    }
+
+    @Test
+    void rejectsTooManyReferencesBeforeIteratingOrCopyingTheList() {
+        List<AttributeReference> oversized = new AbstractList<>() {
+            @Override
+            public AttributeReference get(int index) {
+                throw new AssertionError("oversized input must be rejected before iteration");
+            }
+
+            @Override
+            public int size() {
+                return 100_001;
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ClientBatchItem.getAttributes(null, oversized));
     }
 
     @Test
