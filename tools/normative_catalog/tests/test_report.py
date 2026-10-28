@@ -2711,7 +2711,7 @@ mod unrelated {
                     *["KMIPKIT-REQ-SPEC-7.36-001"] * 4,
                     *["KMIPKIT-REQ-SPEC-7.36-002-001"] * 6,
                     *["KMIPKIT-REQ-SPEC-7.36-002-002"] * 4,
-                    *["KMIPKIT-REQ-SPEC-7.36-003"] * 6,
+                    *["KMIPKIT-REQ-SPEC-7.36-003"] * 7,
                     "KMIPKIT-REQ-SPEC-4.38-003",
                     "KMIPKIT-REQ-SPEC-4.38-003",
                     "KMIPKIT-REQ-SPEC-4.57-005-002",

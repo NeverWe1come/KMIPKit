@@ -23607,7 +23607,11 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
     );
     let result = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]]);
     let valid_reordered_response = response_message_with_success_batch_payloads([
-        (RNG_CREATE_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (
+            RNG_CREATE_OPERATION,
+            b"second-item".to_vec(),
+            Structure::new(),
+        ),
         (
             GET_ATTRIBUTES_OPERATION,
             b"first-item".to_vec(),
@@ -23626,7 +23630,11 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
         .expect("reordered Get Attributes response is associated by batch ID");
 
     let malformed_reordered_response = response_message_with_success_batch_payloads([
-        (RNG_CREATE_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (
+            RNG_CREATE_OPERATION,
+            b"second-item".to_vec(),
+            Structure::new(),
+        ),
         (
             GET_ATTRIBUTES_OPERATION,
             b"first-item".to_vec(),
@@ -23642,20 +23650,22 @@ fn profile_correlates_reordered_get_attributes_rng_responses_by_batch_id() {
     let error = result
         .validate_response(&request, &malformed_reordered_response)
         .expect_err("malformed reordered RNG Parameters are rejected");
-    assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
     assert_eq!(
-        error.requirement_id(),
-        Some(RNG_PARAMETERS_REQUIREMENTS[3])
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
     );
+    assert_eq!(error.requirement_id(), Some(RNG_PARAMETERS_REQUIREMENTS[3]));
 
     let missing_get_attributes_response = response_message_with_success_batch_payloads([(
         RNG_CREATE_OPERATION,
         b"second-item".to_vec(),
         Structure::new(),
     )]);
-    assert!(result
-        .validate_response(&request, &missing_get_attributes_response)
-        .is_err());
+    assert!(
+        result
+            .validate_response(&request, &missing_get_attributes_response)
+            .is_err()
+    );
 }
 
 #[test]

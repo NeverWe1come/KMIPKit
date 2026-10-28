@@ -8097,3 +8097,13 @@ The security review noted that `client_rng_parameters_are_well_formed` paired Ge
 | Phase | Command | Result |
 | --- | --- | --- |
 | Red | `cargo test -p kmipkit-protocol --lib --all-features profile_correlates_reordered_get_attributes_rng_responses_by_batch_id` | FAIL as expected: the valid reordered response was rejected as `ResponseRuleRejected` under `KMIPKIT-REQ-SPEC-7.36-003`. |
+
+## T040 RNG response batch correlation — Green (2026-10-28)
+
+The RNG profile evaluator now associates Get Attributes responses by Unique Batch Item ID, preserves ordered single-item and Batch Order Option behavior, rejects missing or duplicate response associations, and checks successful response Attributes only after association. Its public method documentation clarifies that profile-specific validation does not replace core protocol validation or response association.
+
+| Phase | Command | Result |
+| --- | --- | --- |
+| Green — association regression | `cargo test -p kmipkit-protocol --lib --all-features profile_correlates_reordered_get_attributes_rng_responses_by_batch_id` | PASS: valid reordered response is accepted, malformed RNG Parameters remain rejected with the stable requirement ID, and a missing Get Attributes response is rejected. |
+| Green — RNG suite | `cargo test -p kmipkit-protocol --lib --all-features rng` | PASS: all 33 RNG-focused tests. |
+| Refactor verification | `cargo fmt --all --check`; `git diff --check`; `python -B tools/normative_catalog/report.py --write --repo-root .` | PASS: formatting and whitespace checks pass; generated coverage report was regenerated from the catalog and typed registry. |

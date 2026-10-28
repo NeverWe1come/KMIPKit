@@ -481,7 +481,9 @@ impl ProfileValidationResult {
     ///
     /// As with [`Self::validate_request`], this standalone method cannot
     /// recover caller-owned context that is absent from TTLV. The typed client
-    /// exchange path validates that context before sending the request.
+    /// exchange path validates that context before sending the request. This
+    /// method checks profile-specific rules and does not replace core protocol
+    /// validation or request-response batch association.
     ///
     /// # Errors
     ///
@@ -7476,22 +7478,7 @@ fn client_rng_parameters_are_well_formed(
     ];
 
     if let Some((request, response)) = response {
-        return request.batch_items().zip(response.batch_items()).all(
-            |(request_item, response_item)| {
-                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
-                    return true;
-                }
-                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
-                    return false;
-                }
-
-                response_item
-                    .with_response_payload(|payload| {
-                        rng_attribute_group_is_well_formed(&payload, ATTRIBUTES)
-                    })
-                    .unwrap_or(true)
-            },
-        );
+        return client_get_attributes_rng_response_is_well_formed(request, response);
     }
 
     let Some(request) = request else {
@@ -7522,6 +7509,90 @@ fn client_rng_parameters_are_well_formed(
             })
             .unwrap_or(false)
     })
+}
+
+fn client_get_attributes_rng_response_is_well_formed(
+    request: &RequestMessage,
+    response: &ResponseMessage,
+) -> bool {
+    let request_items = request.batch_items().collect::<Vec<_>>();
+    let response_items = response.batch_items().collect::<Vec<_>>();
+    if request_items.len() != response_items.len() {
+        return false;
+    }
+
+    let mut response_indices_by_id = HashMap::new();
+    for (index, response_item) in response_items.iter().copied().enumerate() {
+        if let Some(response_id) = response_item.with_unique_batch_item_id(<[u8]>::to_vec)
+            && response_indices_by_id.insert(response_id, index).is_some()
+        {
+            return false;
+        }
+    }
+
+    let mut consumed_responses = vec![false; response_items.len()];
+    for (request_index, request_item) in request_items.iter().copied().enumerate() {
+        if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+            continue;
+        }
+
+        let request_id = request_item.with_unique_batch_item_id(<[u8]>::to_vec);
+        let response_index = if let Some(request_id) = request_id {
+            let Some(response_index) = response_indices_by_id.get(&request_id).copied() else {
+                return false;
+            };
+            response_index
+        } else if request_items.len() == 1 && response_items.len() == 1 {
+            if response_items[0]
+                .with_unique_batch_item_id(|_| ())
+                .is_some()
+            {
+                return false;
+            }
+            0
+        } else if request.header().effective_batch_order_option() {
+            if response_items[request_index]
+                .with_unique_batch_item_id(|_| ())
+                .is_some()
+            {
+                return false;
+            }
+            request_index
+        } else {
+            return false;
+        };
+
+        if consumed_responses
+            .get(response_index)
+            .copied()
+            .unwrap_or(true)
+        {
+            return false;
+        }
+        consumed_responses[response_index] = true;
+
+        let response_item = response_items[response_index];
+        if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+            return false;
+        }
+        let Some(result_status) = response_item.result_status() else {
+            return false;
+        };
+        if result_status.raw() != RESULT_STATUS_SUCCESS {
+            continue;
+        }
+
+        if !response_item
+            .with_response_payload(|payload| {
+                rng_attribute_group_is_well_formed(&payload, ATTRIBUTES)
+            })
+            .unwrap_or(false)
+        {
+            return false;
+        }
+    }
+
+    true
 }
 
 fn rng_attribute_group_is_well_formed(payload: &StructureView<'_>, group_tag: u32) -> bool {
@@ -10917,6 +10988,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_rng_responses_by_batch_id",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {

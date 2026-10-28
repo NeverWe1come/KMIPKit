@@ -100101,6 +100101,7 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_rng_responses_by_batch_id",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field"
@@ -100108,7 +100109,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-030",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. Known cryptographic building blocks are accepted with Table 388 TTLV types; malformed or duplicate known singleton fields are rejected. Unknown tags are preserved and outside this profile check. Client-supplied creation attributes and Get Attributes response representation are covered. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
+      "review_note": "KMIP Specification v2.1 \u00a77.36 Table 388 is tracked for client request and response representation under accepted decision KMIPKIT-DEC-030. Known cryptographic building blocks are accepted with Table 388 TTLV types; malformed or duplicate known singleton fields are rejected. Unknown tags are preserved and outside this profile check. Client-supplied creation attributes and Get Attributes response representation are covered, including responses reordered and correlated by Unique Batch Item ID. This validates representation only and does not claim server acceptance, server RNG selection, or RNG output. The pinned OASIS source set links no requirement-specific official Test Case."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-7.7-002",
