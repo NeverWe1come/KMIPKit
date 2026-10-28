@@ -50,9 +50,9 @@ use kmipkit_protocol::{
     OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
     QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
     RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier, ValidateRequest,
+    RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest, SetConstraintsRequest,
+    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -4481,6 +4481,25 @@ pub extern "C" fn kmipkit_client_batch_item_modify_attribute(
             NewAttribute::new(new_attribute),
         );
         *out = try_ffi!(batch_item_handle(ClientRequest::ModifyAttribute(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.51 Set Attribute request from an optional Text String
+/// Unique Identifier and one borrowed direct New Attribute Item. The request
+/// copies the input Item and leaves add-or-modify selection to the server.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_set_attribute(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = SetAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
+        *out = try_ffi!(batch_item_handle(ClientRequest::SetAttribute(request)));
         SUCCESS
     })
 }

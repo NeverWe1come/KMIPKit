@@ -16,25 +16,26 @@ unsafe extern "C" {
 }
 
 fn set_attribute_request() -> ClientRequest {
-    let tag = RawTag::new(0x0042_002a)
-        .expect("Cryptographic Length tag fits the KMIP field")
+    let tag = RawTag::new(0x0042_00fd)
+        .expect("Comment tag fits the KMIP field")
         .try_checked()
-        .expect("Cryptographic Length is assigned");
-    let item = Item::new(tag, Value::integer(128)).expect("attribute Item is valid");
-    ClientRequest::SetAttribute(SetAttributeRequest::new(
-        None,
-        NewAttribute::new(item),
-    ))
+        .expect("Comment is assigned");
+    let item = Item::new(tag, Value::text_string("updated comment".to_owned()))
+        .expect("attribute Item is valid");
+    ClientRequest::SetAttribute(SetAttributeRequest::new(None, NewAttribute::new(item)))
 }
 
 #[test]
 fn set_attribute_ffi_constructor_preserves_optional_identifier_and_direct_new_item() {
-    let attribute_tag = RawTag::new(0x0042_002a)
+    let attribute_tag = RawTag::new(0x0042_00fd)
         .expect("attribute tag fits")
         .try_checked()
         .expect("attribute tag is assigned");
-    let attribute = Item::new(attribute_tag, Value::integer(128))
-        .expect("New Attribute Item is valid");
+    let attribute = Item::new(
+        attribute_tag,
+        Value::text_string("updated comment".to_owned()),
+    )
+    .expect("New Attribute Item is valid");
     let attribute_handle = try_make_handle(Kind::Item, HandleValue::Item(attribute))
         .expect("attribute handle is registered");
     let mut identifier = kmipkit_unique_identifier_v1_t {
@@ -68,7 +69,8 @@ fn set_attribute_ffi_constructor_preserves_optional_identifier_and_direct_new_it
     };
     assert_eq!(request.unique_identifier(), Some("object-7"));
     let payload = request.to_ttlv_payload().expect("payload is valid");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(fields.len(), 2);
     assert_eq!(fields[0].tag().raw(), 0x0042_0094);
     assert_eq!(fields[1].tag().raw(), 0x0042_013d);
@@ -76,8 +78,8 @@ fn set_attribute_ffi_constructor_preserves_optional_identifier_and_direct_new_it
         ValueView::Structure(attribute) => {
             let children = attribute.children();
             children.len() == 1
-                && children[0].tag().raw() == 0x0042_002a
-                && children[0].with_value(|value| matches!(value, ValueView::Integer(128)))
+                && children[0].tag().raw() == 0x0042_00fd
+                && children[0].with_value(|value| matches!(value, ValueView::TextString(_)))
         }
         _ => false,
     }));
@@ -91,7 +93,9 @@ fn compiled_c_consumer_builds_set_attribute_and_preserves_borrowed_input() {
     let mut request_handle = ptr::null_mut();
     assert_eq!(
         // SAFETY: the C helper initializes the writable output slot before returning.
-        unsafe { kmipkit_client_abi_c_consumer_build_set_attribute_request(&raw mut request_handle) },
+        unsafe {
+            kmipkit_client_abi_c_consumer_build_set_attribute_request(&raw mut request_handle)
+        },
         1,
         "the C constructor copies New Attribute and leaves caller ownership intact"
     );
@@ -105,7 +109,7 @@ fn compiled_c_consumer_builds_set_attribute_and_preserves_borrowed_input() {
         panic!("the C consumer constructs Set Attribute");
     };
     assert_eq!(request.unique_identifier(), Some("object-7"));
-    assert_eq!(request.new_attribute().item().tag().raw(), 0x0042_002a);
+    assert_eq!(request.new_attribute().item().tag().raw(), 0x0042_00fd);
     kmipkit_client_batch_item_release(request_handle);
 }
 

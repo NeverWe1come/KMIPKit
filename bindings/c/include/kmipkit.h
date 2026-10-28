@@ -1172,6 +1172,16 @@ int32_t kmipkit_client_batch_item_response_delete_attribute(kmipkit_client_batch
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-008, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_modify_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Creates a KMIP 2.1 §6.1.51 Set Attribute request from an optional Text String Unique Identifier and one required direct New Attribute Item.
+ * The supplied Item handle is borrowed and copied by the call; the caller retains ownership.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_set_attribute(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_item_t * new_attribute, kmipkit_client_batch_item_t ** out_item);
+/* Copies the required Text String Unique Identifier from a successful Set Attribute response.
+ * The output Text String span is borrowed while the response item handle remains open; non-success and other-operation results set present to zero.
+ */
+/* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_set_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

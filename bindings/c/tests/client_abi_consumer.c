@@ -6903,6 +6903,7 @@ int kmipkit_client_abi_c_consumer_validate_modify_attribute_response(
 int kmipkit_client_abi_c_consumer_build_set_attribute_request(
     kmipkit_client_batch_item_t **out_request) {
     static const uint8_t identifier_text[] = "object-7";
+    static const uint8_t new_comment[] = "updated comment";
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_ttlv_value_t *value = 0;
     kmipkit_raw_tag_t *raw_tag = 0;
@@ -6917,8 +6918,9 @@ int kmipkit_client_abi_c_consumer_build_set_attribute_request(
     if (out_request == 0) return 0;
     *out_request = 0;
     if (kmipkit_codec_limits_defaults(&limits) != 0 ||
-        kmipkit_ttlv_value_integer(INT32_C(128), &value) != 0 ||
-        kmipkit_ttlv_raw_tag_create(UINT32_C(0x42002a), &raw_tag) != 0 ||
+        kmipkit_ttlv_value_text_string(
+            limits, new_comment, (uint64_t)(sizeof(new_comment) - 1), &value) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200fd), &raw_tag) != 0 ||
         kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
         kmipkit_ttlv_item_create(tag, value, limits, &new_attribute) != 0) {
         goto cleanup;

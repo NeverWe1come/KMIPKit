@@ -51,10 +51,10 @@ mod get_attributes_abi_tests;
 mod lifecycle_operation_abi_tests;
 #[path = "modify_attribute_abi_tests.rs"]
 mod modify_attribute_abi_tests;
-#[path = "set_attribute_abi_tests.rs"]
-mod set_attribute_abi_tests;
 #[path = "query_ping_abi_tests.rs"]
 mod query_ping_abi_tests;
+#[path = "set_attribute_abi_tests.rs"]
+mod set_attribute_abi_tests;
 #[path = "set_constraints_abi_tests.rs"]
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
