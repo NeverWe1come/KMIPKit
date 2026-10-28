@@ -8107,3 +8107,21 @@ The RNG profile evaluator now associates Get Attributes responses by Unique Batc
 | Green — association regression | `cargo test -p kmipkit-protocol --lib --all-features rng` | PASS: 34 RNG-focused tests, including valid reordered responses, malformed and missing response evidence, and rejection of mismatched or duplicate batch IDs with stable requirement attribution. |
 | Green — profile regressions | `cargo test -p kmipkit-protocol --lib --all-features profile_` | PASS: all 400 profile-filtered tests. |
 | Refactor — make consumed-response bounds explicit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo test -p kmipkit-protocol --lib --all-features rng`; `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability`; `git diff --check` | PASS: formatting and Clippy; 34 RNG tests; 30 traceability tests (one platform skip); whitespace check. The implementation uses a checked mutable response slot before marking an association consumed. |
+
+
+## T040 stale Baseline readiness-note correction (2026-10-28)
+
+Independent closeout review found five project-authored catalog notes that still repeated the earlier 294/294 Baseline count. The generated closure summary had advanced to 298 requirements, typed mappings, and category-test references, so those notes made the report internally inconsistent. No OASIS source copy was changed.
+
+DCO Red commit `7200711b5` adds `test_profile_review_notes_do_not_duplicate_volatile_baseline_counts`; the test failed against the stale notes as expected. DCO Green commit `501b50091` removes the hard-coded count from all five catalog notes and regenerates `specification/catalog/coverage-report.md` from the catalog. The current Baseline summary is 298/298/298 with runtime selection available. Its claim state remains `evidence_incomplete`; the summary does not imply official-case completion or profile conformance.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Regression | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_profile_review_notes_do_not_duplicate_volatile_baseline_counts -v` | PASS after the catalog correction; the preceding run failed against stale 294-count notes as intended. |
+| Report tests | `python -B -m unittest tools.normative_catalog.tests.test_report` | PASS: 73 tests, one expected platform skip. |
+| Feature traceability | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability` | PASS: 30 tests, one expected platform skip. |
+| Catalog validation | `python -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,142 records. |
+| Generated artifacts | `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .` | PASS: profile metadata and coverage report match deterministic generation. |
+| Diff whitespace | `git diff --check` | PASS before this evidence update; rerun after the final documentation edit. |
+
+One initial local attempt ran the report and feature-traceability suites concurrently on Windows and produced path-lock and temporary-file errors. Both suites passed when rerun serially; no repository source defect was reproduced. Exact-head hosted CI and independent closeout re-review remain pending, so T040 is not marked complete here.
