@@ -7996,4 +7996,18 @@ The Red reproduction command was `cargo test --locked -p kmipkit-client --lib re
 - `register_execution_tests::register_transport_failure_preserves_partial_write_delivery_without_retry`
 - `revoke_execution_tests::revoke_can_consume_a_preceding_register_id_placeholder`
 
-At capture time the hosted run showed failures in the Ubuntu and macOS Core and Coverage jobs, while the run as a whole was still in progress and `gh run view --log-failed` did not yet expose job logs. The hosted test log will be recorded with the Green/Refactor evidence once available. No production code, normative catalog, generated output, or OASIS source was changed for this fixture correction.
+The initial Red capture was made while the hosted run was still in progress, before `gh run view --log-failed` exposed its logs. Once available, the Core Ubuntu stable job [`122584770002`](https://github.com/NeverWe1come/KMIPKit/actions/runs/40617915477/job/122584770002) confirmed the same seven failures under `cargo test --workspace --all-features --locked`; its client-library result was `596 passed; 7 failed`. The seven names above match the hosted failures. Hosted assertions show `Validation { cause: InvalidInput, delivery_state: NotSent }` where exchange/result or transport behavior was expected, and placeholder tests failed at `request reaches fake transport`. No production code, normative catalog, generated output, or OASIS source was changed for this fixture correction.
+
+## Client Register Certificate fixture correction — Green and Refactor (2026-10-28)
+
+The Green change adds Cryptographic Usage Mask with integer value `3` to the shared Certificate Register fixture, the explicit X.509 Certificate fixture, and the Certificate Register request embedded in the Revoke placeholder test. The Register wire-shape assertion now includes the Usage Mask in the direct Attributes order. Existing missing-Usage-Mask rejection tests were left unchanged.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Hosted Red evidence | `cargo test --workspace --all-features --locked` in hosted Core Ubuntu stable job `122584770002` | FAIL before the fixture update: client-library result `596 passed; 7 failed`; the seven failures are listed above. |
+| Focused Green | `cargo test --locked -p kmipkit-client --lib register_` | PASS: 18 selected tests, including all seven formerly failing tests. |
+| Full client package | `cargo test --locked -p kmipkit-client` | PASS: all 603 client library tests, integration/UI targets, and documentation tests; 3 optional Cosmian-backed tests remain ignored without a local server. |
+| Formatting | `cargo fmt --all --check` | PASS. |
+| Diff whitespace | `git diff --check` | PASS. |
+
+The DCO-signed Red and Green commits are `cba05950e` and `ae963eeaa`; this DCO-signed commit records the Refactor evidence. The only code changes are client test fixture data and the associated serialized-field expectation. The protocol validator, intentional negative tests, specification catalog, generated artifacts, and pinned OASIS sources are unchanged. The pre-existing `bindings/java/target/` directory was preserved. This correction changes neither T040 requirement mapping status nor profile readiness, and makes no OASIS Test Case or profile-conformance claim.
