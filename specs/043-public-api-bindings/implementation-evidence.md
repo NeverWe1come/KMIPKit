@@ -6031,3 +6031,33 @@ Focused command: `uv run --python 3.12 --no-project --with-requirements tools/ap
 This slice reconciles only values supported by the current manifest and package
 metadata. It does not certify external publication identities or close the
 remaining T073 audit.
+
+### T076 Java JNI aggregate transport-material preflight (2026-10-28)
+
+A direct call to the internal JNI transport constructor could copy client
+certificates, private key, trust certificates, and revocation lists under
+separate 16 MiB per-group checks. The typed Java builder already enforced one
+aggregate 16 MiB limit, but the JNI boundary did not. The bridge now reads and
+validates all group metadata and byte-array lengths before copying material,
+using one preflight budget across all four groups. A separate fresh budget
+checks each actual array length immediately before allocation/copy, keeping the
+bound safe if Java replaces an array element between the two passes. Existing
+generic JNI byte-array callers retain their prior empty-input behavior.
+
+The regression directly exercises `NativeExtensionRegistry.transportConfigCreate`
+with valid PEM certificate, key, trust, and CRL inputs whose individual groups
+are under the limit and whose combined length exceeds it. This bypasses the
+higher-level Java builder, which already rejects such a configuration.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `1a65bce22` | `mvn --batch-mode --file bindings/java/pom.xml '-Dexec.skip=true' '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` against the pre-fix JNI library | Expected failure: the direct JNI call returned a transport configuration instead of throwing `ResourceLimitException`; the combined material exceeded 16 MiB. |
+| Green | `ee8951e82` | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#nativeTransportConfigRejectsAggregateMaterialBeforeCopyingAcrossGroups' test` | Pass, 1 test; Windows JNI bridge rebuilt and rejected the over-budget inputs. |
+| Refactor | this commit | `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest,TransportConfigurationBoundaryTest,ClientFacadeContractTest' test` | Pass, 66 tests: TLS integration 34, transport boundary 18, shared client contract 14; JNI bridge rebuilt. |
+| Refactor | this commit | `git diff --check` | Pass. |
+
+The bridge shares transport source/encoding/count validation between the
+preflight and copy passes. It preserves the Java/C ABI and does not alter
+production transport behavior for inputs within the approved bound. Red, Green,
+and Refactor commits are DCO-signed. Exact-head CI for these follow-up commits
+remains pending after push; the coverage-threshold waiver is unchanged.

@@ -980,8 +980,9 @@ bool read_optional_indicators(JNIEnv* env, jint raw_init, jint raw_final,
     return true;
 }
 
-bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
-        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget) {
+bool read_transport_input_metadata(JNIEnv* env, jintArray raw_sources,
+        jintArray raw_encodings, jobjectArray raw_bytes, bool allow_files,
+        std::vector<jint>& sources, std::vector<jint>& encodings) {
     if (raw_sources == nullptr || raw_encodings == nullptr || raw_bytes == nullptr) {
         throw_invalid_input(env);
         return false;
@@ -997,8 +998,8 @@ bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray ra
         throw_invalid_input(env);
         return false;
     }
-    std::vector<jint> sources(static_cast<size_t>(count));
-    std::vector<jint> encodings(static_cast<size_t>(count));
+    sources.resize(static_cast<size_t>(count));
+    encodings.resize(static_cast<size_t>(count));
     if (count != 0) {
         env->GetIntArrayRegion(raw_sources, 0, count, sources.data());
         env->GetIntArrayRegion(raw_encodings, 0, count, encodings.data());
@@ -1013,7 +1014,21 @@ bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray ra
             throw_invalid_input(env);
             return false;
         }
-        auto raw = static_cast<jbyteArray>(env->GetObjectArrayElement(raw_bytes, index));
+    }
+    return true;
+}
+
+bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
+        jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget) {
+    std::vector<jint> sources;
+    std::vector<jint> encodings;
+    if (!read_transport_input_metadata(
+            env, raw_sources, raw_encodings, raw_bytes, allow_files, sources, encodings)) {
+        return false;
+    }
+    for (size_t index = 0; index < sources.size(); ++index) {
+        auto raw = static_cast<jbyteArray>(
+                env->GetObjectArrayElement(raw_bytes, static_cast<jsize>(index)));
         if (raw == nullptr) {
             throw_invalid_input(env);
             return false;
@@ -1028,56 +1043,30 @@ bool preflight_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray ra
 bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
         jobjectArray raw_bytes, bool allow_files, TransportMaterialBudget& budget,
         std::vector<OwnedTransportInput>& output) {
-    if (raw_sources == nullptr || raw_encodings == nullptr || raw_bytes == nullptr) {
-        throw_invalid_input(env);
+    std::vector<jint> sources;
+    std::vector<jint> encodings;
+    if (!read_transport_input_metadata(
+            env, raw_sources, raw_encodings, raw_bytes, allow_files, sources, encodings)) {
         return false;
-    }
-    const jsize count = env->GetArrayLength(raw_sources);
-    if (env->ExceptionCheck()) return false;
-    const jsize encoding_count = env->GetArrayLength(raw_encodings);
-    if (env->ExceptionCheck()) return false;
-    const jsize byte_count = env->GetArrayLength(raw_bytes);
-    if (env->ExceptionCheck()) return false;
-    if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)
-            || encoding_count != count || byte_count != count) {
-        throw_invalid_input(env);
-        return false;
-    }
-    std::vector<jint> sources(static_cast<size_t>(count));
-    std::vector<jint> encodings(static_cast<size_t>(count));
-    if (count != 0) {
-        env->GetIntArrayRegion(raw_sources, 0, count, sources.data());
-        env->GetIntArrayRegion(raw_encodings, 0, count, encodings.data());
-        if (env->ExceptionCheck()) return false;
     }
     output.clear();
-    output.reserve(static_cast<size_t>(count));
-    for (jsize index = 0; index < count; ++index) {
-        if ((sources[static_cast<size_t>(index)] != static_cast<jint>(kTransportSourceMemory)
-                && (!allow_files || sources[static_cast<size_t>(index)]
-                    != static_cast<jint>(kTransportSourceFile)))
-                || (encodings[static_cast<size_t>(index)] != static_cast<jint>(kTransportEncodingPem)
-                    && encodings[static_cast<size_t>(index)] != static_cast<jint>(kTransportEncodingDer))) {
-            throw_invalid_input(env);
-            return false;
-        }
-        auto raw = static_cast<jbyteArray>(env->GetObjectArrayElement(raw_bytes, index));
+    output.reserve(sources.size());
+    for (size_t index = 0; index < sources.size(); ++index) {
+        auto raw = static_cast<jbyteArray>(
+                env->GetObjectArrayElement(raw_bytes, static_cast<jsize>(index)));
         if (raw == nullptr) {
             throw_invalid_input(env);
             return false;
         }
         OwnedTransportInput item {
-                static_cast<uint32_t>(sources[static_cast<size_t>(index)]),
-                static_cast<uint32_t>(encodings[static_cast<size_t>(index)]), {}};
+                static_cast<uint32_t>(sources[index]), static_cast<uint32_t>(encodings[index]), {}};
         const bool copied = read_transport_material_bytes(env, raw, budget, item.bytes);
         env->DeleteLocalRef(raw);
         if (!copied) return false;
-
         output.push_back(std::move(item));
     }
     return true;
 }
-
 std::vector<kmipkit_transport_input_v1_t> transport_input_views(
         const std::vector<OwnedTransportInput>& inputs) {
     std::vector<kmipkit_transport_input_v1_t> views;
