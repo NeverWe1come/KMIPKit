@@ -1,5 +1,7 @@
+import queue
+
 import pytest
-from _test_support import require_tls13_mtls_peer
+from _test_support import capture_peer_failures, require_tls13_mtls_peer
 
 
 class FakeTlsPeer:
@@ -29,3 +31,14 @@ def test_rejects_peers_without_tls13_mutual_authentication(
 
 def test_accepts_tls13_mutual_authentication_peer() -> None:
     require_tls13_mtls_peer(FakeTlsPeer("TLSv1.3", b"client-certificate"))
+
+
+def test_captures_runtime_tls_peer_validation_failures() -> None:
+    peer_failures: queue.Queue[BaseException] = queue.Queue()
+
+    with capture_peer_failures(peer_failures):
+        require_tls13_mtls_peer(FakeTlsPeer("TLSv1.2", b"client-certificate"))
+
+    failure = peer_failures.get_nowait()
+    assert type(failure) is RuntimeError
+    assert str(failure) == "test TLS peer did not negotiate TLS 1.3"
