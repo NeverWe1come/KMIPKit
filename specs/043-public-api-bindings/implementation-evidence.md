@@ -34,6 +34,24 @@ The manifest generator now treats statuses that explicitly grant autonomous impl
 
 The broad diagnostic `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -v` ran 527 tests and reported 9 failures, 7 errors, and 3 platform-dependent skips. Failures included stale binding-export counts and mapping/report discrepancies (for example, Java expected 732 declarations while the audit found 789). They are outside the focused T086 readiness behavior and remain part of the open manifest/export reconciliation work; this diagnostic is not recorded as passing.
 
+#### T086 follow-up 3 — delegated maintainer authorization variants
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `45c783a72` | Focused `test_delegated_maintainer_authorization_is_not_approval_without_merge_record` | Expected failures: KMIPKIT-0006, -0007, and -0008 were classified as approved from delegated authorization wording without merge evidence. |
+| Green | `529510269` | Operation-readiness suite and `python -B tools/api_manifest/generate.py --check` | PASS: 28 readiness tests; all 12 generated outputs verified after documenting the human merges for PRs #32, #39, and #45. |
+| Refactor | `5d4b84548` | Same readiness suite and generator-check commands; `git diff --check` | PASS: 28 readiness tests and 12 generated outputs; shared specification-fixture construction for the status regressions. |
+
+#### T086 follow-up 4 — delegated execution and approval wording
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `d969b8c46` | Focused `test_delegated_authorization_and_approval_statuses_require_merge_evidence` | Expected failure: KMIPKIT-0005 was classified as approved from “delegated execution and approval” without merged-owner evidence. |
+| Green | `8f8c8788c` | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | PASS: 28 readiness tests; all 12 generated outputs verified after documenting human merge PR #21. Active declared/verified owners scanned: 23; authorization-only owners missing merge evidence: 0. |
+| Refactor | `1504e27ee` | Same readiness suite and generator-check commands; `git diff --check` | PASS: 28 readiness tests and 12 generated outputs; delegated status fixtures consolidated for review. |
+
+The readiness suite also exercises the CLI path: with KMIPKIT-0012's merged record deliberately omitted in the test, `generate.main(..., "--check")` returns exit code 2. This verifies that `--check` rejects authorization-only evidence without the recorded human merge.
+
 Additional local CI contracts passed: 308 script tests (26 skipped), 222 normative catalog tests (7 skipped), and 118 API manifest contract tests (1 skipped). The CI workflow now runs the readiness suite as part of Python contracts. Linux, Windows, macOS, and the full pull-request CI matrix remain subject to the PR run.
 
 ## T039 owner approval evidence
