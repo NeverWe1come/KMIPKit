@@ -321,10 +321,11 @@ fn attributes_satisfy_register_requirements(
     }
 
     match object_type.raw() {
-        // Certificate has its own Certificate Length requirement and also
-        // follows Table 293's Managed Cryptographic Object attribute pairing.
+        // Certificate has its own Certificate Length requirement and must
+        // include the Table 293 Usage Mask and Algorithm/Length pair.
         1 => {
-            has_attribute(attributes, CERTIFICATE_LENGTH)
+            has_attribute(attributes, CRYPTOGRAPHIC_USAGE_MASK)
+                && has_attribute(attributes, CERTIFICATE_LENGTH)
                 && cryptographic_algorithm_and_length_outer_pair_is_present(attributes)
         }
         // Opaque Object has its own Table 4 Structure, independent of whether

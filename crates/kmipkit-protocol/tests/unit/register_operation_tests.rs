@@ -1132,6 +1132,7 @@ fn request_requires_certificate_length_and_allows_embedded_signature_algorithm()
     let missing_length = RegisterRequest::new(
         ObjectType::from_raw(1),
         attrs([
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
             item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
             item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
         ]),
@@ -1143,6 +1144,7 @@ fn request_requires_certificate_length_and_allows_embedded_signature_algorithm()
     let request = RegisterRequest::new(
         ObjectType::from_raw(1),
         attrs([
+            item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3)),
             item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
             item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
             item(CERTIFICATE_LENGTH, Value::integer(4096)),
