@@ -18554,7 +18554,8 @@ class CatalogValidationTests(unittest.TestCase):
                     try:
                         try:
                             CatalogValidationTests().test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(
-                                set()
+                                set(),
+                                profile_id="KMIPKIT-PROFILE-TEST-CLIENT",
                             )
                         except ValueError as error:
                             raise AssertionError("typed profile rule evidence must resolve") from error
