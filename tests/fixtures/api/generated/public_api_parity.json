@@ -896,6 +896,30 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Activate request constructor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemActivate",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Archive request constructor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemArchive",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 Certify mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCertify",
       "packageId": "java-kmipkit",
@@ -992,6 +1016,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Destroy request constructor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDestroy",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncrypt",
       "packageId": "java-kmipkit",
@@ -1020,6 +1056,18 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGet",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItem.get; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Get Attribute List request constructor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetAttributeList",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
     },
     {
       "approvalSource": {
@@ -1244,6 +1292,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Recover request constructor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRecover",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekey",
       "packageId": "java-kmipkit",
@@ -1272,6 +1332,30 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemReprovision",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Activate response accessor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseActivate",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Archive response accessor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseArchive",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
     },
     {
       "approvalSource": {
@@ -1376,6 +1460,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Destroy response accessor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDestroy",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 in docs/architecture/ffi-and-bindings.md. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions",
       "packageId": "java-kmipkit",
@@ -1416,6 +1512,18 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGet",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItemResult.getResponse; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T037. The Get Attribute List response accessor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetAttributeList",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
     },
     {
       "approvalSource": {
@@ -1656,6 +1764,18 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRecertify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-021, and T039. The Recover response accessor is exposed through typed Java facade methods; this exact bridge method is internal handle plumbing.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRecover",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
     },
     {
       "approvalSource": {
@@ -2273,6 +2393,30 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T039. The formatter redacts uniqueIdentifier; the typed response accessor remains separately inventoried.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ActivateResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T039. The formatter redacts uniqueIdentifier; the typed response accessor remains separately inventoried.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ArchiveResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
         "path": "specs/022-object-lifecycle/spec.md",
         "status": "Approved"
       },
@@ -2360,6 +2504,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T039. The formatter redacts uniqueIdentifier; the typed response accessor remains separately inventoried.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DestroyResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and the owning response mapping; response rendering remains redacted and is covered by the typed response tests.",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.toString",
       "packageId": "java-kmipkit",
@@ -2376,6 +2532,18 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ExportResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter emits only a redacted summary of Export response fields and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The formatter redacts responsePayloadTtlv; the typed response accessor remains separately inventoried.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetAttributeListResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -2556,6 +2724,18 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RecertifyResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter emits only a redacted summary of the replacement certificate identifier and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T039. The formatter redacts uniqueIdentifier; the typed response accessor remains separately inventoried.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RecoverResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns only a redacted diagnostic summary and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -4572,6 +4752,126 @@
       "exportName": "kmipkit.client.ExportResponse.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the ExportResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python value or frozen-instance machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T037. The response value and response_payload_ttlv accessor are inventoried separately; this exclusion covers only generated Python dataclass behavior.",
+      "exportName": "kmipkit.client.GetAttributeListResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
     },
     {
       "approvalSource": {
@@ -156758,6 +157058,10 @@
       "declarationId": "T037:constructor:java",
       "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItem.getAttributeList",
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem getAttributeList()",
+        "public static org.kmipkit.extensions.ClientBatchItem getAttributeList(org.kmipkit.extensions.UniqueIdentifier)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {
