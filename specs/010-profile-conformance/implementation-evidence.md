@@ -8011,3 +8011,23 @@ The Green change adds Cryptographic Usage Mask with integer value `3` to the sha
 | Diff whitespace | `git diff --check` | PASS. |
 
 The DCO-signed Red and Green commits are `cba05950e` and `ae963eeaa`; this DCO-signed commit records the Refactor evidence. The only code changes are client test fixture data and the associated serialized-field expectation. The protocol validator, intentional negative tests, specification catalog, generated artifacts, and pinned OASIS sources are unchanged. The pre-existing `bindings/java/target/` directory was preserved. This correction changes neither T040 requirement mapping status nor profile readiness, and makes no OASIS Test Case or profile-conformance claim.
+
+## T036 fixture inventory scope correction (2026-10-28)
+
+An audit of the pinned KMIP Profiles v2.1 source and catalog found that prior report notes conflated the selected Baseline fixture set with the broader Profiles inventory. Baseline links 16 cases (13 `BL-M` and 3 `SKLC-M`); all 16 have local official XML fixtures. T036 recorded 13 complete fake-transport replays and three typed preflight blockers. Separately, the broader Profiles catalog contains 77 unavailable profile-case records (70 mandatory and 7 optional); none belongs to Baseline's 16-case list. The 77 records are not 77 additional Baseline cases.
+
+The 77 records do not all have unambiguous case-to-file mappings. Open discrepancy `KMIPKIT-DISC-027` records that the `CS-BC-M-13-21` and `CS-BC-M-14-21` source entries both point to the `.14` fixture despite the official package containing separate `.13` and `.14` files. Do not assign the `.13` fixture by inference or count the duplicated `.14` path twice.
+
+The three Baseline replay blockers remain unchanged and source-backed: `BL-M-4-21` omits the Cryptographic Usage Mask required for Secret Data by KMIP Specification v2.1 §§2.7 and 6.1.43 Table 293; `BL-M-10-21` omits the Certificate Length required by §6.1.43 Table 293; and `BL-M-7-21` attempts the State change prohibited by §4.57, which the typed client correctly rejects before sending. Resolving the last replay would require a separately specified generic execution route; it does not justify relaxing typed validation. No fixture was reconstructed or modified, and no OASIS test pass or profile-conformance claim is made.
+
+The regression `test_baseline_report_distinguishes_global_unavailable_profile_fixtures` protects this scope distinction in generated coverage output. The catalog review notes and report were regenerated from the catalog; the generated file was not edited by hand.
+
+| Phase | Commit / command | Result |
+| --- | --- | --- |
+| Red | `39678e80a`; `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_baseline_report_distinguishes_global_unavailable_profile_fixtures -v` | FAIL as expected: the generated review note still described the 77 broader Profiles records as Baseline cases. |
+| Green | `6431f4570`; same focused unittest command | PASS: 1 test in 84.841 seconds. |
+| Catalog validation | `py -3 -B tools/normative_catalog/validate.py` | PASS: 4 sources, 1,411 clauses, 4,137 records. |
+| Deterministic report | `py -3 -B tools/normative_catalog/report.py --check` | PASS: checked-in report matches deterministic generation from the reviewed catalog. |
+| Diff whitespace | `git diff --check` | PASS before the Refactor/evidence documentation update; rerun on the final commit range before push. |
+
+The source audit checked the pinned KMIP Profiles v2.1 OS files and manifest. It confirmed 93 distinct linked case records, 16 Baseline cases with local fixtures, and 77 broader records without local fixtures. It also confirmed the open `KMIPKIT-DISC-027` label/href conflict: `CS-BC-M-13-21` and `CS-BC-M-14-21` both resolve to the `.14` href while the official package contains distinct `.13` and `.14` files. The ambiguous `.13` mapping remains unresolved; no file was assigned by inference and no upstream source was edited.
