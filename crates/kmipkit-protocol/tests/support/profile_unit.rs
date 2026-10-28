@@ -23456,8 +23456,8 @@ fn profile_maps_register_and_add_attribute_random_number_generator_capabilities(
 }
 
 #[test]
-// KMIP Specification v2.1 §7.36 Table 388; §4.46 assigns client-supplied RNG values to Register/Add Attribute.
-fn profile_maps_shared_rng_parameters_to_client_request_rules() {
+// KMIP Specification v2.1 §7.36 Table 388; §4.46 assigns RNG values to client request and response representation.
+fn profile_maps_shared_rng_parameters_to_client_request_and_response_rules() {
     let expected = [
         (
             RNG_PARAMETERS_REQUIREMENTS[0],
@@ -23465,6 +23465,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
+            "profile_accepts_get_attributes_rng_parameters",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[1],
@@ -23472,6 +23473,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_register_random_number_generator",
+            "profile_accepts_get_attributes_rng_parameters",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[2],
@@ -23479,6 +23481,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
+            "profile_accepts_get_attributes_rng_parameters",
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[3],
@@ -23486,10 +23489,19 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
+            "profile_accepts_get_attributes_rng_parameters",
         ),
     ];
 
-    for (requirement_id, source_clause_id, category, evidence_kind, evidence_test) in expected {
+    for (
+        requirement_id,
+        source_clause_id,
+        category,
+        evidence_kind,
+        evidence_test,
+        response_evidence_test,
+    ) in expected
+    {
         let mapping = TYPED_RULE_MAPPINGS
             .iter()
             .find(|mapping| mapping.requirement_id == requirement_id);
@@ -23503,27 +23515,36 @@ fn profile_maps_shared_rng_parameters_to_client_request_rules() {
             assert!(mapping.test_evidence.iter().any(|evidence| {
                 evidence.kind == evidence_kind && evidence.test_id.ends_with(evidence_test)
             }));
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.kind == evidence_kind && evidence.test_id.ends_with(response_evidence_test)
+            }));
         }
     }
 }
 
 #[test]
-// KMIP Specification v2.1 §4.46: malformed client-supplied RNG values are rejected for all five creation operations.
-fn profile_rejects_malformed_rng_attributes_on_creation_operations() {
+// KMIP Specification v2.1 §4.46 names all five client creation operations and their attribute groups.
+fn profile_accepts_rng_parameters_on_client_create_operation_attribute_groups() {
     let operation_groups = [
         (RNG_CREATE_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
-        (RNG_CREATE_KEY_PAIR_OPERATION, [
-            RNG_COMMON_ATTRIBUTES,
-            RNG_PRIVATE_KEY_ATTRIBUTES,
-            RNG_PUBLIC_KEY_ATTRIBUTES,
-        ]),
+        (
+            RNG_CREATE_KEY_PAIR_OPERATION,
+            [
+                RNG_COMMON_ATTRIBUTES,
+                RNG_PRIVATE_KEY_ATTRIBUTES,
+                RNG_PUBLIC_KEY_ATTRIBUTES,
+            ],
+        ),
         (RNG_DERIVE_KEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
         (RNG_REKEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
-        (RNG_REKEY_KEY_PAIR_OPERATION, [
-            RNG_COMMON_ATTRIBUTES,
-            RNG_PRIVATE_KEY_ATTRIBUTES,
-            RNG_PUBLIC_KEY_ATTRIBUTES,
-        ]),
+        (
+            RNG_REKEY_KEY_PAIR_OPERATION,
+            [
+                RNG_COMMON_ATTRIBUTES,
+                RNG_PRIVATE_KEY_ATTRIBUTES,
+                RNG_PUBLIC_KEY_ATTRIBUTES,
+            ],
+        ),
     ];
 
     for (operation, groups) in operation_groups {
@@ -23531,8 +23552,76 @@ fn profile_rejects_malformed_rng_attributes_on_creation_operations() {
             let request = request_with_random_number_generator_attribute(
                 operation,
                 group,
-                Value::integer(7),
+                random_number_generator_with_optional_fields(),
             );
+            table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+                .validate_request(&request)
+                .expect("creation operations accept well-formed client-supplied RNG attributes");
+        }
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §§6.1.20 and 7.36: the client can represent returned RNG Parameters.
+fn profile_accepts_get_attributes_rng_parameters() {
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+    );
+    let response = get_attributes_response_with_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("rng-response-target".to_owned()),
+            ),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_with_optional_fields(),
+                )])),
+            ),
+        ]),
+    );
+
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_response(&request, &response)
+        .expect("Get Attributes response preserves well-formed RNG Parameters");
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46: malformed client-supplied RNG values are rejected for all five creation operations.
+fn profile_rejects_malformed_rng_attributes_on_creation_operations() {
+    let operation_groups = [
+        (RNG_CREATE_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (
+            RNG_CREATE_KEY_PAIR_OPERATION,
+            [
+                RNG_COMMON_ATTRIBUTES,
+                RNG_PRIVATE_KEY_ATTRIBUTES,
+                RNG_PUBLIC_KEY_ATTRIBUTES,
+            ],
+        ),
+        (RNG_DERIVE_KEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (RNG_REKEY_OPERATION, [TABLE12_ATTRIBUTES, 0, 0]),
+        (
+            RNG_REKEY_KEY_PAIR_OPERATION,
+            [
+                RNG_COMMON_ATTRIBUTES,
+                RNG_PRIVATE_KEY_ATTRIBUTES,
+                RNG_PUBLIC_KEY_ATTRIBUTES,
+            ],
+        ),
+    ];
+
+    for (operation, groups) in operation_groups {
+        for group in groups.into_iter().filter(|group| *group != 0) {
+            let request =
+                request_with_random_number_generator_attribute(operation, group, Value::integer(7));
             let error = table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
                 .validate_request(&request)
                 .expect_err("creation operations reject malformed RNG attributes in every group");
@@ -23771,7 +23860,7 @@ fn profile_rejects_malformed_random_number_generator() {
 }
 
 #[test]
-// KMIP Specification v2.1 §§4.46, 6.1.2, 6.1.43, and 7.36: RNG profile rules are request-scoped and operation-specific.
+// KMIP Specification v2.1 §§4.46, 6.1.20, 6.1.2, 6.1.43, and 7.36: RNG rules cover requests and returned attributes.
 fn rng_profile_evaluators_handle_absent_requests_and_unrelated_operations() {
     assert!(!client_register_random_number_generator_is_well_formed(
         None, None

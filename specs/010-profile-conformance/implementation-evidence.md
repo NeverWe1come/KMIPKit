@@ -8069,3 +8069,11 @@ The pinned Specification v2.1 §9.7 clause says Batch Item is REQUIRED but leave
 | Refactor verification | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check`; `git diff --check` | PASS: catalog validates (4 sources, 1,411 clauses, 4,138 records), generated profile metadata and report are current, and whitespace checks pass. |
 
 The oracle continues to record the §9.7 source actor/direction as unspecified, with the project client-scope attribution separated in `KMIPKIT-DEC-029`. No official Test Case ID is linked by the pinned source; no OASIS execution, server interoperability, or profile-conformance claim is made.
+
+## T040 Shared RNG request and response representation — Red (2026-10-28)
+
+The independent QA review found that the §7.36 evaluator covered only Register and Add Attribute requests, although approved `KMIPKIT-DEC-030` covers both request and response representation and Specification v2.1 §4.46 names the five creation operations that may receive caller-supplied Attributes. The regression tests now cover those client request attribute groups and RNG Parameters returned by Get Attributes; pinned OASIS files remain unchanged.
+
+| Phase | Command | Result |
+| --- | --- | --- |
+| Red | `cargo test -p kmipkit-protocol --lib --all-features rng` | FAIL as expected against the prior evaluator: 29 passed and 3 failed. The failures showed missing response evidence links, acceptance of malformed RNG data in creation-operation Attributes, and acceptance of malformed RNG Parameters in Get Attributes responses. |

@@ -2706,12 +2706,12 @@ mod unrelated {
                     # KMIPKIT-0010 T040: final Baseline mappings, including
                     # both state-aware negative tests for Original Creation Date.
                     *["KMIPKIT-REQ-SPEC-4-001-003"] * 11,
-                    # Shared RNG Parameters evidence covers required input and
-                    # optional known-building-block fields, including negatives.
-                    *["KMIPKIT-REQ-SPEC-7.36-001"] * 2,
-                    *["KMIPKIT-REQ-SPEC-7.36-002-001"] * 4,
-                    *["KMIPKIT-REQ-SPEC-7.36-002-002"] * 2,
-                    *["KMIPKIT-REQ-SPEC-7.36-003"] * 4,
+                    # Shared RNG Parameters evidence covers client request and
+                    # response representation, optional fields, and negatives.
+                    *["KMIPKIT-REQ-SPEC-7.36-001"] * 4,
+                    *["KMIPKIT-REQ-SPEC-7.36-002-001"] * 6,
+                    *["KMIPKIT-REQ-SPEC-7.36-002-002"] * 4,
+                    *["KMIPKIT-REQ-SPEC-7.36-003"] * 6,
                     "KMIPKIT-REQ-SPEC-4.38-003",
                     "KMIPKIT-REQ-SPEC-4.38-003",
                     "KMIPKIT-REQ-SPEC-4.57-005-002",
