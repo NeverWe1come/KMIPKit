@@ -27,6 +27,25 @@ AUTH_ONLY_OWNER_STATUS = (
 )
 
 
+def _write_feature_spec(
+    root: Path,
+    directory_name: str,
+    status: str,
+    *,
+    feature_branch: str | None = None,
+) -> Path:
+    owner = root / "specs" / directory_name / "spec.md"
+    owner.parent.mkdir(parents=True)
+    branch_line = (
+        f"**Feature Branch**: `{feature_branch}`\n\n" if feature_branch else ""
+    )
+    owner.write_text(
+        f"# Feature\n\n{branch_line}**Status**: {status}\n",
+        encoding="utf-8",
+    )
+    return owner
+
+
 def _contract_manifest() -> dict[str, object]:
     return _valid_v2_manifest()
 
@@ -391,17 +410,15 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_merged_feature_pr_can_record_human_acceptance_of_embedded_spec(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            owner = root / "specs" / "029-opaque-object-context" / "spec.md"
-            owner.parent.mkdir(parents=True)
             status = (
                 "Approved for implementation under the maintainer's autonomous "
                 "roadmap instruction dated 2026-10-13"
             )
-            owner.write_text(
-                "# Opaque context\n\n"
-                "**Feature Branch**: `feature/KMIPKIT-0044-opaque-object-context`\n\n"
-                f"**Status**: {status}\n",
-                encoding="utf-8",
+            _write_feature_spec(
+                root,
+                "029-opaque-object-context",
+                status,
+                feature_branch="feature/KMIPKIT-0044-opaque-object-context",
             )
             evidence = (
                 root
@@ -495,8 +512,6 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_standing_direct_authorization_is_not_approval_without_merge_record(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            owner = root / "specs" / "012-vendor-extension-registry" / "spec.md"
-            owner.parent.mkdir(parents=True)
             status = (
                 "Approved for implementation under the maintainer's standing direct "
                 "authorization to execute the complete KMIPKit plan without further "
@@ -504,11 +519,11 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 "implementation; it does not claim line-by-line human review of this "
                 "revision or waive PR approval and merge rules."
             )
-            owner.write_text(
-                "# Vendor extension registry\n\n"
-                "**Feature Branch**: `feature/KMIPKIT-0012-registry-implementation`\n\n"
-                f"**Status**: {status}\n",
-                encoding="utf-8",
+            _write_feature_spec(
+                root,
+                "012-vendor-extension-registry",
+                status,
+                feature_branch="feature/KMIPKIT-0012-registry-implementation",
             )
 
             self.assertEqual(
@@ -553,9 +568,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         for feature_id, directory_name, status in cases:
             with self.subTest(feature_id=feature_id), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
-                owner = root / "specs" / directory_name / "spec.md"
-                owner.parent.mkdir(parents=True)
-                owner.write_text(f"# Feature\n\n**Status**: {status}\n", encoding="utf-8")
+                _write_feature_spec(root, directory_name, status)
 
                 self.assertEqual(
                     "candidate", generate._operation_owner_state(root, feature_id)
