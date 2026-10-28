@@ -163,7 +163,7 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")
         self.assertIn(
-            "unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v",
+            "unittest discover --failfast -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v",
             job,
             "Every supported pull-request platform must run fixture generator rejection tests.",
         )
@@ -188,6 +188,24 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "The contract step must not select a system Python ahead of the uv environment.",
         )
+
+    def test_fast_preflight_gates_full_script_matrix_and_stops_early(self) -> None:
+        contents = self.require_workflow()
+        preflight = self.require_job(contents, "fast-preflight")
+        self.assertRegex(preflight, r"(?m)^    runs-on: ubuntu-latest$")
+        self.assertRegex(preflight, r"(?m)^    needs: impact-plan$")
+        self.assertIn("scripts.tests.test_ci_impact.CiImpactTests.test_ci_shared_manifest_generator_normative_and_unknown_paths_force_full", preflight)
+        self.assertIn("tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must", preflight)
+        self.assertIn("--failfast", preflight)
+
+        script_contracts = self.require_job(contents, "script-contracts")
+        self.assertRegex(script_contracts, r"(?m)^    needs:\n      - impact-plan\n      - fast-preflight$")
+        self.assertIn("needs.fast-preflight.result == 'success'", script_contracts)
+        self.assertIn("fail-fast: true", script_contracts)
+        self.assertGreaterEqual(script_contracts.count("--failfast"), 3)
+
+        summary = self.require_job(contents, "run-summary")
+        self.assertRegex(summary, r"(?m)^      - fast-preflight$")
 
     def test_ffi_sanitizer_job_runs_the_c_consumer_under_address_sanitizer(self) -> None:
         contents = self.require_workflow()

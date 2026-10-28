@@ -4,7 +4,7 @@
 
 ## Summary
 
-Add an always-triggered pull-request classifier that compares the exact PR base and merge trees, emits a deterministic impact plan, and controls job-level routing. Keep full Rust/shared CI as the conservative fallback. Split the current combined adapter test/coverage jobs so Java, Python, C, and JNI work can be selected independently. Make the coverage gate validate only selected scopes without relaxing any selected scope's existing threshold. Teach the final Summary to reject selected failures and unexpected skips while explaining authorized skips. Reconcile the superseded per-PR execution rules in specification 001.
+Add an always-triggered pull-request classifier that compares the exact PR base and merge trees, emits a deterministic impact plan, and controls job-level routing. Keep full Rust/shared CI as the conservative fallback. Split the current combined adapter test/coverage jobs so Java, Python, C, and JNI work can be selected independently. Make the coverage gate validate only selected scopes without relaxing any selected scope's existing threshold. Teach the final Summary to reject selected failures and unexpected skips while explaining authorized skips. Reconcile the superseded per-PR execution rules in specification 001. For full CI, run a visible Linux fast-preflight of focused classifier and normative-catalog checks before the Script Contracts matrix; make Python test discovery stop on its first failure and enable matrix fail-fast while retaining every final gate.
 
 ## Technical Context
 
@@ -14,7 +14,7 @@ Add an always-triggered pull-request classifier that compares the exact PR base 
 **Testing**: `unittest` tests with temporary Git repositories for exact-tree/path-status classification; existing workflow and Summary contracts; coverage gate fixture tests; YAML parsing/static workflow contracts; full existing script/catalog checks and Rust checks for full-CI selection.
 **Target Platform**: GitHub-hosted Linux, Windows, and macOS PR jobs; current scheduled runner configuration remains unchanged.
 **Project Type**: Rust workspace with multi-language bindings and repository-owned GitHub Actions automation.
-**Performance Goals**: Documentation-only changes do not execute compiler, language build/test, sanitizer, fuzz, or coverage jobs. Isolated Java/Python/C/JNI changes omit unrelated components. Wall-clock savings are observational; job-count reduction is deterministic.
+**Performance Goals**: Documentation-only changes do not execute compiler, language build/test, sanitizer, fuzz, or coverage jobs. Isolated Java/Python/C/JNI changes omit unrelated components. Full-CI regressions should receive an early focused Linux signal, and failed Script Contracts should cancel remaining matrix legs. Wall-clock savings are observational; job-count reduction is deterministic.
 **Constraints**: No workflow-level path filters; no prior-SHA result reuse; exact two-tree diff; unknown/ambiguous inputs force full CI; selected coverage reports remain required; unchanged read-only permissions, fork safety, pinned actions, and schedules.
 
 ## Constitution Check

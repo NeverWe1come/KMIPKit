@@ -121,6 +121,8 @@ As a maintainer, I want the run Summary to distinguish passed checks from justif
 - **FR-015**: The change MUST preserve existing fork safety, read-only permissions, pinned external actions, self-hosted/hosted runner security routing, test commands, platform requirements for selected components, and all existing coverage thresholds. It MUST add no secrets, write permissions, or third-party workflow actions.
 - **FR-016**: The approved implementation MUST include automated tests for documentation-only, each isolated component, mixed changes, rename across classes, deletion, unknown path, shared/full trigger, unavailable or malformed diff, classifier failure, selected-job failure/cancellation/missing result, unexpected skip, missing selected coverage, and successful plan-authorized skips.
 - **FR-017**: Existing requirements in `specs/001-cross-platform-ci/spec.md` that require every component on every PR, prohibit routing changes, or reject every skipped job MUST be reconciled in the same change so the authoritative specifications do not conflict. Scheduled requirements and full-platform guarantees for components that do run MUST remain represented.
+- **FR-018**: For full pull-request CI, a visible Linux fast-preflight job MUST run a fixed, focused set of CI-classifier and normative-catalog tests before the Script Contracts matrix. A preflight failure MUST appear in the final Summary and prevent that matrix from starting. The preflight MUST NOT replace, narrow, or weaken any required full-CI check or coverage gate.
+- **FR-019**: Python `unittest` discovery commands in Script Contracts MUST stop after their first test failure, and the three-platform Script Contracts matrix MUST use fail-fast cancellation. This behavior MUST NOT change scheduled jobs or the selected full validation required before integration.
 
 ### Key Entities
 
@@ -140,6 +142,7 @@ As a maintainer, I want the run Summary to distinguish passed checks from justif
 - **SC-006**: All existing coverage thresholds and applicable source/platform requirements continue to pass for selected scopes, while omitted scopes do not require artifacts that were not produced.
 - **SC-007**: Schedule-triggered checks retain their current selected jobs and behavior, regardless of pull-request path routing.
 - **SC-008**: For representative documentation-only and isolated-component PRs, the count of executed jobs is lower than the current full PR job set; after deployment, measured job counts and wall-clock duration are compared with available full-CI baseline runs, without treating shared-runner queue time as a deterministic guarantee.
+- **SC-009**: A full-CI pull request exposes the Linux fast-preflight result in the run Summary before the Script Contracts matrix completes; a failed preflight prevents that matrix from running, while a successful preflight still leaves all existing Script Contracts checks and coverage gates required.
 
 ## Assumptions
 
