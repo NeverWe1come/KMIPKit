@@ -3438,6 +3438,16 @@ fn copy_optional_identifier(
     copy_unique_identifier(identifier)
 }
 
+fn copy_optional_text_identifier(
+    identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<Option<String>> {
+    match copy_optional_identifier(identifier)? {
+        None => Ok(None),
+        Some(UniqueIdentifier::TextString(value)) => Ok(Some(value)),
+        Some(_) => Err(ERROR_INVALID_INPUT),
+    }
+}
+
 fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_batch_item_t> {
     try_make_handle(
         Kind::BatchItem,
@@ -4249,12 +4259,7 @@ pub extern "C" fn kmipkit_client_batch_item_get_attribute_list(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
-        let identifier = match identifier {
-            None => None,
-            Some(UniqueIdentifier::TextString(value)) => Some(value),
-            Some(_) => return record_ffi_error(ERROR_INVALID_INPUT),
-        };
+        let identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
         *out = try_ffi!(batch_item_handle(ClientRequest::get_attribute_list(
             GetAttributeListRequest::new(identifier),
         )));
@@ -4273,12 +4278,7 @@ pub extern "C" fn kmipkit_client_batch_item_add_attribute(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let unique_identifier = try_ffi!(copy_optional_identifier(unique_identifier));
-        let unique_identifier = match unique_identifier {
-            None => None,
-            Some(UniqueIdentifier::TextString(value)) => Some(value),
-            Some(_) => return record_ffi_error(ERROR_INVALID_INPUT),
-        };
+        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
         let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
         let request = AddAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
         *out = try_ffi!(batch_item_handle(ClientRequest::AddAttribute(request)));
