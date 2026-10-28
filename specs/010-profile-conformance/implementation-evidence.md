@@ -7925,3 +7925,18 @@ The profile-unit traceability regression was first run red and failed because th
 | Full Rust suites | cargo test -p kmipkit-protocol -p kmipkit-client --all-features --locked --quiet — PASS: 603 client unit tests, 1,201 protocol unit tests, plus all listed integration/UI/doctest targets. |
 
 Final independent QA re-review found no remaining findings. Independent security review found no actionable issue in the caller-state validation, error redaction, or NotSent behavior. This closes the runtime evidence gaps in T040; Baseline remains evidence_incomplete until T036's three mandatory official-case blockers and 77 linked cases without local fixtures are resolved. No OASIS case pass, server interoperability, or profile-conformance claim is made.
+
+## T040 Register Certificate Cryptographic Usage Mask (2026-10-28)
+
+KMIPKIT-REQ-SPEC-6.1.43-007 covers the required attributes for a Managed Cryptographic Object. KMIP Specification v2.1 §2.1 classifies Certificate as a Managed Cryptographic Object, and §6.1.43 Table 293 requires Cryptographic Usage Mask. `RegisterRequest::validate_local_shape` previously checked Certificate Length and the Algorithm/Length pair for Object Type 1 but omitted the Usage Mask check. The validator now rejects a Certificate without that attribute. The regression supplies Certificate Length and the Algorithm/Length pair so the missing Usage Mask is the isolated failure; existing Certificate Length and Algorithm/Length checks remain covered. The traceability ledger links the new test.
+
+| Stage | Command | Result |
+|---|---|---|
+| Red — regression before implementation | `cargo test -p kmipkit-protocol request_rejects_certificate_without_usage_mask -- --nocapture` | Expected failure: 0 passed, 1 failed at the new assertion because the validator accepted Certificate without Cryptographic Usage Mask. Red commit: `185199338082081b617048db47d70a3db526e75d`. |
+| Green — regression after implementation | `cargo test -p kmipkit-protocol request_rejects_certificate_without_usage_mask -- --nocapture` | PASS: 1 passed, 0 failed. Green commit: `694b9a1e75b7088a9dbc95f3b88f62f03e204c86`. |
+| Focused Register unit tests | `cargo test -p kmipkit-protocol --lib register_operation_tests::` | PASS: 33 passed, 0 failed. |
+| Full protocol package | `cargo test -p kmipkit-protocol --all-features` | PASS: 1,202 unit tests, all integration targets, and 3 doctests. |
+| Formatting and lint | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` | PASS. |
+| Diff validation | `git diff --check` | PASS. |
+
+The distinct Red and Green commits are DCO-signed. No code cleanup was needed after Green; this DCO-signed Refactor/documentation commit records the evidence. No T036 fixture, catalog, generated artifact, or pinned OASIS source was changed. T036's three mandatory preflight blockers and 77 cases without local fixtures remain open; this fix makes no official Test Case or profile-conformance claim.
