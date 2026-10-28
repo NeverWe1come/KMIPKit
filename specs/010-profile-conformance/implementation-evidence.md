@@ -8057,3 +8057,15 @@ The three exact dispositions stay visible: `BL-M-4-21` and `BL-M-10-21` are succ
 | Refactor | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/report.py --check`; focused report regression; `git diff --check` | PASS: catalog validation, deterministic report, the focused threshold regression, and whitespace checks pass. Source-backed task/spec/docs wording now agrees across English and Spanish. |
 
 The specification, plan, research record, task acceptance, generated catalog report input, compliance guidance, and English/Spanish user guides now apply the source-defined one-or-more threshold while preserving all 16 case statuses. T045 remains open until T040 is closed and exact-head CI confirms the documentation/report update.
+
+## T040 — §9.7 Batch Item client responsibility (2026-10-28)
+
+The pinned Specification v2.1 §9.7 clause says Batch Item is REQUIRED but leaves endpoint actor and direction unspecified. KMIPKit records the project-level 1.0 client responsibility separately: client-initiated Request Messages are emitted under §8.1 and Response Messages are consumed under §8.4. Accepted `KMIPKIT-DEC-029` therefore assigns `KMIPKIT-REQ-SPEC-9.7-001` to the client's request/response path with both directions while preserving the source clause's unspecified actor and direction. This does not add server behavior or server-initiated operations. The apparent §9.7 pointer to §12 remains documented as written; the pinned §12 heading is Bit Masks and the request/response structures are directly specified in §§8.3 and 8.6.
+
+| Phase | Commit / command | Result |
+| --- | --- | --- |
+| Red (`1a1e1a539`) | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_batch_item_client_scope_has_a_recorded_interpretation -v` | FAIL as expected: the requirement had client role/scope but no accepted decision record (`decision_id` was `null`). |
+| Green (`9d83f88d1`) | Add accepted `KMIPKIT-DEC-029`; associate it with `KMIPKIT-REQ-SPEC-9.7-001`; update the structural crosswalk assertions and regenerate the coverage report. | PASS: focused decision and fourteen-item Batch Item crosswalk tests both pass. |
+| Refactor verification | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check`; `git diff --check` | PASS: catalog validates (4 sources, 1,411 clauses, 4,138 records), generated profile metadata and report are current, and whitespace checks pass. |
+
+The oracle continues to record the §9.7 source actor/direction as unspecified, with the project client-scope attribution separated in `KMIPKIT-DEC-029`. No official Test Case ID is linked by the pinned source; no OASIS execution, server interoperability, or profile-conformance claim is made.
