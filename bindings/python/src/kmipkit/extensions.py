@@ -106,6 +106,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_archive",
         "kmipkit_client_batch_item_add_attribute",
         "kmipkit_client_batch_item_modify_attribute",
+        "kmipkit_client_batch_item_set_attribute",
         "kmipkit_client_batch_item_adjust_attribute",
         "kmipkit_client_batch_item_delete_attribute",
         "kmipkit_client_batch_item_destroy",
@@ -2520,6 +2521,32 @@ def client_batch_item_modify_attribute(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_set_attribute(
+    unique_identifier: UniqueIdentifier | None,
+    new_attribute: ttlv.TtlvItem,
+) -> ClientBatchItem:
+    """Create a Set Attribute item from a borrowed TTLV Item.
+
+    Follows OASIS KMIP 2.1 §6.1.51, Tables 322–324.
+    """
+    if unique_identifier is not None and not (
+        isinstance(unique_identifier, UniqueIdentifier)
+        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    native_item = _client_native_item(new_attribute)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_set_attribute",
+            (identifier, native_item),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_adjust_attribute(
     unique_identifier: UniqueIdentifier | None,
     attribute_reference: AttributeReference,
@@ -3533,6 +3560,7 @@ __all__ = [
     "client_batch_item_get_attributes",
     "client_batch_item_add_attribute",
     "client_batch_item_modify_attribute",
+    "client_batch_item_set_attribute",
     "client_batch_item_adjust_attribute",
     "client_batch_item_delete_attribute",
     "client_batch_item_set_constraints",
