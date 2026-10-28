@@ -95,6 +95,20 @@ class GetAttributeListParityManifestTests(unittest.TestCase):
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 
+        java_constructor = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"]
+            == "org.kmipkit.extensions.ClientBatchItem.getAttributeList"
+        )
+        self.assertEqual(
+            [
+                "public static org.kmipkit.extensions.ClientBatchItem getAttributeList()",
+                "public static org.kmipkit.extensions.ClientBatchItem getAttributeList(org.kmipkit.extensions.UniqueIdentifier)",
+            ],
+            java_constructor["javaSignatures"],
+        )
+
         assert_declaration_mappings(
             self,
             operation,
