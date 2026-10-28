@@ -110,19 +110,30 @@ def start_tls13_mtls_peer(
     return port, failures, peer
 
 
-def read_exact(stream: _TlsPeer, size: int) -> bytes:
+def read_exact(
+    stream: _TlsPeer,
+    size: int,
+    *,
+    eof_message: str = "client closed before sending a complete request",
+) -> bytes:
     output = bytearray()
     while len(output) < size:
         chunk = stream.recv(size - len(output))
         if not chunk:
-            raise AssertionError("client closed before sending a complete request")
+            raise AssertionError(eof_message)
         output.extend(chunk)
     return bytes(output)
 
 
-def read_ttlv_frame(stream: _TlsPeer) -> bytes:
-    header = read_exact(stream, 8)
-    return header + read_exact(stream, int.from_bytes(header[4:8], "big"))
+def read_ttlv_frame(
+    stream: _TlsPeer,
+    *,
+    eof_message: str = "client closed before sending a complete request",
+) -> bytes:
+    header = read_exact(stream, 8, eof_message=eof_message)
+    return header + read_exact(
+        stream, int.from_bytes(header[4:8], "big"), eof_message=eof_message
+    )
 
 
 def ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
