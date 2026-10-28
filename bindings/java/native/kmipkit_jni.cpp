@@ -6084,8 +6084,16 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
 }
 
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseGetAttributeList(
-        JNIEnv* env, jclass, jlong raw_item) {
+        JNIEnv* env, jclass, jlong raw_item, jlong max_elements, jlong max_message_bytes) {
     return guarded<jobjectArray>(env, nullptr, [&] {
+        if (max_elements < 0 || max_message_bytes < 0) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        const uint64_t maximum_reference_count = std::min({
+                static_cast<uint64_t>(max_elements),
+                static_cast<uint64_t>(max_message_bytes) / UINT64_C(16),
+                static_cast<uint64_t>(INT32_MAX)});
         auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
         uint8_t present = 0;
         kmipkit_unique_identifier_v1_t identifier{};
@@ -6098,9 +6106,12 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             throw_status(env, typed_status);
             return static_cast<jobjectArray>(nullptr);
         }
-        if (present > 1 || count > kMaximumNativeInputArrayElements
-                || (present == 0 && (identifier.kind != 0 || count != 0))) {
+        if (present > 1 || (present == 0 && (identifier.kind != 0 || count != 0))) {
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (count > maximum_reference_count) {
+            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
             return static_cast<jobjectArray>(nullptr);
         }
 
@@ -6180,11 +6191,13 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             for (const auto& reference : references) {
                 reference_kinds.push_back(static_cast<jlong>(reference.kind));
                 reference_tags.push_back(static_cast<jlong>(reference.tag_value));
-                if (reference.kind == 1 && reference.vendor_identification_length == 0
+                if (reference.kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG
+                        && reference.vendor_identification_length == 0
                         && reference.attribute_name_length == 0) {
                     vendors.push_back(nullptr);
                     names.push_back(nullptr);
-                } else if (reference.kind == 2 && reference.tag_value == 0
+                } else if (reference.kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME
+                        && reference.tag_value == 0
                         && reference.vendor_identification_length <= static_cast<uint64_t>(INT32_MAX)
                         && reference.attribute_name_length <= static_cast<uint64_t>(INT32_MAX)
                         && (reference.vendor_identification_length == 0

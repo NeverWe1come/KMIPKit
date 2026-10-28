@@ -119,9 +119,15 @@ def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monke
         ttlv, "_structure_from_native_address", lambda _address: structure
     )
 
-    result = client._get_attribute_list_response(
-        SimpleNamespace(_pointer=lambda: object())
-    )
+    limits = ttlv.codec_limits_defaults()
+    try:
+        result = client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: object()),
+            ttlv.codec_limits_max_elements(limits),
+            ttlv.codec_limits_max_message_bytes(limits),
+        )
+    finally:
+        limits.close()
 
     assert isinstance(result, client.GetAttributeListResponse)
     assert result.response_payload_ttlv is structure

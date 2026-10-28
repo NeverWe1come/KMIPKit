@@ -41,7 +41,7 @@ public final class Client implements AutoCloseable {
             return NativeExtensionRegistry.clientExecute(client, consumedBatch,
                     NativeExtensionRegistry.codecLimitValues(limits));
         });
-        return new ClientBatchResponse(response);
+        return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
     }
 
     /** Executes one caller-ordered typed batch with exchange-local timeout overrides. */
@@ -59,7 +59,7 @@ public final class Client implements AutoCloseable {
             return NativeExtensionRegistry.clientExecuteWithOptions(
                     client, consumedBatch, NativeExtensionRegistry.codecLimitValues(limits), timeoutValues);
         });
-        return new ClientBatchResponse(response);
+        return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
     }
 
     /** Executes one caller-owned Encrypt, MAC, or Sign item under local Usage Allocation accounting. */
@@ -97,7 +97,7 @@ public final class Client implements AutoCloseable {
                     : NativeExtensionRegistry.clientExecuteGuardedProtectionItemWithAsynchronousIndicator(
                             client, allocation, consumedItem, cost, asynchronousIndicator, codecLimits);
         });
-        return new ClientBatchResponse(response);
+        return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
     }
 
     private static long[] timeoutValues(RequestOptions options) {

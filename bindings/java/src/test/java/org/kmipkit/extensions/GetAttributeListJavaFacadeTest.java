@@ -54,7 +54,7 @@ final class GetAttributeListJavaFacadeTest {
                     new String[] {null, "vendor", "vendor"},
                     new String[] {null, "Opaque.Name", "Opaque.Name"},
                     new long[] {handle}
-                })
+                }, limits.maxElements(), limits.maxMessageBytes())
                 .orElseThrow();
 
         assertEquals("object-7", mapped.uniqueIdentifier().text());
@@ -83,7 +83,7 @@ final class GetAttributeListJavaFacadeTest {
                 .parseGetAttributeListResponse(new Object[] {
                     new long[] {0}, null, new long[0], new long[0],
                     new String[0], new String[0], new long[] {0}
-                })
+                }, CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes())
                 .isEmpty());
     }
 
@@ -92,7 +92,8 @@ final class GetAttributeListJavaFacadeTest {
         org.junit.jupiter.api.Assertions.assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parseGetAttributeListResponse(
                         new Object[] {new long[] {1}, null, new long[0], new long[0],
-                                new String[0], new String[0], new long[] {0}}));
+                                new String[0], new String[0], new long[] {0}},
+                        CodecLimits.defaults().maxElements(), CodecLimits.defaults().maxMessageBytes()));
     }
 
     @Test

@@ -1876,7 +1876,7 @@ class Client(_ClientHandle):
                 batch._release_ownership_lock()
             if response_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
-            return _batch_result(response_output[0])
+            return _batch_result(response_output[0], limits)
 
     def execute_with_options(
         self,
@@ -1923,7 +1923,7 @@ class Client(_ClientHandle):
                 batch._release_ownership_lock()
             if response_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
-            return _batch_result(response_output[0])
+            return _batch_result(response_output[0], limits)
 
     def execute_guarded_protection_item(
         self,
@@ -2014,11 +2014,23 @@ class Client(_ClientHandle):
                 item._release_ownership_lock()
         if response_output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return _batch_result(response_output[0])
+        return _batch_result(response_output[0], limits)
 
 
-def _batch_result(handle: Any) -> BatchResult:
+def _batch_result(
+    handle: Any, limits: ttlv.CodecLimits | None = None
+) -> BatchResult:
     response = _wrap_owned_handle(BatchResult, handle, ())
+    max_elements = (
+        sys.maxsize
+        if limits is None
+        else ttlv.codec_limits_max_elements(limits)
+    )
+    max_message_bytes = (
+        _MAX_INPUT_BYTES
+        if limits is None
+        else ttlv.codec_limits_max_message_bytes(limits)
+    )
     items: list[BatchItemResult] = []
     try:
         count = ffi.new("uint64_t *")
@@ -2214,7 +2226,9 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.result_status) == 0
                     and int(metadata.operation) == 0x0C
                 ):
-                    attribute_list_response = _get_attribute_list_response(item)
+                    attribute_list_response = _get_attribute_list_response(
+                        item, max_elements, max_message_bytes
+                    )
                 set_constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -3525,6 +3539,8 @@ def _get_constraints_response(
 
 def _get_attribute_list_response(
     item: _ClientBatchItemResponse,
+    max_elements: int,
+    max_message_bytes: int,
 ) -> GetAttributeListResponse:
     present = ffi.new("uint8_t *")
     identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
@@ -3536,8 +3552,11 @@ def _get_attribute_list_response(
             item._pointer(), present, identifier, ffi.NULL, 0, count
         )
     )
-    if present[0] != 1 or count[0] > 100_000:
+    if present[0] != 1:
         errors.raise_for_status(4)
+    maximum_reference_count = min(max_elements, max_message_bytes // 16, sys.maxsize)
+    if count[0] > maximum_reference_count:
+        errors.raise_for_status(6)
     if identifier.kind != 1 or identifier.reserved != 0:
         errors.raise_for_status(4)
     identifier_length = int(identifier.text_length)

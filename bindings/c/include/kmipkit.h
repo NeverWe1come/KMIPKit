@@ -28,6 +28,9 @@ typedef uint32_t kmipkit_unique_identifier_kind_t;
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
 
+#define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
+#define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
+
 typedef struct kmipkit_extension_identity_t kmipkit_extension_identity_t;
 typedef struct kmipkit_extension_compatibility_t kmipkit_extension_compatibility_t;
 typedef struct kmipkit_ttlv_path_t kmipkit_ttlv_path_t;

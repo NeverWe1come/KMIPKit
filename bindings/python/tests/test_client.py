@@ -2780,7 +2780,12 @@ def test_guarded_protection_facade_consumes_item_and_preserves_cost_and_indicato
             }
         ),
     )
-    monkeypatch.setattr(client, "_batch_result", lambda value: value)
+    def batch_result(value: object, result_limits: ttlv.CodecLimits) -> object:
+        assert value == native_response_pointer
+        assert result_limits is limits
+        return value
+
+    monkeypatch.setattr(client, "_batch_result", batch_result)
 
     result = (
         handle.execute_guarded_protection_item(context, item, 9, limits)

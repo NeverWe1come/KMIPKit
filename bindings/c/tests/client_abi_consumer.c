@@ -6233,10 +6233,10 @@ int kmipkit_client_abi_c_consumer_validate_typed_get_attribute_list_response(
     if (kmipkit_client_batch_item_response_get_attribute_list(
             item, &present, &identifier, references, UINT64_C(3), &count) != 0 ||
         present != 1 || count != UINT64_C(3) ||
-        references[0].kind != UINT32_C(1) ||
+        references[0].kind != KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ||
         references[0].tag_value != UINT32_C(0x00540001) ||
-        references[1].kind != UINT32_C(2) ||
-        references[2].kind != UINT32_C(2)) {
+        references[1].kind != KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ||
+        references[2].kind != KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME) {
         return 0;
     }
     return references[1].vendor_identification_length == UINT64_C(6) &&

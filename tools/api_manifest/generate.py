@@ -2249,6 +2249,42 @@ def render_c_header(
             lines.append(f"#define {const_name} (({name}){value['value']})")
         lines.append("")
 
+    for declaration in manifest.get("publicDeclarations", []):
+        if (
+            declaration.get("packageId") != "c-kmipkit"
+            or declaration.get("kind") != "macro"
+            or "cValue" not in declaration
+        ):
+            continue
+        name = declaration["exportName"]
+        if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        c_value = declaration["cValue"]
+        c_type = declaration["cValueType"]
+        maximum_c_value = {
+            "uint8_t": 0xFF,
+            "uint16_t": 0xFFFF,
+            "uint32_t": 0xFFFF_FFFF,
+            "uint64_t": 0xFFFF_FFFF_FFFF_FFFF,
+        }.get(c_type)
+        if (
+            re.fullmatch(r"[A-Z][A-Z0-9_]*", name) is None
+            or maximum_c_value is None
+            or not isinstance(c_value, int)
+            or isinstance(c_value, bool)
+            or not 0 <= c_value <= maximum_c_value
+        ):
+            raise ManifestError("declared C macro value is invalid")
+        lines.append(f"#define {name} (({c_type}){c_value})")
+    if any(
+        declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "macro"
+        and "cValue" in declaration
+        and (ready_c_exports is None or declaration["exportName"] in ready_c_exports)
+        for declaration in manifest.get("publicDeclarations", [])
+    ):
+        lines.append("")
+
     # Forward declarations make pointer members independent of manifest order.
     for declaration in manifest["types"]:
         c_type = declaration["c"]

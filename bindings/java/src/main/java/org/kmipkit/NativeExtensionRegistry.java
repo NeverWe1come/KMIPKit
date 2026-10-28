@@ -317,7 +317,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseGet(long itemResponse);
     public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
-    public static native Object[] clientBatchItemResponseGetAttributeList(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetAttributeList(
+            long itemResponse, long maxElements, long maxMessageBytes);
     public static native Object[] clientBatchItemResponseSetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseSetDefaults(long itemResponse);
     public static native Object[] clientBatchItemResponseValidate(long itemResponse);

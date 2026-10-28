@@ -2172,6 +2172,16 @@
           "type": "string",
           "minLength": 1
         },
+        "cValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615,
+          "description": "Explicit fixed-width unsigned value for a generated C macro."
+        },
+        "cValueType": {
+          "enum": ["uint8_t", "uint16_t", "uint32_t", "uint64_t"],
+          "description": "Fixed-width C cast type for cValue."
+        },
         "javaSignatures": {
           "type": "array",
           "minItems": 2,
@@ -2310,6 +2320,24 @@
       },
       "additionalProperties": false,
       "allOf": [
+        {
+          "if": {
+            "required": ["cValue"]
+          },
+          "then": {
+            "properties": {
+              "packageId": {"const": "c-kmipkit"},
+              "kind": {"const": "macro"}
+            },
+            "required": ["cValueType"]
+          }
+        },
+        {
+          "if": {
+            "required": ["cValueType"]
+          },
+          "then": {"required": ["cValue"]}
+        },
         {
           "if": {
             "properties": {

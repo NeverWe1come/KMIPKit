@@ -7,9 +7,13 @@ import org.kmipkit.internal.NativeHandle;
 /** Ordered common result metadata for one executed typed batch. */
 public final class ClientBatchResponse implements AutoCloseable {
     private final NativeHandle handle;
+    private final long maxElements;
+    private final long maxMessageBytes;
 
-    ClientBatchResponse(long nativeHandle) {
+    ClientBatchResponse(long nativeHandle, long maxElements, long maxMessageBytes) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.CLIENT_BATCH_RESPONSE);
+        this.maxElements = maxElements;
+        this.maxMessageBytes = maxMessageBytes;
     }
 
     /** Returns the number of response items in server order. */
@@ -26,7 +30,7 @@ public final class ClientBatchResponse implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         long item = handle.withValue(value ->
                 NativeExtensionRegistry.clientBatchResponseItemAt(value, index));
-        return new ClientBatchItemResult(item);
+        return new ClientBatchItemResult(item, maxElements, maxMessageBytes);
     }
 
     @Override

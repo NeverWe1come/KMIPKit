@@ -21,9 +21,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
     private static final int MAX_NATIVE_ARRAY_ELEMENTS = 100_000;
 
     private final NativeHandle handle;
+    private final long maxElements;
+    private final long maxMessageBytes;
 
-    ClientBatchItemResult(long nativeHandle) {
+    ClientBatchItemResult(long nativeHandle, long maxElements, long maxMessageBytes) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.CLIENT_BATCH_ITEM_RESPONSE);
+        this.maxElements = maxElements;
+        this.maxMessageBytes = maxMessageBytes;
     }
 
     /** Returns the forward-compatible completed or Pending outcome discriminator. */
@@ -251,8 +255,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
         if (resultStatus() != 0) return Optional.empty();
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(
-                NativeExtensionRegistry::clientBatchItemResponseGetAttributeList);
-        return parseGetAttributeListResponse(values);
+                value -> NativeExtensionRegistry.clientBatchItemResponseGetAttributeList(
+                        value, maxElements, maxMessageBytes));
+        return parseGetAttributeListResponse(values, maxElements, maxMessageBytes);
     }
 
     /**
@@ -2515,18 +2520,28 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return Optional.of(new SetDefaultsResponse(TtlvStructure.fromNative(handles[0], null)));
     }
 
-    static Optional<GetAttributeListResponse> parseGetAttributeListResponse(Object[] values) {
+    static Optional<GetAttributeListResponse> parseGetAttributeListResponse(
+            Object[] values, long maxElements, long maxMessageBytes) {
         long ownedHandle = 0;
         boolean transferred = false;
         try {
+            if (maxElements < 0 || maxMessageBytes < 0) {
+                throw new InvalidInputException("native Get Attribute List limits are invalid");
+            }
+            long maximumReferences = Math.min(
+                    Math.min(maxElements, maxMessageBytes / 16), Integer.MAX_VALUE);
             Object[] tuple = requireTuple(values, 7,
                     "native Get Attribute List response is invalid");
             long[] fields = requireLongArray(tuple[0], 1,
                     "native Get Attribute List response is invalid");
-            long[] kinds = requireNativeLongArray(tuple[2], "native reference kinds are invalid");
-            long[] tags = requireNativeLongArray(tuple[3], "native reference tags are invalid");
-            String[] vendors = requireNativeStringArray(tuple[4], "native reference vendors are invalid");
-            String[] names = requireNativeStringArray(tuple[5], "native reference names are invalid");
+            long[] kinds = requireNativeLongArray(
+                    tuple[2], "native reference kinds are invalid", maximumReferences);
+            long[] tags = requireNativeLongArray(
+                    tuple[3], "native reference tags are invalid", maximumReferences);
+            String[] vendors = requireNativeStringArray(
+                    tuple[4], "native reference vendors are invalid", maximumReferences);
+            String[] names = requireNativeStringArray(
+                    tuple[5], "native reference names are invalid", maximumReferences);
             long[] handles = requireLongArray(tuple[6], 1,
                     "native Get Attribute List response is invalid");
             ownedHandle = handles[0] > 0 ? handles[0] : 0;
@@ -2538,7 +2553,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 return Optional.empty();
             }
             if (!(tuple[1] instanceof UniqueIdentifier identifier)
-                    || handles[0] <= 0 || kinds.length > MAX_NATIVE_ARRAY_ELEMENTS
+                    || handles[0] <= 0
                     || tags.length != kinds.length || vendors.length != kinds.length
                     || names.length != kinds.length) {
                 throw new InvalidInputException("native Get Attribute List response is invalid");
@@ -2574,6 +2589,28 @@ public final class ClientBatchItemResult implements AutoCloseable {
     private static String[] requireNativeStringArray(Object value, String message) {
         if (!(value instanceof String[] values) || values.length > MAX_NATIVE_ARRAY_ELEMENTS) {
             throw new InvalidInputException(message);
+        }
+        return values;
+    }
+
+    private static long[] requireNativeLongArray(
+            Object value, String message, long maximumElements) {
+        if (!(value instanceof long[] values)) {
+            throw new InvalidInputException(message);
+        }
+        if (values.length > maximumElements) {
+            throw new ResourceLimitException("Get Attribute List exceeds configured codec limits");
+        }
+        return values;
+    }
+
+    private static String[] requireNativeStringArray(
+            Object value, String message, long maximumElements) {
+        if (!(value instanceof String[] values)) {
+            throw new InvalidInputException(message);
+        }
+        if (values.length > maximumElements) {
+            throw new ResourceLimitException("Get Attribute List exceeds configured codec limits");
         }
         return values;
     }

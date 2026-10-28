@@ -139,6 +139,11 @@ def _create_repo(parent: Path) -> Path:
                         referenced_paths.add(str(Path(*parts[:2]) / "spec.md"))
             referenced_paths.update(record.get("parityEvidenceIds", []))
 
+    # KMIPKIT-0018 retains a stale Draft status and relies on its merged PR
+    # approval record in the public API feature evidence during owner checks.
+    referenced_paths.add(
+        "specs/043-public-api-bindings/implementation-evidence.md"
+    )
     for relative_path in referenced_paths:
         source_path = ROOT / relative_path
         destination = root / relative_path

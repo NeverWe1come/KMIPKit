@@ -308267,6 +308267,46 @@
       ]
     },
     {
+      "declarationId": "T037:attribute-reference-kind-tag:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG",
+      "cValue": 1,
+      "cValueType": "uint32_t",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+      "requirementIds": ["KMIPKIT-0016-FR-001", "KMIPKIT-0016-FR-002", "KMIPKIT-0043-FR-007", "KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022"],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {"kind": "feature-specification", "path": "specs/016-attribute-operations/traceability.md", "status": "Approved", "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"},
+      "languageMappings": {
+        "rust": {"packageId": "rust-kmipkit-protocol", "name": "kmipkit_protocol::AttributeReference::tag"},
+        "c": {"packageId": "c-kmipkit", "name": "KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG"},
+        "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.AttributeReference.tag"},
+        "python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.AttributeReference.tag"}
+      },
+      "parityEvidenceIds": ["bindings/c/tests/client_abi_consumer.c", "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs"]
+    },
+    {
+      "declarationId": "T037:attribute-reference-kind-name:c",
+      "packageId": "c-kmipkit",
+      "kind": "macro",
+      "exportName": "KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME",
+      "cValue": 2,
+      "cValueType": "uint32_t",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+      "requirementIds": ["KMIPKIT-0016-FR-001", "KMIPKIT-0016-FR-002", "KMIPKIT-0043-FR-007", "KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022"],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {"kind": "feature-specification", "path": "specs/016-attribute-operations/traceability.md", "status": "Approved", "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"},
+      "languageMappings": {
+        "rust": {"packageId": "rust-kmipkit-protocol", "name": "kmipkit_protocol::AttributeReference::name"},
+        "c": {"packageId": "c-kmipkit", "name": "KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME"},
+        "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.AttributeReference.name"},
+        "python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.AttributeReference.name"}
+      },
+      "parityEvidenceIds": ["bindings/c/tests/client_abi_consumer.c", "crates/kmipkit-ffi/tests/support/get_attribute_list_abi_tests.rs"]
+    },
+    {
       "declarationId": "T037:result:uniqueIdentifier:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
