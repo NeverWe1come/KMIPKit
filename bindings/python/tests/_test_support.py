@@ -4,6 +4,8 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Protocol
 
+_PEER_FAILURE_TYPES = (AssertionError, OSError, RuntimeError, ssl.SSLError)
+
 
 class _TlsPeer(Protocol):
     def version(self) -> str | None: ...
@@ -15,9 +17,10 @@ class _TlsPeer(Protocol):
 def capture_peer_failures(
     peer_failures: queue.Queue[BaseException],
 ) -> Iterator[None]:
+    """Queue expected TLS peer errors so the owning test can report them."""
     try:
         yield
-    except (AssertionError, OSError, RuntimeError, ssl.SSLError) as failure:
+    except _PEER_FAILURE_TYPES as failure:
         peer_failures.put(failure)
 
 
