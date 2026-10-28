@@ -5748,7 +5748,61 @@ requirements, ownership checks, and evidence checks remain in their tests.
 | Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass; all 12 generated API outputs are current and the patch has no whitespace errors. |
 
 The existing temporary coverage exception and all quality thresholds remain
-unchanged. The cloud SonarCloud duplication measure has not been rerun for
-these commits; the parity-test refactor addresses one identified duplication
-cluster but does not claim that the 3% duplication gate now passes. T074 and
-T085 remain open pending current-head CI and the remaining release checks.
+unchanged. Exact-head CI and the SonarCloud duplication result are recorded in
+the 2026-10-28 follow-up below. The parity-test refactor addresses one
+duplication cluster but does not claim that the 3% duplication gate passes.
+T074 and T085 remain open pending current-head CI and the remaining release
+checks.
+
+### T074 logout TLS peer exception capture follow-up (2026-10-28)
+
+The logout mTLS peer called the shared TLS validator, which now raises
+`RuntimeError`, but its previous exception tuple did not capture that error in
+the peer-failure queue. The test utility now names the captured exception
+contract and includes `RuntimeError`; a focused regression verifies that the
+real TLS validator's failure is queued with its original message. The initial
+helper extraction preserved the old tuple before the regression was added.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| FFI build | `b9c6bad9d` | `cargo build -p kmipkit-ffi --all-features` | Pass; the local FFI library was built for native-backed Python tests. AWS-LC emitted non-fatal compiler-probe and missing-NASM warnings. |
+| Refactor setup | `b9c6bad9d` | From `bindings/python`, with `KMIPKIT_NATIVE_LIBRARY` set to the worktree's built `target/debug/kmipkit_ffi.dll`: `.\.venv-codex\Scripts\python.exe -B -m pytest -p no:cacheprovider tests/test_logout_native_integration.py tests/test_tls_peer_support.py -q` | Pass, 4 tests; the logout peer's prior exception handling is isolated without changing its accepted failures. |
+| Red | `58d35ffd3` | From `bindings/python`: `.\.venv-codex\Scripts\python.exe -B -m pytest -p no:cacheprovider tests/test_tls_peer_support.py::test_captures_runtime_tls_peer_validation_failures -q` | Expected failure: the TLS validator's `RuntimeError` escaped the capture context instead of entering the peer-failure queue. |
+| Green | `a827a36d1` | From `bindings/python`, with `KMIPKIT_NATIVE_LIBRARY` set to the worktree's built `target/debug/kmipkit_ffi.dll`: `.\.venv-codex\Scripts\python.exe -B -m pytest -p no:cacheprovider tests/test_tls_peer_support.py tests/test_logout_native_integration.py -q` | Pass, 5 tests; `RuntimeError` is captured and reported to the owning test. |
+| Refactor | `aa1458d9c` | Same focused Python tests; `cargo fmt --all --check`; `git diff --check` | Pass; the caught exception classes are named in one test-support constant. |
+| Final local mapping check | `aa1458d9c` | The 12 migrated Python mTLS integration files plus `test_tls_peer_support.py`, using the worktree FFI DLL | Pass, 48 tests. |
+
+All four development commits are DCO-signed. Exact-head CI run `40674005752`
+on the prior code head `55a85c9ec` passed the Rust, C, Java/JNI, Python,
+coverage, dependency, traceability, sanitizer, fuzz, and workflow checks;
+CodeQL passed. SonarCloud still fails the new-code duplication gate at 5.27%
+(required at most 3%); its D-reliability condition passed. The per-file
+component-measures/duplication API attributes the largest counts to
+`bindings/python/src/kmipkit/client.py` (144 duplicated lines),
+`test_rekey_key_pair_native_integration.py` (123),
+`test_set_defaults_operation.py` (117), and
+`test_set_constraints_operation.py` (117). The logout peer regression and
+updated evidence are awaiting exact-head CI. No quality threshold was changed.
+T074 remains open until the duplication gate and all applicable checks pass;
+T085 remains open until the full KMIPKIT-0043 release work is complete.
+
+### T074 shared Python mTLS client test configuration follow-up (2026-10-28)
+
+The native-backed mTLS integration tests repeated the same client certificate,
+private-key, trust, endpoint, and timeout configuration. A shared test-support
+factory now owns those common inputs; the usage-allocation guard retains its
+10-second total timeout as an explicit option. Operation-specific transport
+use and assertions remain at each call site. This removes a repeated setup
+cluster from 15 Python test modules without changing the production facade.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `fbd64246d` | Focused test `test_mtls_transport_factory_preserves_shared_client_inputs` | Expected failure: the shared mTLS transport factory was not yet defined. |
+| Green | `3ad22ea06` | Same focused test with the built native library available | Pass; endpoint, certificate/key/trust paths, common timeouts, and the 10-second override are asserted. |
+| Refactor | this commit | Focused Python mTLS/integration and operation suites across the 15 migrated test modules plus `test_tls_peer_support.py`, using the worktree FFI DLL | Pass, 76 tests. |
+| Refactor | this commit | Ruff `I001` check on all changed Python test modules; `cargo fmt --all --check`; `git diff --check` | Pass. |
+
+The SonarCloud per-file duplication response for PR 104 identifies repeated
+mTLS client configuration in the operation test files. The refactor targets
+that test-only setup; the 3% project gate remains unchanged and still requires
+an exact-head SonarCloud rerun.

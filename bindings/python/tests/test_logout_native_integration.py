@@ -9,8 +9,11 @@ import struct
 import threading
 from pathlib import Path
 
-from _test_support import capture_peer_failures, require_tls13_mtls_peer
-
+from _test_support import (
+    capture_peer_failures,
+    mtls_transport_config,
+    require_tls13_mtls_peer,
+)
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -120,28 +123,7 @@ def test_logout_uses_native_cffi_and_exposes_success_response_presence() -> None
 
     peer = threading.Thread(target=serve_logout_response, daemon=True)
     peer.start()
-    transport = client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(
-            client.TransportInput.file(
-                _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-            ),
-        ),
-        client_private_key=client.TransportInput.file(
-            _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-        ),
-        trust=client.TrustSource.certificate_authorities(
-            (
-                client.TransportInput.file(
-                    _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-                ),
-            )
-        ),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    transport = mtls_transport_config(port, _FIXTURES)
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )

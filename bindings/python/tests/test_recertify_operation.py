@@ -11,9 +11,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
-from kmipkit import client, extensions, ttlv
-from kmipkit import errors
+from _test_support import mtls_transport_config
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -372,25 +371,7 @@ def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(
 
     peer = threading.Thread(target=serve_recertify_response, daemon=True)
     peer.start()
-    client_certificate = client.TransportInput.file(
-        _TLS_FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-    )
-    client_key = client.TransportInput.file(
-        _TLS_FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-    )
-    server_certificate = client.TransportInput.file(
-        _TLS_FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-    )
-    transport = client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client_certificate,),
-        client_private_key=client_key,
-        trust=client.TrustSource.certificate_authorities((server_certificate,)),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    transport = mtls_transport_config(port, _TLS_FIXTURES)
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )

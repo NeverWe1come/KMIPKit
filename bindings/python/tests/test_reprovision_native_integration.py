@@ -10,8 +10,7 @@ import threading
 from pathlib import Path
 from typing import NamedTuple
 
-from _test_support import require_tls13_mtls_peer
-
+from _test_support import mtls_transport_config, require_tls13_mtls_peer
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -121,28 +120,7 @@ def _start_mtls_peer(
 
 
 def _transport(port: int) -> client.TransportConfig:
-    return client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(
-            client.TransportInput.file(
-                _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-            ),
-        ),
-        client_private_key=client.TransportInput.file(
-            _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-        ),
-        trust=client.TrustSource.certificate_authorities(
-            (
-                client.TransportInput.file(
-                    _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-                ),
-            )
-        ),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    return mtls_transport_config(port, _FIXTURES)
 
 
 def _parse_item(encoded: bytes, offset: int, parent_end: int) -> _TtlvSpan:

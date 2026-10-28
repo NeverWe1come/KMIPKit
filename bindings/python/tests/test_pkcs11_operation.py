@@ -12,7 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
+from _test_support import mtls_transport_config
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi as client_ffi
 from kmipkit._client_ffi import lib as client_lib
@@ -546,25 +546,7 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values(
 
     peer = threading.Thread(target=serve_one_pkcs11_response, daemon=True)
     peer.start()
-    client_certificate = client.TransportInput.file(
-        TLS_FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-    )
-    client_key = client.TransportInput.file(
-        TLS_FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-    )
-    server_certificate = client.TransportInput.file(
-        TLS_FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-    )
-    transport = client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client_certificate,),
-        client_private_key=client_key,
-        trust=client.TrustSource.certificate_authorities((server_certificate,)),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    transport = mtls_transport_config(port, TLS_FIXTURES)
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )

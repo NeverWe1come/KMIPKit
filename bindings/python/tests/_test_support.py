@@ -27,7 +27,9 @@ def capture_peer_failures(
         peer_failures.put(failure)
 
 
-def mtls_transport_config(port: int, fixtures: Path) -> client.TransportConfig:
+def mtls_transport_config(
+    port: int, fixtures: Path, *, total_timeout_seconds: int = 8
+) -> client.TransportConfig:
     return client.TransportConfig(
         endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
         client_certificates=(
@@ -48,7 +50,7 @@ def mtls_transport_config(port: int, fixtures: Path) -> client.TransportConfig:
         connect_timeout=client.TimeoutLimit.bounded(5),
         write_timeout=client.TimeoutLimit.bounded(5),
         read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
+        total_timeout=client.TimeoutLimit.bounded(total_timeout_seconds),
     )
 
 

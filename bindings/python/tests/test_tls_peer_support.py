@@ -1,8 +1,8 @@
-from pathlib import Path
 import queue
+from pathlib import Path
 
-import pytest
 import _test_support
+import pytest
 from _test_support import capture_peer_failures, require_tls13_mtls_peer
 from kmipkit import client
 
@@ -52,6 +52,8 @@ def test_mtls_transport_factory_preserves_shared_client_inputs() -> None:
     assert transport.write_timeout == client.TimeoutLimit.bounded(5)
     assert transport.read_timeout == client.TimeoutLimit.bounded(5)
     assert transport.total_timeout == client.TimeoutLimit.bounded(8)
+    extended = factory(43123, fixtures, total_timeout_seconds=10)
+    assert extended.total_timeout == client.TimeoutLimit.bounded(10)
 
 
 def test_captures_runtime_tls_peer_validation_failures() -> None:

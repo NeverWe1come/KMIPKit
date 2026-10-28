@@ -7,8 +7,8 @@ import struct
 import threading
 from pathlib import Path
 
+from _test_support import mtls_transport_config
 from kmipkit import _handles, client, extensions, ttlv
-
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _TICKET_TYPE = 0xFEED_BEEF
@@ -142,25 +142,7 @@ def test_successful_login_uses_native_cffi_ticket_accessors_and_owned_ttlv() -> 
 
     peer = threading.Thread(target=serve_one_login_response, daemon=True)
     peer.start()
-    client_certificate = client.TransportInput.file(
-        _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-    )
-    client_key = client.TransportInput.file(
-        _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-    )
-    server_certificate = client.TransportInput.file(
-        _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-    )
-    transport = client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client_certificate,),
-        client_private_key=client_key,
-        trust=client.TrustSource.certificate_authorities((server_certificate,)),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    transport = mtls_transport_config(port, _FIXTURES)
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )
@@ -254,25 +236,7 @@ def test_ping_and_query_round_trip_through_native_cffi_over_tls_13() -> None:
 
     peer = threading.Thread(target=serve_ping_query_response, daemon=True)
     peer.start()
-    client_certificate = client.TransportInput.file(
-        _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-    )
-    client_key = client.TransportInput.file(
-        _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-    )
-    server_certificate = client.TransportInput.file(
-        _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-    )
-    transport = client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client_certificate,),
-        client_private_key=client_key,
-        trust=client.TrustSource.certificate_authorities((server_certificate,)),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    transport = mtls_transport_config(port, _FIXTURES)
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )

@@ -11,8 +11,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from _test_support import require_tls13_mtls_peer
-
+from _test_support import mtls_transport_config, require_tls13_mtls_peer
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -113,28 +112,7 @@ def _start_register_mtls_peer() -> tuple[
 
 
 def _register_transport(port: int) -> client.TransportConfig:
-    return client.TransportConfig(
-        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(
-            client.TransportInput.file(
-                _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-            ),
-        ),
-        client_private_key=client.TransportInput.file(
-            _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
-        ),
-        trust=client.TrustSource.certificate_authorities(
-            (
-                client.TransportInput.file(
-                    _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-                ),
-            )
-        ),
-        connect_timeout=client.TimeoutLimit.bounded(5),
-        write_timeout=client.TimeoutLimit.bounded(5),
-        read_timeout=client.TimeoutLimit.bounded(5),
-        total_timeout=client.TimeoutLimit.bounded(8),
-    )
+    return mtls_transport_config(port, _FIXTURES)
 
 
 def _register_opaque_object(limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
