@@ -579,11 +579,17 @@ def _feature_directory(root: Path, feature_id: Any) -> Path:
     return _resolve_feature_directory(checkout, feature_id)
 
 
+def _status_value_from_document(content: str) -> str | None:
+    match = re.search(
+        r"(?m)^(?:\*\*Status\*\*|Status):\s*([^\r\n]+)", content
+    )
+    return match.group(1).strip() if match is not None else None
+
+
 def _status_from_document(content: str) -> str:
-    match = re.search(r"(?m)^(?:\*\*Status\*\*|Status):\s*([^\r\n]+)", content)
-    if match is None:
+    status = _status_value_from_document(content)
+    if status is None:
         raise ManifestError("manifest owner source is not approved or accepted")
-    status = match.group(1).strip()
     if status.startswith("Approved"):
         return "Approved"
     if status.startswith("Accepted"):
@@ -593,15 +599,18 @@ def _status_from_document(content: str) -> str:
 
 def _status_only_authorizes_implementation(status: str) -> bool:
     """Return whether a status explicitly describes implementation authorization only."""
-    normalized = status.casefold()
-    return any(
-        marker in normalized
-        for marker in (
-            "autonomous implementation",
-            "standing direct instruction",
-            "not formal acceptance",
-            "implementation authorization, not",
-        )
+    return re.search(
+        r"\bautonomous\b"
+        r"|\b(?:standing|direct)\s+(?:human\s+)?instruction\b"
+        r"|\b(?:implementation|scope)\s+authorization\b"
+        r"|\bimplementation\s+only\b"
+        r"|\b(?:acceptance|approval)\s+(?:is\s+)?pending\b"
+        r"|\bnot\s+(?:formal(?:ly)?\s+)?acceptance\b"
+        r"|\bnot\s+(?:yet\s+|formally\s+)?accepted\b"
+        r"|\bawaiting\s+(?:formal\s+)?acceptance\b"
+        r"|\bdoes\s+not\s+(?:claim|constitute|represent)\s+(?:formal\s+)?acceptance\b",
+        status,
+        re.IGNORECASE,
     )
 
 
@@ -634,14 +643,14 @@ def _validate_approval_source(
                 raise ManifestError("feature approval evidence refers to a different owner")
         spec_path = root / "specs" / parts[1] / "spec.md"
         _, spec_content = _manifest_file(root, PurePosixPath(*spec_path.relative_to(root).parts).as_posix())
-        status_match = re.search(
-            r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_content
-        )
+        status = _status_value_from_document(spec_content)
         if (
             feature_id is not None
-            and status_match is not None
-            and _status_only_authorizes_implementation(status_match.group(1))
-            and not _has_merged_specification_approval_record(root, feature_id)
+            and status is not None
+            and _status_only_authorizes_implementation(status)
+            and not _has_merged_specification_approval_record(
+                root, feature_id
+            )
         ):
             raise ManifestError(
                 "manifest owner source requires merged specification approval evidence"
@@ -765,17 +774,16 @@ def _operation_owner_state(root: Path, owner_id: str | None) -> str:
         spec_text = spec_path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
         raise ManifestError("operation owner specification is missing or unreadable") from error
-    status_match = re.search(r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)", spec_text)
-    if status_match is None:
+    status = _status_value_from_document(spec_text)
+    if status is None:
         raise ManifestError("operation owner specification has no recorded status")
-    status = status_match.group(1).strip()
     merged_approval = _has_merged_specification_approval_record(root, owner_id)
     if _status_only_authorizes_implementation(status):
         return "approved" if merged_approval else "candidate"
     if re.match(r"(?:Approved|Accepted)\b", status):
         return "approved"
-    if merged_approval:
-        return "approved"
+    if re.match(r"Draft\b", status):
+        return "approved" if merged_approval else "candidate"
     return "candidate"
 
 
@@ -792,7 +800,7 @@ def _has_merged_specification_approval_record(root: Path, owner_id: str) -> bool
     except (OSError, UnicodeDecodeError):
         return False
     owner_pattern = re.compile(
-        rf"`{re.escape(owner_id)}`.*specification PR #\d+.*"
+        rf"`{re.escape(owner_id)}`.*(?:specification|feature) PR #\d+.*"
         r"MERGED into `release/1\.0\.0` on `\d{4}-\d{2}-\d{2}`.*"
         r"(?:PR body gates implementation on approval and merge|merged by maintainer)",
         re.IGNORECASE,

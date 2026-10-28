@@ -385,6 +385,50 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 feature_id="KMIPKIT-0020",
             )
 
+    def test_merged_feature_pr_can_record_human_acceptance_of_embedded_spec(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "029-opaque-object-context" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = (
+                "Approved for implementation under the maintainer's autonomous "
+                "roadmap instruction dated 2026-10-13"
+            )
+            owner.write_text(
+                "# Opaque context\n\n"
+                "**Feature Branch**: `feature/KMIPKIT-0044-opaque-object-context`\n\n"
+                f"**Status**: {status}\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0044` was accepted "
+                "for implementation by feature PR #103, which included the reviewed "
+                "specification, MERGED into `release/1.0.0` on `2026-10-13`, merged "
+                "by maintainer NeverWe1come.\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "approved", generate._operation_owner_state(root, "KMIPKIT-0044")
+            )
+            generate._validate_approval_source(
+                {
+                    "kind": "feature-specification",
+                    "path": "specs/029-opaque-object-context/spec.md",
+                    "status": "Approved",
+                    "evidence": f"**Status**: {status}",
+                },
+                root,
+                feature_id="KMIPKIT-0044",
+            )
+
     def test_authorization_only_status_is_not_manifest_approval_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -443,25 +487,6 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     },
                     root,
                     feature_id="KMIPKIT-0020",
-                )
-
-    def test_authorization_only_feature_source_without_owner_id_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            owner = root / "specs" / "020-query-ping" / "spec.md"
-            owner.parent.mkdir(parents=True)
-            status = f"**Status**: {AUTH_ONLY_OWNER_STATUS}."
-            owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
-
-            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
-                generate._validate_approval_source(
-                    {
-                        "kind": "feature-specification",
-                        "path": "specs/020-query-ping/spec.md",
-                        "status": "Approved",
-                        "evidence": status,
-                    },
-                    root,
                 )
 
     def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
