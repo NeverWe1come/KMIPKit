@@ -288,6 +288,79 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
+    @Test
+    void addAttributeRoundTripPreservesBorrowedInputAndTypedResponseOverMutualTls()
+            throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry(
+                "kmipkit-test-server",
+                testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD,
+                new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, addAttributeResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-add-attribute-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvItem newAttribute = addAttributeNameItem(limits);
+                ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            ClientBatchItem addAttribute = ClientBatchItem.addAttribute(newAttribute);
+            assertTrue(newAttribute.nativeHandleOwner().get() != 0,
+                    "Add Attribute borrows its New Attribute input");
+            batch.add(addAttribute);
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x0d, result.operation());
+                assertEquals(0, result.resultStatus());
+                ClientBatchItemResult.AddAttributeResponse mapped =
+                        result.addAttributeResponse().orElseThrow();
+                assertEquals("object-7", mapped.uniqueIdentifier());
+            }
+            assertTrue(newAttribute.nativeHandleOwner().get() != 0,
+                    "the caller retains its New Attribute Item after execution");
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        byte[] expectedNewAttribute = structure(0x42013d,
+                structure(0x42000a,
+                        item(0x4200a5, 7, "new name".getBytes(StandardCharsets.UTF_8)),
+                        enumeration(0x4200a6, 1)));
+        assertContains(request, enumeration(0x42005c, 0x0d));
+        assertContains(request, expectedNewAttribute);
+        assertFalse(containsTtlvItem(request,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8))),
+                "an omitted Unique Identifier stays absent from the request");
+        assertTrue(peer.isDone());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"nonempty", "absent", "presentEmpty"})
     void pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls(
@@ -3250,6 +3323,24 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    private static TtlvItem addAttributeNameItem(CodecLimits limits) {
+        TtlvStructure empty = TtlvStructure.create();
+        TtlvStructure withNameValue = TtlvStructure.withItem(
+                empty,
+                registerTtlvItem(0x4200a5,
+                        TtlvValue.TextString("new name".getBytes(StandardCharsets.UTF_8), limits),
+                        limits),
+                limits);
+        TtlvStructure withNameType = TtlvStructure.withItem(
+                withNameValue,
+                registerTtlvItem(0x4200a6, TtlvValue.Enumeration(1), limits),
+                limits);
+        try (withNameType) {
+            return registerTtlvItem(
+                    0x42000a, TtlvValue.structure(withNameType, limits), limits);
+        }
+    }
+
     private static List<TtlvSpan> children(byte[] bytes, TtlvSpan parent) {
         if (parent.type() != 1) throw new IllegalArgumentException("TTLV parent must be a Structure");
         int end = parent.valueStart() + parent.valueLength();
@@ -4282,6 +4373,18 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42005c, 0x03),
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] addAttributeResponseMessage() throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x0d), enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);
     }
 

@@ -6531,3 +6531,150 @@ int kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
     }
     return 1;
 }
+
+static int add_attribute_append_value(
+    kmipkit_codec_limits_t *limits,
+    kmipkit_ttlv_structure_t **structure,
+    uint32_t raw_tag,
+    kmipkit_ttlv_value_t **value) {
+    kmipkit_raw_tag_t *raw = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_item_t *item = 0;
+    kmipkit_ttlv_structure_t *updated = 0;
+    int result = 0;
+
+    if (limits == 0 || structure == 0 || *structure == 0 || value == 0 || *value == 0) {
+        return 0;
+    }
+    if (kmipkit_ttlv_raw_tag_create(raw_tag, &raw) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw, &tag) != 0 ||
+        kmipkit_ttlv_item_create(tag, *value, limits, &item) != 0) {
+        goto cleanup;
+    }
+    *value = 0;
+    if (kmipkit_ttlv_structure_with_item(*structure, item, limits, &updated) != 0) {
+        goto cleanup;
+    }
+    *structure = 0;
+    item = 0;
+    *structure = updated;
+    updated = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_build_add_attribute_request(
+    kmipkit_client_batch_item_t **out_request) {
+    static const uint8_t identifier_text[] = "object-7";
+    static const uint8_t name_text[] = "new name";
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *name_fields = 0;
+    kmipkit_ttlv_structure_t *borrowed_input_check = 0;
+    kmipkit_ttlv_structure_t *updated_input_check = 0;
+    kmipkit_ttlv_structure_view_t *input_view = 0;
+    kmipkit_ttlv_item_view_t *input_item_view = 0;
+    kmipkit_raw_tag_t *name_raw_tag = 0;
+    kmipkit_tag_t *name_tag = 0;
+    kmipkit_tag_t *input_item_tag = 0;
+    kmipkit_ttlv_value_t *name_value = 0;
+    kmipkit_ttlv_item_t *name_item = 0;
+    kmipkit_client_batch_item_t *request = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint64_t input_count = 0;
+    uint32_t input_tag = 0;
+    int result = 0;
+
+    if (out_request == 0) return 0;
+    *out_request = 0;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_structure_create(&name_fields) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_value_text_string(
+            limits, name_text, (uint64_t)(sizeof(name_text) - 1), &name_value) != 0 ||
+        !add_attribute_append_value(limits, &name_fields, UINT32_C(0x4200a5), &name_value) ||
+        kmipkit_ttlv_value_enumeration(1, &name_value) != 0 ||
+        !add_attribute_append_value(limits, &name_fields, UINT32_C(0x4200a6), &name_value) ||
+        kmipkit_ttlv_value_structure(name_fields, limits, &name_value) != 0) {
+        goto cleanup;
+    }
+    name_fields = 0;
+    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x42000a), &name_raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(name_raw_tag, &name_tag) != 0 ||
+        kmipkit_ttlv_item_create(name_tag, name_value, limits, &name_item) != 0) {
+        goto cleanup;
+    }
+    name_value = 0;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    if (kmipkit_client_batch_item_add_attribute(&identifier, name_item, &request) != 0 ||
+        request == 0 || kmipkit_ttlv_structure_create(&borrowed_input_check) != 0 ||
+        kmipkit_ttlv_structure_with_item(
+                borrowed_input_check, name_item, limits, &updated_input_check) != 0) {
+        goto cleanup;
+    }
+    borrowed_input_check = 0;
+    borrowed_input_check = updated_input_check;
+    updated_input_check = 0;
+    name_item = 0;
+    if (kmipkit_ttlv_structure_view(borrowed_input_check, &input_view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(input_view, &input_count) != 0 ||
+        input_count != UINT64_C(1) ||
+        kmipkit_ttlv_structure_view_item_at(input_view, 0, &input_item_view) != 0 ||
+        kmipkit_ttlv_item_view_tag(input_item_view, &input_item_tag) != 0 ||
+        kmipkit_ttlv_tag_value(input_item_tag, &input_tag) != 0 ||
+        input_tag != UINT32_C(0x42000a)) {
+        goto cleanup;
+    }
+    *out_request = request;
+    request = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(request);
+    kmipkit_ttlv_item_view_release(input_item_view);
+    kmipkit_ttlv_structure_view_release(input_view);
+    kmipkit_ttlv_structure_release(updated_input_check);
+    kmipkit_ttlv_structure_release(borrowed_input_check);
+    kmipkit_ttlv_item_release(name_item);
+    kmipkit_tag_release(input_item_tag);
+    kmipkit_ttlv_value_release(name_value);
+    kmipkit_tag_release(name_tag);
+    kmipkit_raw_tag_release(name_raw_tag);
+    kmipkit_ttlv_structure_release(name_fields);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_add_attribute_response(
+    kmipkit_client_batch_item_response_t *response, uint8_t expected_present) {
+    static const uint8_t expected_identifier[] = "object-7";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = UINT8_C(9);
+
+    if (response == 0 || expected_present > 1) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_add_attribute(
+            response, &present, &identifier) != 0 || present != expected_present) {
+        return 0;
+    }
+    if (expected_present == 0) {
+        return identifier.kind == 0 && identifier.text_data == 0 &&
+            identifier.text_length == 0;
+    }
+    return identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == (uint64_t)(sizeof(expected_identifier) - 1) &&
+        identifier.text_data != 0 &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+}

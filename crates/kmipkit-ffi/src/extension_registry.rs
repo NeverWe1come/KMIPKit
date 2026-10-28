@@ -38,19 +38,19 @@ use kmipkit_client::{
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
+    ActivateRequest, AddAttributeRequest, ArchiveRequest, AttributeSet, CertifyRequest,
+    CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
     DestroyRequest, EncryptRequest, ExportRequest, GetAttributeListRequest, GetConstraintsRequest,
     GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest,
-    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, NewAttribute, ObjectGroupMember,
+    ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError,
+    ProtocolErrorKind, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SetConstraintsRequest, SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3232,6 +3232,14 @@ fn copy_required_structure_handle(
     source.view().try_clone().map_err(model_status)
 }
 
+fn copy_required_item_handle(item: *mut kmipkit_ttlv_item_t) -> FfiResult<Item> {
+    let handle = reference_handle(item, Kind::Item)?;
+    let HandleValue::Item(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    source.try_clone().map_err(model_status)
+}
+
 fn copy_attribute_set_handle(
     structure: *mut kmipkit_ttlv_structure_t,
     required: bool,
@@ -4250,6 +4258,30 @@ pub extern "C" fn kmipkit_client_batch_item_get_attribute_list(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_attribute_list(
             GetAttributeListRequest::new(identifier),
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.2 Add Attribute request from an optional Text String
+/// Unique Identifier and one direct New Attribute Item. The Item is borrowed
+/// and copied; the caller retains ownership of its input handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_add_attribute(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    new_attribute: *mut kmipkit_ttlv_item_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let unique_identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let unique_identifier = match unique_identifier {
+            None => None,
+            Some(UniqueIdentifier::TextString(value)) => Some(value),
+            Some(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let new_attribute = try_ffi!(copy_required_item_handle(new_attribute));
+        let request = AddAttributeRequest::new(unique_identifier, NewAttribute::new(new_attribute));
+        *out = try_ffi!(batch_item_handle(ClientRequest::AddAttribute(request)));
         SUCCESS
     })
 }

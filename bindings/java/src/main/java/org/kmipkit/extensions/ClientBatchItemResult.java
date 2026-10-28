@@ -260,6 +260,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetAttributeListResponse(values, maxElements, maxMessageBytes);
     }
 
+    /** Returns the required Text String Unique Identifier from a successful Add Attribute. */
+    public Optional<AddAttributeResponse> addAttributeResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseAddAttribute);
+        return parseAddAttributeResponse(values);
+    }
+
     /**
      * Creates caller-owned local accounting from this live successful Get Usage Allocation
      * response. The exact positive request count and the caller-known Usage Limits Unit must be
@@ -1136,6 +1145,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "GetAttributeListResponse[responsePayloadTtlv=redacted]";
+        }
+    }
+
+    /** Successful Add Attribute response with its required Text String identifier. */
+    public static final class AddAttributeResponse {
+        private final String uniqueIdentifier;
+
+        private AddAttributeResponse(String uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        /** Returns the copied Text String Unique Identifier. */
+        public String uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "AddAttributeResponse[uniqueIdentifier=redacted]";
         }
     }
 
@@ -2577,6 +2602,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 TtlvStructure.fromNative(ownedHandle, null).close();
             }
         }
+    }
+
+    static Optional<AddAttributeResponse> parseAddAttributeResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2,
+                "native Add Attribute response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1,
+                "native Add Attribute response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null) {
+                throw new InvalidInputException("native absent response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (!(tuple[1] instanceof String uniqueIdentifier)) {
+            throw new InvalidInputException("native Add Attribute identifier is invalid");
+        }
+        return Optional.of(new AddAttributeResponse(uniqueIdentifier));
     }
 
     private static long[] requireNativeLongArray(Object value, String message) {

@@ -102,6 +102,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_validate",
         "kmipkit_client_batch_item_activate",
         "kmipkit_client_batch_item_archive",
+        "kmipkit_client_batch_item_add_attribute",
         "kmipkit_client_batch_item_destroy",
         "kmipkit_client_batch_item_recover",
     }
@@ -1865,6 +1866,15 @@ def _client_native_structure(
     return _client_ffi.cast("kmipkit_ttlv_structure_t *", address)
 
 
+def _client_native_item(value: ttlv.TtlvItem) -> Any:
+    """Cast a public TTLV item handle into the private client ABI's CFFI context."""
+    if not isinstance(value, ttlv.TtlvItem):
+        errors.raise_for_status(4)
+    pointer = value._pointer()
+    address = int(ffi.cast("uintptr_t", pointer))
+    return _client_ffi.cast("kmipkit_ttlv_item_t *", address)
+
+
 def _native_value(value: ttlv.Value | None) -> Any:
     if value is None:
         return ffi.NULL
@@ -2352,6 +2362,29 @@ def client_batch_item_get_attribute_list(
             "kmipkit_client_batch_item_t",
             "kmipkit_client_batch_item_get_attribute_list",
             (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_add_attribute(
+    unique_identifier: UniqueIdentifier | None,
+    new_attribute: ttlv.TtlvItem,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.2 Add Attribute item from a borrowed TTLV Item."""
+    if unique_identifier is not None and not (
+        isinstance(unique_identifier, UniqueIdentifier)
+        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    native_item = _client_native_item(new_attribute)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_add_attribute",
+            (identifier, native_item),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -3312,6 +3345,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_get_attribute_list",
+    "client_batch_item_add_attribute",
     "client_batch_item_set_constraints",
     "client_batch_item_set_defaults",
     "client_batch_item_interop",

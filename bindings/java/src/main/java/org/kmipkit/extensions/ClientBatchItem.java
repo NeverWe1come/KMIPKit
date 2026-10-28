@@ -742,6 +742,36 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a KMIP 2.1 §6.1.2 Add Attribute item from a borrowed New Attribute Item. */
+    public static ClientBatchItem addAttribute(TtlvItem newAttribute) {
+        return addAttribute(null, newAttribute);
+    }
+
+    /** Creates a KMIP 2.1 §6.1.2 Add Attribute item from a borrowed New Attribute Item. */
+    public static ClientBatchItem addAttribute(
+            @Nullable UniqueIdentifier uniqueIdentifier, TtlvItem newAttribute) {
+        if (uniqueIdentifier != null
+                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+            throw new InvalidInputException(
+                    "Add Attribute Unique Identifier must be a Text String");
+        }
+        if (newAttribute == null) {
+            throw new InvalidInputException("Add Attribute New Attribute is required");
+        }
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withValues(
+                    new NativeHandle[] {newAttribute.nativeHandleOwner()}, handles ->
+                            NativeExtensionRegistry.clientBatchItemAddAttribute(
+                                    identifierKind(uniqueIdentifier), identifierText,
+                                    identifierNumber(uniqueIdentifier), handles[0]));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Set Constraints request from the required Constraints structure. */
     public static ClientBatchItem setConstraints(TtlvStructure constraints) {
         requireStructure(constraints, "Set Constraints");

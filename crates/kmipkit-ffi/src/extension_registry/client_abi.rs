@@ -3115,6 +3115,52 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_
     })
 }
 
+/// Copies the successful Add Attribute response's required Text String Unique
+/// Identifier. The borrowed identifier span remains valid while `item` is open.
+/// Non-success and other-operation results set `out_present` to zero.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_add_attribute(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || !out_present.is_aligned()
+            || !out_unique_identifier.is_aligned()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let unique_identifier = scalar_out!(out_unique_identifier);
+        *present = 0;
+        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let kmipkit_client::ClientBatchOutcome::AddAttribute(result) = item.outcome() else {
+            return SUCCESS;
+        };
+        let Some(value) = result.unique_identifier() else {
+            return SUCCESS;
+        };
+        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
+            return record_ffi_error(status);
+        }
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Copies the successful Get Attribute List UID and ordered typed references.
 ///
 /// Pass a null reference pointer with zero capacity to query the count. Text

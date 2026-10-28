@@ -2278,6 +2278,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemAddAttribute(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_new_attribute) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)) {
+            return static_cast<jlong>(0);
+        }
+        if (identifier_present
+                && identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_add_attribute(
+                    identifier_pointer,
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_new_attribute), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemSetConstraints(
         JNIEnv* env, jclass, jlong raw_constraints) {
     return guarded<jlong>(env, 0, [&] {
@@ -6281,6 +6308,51 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
         for (jstring value : vendors) if (value != nullptr) env->DeleteLocalRef(value);
         for (jstring value : names) if (value != nullptr) env->DeleteLocalRef(value);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseAddAttribute(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        const int32_t status = kmipkit_client_batch_item_response_add_attribute(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || identifier.reserved != 0
+                || (present == 0 && (identifier.kind != 0
+                    || identifier.text_data != nullptr || identifier.text_length != 0))) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jstring unique_identifier = nullptr;
+        if (present == 1) {
+            if (identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+                    || identifier.text_length > static_cast<uint64_t>(INT32_MAX)
+                    || (identifier.text_length != 0 && identifier.text_data == nullptr)) {
+                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+                return static_cast<jobjectArray>(nullptr);
+            }
+            if (!utf8_to_java_string(env, identifier.text_data, identifier.text_length,
+                    &unique_identifier)) {
+                return static_cast<jobjectArray>(nullptr);
+            }
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, unique_identifier});
+        env->DeleteLocalRef(fields);
+        if (unique_identifier != nullptr) env->DeleteLocalRef(unique_identifier);
         return result;
     });
 }

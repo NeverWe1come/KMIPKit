@@ -39,11 +39,10 @@ def test_add_attribute_builder_preserves_identifier_and_borrows_new_attribute(
 
     monkeypatch.setattr(
         extensions,
-        "_native_unique_identifier",
-        lambda value, _staging: (
-            omitted_identifier if value is None else present_identifier,
-            None,
-        ),
+        "_client_native_unique_identifier",
+        lambda value, _staging: omitted_identifier
+        if value is None
+        else present_identifier,
     )
     monkeypatch.setattr(
         extensions,

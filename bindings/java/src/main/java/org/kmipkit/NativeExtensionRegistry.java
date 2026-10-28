@@ -192,6 +192,9 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemGetConstraints();
     public static native long clientBatchItemGetAttributeList(
             int identifierKind, @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemAddAttribute(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long newAttribute);
     public static native long clientBatchItemSetConstraints(long constraints);
     public static native long clientBatchItemSetDefaults(long defaultsInformation);
     public static native long clientBatchItemInterop(long interopFunction, byte[] interopIdentifier);
@@ -319,6 +322,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseGetAttributeList(
             long itemResponse, long maxElements, long maxMessageBytes);
+    public static native Object[] clientBatchItemResponseAddAttribute(long itemResponse);
     public static native Object[] clientBatchItemResponseSetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseSetDefaults(long itemResponse);
     public static native Object[] clientBatchItemResponseValidate(long itemResponse);

@@ -37,6 +37,8 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use super::*;
 use crate::kmipkit_byte_span_v1_t;
 
+#[path = "add_attribute_abi_tests.rs"]
+mod add_attribute_abi_tests;
 #[path = "get_attribute_list_abi_tests.rs"]
 mod get_attribute_list_abi_tests;
 #[path = "lifecycle_operation_abi_tests.rs"]
