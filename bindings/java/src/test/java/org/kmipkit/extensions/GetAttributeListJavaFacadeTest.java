@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ResourceLimitException;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -92,6 +93,28 @@ final class GetAttributeListJavaFacadeTest {
                 () -> ClientBatchItemResult.parseGetAttributeListResponse(
                         new Object[] {new long[] {1}, null, new long[0], new long[0],
                                 new String[0], new String[0], new long[] {0}}));
+    }
+
+    @Test
+    void responseMappingUsesTheConfiguredCodecElementLimit() {
+        CodecLimits limits = CodecLimits.create(1024, 64, 2);
+        TtlvStructure payload = TtlvStructure.create();
+        long handle = payload.nativeHandleOwner().transfer();
+        Object[] values = {
+            new long[] {1},
+            UniqueIdentifier.textString("object-7"),
+            new long[] {1, 1, 1},
+            new long[] {0x0054_0001L, 0x0054_0002L, 0x0054_0003L},
+            new String[] {null, null, null},
+            new String[] {null, null, null},
+            new long[] {handle}
+        };
+
+        assertThrows(ResourceLimitException.class, () -> {
+            ClientBatchItemResult.parseGetAttributeListResponse(
+                    values, limits.maxElements(), limits.maxMessageBytes())
+                    .ifPresent(ClientBatchItemResult.GetAttributeListResponse::close);
+        });
     }
 
     private static TtlvStructure append(

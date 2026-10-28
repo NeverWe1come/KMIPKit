@@ -5,6 +5,8 @@ from pathlib import Path
 import threading
 from types import SimpleNamespace
 
+import pytest
+
 from _test_support import (
     mtls_transport_config,
     operation_response_message,
@@ -132,6 +134,36 @@ def test_get_attribute_list_response_owns_generic_payload_and_redacts_repr(monke
     assert "123" not in repr(result)
     result.close()
     assert structure.closed
+
+
+def test_get_attribute_list_response_obeys_configured_codec_limits(monkeypatch):
+    identifier_bytes = ffi.new("uint8_t[]", b"object-7")
+    calls = 0
+
+    def typed_response(_item, present, identifier, references, capacity, count):
+        nonlocal calls
+        calls += 1
+        present[0] = 1
+        identifier.kind = 1
+        identifier.text_data = identifier_bytes
+        identifier.text_length = 8
+        count[0] = 3
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_get_attribute_list=typed_response),
+    )
+
+    with pytest.raises(client.errors.ResourceLimitError):
+        client._get_attribute_list_response(
+            SimpleNamespace(_pointer=lambda: object()),
+            max_elements=2,
+            max_message_bytes=1024,
+        )
+
+    assert calls == 1, "configured limits must reject before allocating the reference array"
 
 
 def test_get_attribute_list_executes_once_over_native_mtls_client():
