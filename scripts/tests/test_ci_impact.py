@@ -45,8 +45,16 @@ class CiImpactTests(unittest.TestCase):
 
         self.assertEqual(["documentation"], plan["classes"])
         self.assertEqual(["docs-contracts"], plan["selected_jobs"])
+        self.assertNotIn("fast-preflight", plan["selected_jobs"])
         self.assertEqual([], plan["coverage_scopes"])
         self.assertFalse(plan["full"])
+
+    def test_fast_preflight_is_selected_only_for_full_ci(self) -> None:
+        documentation = self.classify({"status": "M", "paths": ["docs/development/testing.md"]})
+        full = self.classify({"status": "M", "paths": [".github/workflows/ci.yml"]})
+
+        self.assertNotIn("fast-preflight", documentation["selected_jobs"])
+        self.assertIn("fast-preflight", full["selected_jobs"])
 
     def test_empty_diff_selects_documentation_contracts_and_is_valid(self) -> None:
         impact = self.require_impact()
