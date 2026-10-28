@@ -2188,6 +2188,49 @@ class T076ClientMappingTests(unittest.TestCase):
                     "verified operation cites its protocol, client, FFI, and binding evidence",
                 )
 
+    def test_add_and_adjust_declarations_link_client_execution_parity(self) -> None:
+        declaration_ids_by_operation = {
+            "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE": {
+                "T037:addAttribute:constructor:c",
+                "T037:addAttribute:result:typed:c",
+                "T037:addAttribute:constructor:java",
+                "T037:addAttribute:response:java",
+                "T037:addAttribute:result:type:java",
+                "T037:addAttribute:result:uniqueIdentifier:java",
+                "T037:addAttribute:constructor:python",
+                "T037:addAttribute:response:python",
+                "T037:addAttribute:result:type:python",
+                "T037:addAttribute:result:uniqueIdentifier:python",
+            },
+            "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
+                "T037:adjustAttribute:constructor:c",
+                "T037:adjustAttribute:result:typed:c",
+                "T037:adjustAttribute:constructor:java",
+                "T037:adjustAttribute:response:java",
+                "T037:adjustAttribute:result:type:java",
+                "T037:adjustAttribute:result:uniqueIdentifier:java",
+                "T037:adjustAttribute:constructor:python",
+                "T037:adjustAttribute:response:python",
+                "T037:adjustAttribute:result:type:python",
+                "T037:adjustAttribute:result:uniqueIdentifier:python",
+            },
+        }
+        execution_evidence = (
+            "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
+        )
+
+        for operation_id, expected_ids in declaration_ids_by_operation.items():
+            declarations = {
+                row["declarationId"]: row
+                for row in self.manifest["publicDeclarations"]
+                if row.get("declarationId") in expected_ids
+            }
+            self.assertEqual(expected_ids, set(declarations))
+            for declaration_id, declaration in declarations.items():
+                with self.subTest(operation=operation_id, declaration=declaration_id):
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertIn(execution_evidence, declaration["parityEvidenceIds"])
+
     def test_set_attribute_declarations_cover_each_language_mapping(self) -> None:
         expected = {
             "kmipkit_client_batch_item_set_attribute",
