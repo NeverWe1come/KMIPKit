@@ -162,6 +162,7 @@ def operation_response_message(
     result_reason: int | None = None,
     result_message: str | None = None,
     pending_correlation_value: bytes | None = None,
+    payload_items: tuple[bytes, ...] = (),
 ) -> bytes:
     version = ttlv_structure(
         0x420069,
@@ -186,6 +187,6 @@ def operation_response_message(
     if pending_correlation_value is not None:
         response_fields.append(ttlv_item(0x420006, 8, pending_correlation_value))
     if result_status in (0, 2):
-        response_fields.append(ttlv_structure(0x42007C))
+        response_fields.append(ttlv_structure(0x42007C, *payload_items))
     response_item = ttlv_structure(0x42000F, *response_fields)
     return ttlv_structure(0x42007B, header, response_item)
