@@ -445,6 +445,25 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                     feature_id="KMIPKIT-0020",
                 )
 
+    def test_authorization_only_feature_source_without_owner_id_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "020-query-ping" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            status = f"**Status**: {AUTH_ONLY_OWNER_STATUS}."
+            owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ManifestError, "merged specification approval"):
+                generate._validate_approval_source(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/020-query-ping/spec.md",
+                        "status": "Approved",
+                        "evidence": status,
+                    },
+                    root,
+                )
+
     def test_dependency_check_rejects_authorization_only_owner_as_approved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
