@@ -14,7 +14,6 @@ from _test_support import (
     read_ttlv_frame,
     require_tls13_mtls_peer,
 )
-
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"

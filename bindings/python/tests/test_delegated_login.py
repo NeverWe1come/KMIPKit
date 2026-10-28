@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import pytest
 from _test_support import install_ticket_native_response
-
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit.errors import InvalidInputError

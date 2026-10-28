@@ -12,7 +12,6 @@ from _test_support import (
     require_tls13_mtls_peer,
     start_tls13_mtls_peer,
 )
-
 from kmipkit import client
 from kmipkit._client_ffi import ffi
 

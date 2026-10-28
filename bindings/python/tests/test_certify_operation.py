@@ -4,7 +4,6 @@ from types import SimpleNamespace
 
 import pytest
 from _test_support import batch_result_test_symbols
-
 from kmipkit import client, errors, extensions
 from kmipkit._client_ffi import ffi
 

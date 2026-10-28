@@ -4,7 +4,6 @@ from types import SimpleNamespace
 
 import pytest
 from _test_support import batch_result_test_symbols
-
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi
