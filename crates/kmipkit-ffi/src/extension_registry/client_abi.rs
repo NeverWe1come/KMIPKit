@@ -1688,6 +1688,45 @@ fn write_unique_identifier_v1(
     Ok(())
 }
 
+fn write_unique_identifier_text_v1(
+    out_identifier: *mut kmipkit_unique_identifier_v1_t,
+    text: Option<&str>,
+) -> FfiResult<()> {
+    if out_identifier.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller supplies readable version and size fields in the output record.
+    let (struct_size, abi_version) = unsafe {
+        (
+            std::ptr::addr_of!((*out_identifier).struct_size).read(),
+            std::ptr::addr_of!((*out_identifier).abi_version).read(),
+        )
+    };
+    if struct_size as usize != std::mem::size_of::<kmipkit_unique_identifier_v1_t>()
+        || abi_version != 1
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let mut output = kmipkit_unique_identifier_v1_t {
+        struct_size,
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    if let Some(text) = text {
+        output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+        output.text_data = text.as_ptr();
+        output.text_length = u64::try_from(text.len()).unwrap_or(u64::MAX);
+    }
+    // SAFETY: the caller supplied a writable record with the checked v1 size.
+    unsafe { out_identifier.write(output) };
+    Ok(())
+}
+
 macro_rules! lifecycle_response_identifier {
     ($name:ident, $accessor:ident, $operation:literal) => {
         #[doc = concat!("Copies the successful ", $operation, " response Unique Identifier.")]
@@ -3164,9 +3203,9 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list(
         };
         *present = 1;
         *count = reference_count;
-        let identifier =
-            kmipkit_protocol::UniqueIdentifier::TextString(unique_identifier.to_owned());
-        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(&identifier)) {
+        if let Err(status) =
+            write_unique_identifier_text_v1(out_unique_identifier, Some(unique_identifier))
+        {
             return record_ffi_error(status);
         }
         if out_references.is_null() || capacity == 0 {
