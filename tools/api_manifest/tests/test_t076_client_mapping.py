@@ -2148,6 +2148,56 @@ class T076ClientMappingTests(unittest.TestCase):
             "verified Modify Attribute mapping cites the executable binding evidence",
         )
 
+    def test_set_attribute_declarations_cover_each_language_mapping(self) -> None:
+        expected = {
+            "kmipkit_client_batch_item_set_attribute",
+            "kmipkit_client_batch_item_response_set_attribute",
+            "org.kmipkit.extensions.ClientBatchItem.setAttribute",
+            "org.kmipkit.extensions.ClientBatchItemResult.setAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.SetAttributeResponse",
+            "org.kmipkit.extensions.ClientBatchItemResult.SetAttributeResponse.uniqueIdentifier",
+            "kmipkit.extensions.client_batch_item_set_attribute",
+            "kmipkit.client.SetAttributeResponse",
+            "kmipkit.client.SetAttributeResponse.unique_identifier",
+            "kmipkit.client.BatchItemResult.set_attribute_response",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(declarations))
+        for export_name in sorted(expected):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+                    declaration["capabilityId"],
+                )
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+        operation = next(
+            row
+            for row in self.manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
+        )
+        self.assertEqual("verified", operation["apiState"])
+        self.assertNotIn("blockedReason", operation)
+        self.assertTrue(
+            {
+                "crates/kmipkit-protocol/tests/unit/set_attribute_tests.rs",
+                "crates/kmipkit-ffi/tests/support/set_attribute_abi_tests.rs",
+                "bindings/c/tests/client_abi_consumer.c",
+                "bindings/java/src/test/java/org/kmipkit/extensions/SetAttributeJavaFacadeTest.java",
+                "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+                "bindings/python/tests/test_set_attribute_operation.py",
+            }.issubset(set(operation["parityEvidenceIds"])),
+            "verified Set Attribute mapping cites the executable binding evidence",
+        )
+
     def test_get_attributes_declarations_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit_client_batch_item_get_attributes",

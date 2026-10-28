@@ -6900,6 +6900,82 @@ int kmipkit_client_abi_c_consumer_validate_modify_attribute_response(
         memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
 }
 
+int kmipkit_client_abi_c_consumer_build_set_attribute_request(
+    kmipkit_client_batch_item_t **out_request) {
+    static const uint8_t identifier_text[] = "object-7";
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_item_t *new_attribute = 0;
+    kmipkit_ttlv_structure_t *input_check = 0;
+    kmipkit_ttlv_structure_t *updated_check = 0;
+    kmipkit_client_batch_item_t *request = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    int result = 0;
+
+    if (out_request == 0) return 0;
+    *out_request = 0;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_value_integer(INT32_C(128), &value) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x42002a), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_item_create(tag, value, limits, &new_attribute) != 0) {
+        goto cleanup;
+    }
+    value = 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    if (kmipkit_client_batch_item_set_attribute(
+            &identifier, new_attribute, &request) != 0 || request == 0 ||
+        kmipkit_ttlv_structure_create(&input_check) != 0 ||
+        kmipkit_ttlv_structure_with_item(
+            input_check, new_attribute, limits, &updated_check) != 0) {
+        goto cleanup;
+    }
+    input_check = 0;
+    *out_request = request;
+    request = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(request);
+    kmipkit_ttlv_structure_release(updated_check);
+    kmipkit_ttlv_structure_release(input_check);
+    kmipkit_ttlv_item_release(new_attribute);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_set_attribute_response(
+    kmipkit_client_batch_item_response_t *response, uint8_t expected_present) {
+    static const uint8_t expected_identifier[] = "object-7";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = UINT8_C(9);
+
+    if (response == 0 || expected_present > 1) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_set_attribute(
+            response, &present, &identifier) != 0 || present != expected_present) {
+        return 0;
+    }
+    if (expected_present == 0) {
+        return identifier.kind == 0 && identifier.text_data == 0 &&
+            identifier.text_length == 0;
+    }
+    return identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == (uint64_t)(sizeof(expected_identifier) - 1) &&
+        identifier.text_data != 0 &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+}
+
 int kmipkit_client_abi_c_consumer_validate_adjust_attribute_response(
     kmipkit_client_batch_item_response_t *response, uint8_t expected_present) {
     static const uint8_t expected_identifier[] = "adjusted-object-1";
