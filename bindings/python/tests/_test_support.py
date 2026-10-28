@@ -17,7 +17,7 @@ def capture_peer_failures(
 ) -> Iterator[None]:
     try:
         yield
-    except (AssertionError, OSError, ssl.SSLError) as failure:
+    except (AssertionError, OSError, RuntimeError, ssl.SSLError) as failure:
         peer_failures.put(failure)
 
 
