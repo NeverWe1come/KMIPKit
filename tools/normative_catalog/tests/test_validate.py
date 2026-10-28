@@ -650,6 +650,8 @@ def _has_linked_typed_optional_capability_rule(
     expected_source_clause_ids: set[str],
     typed_rule_mappings: list[dict[str, Any]],
     usable_positive_tests: list[str],
+    *,
+    require_evaluator: bool = False,
 ) -> bool:
     """Require a typed optional rule and its exact linked positive test."""
     requirement_id = requirement["requirement_id"]
@@ -665,6 +667,7 @@ def _has_linked_typed_optional_capability_rule(
         and mapping.get("test_kind") == "OptionalCapabilityUsable"
         and mapping.get("test_id") in requirement_test_refs
         and mapping.get("test_id") in usable_positive_tests
+        and (not require_evaluator or mapping.get("evaluator_present") is True)
         for mapping in typed_rule_mappings
     )
 
@@ -695,6 +698,7 @@ def _has_usable_conditional_client_exchange_evidence(
         conditional_source_clause_ids,
         typed_rule_mappings,
         usable_positive_tests,
+        require_evaluator=True,
     )
     return (
         requirement.get("scope_state") == "profile_conditional"
@@ -18863,8 +18867,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_every_reviewed_client_may_or_optional_has_usable_positive_evidence(
         self,
         expected_blocked_requirement_ids: set[str] | None = None,
+        profile_id: str = "KMIPKIT-PROFILE-BASELINE-CLIENT",
     ) -> None:
-        """Missing selected Baseline MAY/OPTIONAL evidence remains a readiness blocker."""
+        """Missing selected client MAY/OPTIONAL evidence remains a readiness blocker."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -18949,6 +18954,9 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-4.40-001-001",
                 "KMIPKIT-REQ-SPEC-4.40-001-003",
                 "KMIPKIT-REQ-SPEC-4.41-001-002",
+                "KMIPKIT-REQ-SPEC-6.1.14-002",
+                "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+                "KMIPKIT-REQ-SPEC-7.31-001",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
@@ -18986,17 +18994,19 @@ class CatalogValidationTests(unittest.TestCase):
         from tools.normative_catalog.report import evaluate_profile_readiness
 
         baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        if profile_id != baseline_id:
+            return
         readiness = evaluate_profile_readiness(
             catalog,
-            baseline_id,
-            selected_profile_ids={baseline_id},
+            profile_id,
+            selected_profile_ids={profile_id},
             typed_rule_mappings=typed_rule_mappings,
             verification_manifest=None,
             current_context=None,
             repository_root=ROOT,
         )
         self.assertEqual("evidence_incomplete", readiness["effective_state"])
-        self.assertFalse(readiness["runtime_validation_available"])
+        self.assertTrue(readiness["runtime_validation_available"])
         self.assertFalse(readiness["published_claim"])
         for requirement_id in (
             "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -20898,7 +20908,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
-        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 513)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 541)
         contract = contracts[0]
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [29529, 29544]
