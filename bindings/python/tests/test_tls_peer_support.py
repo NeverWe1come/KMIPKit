@@ -1,9 +1,17 @@
 import queue
+import socket
+import ssl
+import threading
 from pathlib import Path
 
 import _test_support
 import pytest
-from _test_support import capture_peer_failures, require_tls13_mtls_peer
+from _test_support import (
+    capture_peer_failures,
+    operation_response_message,
+    require_tls13_mtls_peer,
+    start_tls13_mtls_peer,
+)
 from kmipkit import client
 
 
@@ -65,3 +73,51 @@ def test_captures_runtime_tls_peer_validation_failures() -> None:
     failure = peer_failures.get_nowait()
     assert type(failure) is RuntimeError
     assert str(failure) == "test TLS peer did not negotiate TLS 1.3"
+
+
+@pytest.mark.parametrize(
+    ("operation", "batch_id", "expected"),
+    [
+        (
+            0x36,
+            b"set-defaults-0",
+            "42007b010000009842007a0100000048420069010000002042006a0200000004000000020000000042006b020000000400000001000000004200920900000008000000000000000142000d0200000004000000010000000042000f010000004042005c05000000040000003600000000420093080000000e7365742d64656661756c74732d30000042007f0500000004000000000000000042007c0100000000",
+        ),
+        (
+            0x37,
+            b"set-constraints-0",
+            "42007b01000000a042007a0100000048420069010000002042006a0200000004000000020000000042006b020000000400000001000000004200920900000008000000000000000142000d0200000004000000010000000042000f010000004842005c0500000004000000370000000042009308000000117365742d636f6e73747261696e74732d300000000000000042007f0500000004000000000000000042007c0100000000",
+        ),
+    ],
+)
+def test_operation_response_fixture_builder_preserves_expected_wire_bytes(
+    operation: int, batch_id: bytes, expected: str
+) -> None:
+    builder = getattr(_test_support, "operation_response_message", None)
+    assert callable(builder), "shared operation response fixture builder is required"
+
+    assert builder(operation, batch_id).hex() == expected
+
+
+def test_shared_tls_peer_reports_handler_failures() -> None:
+    fixtures = Path(__file__).parent / "fixtures" / "login-mtls"
+    peer_failure: queue.Queue[BaseException] = queue.Queue()
+    expected_failure = RuntimeError("peer handler failed")
+
+    def fail_after_handshake(_stream: ssl.SSLSocket) -> None:
+        raise expected_failure
+
+    port, failures, peer = start_tls13_mtls_peer(fixtures, fail_after_handshake)
+    context = ssl.create_default_context(
+        ssl.Purpose.SERVER_AUTH, cafile=str(fixtures / "server-cert.pem")
+    )
+    context.load_cert_chain(fixtures / "client-cert.pem", fixtures / "client-key.pem")
+    context.minimum_version = ssl.TLSVersion.TLSv1_3
+    context.maximum_version = ssl.TLSVersion.TLSv1_3
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
+        with context.wrap_socket(raw, server_hostname="127.0.0.1"):
+            pass
+
+    peer.join(timeout=5)
+    assert not peer.is_alive()
+    assert failures.get_nowait() is expected_failure
