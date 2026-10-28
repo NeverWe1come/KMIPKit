@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import queue
-import socket
 import ssl
 import struct
 import threading
@@ -11,7 +10,16 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from _test_support import mtls_transport_config, require_tls13_mtls_peer
+from _test_support import (
+    mtls_transport_config,
+    operation_response_message,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+    ttlv_structure,
+)
+
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -21,92 +29,26 @@ _REVOKE_TARGET = b"revoke-target"
 _COMPROMISE_DATE = 1_700_000_000
 
 
-def _ttlv_item(tag: int, kind: int, value: bytes) -> bytes:
-    return (
-        tag.to_bytes(3, "big")
-        + bytes((kind,))
-        + len(value).to_bytes(4, "big")
-        + value
-        + bytes((-len(value)) % 8)
-    )
-
-
-def _ttlv_structure(tag: int, *children: bytes) -> bytes:
-    return _ttlv_item(tag, 1, b"".join(children))
-
-
-def _ttlv_enumeration(tag: int, value: int) -> bytes:
-    return _ttlv_item(tag, 5, struct.pack(">I", value))
-
-
 def _response_message() -> bytes:
-    version = _ttlv_structure(
-        0x420069,
-        _ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
-        _ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    return operation_response_message(
+        0x13,
+        _REVOKE_ID,
+        payload_items=(
+            ttlv_item(0x420094, 7, b"revoked-server-id"),
+            ttlv_item(0x541234, 8, b"\x01\x00\xff"),
+        ),
     )
-    header = _ttlv_structure(
-        0x42007A,
-        version,
-        _ttlv_item(0x420092, 9, struct.pack(">q", 1)),
-        _ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
-    )
-    payload = _ttlv_structure(
-        0x42007C,
-        _ttlv_item(0x420094, 7, b"revoked-server-id"),
-        _ttlv_item(0x541234, 8, b"\x01\x00\xff"),
-    )
-    item = _ttlv_structure(
-        0x42000F,
-        _ttlv_enumeration(0x42005C, 0x13),
-        _ttlv_item(0x420093, 8, _REVOKE_ID),
-        _ttlv_enumeration(0x42007F, 0),
-        payload,
-    )
-    return _ttlv_structure(0x42007B, header, item)
-
-
-def _read_exact(stream: ssl.SSLSocket, size: int) -> bytes:
-    output = bytearray()
-    while len(output) < size:
-        chunk = stream.recv(size - len(output))
-        if not chunk:
-            raise AssertionError("client closed before sending a complete request")
-        output.extend(chunk)
-    return bytes(output)
 
 
 def _start_revoke_mtls_peer() -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
-    listener = socket.socket()
-    listener.bind(("127.0.0.1", 0))
-    listener.listen(1)
-    listener.settimeout(10)
     received: list[bytes] = []
-    failures: queue.Queue[Exception] = queue.Queue()
 
-    def serve() -> None:
-        try:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.minimum_version = ssl.TLSVersion.TLSv1_3
-            context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(_FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem")
-            context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
-            context.verify_mode = ssl.CERT_REQUIRED
-            raw, _ = listener.accept()
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                require_tls13_mtls_peer(stream)
-                prefix = _read_exact(stream, 8)
-                message_length = int.from_bytes(prefix[4:8], "big")
-                received.append(prefix + _read_exact(stream, message_length))
-                stream.sendall(_response_message())
-        except Exception as error:  # noqa: BLE001 - surface peer errors from the fixture thread.
-            failures.put(error)
-        finally:
-            listener.close()
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(_response_message())
 
-    peer = threading.Thread(target=serve, daemon=True)
-    peer.start()
-    return listener.getsockname()[1], received, failures, peer
+    port, failures, peer = start_tls13_mtls_peer(_FIXTURES, handle)
+    return port, received, failures, peer
 
 
 def _transport(port: int) -> client.TransportConfig:
@@ -364,16 +306,16 @@ def test_revoke_native_mtls_preserves_nested_request_and_success_response() -> N
 
         assert failures.empty(), "the loopback mTLS peer must complete"
         assert len(received) == 1
-        assert _ttlv_structure(
+        assert ttlv_structure(
             0x420081,
-            _ttlv_enumeration(0x420082, 2),
-            _ttlv_item(0x420080, 7, b"operator audit"),
+            ttlv_enumeration(0x420082, 2),
+            ttlv_item(0x420080, 7, b"operator audit"),
         ) in received[0]
-        assert _ttlv_item(
+        assert ttlv_item(
             0x420021, 9, struct.pack(">q", _COMPROMISE_DATE)
         ) in received[0]
-        assert _ttlv_item(0x420094, 7, _REVOKE_TARGET) in received[0]
-        assert _ttlv_item(0x420094, 7, b"object") not in received[0]
+        assert ttlv_item(0x420094, 7, _REVOKE_TARGET) in received[0]
+        assert ttlv_item(0x420094, 7, b"object") not in received[0]
         assert result is not None and len(result.items) == 1
         item_result = result.items[0]
         assert item_result.operation == 0x13 and item_result.result_status == 0

@@ -5831,3 +5831,26 @@ configurable and unchanged.
 These changes are limited to Python test support and its test callers. The
 production facade and the 3% duplication threshold are unchanged; an exact-head
 SonarCloud rerun is still needed to measure the gate.
+
+### T074 register and revoke Python response fixtures (2026-10-28)
+
+The PR 104 SonarCloud per-file API attributed 82 duplicated lines to the
+Register operation test and 81 to Revoke, including the shared TTLV response
+header/payload construction and one-connection mTLS peer scaffold. The existing
+test-only response factory now accepts operation-specific payload items; the
+Register and Revoke wrappers retain their distinct operation codes, batch IDs,
+server identifiers, and sensitive-byte payload assertions. Their peer threads
+use the common TLS 1.3 mTLS fixture. No production facade code changed.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `3888648a0` | `test_operation_response_fixture_builder_preserves_success_payload_fields` | Expected failure: the shared response builder did not yet accept operation-specific payload fields. |
+| Green | `6965654bf` | `tests/test_tls_peer_support.py` | Pass, 10 tests; shared response builder emits the exact approved success payload bytes. |
+| Refactor | this commit | Native-backed Register, Revoke, and TLS peer-support suites | Pass, 27 tests; operation-specific assertions remain in place. |
+| Refactor | this commit | Ruff `I001` checks on changed Python tests; `git diff --check` | Pass. |
+
+The local environment has no `sonar-scanner` or `sonar` CLI and no
+`sonar-project.properties`, so no local Sonar analysis was available. The
+per-file SonarCloud API remains the source for the pre-refactor duplication
+ranges; the exact-head quality gate must be reevaluated by PR CI. The project
+3% threshold remains unchanged.
