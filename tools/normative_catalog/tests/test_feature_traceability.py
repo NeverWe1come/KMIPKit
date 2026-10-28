@@ -713,6 +713,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
             ),
             {requirement_id},
         )
+        self.assertEqual(
+            _missing_category_tests_without_accepted_deviation(
+                {requirement_id},
+                {requirement_id: {"status": "active"}},
+                {},
+                {requirement_id: "OptionalCapability"},
+            ),
+            {requirement_id},
+        )
 
         deviations_without_valid_exception = (
             (
