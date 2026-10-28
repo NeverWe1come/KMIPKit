@@ -5925,4 +5925,6 @@ connection before responses are released.
 
 | Phase | Commit | Command or check | Result |
 |---|---|---|---|
-| Red | this commit | GitHub Actions run `40678012821`, Windows stable job `122781473690` | Failed at `crates/kmipkit-test-support/tests/transport_fixtures.rs:148`: `peak_active_tcp_requests_per_connection() >= 2`; source inspection confirms the assertion races the later TCP metric update. |
+| Red | `7532b9640` | GitHub Actions run `40678012821`, Windows stable job `122781473690` | Failed at `crates/kmipkit-test-support/tests/transport_fixtures.rs:148`: `peak_active_tcp_requests_per_connection() >= 2`; source inspection confirms the assertion races the later TCP metric update. |
+| Green | `981e062cd` | `cargo test -p kmipkit-test-support --test transport_fixtures` | Pass, all 7 fixture tests; the multiplexing case also passed 20 consecutive focused runs after adding the bounded active-request wait. |
+| Refactor | this commit | `cargo fmt --all --check`; `git diff --check` | Pass; the change is test-only and leaves transport and fixture metric ordering unchanged. |
