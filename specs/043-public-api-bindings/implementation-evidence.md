@@ -52,7 +52,14 @@ The broad diagnostic `uv run --with-requirements tools/api_manifest/requirements
 
 The readiness suite also exercises the CLI path: with KMIPKIT-0012's merged record deliberately omitted in the test, `generate.main(..., "--check")` returns exit code 2. This verifies that `--check` rejects authorization-only evidence without the recorded human merge.
 
-Additional local CI contracts passed: 308 script tests (26 skipped), 222 normative catalog tests (7 skipped), and 118 API manifest contract tests (1 skipped). The CI workflow now runs the readiness suite as part of Python contracts. Linux, Windows, macOS, and the full pull-request CI matrix remain subject to the PR run.
+Additional local CI contracts passed: 308 script tests (26 skipped), 222 normative catalog tests (7 skipped), and 118 API manifest contract tests (1 skipped). The CI workflow runs the readiness suite as part of Python contracts; exact-head hosted verification is recorded below.
+
+Final verification for the current T086 implementation: full pull-request CI run
+[`40788258177`](https://github.com/NeverWe1come/KMIPKit/actions/runs/40788258177)
+passed on exact head `75b5cc99ca8851efe283082fee14c0d1718cad6a` in 8 minutes
+42 seconds. Script Contracts passed on Ubuntu, Windows, and macOS. Coverage
+collection and selected-scope gate jobs passed with the authorized temporary
+threshold waiver still active; T085 owns threshold restoration.
 
 ## T039 owner approval evidence
 
