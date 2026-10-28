@@ -1691,7 +1691,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(batch_item_clause["source_keywords"], ["REQUIRED"])
         self.assertEqual(batch_item_clause["role"], "unclear")
         self.assertEqual(batch_item_clause["direction"], "unclear")
-        self.assertEqual(batch_item_clause["scope_state"], "unclear")
+        self.assertEqual(batch_item_clause["scope_state"], "client_1_0")
         self.assertEqual(batch_item_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"])
 
         batch_item_requirement = next(
@@ -1699,9 +1699,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             for item in catalog["requirements"]
             if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001"
         )
-        self.assertEqual(batch_item_requirement["role"], "unspecified")
-        self.assertEqual(batch_item_requirement["direction"], "unclear")
-        self.assertEqual(batch_item_requirement["scope_state"], "unclear")
+        self.assertEqual(batch_item_requirement["role"], "client")
+        self.assertEqual(batch_item_requirement["direction"], "both")
+        self.assertEqual(batch_item_requirement["scope_state"], "client_1_0")
         self.assertEqual(batch_item_requirement["element_ids"], [])
 
         spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
@@ -1716,10 +1716,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "This field consists of a structure that holds the individual requests or responses in a batch, "
             "and is REQUIRED. The contents of the batch items are described in Section 12.",
         )
-        self.assertEqual(batch_item_review["expected_client_requirement_ids"], [])
+        self.assertEqual(
+            batch_item_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"]
+        )
         self.assertEqual(batch_item_review["source_obligations"][0]["actor"], "unspecified")
         self.assertEqual(batch_item_review["source_obligations"][0]["direction"], "unspecified")
-        self.assertEqual(batch_item_review["source_obligations"][0]["scope_disposition"], "unresolved")
+        self.assertEqual(batch_item_review["source_obligations"][0]["scope_disposition"], "client_1_0")
 
         batch_order_option_element = next(
             item for item in catalog["elements"] if item["element_id"] == expected_batch_order_option_element_id

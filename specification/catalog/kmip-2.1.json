@@ -101804,7 +101804,7 @@
         "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
       ],
       "negative_verification_required": false,
-      "decision_id": null,
+      "decision_id": "KMIPKIT-DEC-029",
       "status": "scoped_verified",
       "review_note": "KMIP Specification v2.1 §9.7 requires Batch Items to hold individual requests or responses and does not name an endpoint actor or direction. Project interpretation: the client is responsible for including one or more Batch Items in both emitted requests and consumed responses; §§8.1 and 8.4 define those client message forms. This does not assert server behavior. No requirement-specific OASIS Test Case ID is linked by the pinned sources."
     },
@@ -138299,6 +138299,34 @@
       "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned OASIS KMIP 2.1 is the source of truth, directed use of the best-supported project interpretation when the text is silent or ambiguous, and authorized autonomous continuation without further approvals.",
       "approved_at": "2026-10-27",
       "consequence": "The two profile structures are represented in all client profile evidence sets for the Query response path. DISC-056 is resolved by the bounded direction-specific project interpretation; no server-initiated query behavior is claimed.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-029",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "8.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.7"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.7-001"
+      ],
+      "discrepancy_ids": [],
+      "policy_ids": [],
+      "interpretation": "Specification v2.1 §9.7 requires Batch Item but does not name an endpoint actor or direction. For KMIPKit 1.0 client-initiated exchanges, assign the client responsibility for encoding Batch Items in emitted Request Messages (§8.1) and parsing them in consumed Response Messages (§8.4). Preserve the source actor and direction as unspecified; this interpretation does not assert server behavior or server-initiated operations.",
+      "approver": "KMIPKit maintainer under direct delegated authorization",
+      "approval_evidence": "On 2026-10-27 the maintainer instructed that pinned OASIS KMIP 2.1 is the source of truth, directed use of the best-supported project interpretation when the text is silent or ambiguous, and authorized autonomous continuation without further approvals.",
+      "approved_at": "2026-10-28",
+      "consequence": "KMIPKIT-REQ-SPEC-9.7-001 is assigned to the 1.0 client request/response message path with client role, both directions, and client_1_0 scope. The pinned §9.7 source actor and direction remain unspecified, and no server-initiated operation is added.",
       "status": "accepted"
     }
   ],
