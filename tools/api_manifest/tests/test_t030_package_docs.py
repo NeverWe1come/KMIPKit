@@ -300,6 +300,27 @@ class PackageDocumentationContractTests(unittest.TestCase):
         self.assertEqual(6, len(outputs) - len(registry_outputs))
         self.assertIn("six additional destinations", normalized_documentation)
 
+    def test_bilingual_package_guides_match_current_operation_readiness(self) -> None:
+        operations = [
+            operation
+            for operation in self.manifest["operations"]
+            if operation["scope"] == "client_1_0"
+        ]
+        counts = {
+            state: sum(operation["apiState"] == state for operation in operations)
+            for state in ("verified", "declared", "blocked")
+        }
+
+        for language, guide in (("en", self.english), ("es", self.spanish)):
+            normalized = re.sub(r"\s+", " ", guide).lower()
+            with self.subTest(language=language):
+                self.assertIn(f"**{counts['blocked']} / {len(operations)}**", normalized)
+                self.assertIn(f"**{counts['declared']}**", normalized)
+                self.assertIn(f"**{counts['verified']}**", normalized)
+                for operation in operations:
+                    with self.subTest(operation=operation["name"]):
+                        self.assertIn(operation["name"].lower(), normalized)
+
     def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
         tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
             encoding="utf-8"
