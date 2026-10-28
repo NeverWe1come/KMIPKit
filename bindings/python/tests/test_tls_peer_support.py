@@ -100,6 +100,19 @@ def test_operation_response_fixture_builder_preserves_expected_wire_bytes(
     assert builder(operation, batch_id).hex() == expected
 
 
+def test_operation_response_fixture_builder_preserves_success_payload_fields() -> None:
+    builder = getattr(_test_support, "operation_response_message", None)
+    assert callable(builder), "shared operation response fixture builder is required"
+    payload_items = (
+        _test_support.ttlv_item(0x420094, 7, b"registered-server-id"),
+        _test_support.ttlv_item(0x541234, 8, b"\x01\x00\xff"),
+    )
+
+    assert builder(0x03, b"register-0", payload_items=payload_items).hex() == (
+        "42007b01000000c842007a0100000048420069010000002042006a0200000004000000020000000042006b020000000400000001000000004200920900000008000000000000000142000d0200000004000000010000000042000f010000007042005c05000000040000000300000000420093080000000a72656769737465722d3000000000000042007f0500000004000000000000000042007c01000000304200940700000014726567697374657265642d7365727665722d69640000000054123408000000030100ff0000000000"
+    )
+
+
 def test_shared_tls_peer_reports_handler_failures() -> None:
     fixtures = Path(__file__).parent / "fixtures" / "login-mtls"
     expected_failure = RuntimeError("peer handler failed")
