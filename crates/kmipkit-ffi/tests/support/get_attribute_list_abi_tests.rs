@@ -162,6 +162,37 @@ fn compiled_c_consumer_reads_successful_response_payload_and_hides_failure_paylo
 }
 
 #[test]
+fn get_attribute_list_uid_span_remains_readable_while_response_is_open() {
+    let success = successful_cryptographic_item(
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        0x0c,
+        b"attribute-list-uid-span",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"object-7"),
+            ttlv_enumeration(0x0042_013b, 0x0054_0001),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_record();
+    let mut count = 0;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+            success,
+            &raw mut present,
+            &raw mut identifier,
+            ptr::null_mut(),
+            0,
+            &raw mut count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(count, 1);
+    assert_eq!(unique_identifier_text(&identifier), b"object-7");
+    kmipkit_client_batch_item_response_release(success);
+}
+
+#[test]
 fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_order() {
     let name_reference = ttlv_structure(
         0x0042_013b,
