@@ -19,6 +19,9 @@ from tools.api_manifest.tests.test_manifest_v2 import (
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
 LANGUAGES = ("rust", "c", "java", "python")
+AUTH_ONLY_OWNER_STATUS = (
+    "Approved for autonomous implementation under a standing instruction"
+)
 
 
 def _contract_manifest() -> dict[str, object]:
@@ -329,8 +332,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             owner = root / "specs" / "020-query-ping" / "spec.md"
             owner.parent.mkdir(parents=True)
             owner.write_text(
-                "# Query and Ping\n\n"
-                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                f"# Query and Ping\n\n**Status**: {AUTH_ONLY_OWNER_STATUS}.\n",
                 encoding="utf-8",
             )
 
@@ -344,8 +346,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             owner = root / "specs" / "020-query-ping" / "spec.md"
             owner.parent.mkdir(parents=True)
             owner.write_text(
-                "# Query and Ping\n\n"
-                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                f"# Query and Ping\n\n**Status**: {AUTH_ONLY_OWNER_STATUS}.\n",
                 encoding="utf-8",
             )
             evidence = (
@@ -360,7 +361,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 "for implementation by specification PR #67, MERGED into "
                 "`release/1.0.0` on `2026-10-09`; the PR body gates implementation "
                 "on approval and merge. The checked-in owner status remains "
-                "`Approved for autonomous implementation under a standing instruction`.\n",
+                f"`{AUTH_ONLY_OWNER_STATUS}`.\n",
                 encoding="utf-8",
             )
 
@@ -372,10 +373,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             self.assertEqual(
                 "approved", generate._operation_owner_state(root, "KMIPKIT-0020")
             )
-            status_evidence = (
-                "**Status**: Approved for autonomous implementation under "
-                "a standing instruction."
-            )
+            status_evidence = f"**Status**: {AUTH_ONLY_OWNER_STATUS}."
             generate._validate_approval_source(
                 {
                     "kind": "feature-specification",
@@ -392,9 +390,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             root = Path(directory)
             owner = root / "specs" / "020-query-ping" / "spec.md"
             owner.parent.mkdir(parents=True)
-            status = (
-                "**Status**: Approved for autonomous implementation under a standing instruction."
-            )
+            status = f"**Status**: {AUTH_ONLY_OWNER_STATUS}."
             owner.write_text(f"# Query and Ping\n\n{status}\n", encoding="utf-8")
 
             with self.assertRaisesRegex(ManifestError, "merged specification approval"):
@@ -415,8 +411,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             owner = root / "specs" / "020-query-ping" / "spec.md"
             owner.parent.mkdir(parents=True)
             owner.write_text(
-                "# Query and Ping\n\n"
-                "**Status**: Approved for autonomous implementation under a standing instruction.\n",
+                f"# Query and Ping\n\n**Status**: {AUTH_ONLY_OWNER_STATUS}.\n",
                 encoding="utf-8",
             )
             matrix = root / "specs" / "043-public-api-bindings" / "contracts"
