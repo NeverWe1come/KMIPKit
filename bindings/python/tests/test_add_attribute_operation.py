@@ -1,6 +1,31 @@
 from __future__ import annotations
 
+import ssl
+from pathlib import Path
+
+from _test_support import (
+    mtls_transport_config,
+    operation_response_message,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+    ttlv_structure,
+)
+
 from kmipkit import extensions, ttlv
+from kmipkit import client
+
+_TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+_ADD_ATTRIBUTE_ID = b"add-attribute-0"
+
+
+def _add_attribute_response_message() -> bytes:
+    return operation_response_message(
+        0x0D,
+        _ADD_ATTRIBUTE_ID,
+        payload_items=(ttlv_item(0x0042_0094, 7, b"object-7"),),
+    )
 
 
 def test_add_attribute_builder_preserves_identifier_and_transfers_new_attribute(
@@ -52,3 +77,82 @@ def test_add_attribute_builder_preserves_identifier_and_transfers_new_attribute(
             (1,),
         ),
     ]
+
+
+def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
+    received: list[bytes] = []
+
+    def handle(stream: ssl.SSLSocket) -> None:
+        received.append(read_ttlv_frame(stream))
+        stream.sendall(_add_attribute_response_message())
+
+    port, failures, peer = start_tls13_mtls_peer(_TLS_FIXTURES, handle)
+    configuration = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    request_item = None
+    batch_result = None
+    limits = ttlv.codec_limits_defaults()
+    raw_name_tag = ttlv.raw_tag_from_raw(0x0042_000A)
+    name_tag = ttlv.raw_tag_try_checked(raw_name_tag)
+    raw_value_tag = ttlv.raw_tag_from_raw(0x0042_00A5)
+    value_tag = ttlv.raw_tag_try_checked(raw_value_tag)
+    raw_type_tag = ttlv.raw_tag_from_raw(0x0042_00A6)
+    type_tag = ttlv.raw_tag_try_checked(raw_type_tag)
+    try:
+        name_value = ttlv.ttlv_item_create(
+            value_tag, ttlv.ttlv_value_text_string(b"new name", limits), limits
+        )
+        name_type = ttlv.ttlv_item_create(
+            type_tag, ttlv.ttlv_value_enumeration(1), limits
+        )
+        name_value_structure = ttlv.ttlv_structure_with_item(
+            ttlv.ttlv_structure_create(), name_value, limits
+        )
+        name_value_structure = ttlv.ttlv_structure_with_item(
+            name_value_structure, name_type, limits
+        )
+        new_attribute = ttlv.ttlv_item_create(
+            name_tag, ttlv.ttlv_value_structure(name_value_structure, limits), limits
+        )
+        with (
+            configuration,
+            client.Client.create(configuration, mtls_transport_config(port, _TLS_FIXTURES)) as kmip,
+        ):
+            batch = client.Batch.create()
+            request_item = extensions.client_batch_item_add_attribute(None, new_attribute)
+            new_attribute = None
+            batch.add_item(
+                extensions.with_unique_batch_item_id(request_item, _ADD_ATTRIBUTE_ID)
+            )
+            request_item = None
+            batch_result = kmip.execute(batch, limits)
+
+        expected_new_attribute = ttlv_structure(
+            0x0042_013D,
+            ttlv_structure(
+                0x0042_000A,
+                ttlv_item(0x0042_00A5, 7, b"new name"),
+                ttlv_enumeration(0x0042_00A6, 1),
+            ),
+        )
+        assert failures.empty(), "the mTLS peer must complete one Add Attribute exchange"
+        assert len(received) == 1
+        assert ttlv_enumeration(0x42005C, 0x0D) in received[0]
+        assert expected_new_attribute in received[0]
+        assert b"\x42\x00\x94" not in received[0], "omitted Unique Identifier must stay absent"
+        assert batch_result is not None and len(batch_result.items) == 1
+        response = batch_result.items[0].add_attribute_response
+        assert response is not None
+        assert response.unique_identifier == "object-7"
+    finally:
+        if request_item is not None:
+            request_item.close()
+        if batch_result is not None:
+            batch_result.close()
+        limits.close()
+        for handle in (type_tag, raw_type_tag, value_tag, raw_value_tag, name_tag, raw_name_tag):
+            handle.close()
+        peer.join(timeout=4)
