@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.BatchOutcomeKind;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
@@ -357,6 +358,77 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, expectedNewAttribute);
         assertFalse(containsTtlvItem(request,
                 item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8))),
+                "an omitted Unique Identifier stays absent from the request");
+        assertTrue(peer.isDone());
+    }
+
+    @Test
+    void adjustAttributeRoundTripPreservesGenericValueAndTypedResponseOverMutualTls()
+            throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry(
+                "kmipkit-test-server",
+                testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD,
+                new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, adjustAttributeResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-adjust-attribute-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvValue adjustmentValue = TtlvValue.Integer(5);
+                ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            ClientBatchItem adjustAttribute = ClientBatchItem.adjustAttribute(
+                    null, AttributeReference.tag(0x42000aL), 1L, adjustmentValue);
+            assertTrue(adjustmentValue.handle() != 0,
+                    "Adjust Attribute borrows its generic Adjustment Value");
+            batch.add(adjustAttribute);
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x30, result.operation());
+                assertEquals(0, result.resultStatus());
+                assertEquals("adjusted-object-1",
+                        result.adjustAttributeResponse().orElseThrow().uniqueIdentifier());
+            }
+            assertTrue(adjustmentValue.handle() != 0,
+                    "the caller retains the generic value after execution");
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, enumeration(0x42005c, 0x30));
+        assertContains(request, enumeration(0x42013b, 0x42000a));
+        assertContains(request, enumeration(0x420158, 1));
+        assertContains(request, item(0x420162, 2, integer(5)));
+        assertFalse(containsTtlvItem(request,
+                item(0x420094, 7, "adjusted-object-1".getBytes(StandardCharsets.UTF_8))),
                 "an omitted Unique Identifier stays absent from the request");
         assertTrue(peer.isDone());
     }
@@ -4385,6 +4457,18 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x0d), enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] adjustAttributeResponseMessage() throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "adjusted-object-1".getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x30), enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);
     }
 

@@ -6678,3 +6678,34 @@ int kmipkit_client_abi_c_consumer_validate_add_attribute_response(
         identifier.text_data != 0 &&
         memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
 }
+
+int kmipkit_client_abi_c_consumer_build_adjust_attribute(
+    kmipkit_client_batch_item_t **out_request) {
+    kmipkit_attribute_reference_v1_t reference = {0};
+    kmipkit_ttlv_value_t *adjustment_value = 0;
+    kmipkit_client_batch_item_t *request = 0;
+    int32_t status;
+
+    if (out_request == 0) return 0;
+    *out_request = 0;
+    reference.struct_size = (uint32_t)sizeof(reference);
+    reference.abi_version = UINT32_C(1);
+    reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    reference.tag_value = UINT32_C(0x42000a);
+    if (kmipkit_ttlv_value_integer(INT32_C(5), &adjustment_value) != 0 ||
+        adjustment_value == 0) {
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_adjust_attribute(
+        0, &reference, UINT32_C(1), adjustment_value, &request);
+    kmipkit_ttlv_value_release(adjustment_value);
+    adjustment_value = 0;
+    if (status != 0 || request == 0) goto cleanup;
+    *out_request = request;
+    return 1;
+
+cleanup:
+    kmipkit_ttlv_value_release(adjustment_value);
+    kmipkit_client_batch_item_release(request);
+    return 0;
+}

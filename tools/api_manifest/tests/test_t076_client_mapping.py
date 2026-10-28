@@ -2004,12 +2004,14 @@ class T076ClientMappingTests(unittest.TestCase):
                 "clientBatchItemDestroy",
                 "clientBatchItemGetAttributeList",
                 "clientBatchItemAddAttribute",
+                "clientBatchItemAdjustAttribute",
                 "clientBatchItemRecover",
                 "clientBatchItemResponseActivate",
                 "clientBatchItemResponseArchive",
                 "clientBatchItemResponseDestroy",
                 "clientBatchItemResponseGetAttributeList",
                 "clientBatchItemResponseAddAttribute",
+                "clientBatchItemResponseAdjustAttribute",
                 "clientBatchItemResponseRecover",
             )
         }
@@ -2021,6 +2023,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 "DestroyResponse",
                 "GetAttributeListResponse",
                 "AddAttributeResponse",
+                "AdjustAttributeResponse",
                 "RecoverResponse",
             )
         }
