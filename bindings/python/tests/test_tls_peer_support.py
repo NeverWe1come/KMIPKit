@@ -127,3 +127,17 @@ def test_shared_tls_peer_reports_handler_failures() -> None:
     peer.join(timeout=5)
     assert not peer.is_alive()
     assert failures.get_nowait() is expected_failure
+
+
+def test_ttlv_frame_reader_preserves_operation_specific_eof_message() -> None:
+    class ClosedStream:
+        def recv(self, _size: int) -> bytes:
+            return b""
+
+    reader = getattr(_test_support, "read_ttlv_frame", None)
+    assert callable(reader), "shared TTLV frame reader is required"
+
+    with pytest.raises(AssertionError) as failure:
+        reader(ClosedStream(), eof_message="client closed before full request")
+
+    assert str(failure.value) == "client closed before full request"
