@@ -5944,10 +5944,9 @@ production facade code changed.
 | Refactor | this commit | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated API outputs verified. |
 | Refactor | this commit | Ruff `I001` on the changed Python test modules; `cargo fmt --all --check`; `git diff --check` | Pass. |
 
-No local Sonar scanner is installed. The last remote per-file API measurement
-was for the earlier pushed head; the duplication percentage for these newer
-refactors must be measured by the exact-head PR analysis after push. The 3%
-quality-gate threshold remains unchanged.
+No local Sonar scanner is installed. The exact-head SonarCloud API measurement
+for `9ed3a8182` reports 2.902472% new duplication (1,180 duplicated lines
+across 40,655 new lines), passing the unchanged 3% gate.
 
 ### T074 Sonar follow-up: Register and Revoke response fixtures (2026-10-28)
 
@@ -5968,3 +5967,20 @@ response semantics, and each test's success/error assertions remain distinct.
 | Refactor | `6d7c48473` | Ruff `I001` on shared support and changed operation tests; `git diff --check` | Pass. |
 | Refactor | this commit | Combined native-backed pytest over all T074 shared-fixture callers and Login/Delegated Login, Rekey/RNG, Certify, Derive Key, Get Usage Allocation, Register, and Revoke | Pass, 108 tests. |
 | Refactor | this commit | API parity/T076 suite; API generator check; Ruff `I001`; `cargo fmt --all --check`; `git diff --check` | Pass, 72 tests; all 12 generated outputs current; formatting and import checks clean. |
+
+### T074 exact-head CI and coverage status (2026-10-28)
+
+Exact-head CI run `40680927742` completed successfully on `9ed3a8182`: 34
+jobs succeeded, two schedule-only jobs were skipped, and none failed. The
+Windows stable log confirms
+`local_dns_fixture_tracks_multiplexed_tcp_requests_per_connection ... ok`.
+SonarCloud reports 2.902472% new duplication and passes the unchanged 3%
+gate.
+
+Coverage producer and collection jobs completed successfully and generated
+reports. However, the authorized temporary coverage-threshold exception for
+PR #104 means minimum coverage thresholds were not enforced by this run; no
+coverage-threshold pass is claimed. Per T085, preserve the branch exception
+until the remaining KMIPKIT-0043 work is complete, then restore the gate and
+run every required coverage check before review. T074's coverage-threshold
+verification remains open with T085.
