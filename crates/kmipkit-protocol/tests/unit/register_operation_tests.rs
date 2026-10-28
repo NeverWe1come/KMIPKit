@@ -1105,6 +1105,28 @@ fn request_requires_usage_mask_for_managed_cryptographic_objects() {
 }
 
 #[test]
+fn request_rejects_certificate_without_usage_mask() {
+    // KMIPKIT-REQ-SPEC-6.1.43-007: KMIP Specification v2.1 §2.1 classifies
+    // Certificate as managed cryptographic material; §6.1.43 Table 293 requires
+    // Cryptographic Usage Mask for managed cryptographic objects.
+    let result = RegisterRequest::new(
+        ObjectType::from_raw(1),
+        attrs([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+            item(CERTIFICATE_LENGTH, Value::integer(4096)),
+        ]),
+        item(CERTIFICATE, Value::structure(structure([]))),
+    )
+    .into_ttlv_payload();
+
+    assert!(
+        result.is_err(),
+        "Register Certificate must require Cryptographic Usage Mask"
+    );
+}
+
+#[test]
 fn request_requires_certificate_length_and_allows_embedded_signature_algorithm() {
     let certificate = item(CERTIFICATE, Value::structure(structure([])));
     let missing_length = RegisterRequest::new(
