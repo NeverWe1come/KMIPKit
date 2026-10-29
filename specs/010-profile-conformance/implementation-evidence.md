@@ -8311,13 +8311,13 @@ Historical status before App credential setup: the restricted `release-evidence`
 Created the private GitHub App `KMIPKit profile evidence verifier` under
 `@NeverWe1come` and installed it only for `NeverWe1come/KMIPKit`. Its repository
 permissions are read-only Administration and GitHub's required read-only
-Metadata permission; webhooks are disabled. Added `PROFILE_EVIDENCE_APP_CLIENT_ID`
-to the restricted `release-evidence` environment and stored the downloaded
-private key as `PROFILE_EVIDENCE_APP_PRIVATE_KEY`. Read-only GitHub CLI checks
-confirmed both names are present without retrieving either value. The temporary
-downloaded PEM was removed after storing the Actions secret. The App currently
-has two private-key pairs because the first key download was not available to
-the setup process; only the later downloaded key is configured in Actions.
+Metadata permission; webhooks are disabled. A read-only audit confirmed
+`PROFILE_EVIDENCE_APP_CLIENT_ID` and `PROFILE_EVIDENCE_APP_PRIVATE_KEY` are
+present in the restricted `release-evidence` environment without retrieving
+their values. Those environment-scoped credentials were already present and
+were left unchanged. GitHub now lists three private-key pairs; the latest
+generated key is unused, and its downloaded PEM was removed. Temporary
+repository-level duplicate credentials were removed.
 
 The App credential prerequisite is now configured. No eligible protected push
 to `release/1.0.0` has been made, so the workflow has not yet demonstrated a
@@ -8341,9 +8341,41 @@ generator and output change is 1,250 lines smaller.
 | --- | --- | --- |
 | Red | `3e2f2c300` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_profile_test_case_metadata_is_declared_once_and_referenced_by_each_profile -v` — expected failure: generated output had no interned `PROFILE_TEST_CASES` table. |
 | Green | `812f0cfee` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `rustfmt --check crates/kmipkit-protocol/src/profiles_generated.rs`; `cargo test -p kmipkit-protocol --quiet` — PASS: 69 generator tests (1 skipped); generated output current and formatted; protocol crate unit, integration, and doc tests passed (1,215 library tests). |
-| Refactor | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `rustfmt --check crates/kmipkit-protocol/src/profiles_generated.rs`; `cargo test -p kmipkit-protocol --quiet`; `git diff --check` — PASS: same results after clarifying the profile test-case reference variable name. |
+| Refactor | `d7a8d6ba9d1955c5189a91d9d66e52f81b08c6df` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `rustfmt --check crates/kmipkit-protocol/src/profiles_generated.rs`; `cargo test -p kmipkit-protocol --quiet`; `git diff --check` — PASS: same results after clarifying the profile test-case reference variable name. |
 
 SonarCloud has not produced a fresh analysis for these commits; the PR analysis
 must refresh the new-code duplication metric. No threshold or exclusion was
 changed. T026 remains open: this work does not provide eligible protected
 release-push evidence and makes no readiness or conformance claim.
+
+## Approved asynchronous owner-state synchronization (2026-10-29)
+
+After `KMIPKIT-0009` was approved on `release/1.0.0` (base commit
+`f297a8851`), the four asynchronous operation records in the public API input
+still said their owner was a candidate. The generator correctly rejected that
+state because it no longer matched the approved release specification. The
+manifest now records the approved owner for Cancel, Poll, Process, and Query
+Asynchronous Requests while keeping all four API states blocked until their
+four-language parity evidence is complete. No generated output changed.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `bbb83678c` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_async_operation_owners_match_the_approved_release_spec` — expected failure: the manifest owner state was `candidate` while the release spec was approved. |
+| Green | `8efe5b2d4` | Same focused unittest; `python tools/api_manifest/generate.py --repo-root . --check`; `python tools/normative_catalog/generate_profiles.py --repo-root . --check`; `git diff --check` — PASS. |
+| Refactor | `DOCS-OWNER-SYNC-REF` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest discover -s tools/api_manifest/tests`; `python tools/api_manifest/generate.py --repo-root . --check`; `python tools/api_manifest/audit_shared_rust_inventory.py --repo-root . --check`; `python tools/normative_catalog/generate_profiles.py --repo-root . --check`; `git diff --check` — PASS: 255 API manifest tests (3 skipped); all generated outputs current. The regression confirms owner approval does not promote API readiness. |
+
+## Approved owners excluded from draft gates (2026-10-29)
+
+The shared Rust inventory used to classify every candidate API mapping owned
+by KMIPKIT-0009 as a draft-owner gate, even after its specification was
+approved. The inventory now reserves `draftOwnerGates` for KMIPKIT-0010, which
+remains Draft. KMIPKIT-0009's four operations stay blocked pending parity, and
+its observed declarations stay blocked pending their mappings; only the
+incorrect draft classification was removed. The generated inventory report
+was regenerated with its pinned tool.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `a4a52f650` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_shared_rust_inventory.SharedRustInventoryTests.test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements` — expected failure: approved KMIPKIT-0009 still appeared in `draftOwnerGates`. |
+| Green | `400262f83` | Focused inventory assertions passed; `python tools/api_manifest/audit_shared_rust_inventory.py --repo-root .` regenerated the report. |
+| Refactor | `DOCS-DRAFT-GATES-REF` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest discover -s tools/api_manifest/tests` — PASS: 255 tests (3 skipped). The regression now proves the approved owner is omitted from draft gates while all four APIs remain blocked. |
