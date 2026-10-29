@@ -1565,9 +1565,10 @@ mod unrelated {
         )
 
         with tempfile.TemporaryDirectory() as directory:
-            summary_path = Path(directory) / "summary.md"
+            summary_path = Path(directory) / "github-summary.md"
             environment = {
                 "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_ACTIONS": "true",
                 "GITHUB_EVENT_NAME": "push",
                 "GITHUB_REPOSITORY": context["repository"],
                 "GITHUB_REF": context["ref"],
@@ -1581,13 +1582,25 @@ mod unrelated {
             with patch.dict(os.environ, environment, clear=False):
                 exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
 
-            summary = summary_path.read_text(encoding="utf-8")
+            github_summary = summary_path.read_text(encoding="utf-8")
+
+            local_summary_path = Path(directory) / "local-summary.md"
+            environment["GITHUB_STEP_SUMMARY"] = str(local_summary_path)
+            environment["GITHUB_ACTIONS"] = "false"
+            with patch.dict(os.environ, environment, clear=False):
+                local_exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+            local_summary = local_summary_path.read_text(encoding="utf-8")
 
         self.assertEqual(0, exit_code)
-        self.assertIn("Current profile readiness", summary)
-        self.assertNotIn("current verification manifest is invalid or does not match this run", summary)
-        self.assertIn("Public claim: no", summary)
-        self.assertNotIn("123456789", summary)
+        self.assertEqual(0, local_exit_code)
+        self.assertIn("Current profile readiness", github_summary)
+        self.assertNotIn("current verification manifest is invalid or does not match this run", github_summary)
+        self.assertIn("Public claim: no", github_summary)
+        self.assertNotIn("123456789", github_summary)
+        self.assertIn("current protected-release-push verification manifest is unavailable", local_summary)
+        self.assertIn("Public claim: no", local_summary)
+        self.assertNotIn("123456789", local_summary)
 
     def test_emits_fixed_sections_totals_and_unassigned_requirements(self) -> None:
         report = render_report(report_catalog())
@@ -2977,7 +2990,7 @@ mod unrelated {
         )
         self.assertEqual("evidence_incomplete", cyclic_readiness["effective_state"])
 
-    def test_complete_profile_readiness_never_publishes_a_public_claim(self) -> None:
+    def test_complete_profile_readiness_rejects_unverified_caller_context(self) -> None:
         from tools.normative_catalog import report as report_module
 
         catalog, manifest, context, mappings, profile_a_id, profile_b_id = (
@@ -2993,7 +3006,11 @@ mod unrelated {
             current_head=context["sha"],
         )
 
-        self.assertEqual("evidence_complete", readiness["effective_state"])
+        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        self.assertIn(
+            "current protected-release-push verification manifest is unavailable",
+            readiness["blockers"],
+        )
         self.assertIs(readiness["published_claim"], False)
 
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
