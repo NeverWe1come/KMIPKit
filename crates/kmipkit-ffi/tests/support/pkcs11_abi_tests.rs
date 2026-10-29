@@ -105,10 +105,12 @@ fn pkcs11_typed_response_getters_clear_all_outputs_for_invalid_item() {
     };
     present = u8::MAX;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
-            ptr::null_mut(),
-            &raw mut present,
-            &raw mut correlation,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+                ptr::null_mut(),
+                &raw mut present,
+                &raw mut correlation,
+            )
         ),
         ERROR_INVALID_INPUT
     );

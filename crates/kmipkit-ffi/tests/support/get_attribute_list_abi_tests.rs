@@ -88,10 +88,12 @@ fn get_attribute_list_response_ttlv_is_success_only_and_c_owned() {
     let mut present = 0;
     let mut response_handle = ptr::null_mut();
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
-            success,
-            &raw mut present,
-            &raw mut response_handle,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+                success,
+                &raw mut present,
+                &raw mut response_handle,
+            )
         ),
         SUCCESS
     );
@@ -109,10 +111,12 @@ fn get_attribute_list_response_ttlv_is_success_only_and_c_owned() {
     let mut present = 9;
     let mut response_ttlv = ptr::dangling_mut();
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
-            failure,
-            &raw mut present,
-            &raw mut response_ttlv,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+                failure,
+                &raw mut present,
+                &raw mut response_ttlv,
+            )
         ),
         SUCCESS
     );
@@ -176,13 +180,15 @@ fn get_attribute_list_uid_span_remains_readable_while_response_is_open() {
     let mut identifier = empty_unique_identifier_record();
     let mut count = 0;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            ptr::null_mut(),
-            0,
-            &raw mut count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                ptr::null_mut(),
+                0,
+                &raw mut count,
+            )
         ),
         SUCCESS
     );
@@ -235,13 +241,15 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
     let mut identifier = empty_unique_identifier_record();
     let mut reference_count = 0;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            ptr::null_mut(),
-            0,
-            &raw mut reference_count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                ptr::null_mut(),
+                0,
+                &raw mut reference_count,
+            )
         ),
         SUCCESS
     );
@@ -259,13 +267,15 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
             .expect("the test reference count fits usize")
     ];
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            references.as_mut_ptr(),
-            references.len() as u64,
-            &raw mut reference_count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                references.as_mut_ptr(),
+                references.len() as u64,
+                &raw mut reference_count,
+            )
         ),
         SUCCESS
     );
@@ -337,13 +347,15 @@ fn typed_get_attribute_list_rejects_short_capacity_and_bad_output_versions() {
     ];
     let mut count = 0;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            references.as_mut_ptr(),
-            2,
-            &raw mut count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                references.as_mut_ptr(),
+                2,
+                &raw mut count,
+            )
         ),
         ERROR_INVALID_INPUT
     );
@@ -352,26 +364,30 @@ fn typed_get_attribute_list_rejects_short_capacity_and_bad_output_versions() {
 
     references[1].abi_version = 2;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            references.as_mut_ptr(),
-            references.len() as u64,
-            &raw mut count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                references.as_mut_ptr(),
+                references.len() as u64,
+                &raw mut count,
+            )
         ),
         ERROR_INVALID_INPUT
     );
 
     identifier.abi_version = 2;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            success,
-            &raw mut present,
-            &raw mut identifier,
-            ptr::null_mut(),
-            0,
-            &raw mut count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                success,
+                &raw mut present,
+                &raw mut identifier,
+                ptr::null_mut(),
+                0,
+                &raw mut count,
+            )
         ),
         ERROR_INVALID_INPUT
     );
@@ -389,13 +405,15 @@ fn typed_get_attribute_list_hides_operation_fields_for_failure() {
     let mut identifier = empty_unique_identifier_record();
     let mut count = 1;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_get_attribute_list(
-            failure,
-            &raw mut present,
-            &raw mut identifier,
-            ptr::null_mut(),
-            0,
-            &raw mut count,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_get_attribute_list(
+                failure,
+                &raw mut present,
+                &raw mut identifier,
+                ptr::null_mut(),
+                0,
+                &raw mut count,
+            )
         ),
         SUCCESS
     );

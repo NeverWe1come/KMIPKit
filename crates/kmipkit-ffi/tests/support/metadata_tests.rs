@@ -402,10 +402,12 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         .into_iter()
         .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
         .filter_map(|declaration| {
-            let function_start = declaration.find("pub extern \"C\" fn")?;
+            let function_start = declaration
+                .find("pub unsafe extern \"C\" fn")
+                .or_else(|| declaration.find("pub extern \"C\" fn"))?;
             let function = &declaration[function_start..];
             let symbol = function
-                .split("pub extern \"C\" fn ")
+                .split("extern \"C\" fn ")
                 .nth(1)?
                 .split('(')
                 .next()?

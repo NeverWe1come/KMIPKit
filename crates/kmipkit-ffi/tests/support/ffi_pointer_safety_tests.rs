@@ -39,10 +39,7 @@ fn raw_pointer_ffi_call_sites() {
         )
     };
     let _ = unsafe {
-        client_abi::kmipkit_client_batch_item_response_metadata_v2(
-            ptr::null_mut(),
-            ptr::null_mut(),
-        )
+        client_abi::kmipkit_client_batch_item_response_metadata_v2(ptr::null_mut(), ptr::null_mut())
     };
     let _ = unsafe {
         client_abi::kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
@@ -70,9 +67,7 @@ fn raw_pointer_ffi_call_sites() {
             ptr::null_mut(),
         )
     };
-    let _ = unsafe {
-        kmipkit_api_levels_get_v1(ptr::null_mut(), ptr::null_mut(), ptr::null_mut())
-    };
+    let _ = unsafe { kmipkit_api_levels_get_v1(ptr::null_mut(), ptr::null_mut(), ptr::null_mut()) };
     let _ = unsafe {
         kmipkit_client_batch_item_validate(
             ptr::null_mut(),

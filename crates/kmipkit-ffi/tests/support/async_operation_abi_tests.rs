@@ -91,7 +91,10 @@ fn assert_pending_metadata(outcome: *mut kmipkit_client_async_operation_outcome_
         result_message_length: 0,
     };
     assert_eq!(
-        kmipkit_client_async_operation_outcome_metadata_v1(outcome, &mut metadata),
+        test_pointer_ffi_call!(kmipkit_client_async_operation_outcome_metadata_v1(
+            outcome,
+            &mut metadata
+        )),
         SUCCESS
     );
     assert_eq!(metadata.operation, 0x1a);

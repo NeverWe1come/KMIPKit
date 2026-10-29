@@ -119,8 +119,14 @@ pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_function_ttlv(
 /// live. The caller must copy the span before releasing that handle. A present
 /// empty Byte String is reported as `out_present == 1` and a zero-length span;
 /// absence is `out_present == 0` with the same empty span.
+///
+/// # Safety
+///
+/// `item` must be null or a live response-item handle. `out_present` and
+/// `out_value` must be aligned, writable pointers to their respective output
+/// types and must not overlap each other or the handle storage.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_correlation_value(
+pub unsafe extern "C" fn kmipkit_client_batch_item_response_pkcs11_correlation_value(
     item: *mut kmipkit_client_batch_item_response_t,
     out_present: *mut u8,
     out_value: *mut crate::kmipkit_byte_span_v1_t,
@@ -1214,8 +1220,14 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_release(
 }
 
 /// Reads common KMIP result metadata; result-message bytes borrow from `outcome`.
+///
+/// # Safety
+///
+/// `outcome` must be null or a live asynchronous-outcome handle. `out_metadata`
+/// must be aligned and writable for a complete v1 metadata record and must not
+/// overlap the handle storage.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_async_operation_outcome_metadata_v1(
+pub unsafe extern "C" fn kmipkit_client_async_operation_outcome_metadata_v1(
     outcome: *mut kmipkit_client_async_operation_outcome_t,
     out_metadata: *mut kmipkit_client_async_operation_metadata_v1_t,
 ) -> i32 {
@@ -1606,8 +1618,17 @@ fn execute_guarded_client_item(
 }
 
 /// Executes one typed batch with per-exchange timeout overrides.
+///
+/// # Safety
+///
+/// Every non-null `client` and `limits` handle must be live and of its declared
+/// type. `batch` must point to an aligned, writable batch-handle slot;
+/// `options` must point to a readable, aligned, initialized v1 options record;
+/// and `out_response` must point to an aligned, writable output slot. These
+/// regions must remain valid for the call. The batch slot, options record, and
+/// output slot must not overlap.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_execute_with_options_v1(
+pub unsafe extern "C" fn kmipkit_client_execute_with_options_v1(
     client: *mut kmipkit_client_t,
     batch: *mut *mut kmipkit_client_batch_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -1727,8 +1748,17 @@ pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
 }
 
 /// Executes a batch with request options and returns its generic TTLV on a typed response error.
+///
+/// # Safety
+///
+/// Every non-null `client` and `limits` handle must be live and of its declared
+/// type. `batch` must point to an aligned, writable batch-handle slot;
+/// `options` must point to a readable, aligned, initialized v1 options record;
+/// and both output pointers must point to aligned, writable slots. These
+/// regions must remain valid for the call. The batch slot, options record, and
+/// output slots must not overlap one another.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_execute_with_options_and_error_ttlv_v1(
+pub unsafe extern "C" fn kmipkit_client_execute_with_options_and_error_ttlv_v1(
     client: *mut kmipkit_client_t,
     batch: *mut *mut kmipkit_client_batch_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -1880,8 +1910,15 @@ pub extern "C" fn kmipkit_client_batch_item_response_metadata_v1(
     })
 }
 
+/// Reads result metadata into a caller-initialized v2 record.
+///
+/// # Safety
+///
+/// `item` must be null or a live response-item handle. `out_metadata` must
+/// point to an initialized, aligned, writable v2 metadata record and must not
+/// overlap the handle storage.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
+pub unsafe extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
     item: *mut kmipkit_client_batch_item_response_t,
     out_metadata: *mut kmipkit_client_batch_item_metadata_v2_t,
 ) -> i32 {
@@ -3379,8 +3416,13 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_constraints_ttlv(
 
 /// Copies the successful Get Attribute List response payload as generic TTLV.
 /// Output regions must be writable and must not overlap.
+///
+/// # Safety
+///
+/// `item` must be null or a live response-item handle. Both output pointers
+/// must be aligned, writable, and non-overlapping for their declared types.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
+pub unsafe extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,
     out_present: *mut u8,
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
@@ -3770,8 +3812,17 @@ pub extern "C" fn kmipkit_client_batch_item_response_delete_attribute(
 /// Pass a null reference pointer with zero capacity to query the count. Text
 /// spans in the returned records are borrowed while `item` remains open.
 /// Output records must be initialized with their exact size and ABI version 1.
+///
+/// # Safety
+///
+/// `item` must be null or a live response-item handle. The scalar and
+/// identifier outputs must be aligned and writable. When `capacity` is
+/// nonzero, `out_references` must point to an aligned, writable array of that
+/// many initialized v1 records. A null reference pointer is allowed only with
+/// zero capacity. The function detects and rejects overlapping output ranges
+/// before mutating any output.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_get_attribute_list(
+pub unsafe extern "C" fn kmipkit_client_batch_item_response_get_attribute_list(
     item: *mut kmipkit_client_batch_item_response_t,
     out_present: *mut u8,
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
@@ -5307,8 +5358,16 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
 /// to 1 and `out_count` to 0. Pending, failed, and other-operation results set
 /// both outputs to 0. A second call with sufficient caller-owned capacity
 /// copies values in source order, retaining repetitions.
+///
+/// # Safety
+///
+/// `item` must be null or a live response-item handle. `out_present` and
+/// `out_count` must be aligned, writable, and non-overlapping. If
+/// `out_versions` is non-null, it must point to an aligned, writable array of
+/// `capacity` records, disjoint from both scalar outputs. A null versions
+/// pointer is allowed only with zero capacity.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported_versions(
+pub unsafe extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported_versions(
     item: *mut kmipkit_client_batch_item_response_t,
     out_present: *mut u8,
     out_versions: *mut crate::kmipkit_protocol_version_v1_t,

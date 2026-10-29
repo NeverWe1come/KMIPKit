@@ -18,7 +18,7 @@ fn validate_constructor_preserves_identifier_and_optional_date() {
     let mut item = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             ptr::null_mut(),
             0,
             &raw const identifier,
@@ -28,7 +28,7 @@ fn validate_constructor_preserves_identifier_and_optional_date() {
             1,
             i64::MIN,
             &raw mut item,
-        ),
+        )),
         SUCCESS
     );
     assert!(!item.is_null());
@@ -76,7 +76,7 @@ fn validate_constructor_preserves_nonempty_certificate_array() {
     let mut item = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             certificates.as_mut_ptr(),
             certificates.len() as u64,
             ptr::null(),
@@ -86,7 +86,7 @@ fn validate_constructor_preserves_nonempty_certificate_array() {
             0,
             0,
             &raw mut item,
-        ),
+        )),
         SUCCESS
     );
     assert!(!item.is_null());
@@ -125,7 +125,7 @@ fn validate_constructor_borrows_and_copies_payload_extensions() {
     let mut item = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             ptr::null_mut(),
             0,
             ptr::null(),
@@ -135,7 +135,7 @@ fn validate_constructor_borrows_and_copies_payload_extensions() {
             0,
             0,
             &raw mut item,
-        ),
+        )),
         SUCCESS
     );
     assert!(!item.is_null());
@@ -166,7 +166,7 @@ fn validate_constructor_rejects_output_overlapping_payload_extension_array() {
         .cast::<*mut kmipkit_client_batch_item_t>();
 
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             ptr::null_mut(),
             0,
             ptr::null(),
@@ -176,7 +176,7 @@ fn validate_constructor_rejects_output_overlapping_payload_extension_array() {
             0,
             0,
             overlapping_output,
-        ),
+        )),
         ERROR_INVALID_INPUT
     );
     assert_eq!(extension_handles[0], extension);
@@ -200,7 +200,7 @@ fn validate_constructor_rejects_output_overlapping_identifier_text() {
         integer_value: 0,
     }];
 
-    let status = kmipkit_client_batch_item_validate(
+    let status = test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
         ptr::null_mut(),
         0,
         identifiers.as_mut_ptr(),
@@ -210,7 +210,7 @@ fn validate_constructor_rejects_output_overlapping_identifier_text() {
         0,
         0,
         &raw mut item,
-    );
+    ));
     if status == SUCCESS && !item.is_null() {
         kmipkit_client_batch_item_release(item);
     }
@@ -267,7 +267,7 @@ fn validate_constructor_enforces_one_aggregate_ttlv_element_limit() {
 
     let mut item = ptr::dangling_mut();
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             certificate_handles.as_mut_ptr(),
             certificate_handles.len() as u64,
             ptr::null(),
@@ -277,7 +277,7 @@ fn validate_constructor_enforces_one_aggregate_ttlv_element_limit() {
             0,
             0,
             &raw mut item,
-        ),
+        )),
         ERROR_RESOURCE_LIMIT
     );
     assert!(item.is_null());
@@ -292,7 +292,7 @@ fn validate_constructor_rejects_noncanonical_absent_date_and_clears_output() {
     let mut item = ptr::dangling_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_validate(
+        test_pointer_ffi_call!(kmipkit_client_batch_item_validate(
             ptr::null_mut(),
             0,
             ptr::null(),
@@ -302,7 +302,7 @@ fn validate_constructor_rejects_noncanonical_absent_date_and_clears_output() {
             0,
             1,
             &raw mut item,
-        ),
+        )),
         ERROR_INVALID_INPUT
     );
     assert!(item.is_null());

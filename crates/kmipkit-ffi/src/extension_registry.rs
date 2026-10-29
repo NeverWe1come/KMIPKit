@@ -10,6 +10,16 @@ use std::{collections::HashMap, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
 
 #[cfg(test)]
+macro_rules! test_pointer_ffi_call {
+    ($call:expr) => {{
+        // SAFETY: Tests use live test-owned storage for non-null pointer arguments. Null pointers,
+        // invalid capacities, and overlapping regions are passed only to APIs that preflight and
+        // reject those conditions before dereferencing or writing the affected regions.
+        unsafe { $call }
+    }};
+}
+
+#[cfg(test)]
 #[path = "../tests/support/ffi_pointer_safety_tests.rs"]
 mod ffi_pointer_safety_tests;
 
@@ -1696,8 +1706,13 @@ pub extern "C" fn kmipkit_capability_is_available(
 }
 
 /// Returns the local API taxonomy through borrowed spans into static strings.
+///
+/// # Safety
+///
+/// All three output pointers must be aligned, writable for a complete byte-span
+/// record, and pairwise non-overlapping.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_api_levels_get_v1(
+pub unsafe extern "C" fn kmipkit_api_levels_get_v1(
     out_high_level: *mut crate::kmipkit_byte_span_v1_t,
     out_typed_protocol: *mut crate::kmipkit_byte_span_v1_t,
     out_generic_ttlv: *mut crate::kmipkit_byte_span_v1_t,
@@ -2901,10 +2916,19 @@ pub extern "C" fn kmipkit_client_batch_item_log(
 ///
 /// Certificate structures and identifier records are borrowed and copied. A zero count accepts
 /// a null array, and omission of the validity date is preserved for server-side evaluation.
-/// Input array storage and referenced identifier text bytes must not overlap `out_item`.
-/// Overlapping ranges are rejected before either region is written.
+/// Input array storage and referenced identifier text bytes must not overlap `out_item`;
+/// overlapping ranges are rejected before either region is accessed.
+///
+/// # Safety
+///
+/// Each non-null input array must be aligned, readable for its declared count,
+/// and contain valid handles or initialized identifier records. Referenced
+/// identifier text must remain readable for the duration of the call. A null
+/// array is allowed only when its count is zero. `out_item` must point to an
+/// aligned, writable handle slot. The function rejects overlap between that
+/// slot and any input array or referenced identifier text before accessing them.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_validate(
+pub unsafe extern "C" fn kmipkit_client_batch_item_validate(
     certificates: *mut *mut kmipkit_ttlv_structure_t,
     certificate_count: u64,
     identifiers: *const kmipkit_unique_identifier_v1_t,

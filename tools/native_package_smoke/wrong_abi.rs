@@ -3,8 +3,14 @@
 use core::ffi::c_void;
 use core::ptr;
 
+/// Returns the host-native test fixture's deliberately incompatible ABI revision.
+///
+/// # Safety
+///
+/// Each output pointer must be aligned, writable for one `u32`, and disjoint
+/// from the other output pointers. Null pointers are rejected before writes.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_version_get(
+pub unsafe extern "C" fn kmipkit_version_get(
     major: *mut u32,
     minor: *mut u32,
     patch: *mut u32,

@@ -7812,7 +7812,10 @@ fn assert_creation_result_getters_return_status(
         result_message_length: 0,
     };
     assert_eq!(
-        kmipkit_client_batch_item_response_metadata_v2(item, &mut metadata),
+        test_pointer_ffi_call!(kmipkit_client_batch_item_response_metadata_v2(
+            item,
+            &mut metadata
+        )),
         expected_status
     );
 
@@ -7866,12 +7869,14 @@ fn assert_creation_result_getters_return_status(
     let mut versions_present = 0;
     let mut version_count = 0;
     assert_eq!(
-        kmipkit_client_batch_item_response_discover_versions_supported_versions(
-            item,
-            &mut versions_present,
-            ptr::null_mut(),
-            0,
-            &mut version_count,
+        test_pointer_ffi_call!(
+            kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                item,
+                &mut versions_present,
+                ptr::null_mut(),
+                0,
+                &mut version_count,
+            )
         ),
         expected_status
     );
@@ -8174,10 +8179,12 @@ fn ffi_pkcs11_response_getters_copy_optional_values() {
     let mut correlation_span = byte_span(&[]);
     present = 0;
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
-            item,
-            &raw mut present,
-            &raw mut correlation_span,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+                item,
+                &raw mut present,
+                &raw mut correlation_span,
+            )
         ),
         SUCCESS
     );
@@ -8261,10 +8268,12 @@ fn ffi_pkcs11_response_getters_return_absent_for_other_operations() {
 
     let mut correlation = byte_span(&[]);
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
-            item,
-            &raw mut present,
-            &raw mut correlation,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+                item,
+                &raw mut present,
+                &raw mut correlation,
+            )
         ),
         SUCCESS
     );
@@ -8272,10 +8281,12 @@ fn ffi_pkcs11_response_getters_return_absent_for_other_operations() {
     assert!(correlation.data.is_null());
     assert_eq!(correlation.length, 0);
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
-            item,
-            &raw mut present,
-            ptr::null_mut(),
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+                item,
+                &raw mut present,
+                ptr::null_mut(),
+            )
         ),
         ERROR_INVALID_INPUT
     );
@@ -8296,10 +8307,12 @@ fn ffi_pkcs11_response_getters_preserve_absence_for_failure_result() {
     let mut present = u8::MAX;
     let mut correlation = byte_span(&[]);
     assert_eq!(
-        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
-            item,
-            &raw mut present,
-            &raw mut correlation,
+        test_pointer_ffi_call!(
+            client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+                item,
+                &raw mut present,
+                &raw mut correlation,
+            )
         ),
         SUCCESS
     );
@@ -9185,13 +9198,13 @@ fn request_options_v1_rejects_bad_versions_and_timeout_encodings() {
 fn execute_with_options_invalid_options_nulls_response_output() {
     let mut response = std::ptr::NonNull::<kmipkit_client_batch_response_t>::dangling().as_ptr();
 
-    let status = kmipkit_client_execute_with_options_v1(
+    let status = test_pointer_ffi_call!(kmipkit_client_execute_with_options_v1(
         ptr::null_mut(),
         ptr::null_mut(),
         ptr::null_mut(),
         ptr::null(),
         &raw mut response,
-    );
+    ));
 
     assert_eq!(status, ERROR_INVALID_INPUT);
     assert!(
@@ -9814,14 +9827,14 @@ fn ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validat
     let mut response = ptr::dangling_mut::<kmipkit_client_batch_response_t>();
     let mut error_response = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
     assert_eq!(
-        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        test_pointer_ffi_call!(kmipkit_client_execute_with_options_and_error_ttlv_v1(
             ptr::null_mut(),
             ptr::null_mut(),
             ptr::null_mut(),
             ptr::null(),
             &mut response,
             &mut error_response,
-        ),
+        )),
         ERROR_INVALID_INPUT
     );
     assert!(response.is_null());
@@ -9844,14 +9857,14 @@ fn ffi_execute_with_options_and_error_ttlv_rejects_invalid_options_before_consum
     let mut error_response = ptr::dangling_mut();
 
     assert_eq!(
-        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        test_pointer_ffi_call!(kmipkit_client_execute_with_options_and_error_ttlv_v1(
             client,
             &mut batch,
             limits,
             &raw const options,
             &raw mut response,
             &raw mut error_response,
-        ),
+        )),
         ERROR_INVALID_INPUT
     );
     assert!(!batch.is_null());
@@ -9917,14 +9930,14 @@ fn ffi_execute_with_options_and_error_ttlv_does_not_retain_non_uid_error_respons
     let mut error_response = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        test_pointer_ffi_call!(kmipkit_client_execute_with_options_and_error_ttlv_v1(
             client,
             &mut batch,
             limits,
             &options,
             &mut response,
             &mut error_response,
-        ),
+        )),
         ERROR_PROTOCOL
     );
     assert!(batch.is_null());
