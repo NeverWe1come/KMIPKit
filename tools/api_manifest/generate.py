@@ -691,6 +691,46 @@ def _validate_approval_source(
     raise ManifestError("manifest approval evidence has an unsupported source kind")
 
 
+def _validate_implementation_authorization(
+    source: Any,
+    root: Path,
+    *,
+    feature_id: Any,
+) -> None:
+    """Validate direct authorization for branch-only work without granting approval."""
+    if not isinstance(source, dict) or not isinstance(feature_id, str):
+        raise ManifestError("authorized WIP record has no implementation authorization evidence")
+    relative_path = source.get("path")
+    evidence = source.get("evidence")
+    if (
+        source.get("kind") != "direct-human-instruction"
+        or source.get("status") != "Draft"
+        or not isinstance(relative_path, str)
+        or not isinstance(evidence, str)
+        or not evidence
+    ):
+        raise ManifestError("implementation authorization evidence is malformed")
+    parts = PurePosixPath(relative_path).parts
+    if len(parts) != 3 or parts[0] != "specs" or parts[2] != "spec.md":
+        raise ManifestError("implementation authorization evidence is outside its owner specification")
+    owner = _feature_directory(root, feature_id)
+    if parts[1] != owner.name:
+        raise ManifestError("implementation authorization evidence refers to a different owner")
+    _, owner_content = _manifest_file(root, relative_path)
+    status = _status_value_from_document(owner_content)
+    if (
+        status is None
+        or not status.startswith("Draft")
+        or evidence != status
+        or not re.search(
+            r"direct human instruction.*authorizes autonomous work without further approval requests",
+            status,
+            re.IGNORECASE,
+        )
+    ):
+        raise ManifestError("implementation authorization evidence does not match its owner specification")
+
+
 def _validate_parity_evidence(record: dict[str, Any], root: Path) -> None:
     evidence_ids = record.get("parityEvidenceIds", [])
     if not isinstance(evidence_ids, list):
@@ -708,6 +748,39 @@ def _validate_operation_readiness(
         if not isinstance(operation, dict):
             raise ManifestError("manifest operation readiness record is malformed")
         state = operation.get("apiState")
+        if state == "authorized_wip":
+            candidate_spec_id = operation.get("candidateSpecId")
+            dependency = operation.get("ownerDependency")
+            if (
+                not isinstance(candidate_spec_id, str)
+                or not isinstance(dependency, dict)
+                or dependency.get("state") != "candidate"
+                or dependency.get("specId") != candidate_spec_id
+                or _operation_owner_state(root, candidate_spec_id) != "candidate"
+            ):
+                raise ManifestError("authorized WIP operation has an inconsistent candidate owner")
+            _validate_implementation_authorization(
+                operation.get("implementationAuthorization"),
+                root,
+                feature_id=candidate_spec_id,
+            )
+            declarations_by_language = operation.get("declarations", {})
+            if set(declarations_by_language) != {"rust", "c", "java", "python"}:
+                raise ManifestError("authorized WIP operation lacks four-language declaration mappings")
+            for language, declaration_ids in declarations_by_language.items():
+                for declaration_id in declaration_ids:
+                    declaration = declarations_by_id.get(declaration_id)
+                    if (
+                        declaration is None
+                        or declaration.get("declarationState") != "authorized_wip"
+                        or language not in declaration.get("languageMappings", {})
+                    ):
+                        raise ManifestError("authorized WIP operation maps to an invalid declaration")
+                    if declaration.get("implementationAuthorization") != operation.get(
+                        "implementationAuthorization"
+                    ):
+                        raise ManifestError("authorized WIP declaration has different authorization evidence")
+            continue
         if state in {"declared", "verified"}:
             if operation.get("candidateSpecId") is not None:
                 raise ManifestError("ready operation still records a candidate owner")
