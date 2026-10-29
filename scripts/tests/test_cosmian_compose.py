@@ -156,6 +156,25 @@ class CosmianComposeTests(unittest.TestCase):
             self.assertEqual(sentinel.read_text(encoding="utf-8"), "preserve me\n")
 
     @unittest.skipUnless(os.name == "posix", "requires a POSIX shell")
+    def test_pki_generator_rejects_symlinked_ownership_marker(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="kmipkit-cosmian-pki-") as temporary:
+            root = Path(temporary)
+            output_dir = root / "certs"
+            output_dir.mkdir()
+            external_marker = root / "external-marker"
+            external_marker.write_text(PKI_MARKER_CONTENTS, encoding="utf-8")
+            try:
+                (output_dir / PKI_MARKER_NAME).symlink_to(external_marker)
+            except OSError as error:
+                self.skipTest(f"file symlinks are unavailable: {error}")
+
+            result = self.run_pki_generator(output_dir, apk_exit=23)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Refusing to clean an unowned PKI output directory", result.stderr)
+            self.assertEqual(external_marker.read_text(encoding="utf-8"), PKI_MARKER_CONTENTS)
+
+    @unittest.skipUnless(os.name == "posix", "requires a POSIX shell")
     def test_pki_generator_marks_empty_output_before_tool_install(self) -> None:
         with tempfile.TemporaryDirectory(prefix="kmipkit-cosmian-pki-") as temporary:
             output_dir = Path(temporary) / "certs"
