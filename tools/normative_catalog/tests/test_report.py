@@ -179,8 +179,9 @@ class CoverageReportTests(unittest.TestCase):
         branch_protection = {
             "protected": True,
             "required_pull_request_reviews": {
-                "required_approving_review_count": 1,
+                "required_approving_review_count": 0,
                 "dismiss_stale_reviews": True,
+                "require_code_owner_reviews": False,
                 "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
             },
             "enforce_admins": {"enabled": True},
@@ -1554,8 +1555,9 @@ mod unrelated {
             branch_protection={
                 "protected": True,
                 "required_pull_request_reviews": {
-                    "required_approving_review_count": 1,
+                    "required_approving_review_count": 0,
                     "dismiss_stale_reviews": True,
+                    "require_code_owner_reviews": False,
                     "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
                 },
                 "enforce_admins": {"enabled": True},
@@ -1565,8 +1567,9 @@ mod unrelated {
         )
         raw_branch_policy = {
             "required_pull_request_reviews": {
-                "required_approving_review_count": 1,
+                "required_approving_review_count": 0,
                 "dismiss_stale_reviews": True,
+                "require_code_owner_reviews": False,
                 "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
             },
             "enforce_admins": {"enabled": True},

@@ -106,15 +106,17 @@ Use the following stages independently:
    exact IDs `core`, `script-contracts`, `normative-inventory`, `coverage`,
    `coverage-gate`, and `dependency-policy`. The job uses a short-lived
    GitHub App token with Administration read permission to check current
-   branch protection; required reviews, stale-review dismissal, admin
-   enforcement, disabled force-push/deletion, and a present bypass-allowance
-   object with empty user, team, and app lists are required. Pull-request,
-   scheduled, local, unprotected, or mismatched runs are ineligible. The
-   ephemeral evidence manifest does not update the catalog or generated
-   report.
+   branch protection; the approved solo-maintainer PR policy (zero approvals,
+   code-owner review disabled), stale-review dismissal, admin enforcement,
+   disabled force-push/deletion, and no configured bypass actors. The personal
+   repository API omits its optional bypass object when no actors exist; this
+   absence is normalized to empty lists, while malformed or non-empty settings
+   fail closed. Pull-request, scheduled, local, unprotected, or mismatched runs
+   are ineligible. The ephemeral evidence manifest does not update the catalog
+   or generated report.
 5. **Release claim**: a passing readiness result does not publish a claim.
-   A catalog state advances only after its required human review, and any
-   public claim remains a separate reviewed release decision.
+   The catalog advances only after all evidence gates pass. A public claim
+   remains a separate release decision.
 
 Baseline remains ineligible for a formal profile claim until all applicable
 requirements and evidence gates are satisfied, including current protected-

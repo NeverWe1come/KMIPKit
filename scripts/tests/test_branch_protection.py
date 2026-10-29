@@ -45,10 +45,16 @@ class BranchProtectionTests(unittest.TestCase):
         )
 
     def test_normalizer_rejects_missing_or_malformed_policy_fields(self) -> None:
-        response = self.protection_response()
-        response["required_pull_request_reviews"]["required_approving_review_count"] = True
-        with self.assertRaises(ValueError):
-            branch_protection.normalize_branch_protection(response)
+        malformed_reviews = (
+            {"required_approving_review_count": True},
+            {"bypass_pull_request_allowances": None},
+            {"bypass_pull_request_allowances": {"users": [], "teams": []}},
+        )
+        for override in malformed_reviews:
+            response = self.protection_response()
+            response["required_pull_request_reviews"].update(override)
+            with self.subTest(override=override), self.assertRaises(ValueError):
+                branch_protection.normalize_branch_protection(response)
 
     def test_normalizer_accepts_single_maintainer_policy_and_api_omitted_bypass(self) -> None:
         response = self.protection_response()

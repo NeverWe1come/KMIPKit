@@ -8294,3 +8294,14 @@ a conformance claim. Keep Baseline `claim_state` at `evidence_incomplete` and
 keep the evaluator fail-closed. T026 is not a blocker for independent
 implementation work; restore the release review requirement and complete the
 App-backed protected-push evidence before qualifying a release.
+
+
+## T026 solo-maintainer policy update (2026-10-29)
+
+At the maintainer's direction, both `master` and `release/1.0.0` now use the same protected-branch policy: strict required `CI summary / at a glance`, required PRs, zero required approvals, code-owner approval disabled, stale-review dismissal, conversation resolution, administrator enforcement, and no force pushes or deletion. This permits the sole owner to merge a PR after required CI passes while still blocking direct protected-branch updates. The live API confirms these settings on both branches.
+
+The branch-protection adapter and CI manifest validator now require this explicit solo-maintainer mode and treat the omitted `bypass_pull_request_allowances` field as empty only for this personal repository's API response. If the optional field is present, it must contain exactly empty `users`, `teams`, and `apps` arrays; malformed or non-empty allowances remain rejected.
+
+Focused verification: `python -m unittest scripts.tests.test_branch_protection scripts.tests.test_ci_summary` passed (35 tests). The user-requested Red test was observed failing before implementation in commit `aac79227b`; Green is `343a59490`. These commits are unsigned because the configured SSH signing key could not be unlocked in this session.
+
+T026 is still incomplete: the restricted `release-evidence` environment has no `PROFILE_EVIDENCE_APP_CLIENT_ID` variable or `PROFILE_EVIDENCE_APP_PRIVATE_KEY` secret, so the short-lived Administration:read App token and eligible protected-release-push evidence cannot be produced. No secret was read or written, no release push was made, and Baseline remains `evidence_incomplete` with no conformance claim.
