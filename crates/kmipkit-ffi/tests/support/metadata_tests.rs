@@ -69,6 +69,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
         crate::public_api_generated::C_AVAILABLE_CAPABILITIES,
         &[
             "api_level_discovery",
+            "client_asynchronous_operations",
             "client_batch_model",
             "client_execution",
             "crypto_response_ttlv",
