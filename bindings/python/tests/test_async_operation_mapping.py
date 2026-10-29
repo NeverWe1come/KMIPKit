@@ -61,11 +61,12 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client.Client, "_pointer", lambda _self: object())
+    client_handle = object.__new__(client.Client)
     limits = ttlv.codec_limits_create(16 * 1024 * 1024, 64, 100_000)
 
     try:
         outcome = client.Client.execute_poll(
-            object(), expected_request_correlation, limits
+            client_handle, expected_request_correlation, limits
         )
         try:
             assert isinstance(outcome, client.AsyncOperationOutcome)

@@ -28,6 +28,7 @@ from ._handles import (
     _integer_range,
     _owned_bytes,
     _wrap_owned_handle,
+    _wipe_staging_buffer,
 )
 
 
@@ -136,6 +137,51 @@ class BatchItemMetadataV2:
         object.__setattr__(self, "result_status", _unsigned(self.result_status, 32))
         if self.result_reason is not None:
             object.__setattr__(self, "result_reason", _unsigned(self.result_reason, 32))
+        if self.result_message is not None:
+            if not isinstance(self.result_message, str):
+                errors.raise_for_status(4)
+            try:
+                self.result_message.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                errors.raise_for_status(4)
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class AsyncOperationMetadataV1:
+    """Common result fields returned by one asynchronous KMIP operation."""
+
+    operation: int
+    outcome: BatchOutcome | int
+    result_status: int
+    result_reason: int | None
+    cancellation_result: int | None
+    result_message: str | None = field(repr=False)
+
+    def __repr__(self) -> str:
+        return (
+            "AsyncOperationMetadataV1(operation="
+            f"{self.operation}, outcome={self.outcome!r}, "
+            f"result_status={self.result_status}, "
+            f"result_reason={self.result_reason!r}, "
+            f"cancellation_result={self.cancellation_result!r}, "
+            "result_message=redacted)"
+        )
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "operation", _unsigned(self.operation, 32))
+        raw_outcome = _unsigned(self.outcome, 32)
+        try:
+            outcome: BatchOutcome | int = BatchOutcome(raw_outcome)
+        except ValueError:
+            outcome = raw_outcome
+        object.__setattr__(self, "outcome", outcome)
+        object.__setattr__(self, "result_status", _unsigned(self.result_status, 32))
+        if self.result_reason is not None:
+            object.__setattr__(self, "result_reason", _unsigned(self.result_reason, 32))
+        if self.cancellation_result is not None:
+            object.__setattr__(
+                self, "cancellation_result", _unsigned(self.cancellation_result, 32)
+            )
         if self.result_message is not None:
             if not isinstance(self.result_message, str):
                 errors.raise_for_status(4)
@@ -730,6 +776,118 @@ class _ClientHandle(NativeHandle):
             handle, owner = self._take()
             getattr(lib, self._release_name)(handle)
             del owner
+
+
+class AsyncOperationOutcome(_ClientHandle):
+    """Caller-owned result of one explicit asynchronous KMIP exchange."""
+
+    _release_name = "kmipkit_client_async_operation_outcome_release"
+
+    @property
+    def metadata_v1(self) -> AsyncOperationMetadataV1:
+        """Copy common result metadata while redacting Result Message in repr."""
+        metadata = ffi.new("kmipkit_client_async_operation_metadata_v1_t *")
+        metadata.struct_size = ffi.sizeof(
+            "kmipkit_client_async_operation_metadata_v1_t"
+        )
+        metadata.abi_version = 1
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_async_operation_outcome_metadata_v1(
+                    self._pointer(), metadata
+                )
+            )
+            if (
+                metadata.struct_size
+                != ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
+                or metadata.abi_version != 1
+                or metadata.reserved != 0
+                or metadata.has_result_reason not in (0, 1)
+                or metadata.has_cancellation_result not in (0, 1)
+                or metadata.has_result_message not in (0, 1)
+            ):
+                errors.raise_for_status(4)
+            if metadata.has_result_message:
+                if metadata.result_message_length > _MAX_INPUT_BYTES or (
+                    metadata.result_message_length
+                    and metadata.result_message_data == ffi.NULL
+                ):
+                    errors.raise_for_status(4)
+                message_bytes = (
+                    bytes(
+                        ffi.buffer(
+                            metadata.result_message_data,
+                            int(metadata.result_message_length),
+                        )
+                    )
+                    if metadata.result_message_length
+                    else b""
+                )
+                try:
+                    result_message = message_bytes.decode("utf-8", errors="strict")
+                except UnicodeDecodeError:
+                    errors.raise_for_status(4)
+            else:
+                if (
+                    metadata.result_message_data != ffi.NULL
+                    or metadata.result_message_length != 0
+                ):
+                    errors.raise_for_status(4)
+                result_message = None
+            return AsyncOperationMetadataV1(
+                operation=int(metadata.operation),
+                outcome=_known_enum(BatchOutcome, int(metadata.outcome_kind)),
+                result_status=int(metadata.result_status),
+                result_reason=int(metadata.result_reason)
+                if metadata.has_result_reason
+                else None,
+                cancellation_result=(
+                    int(metadata.cancellation_result)
+                    if metadata.has_cancellation_result
+                    else None
+                ),
+                result_message=result_message,
+            )
+
+    @property
+    def asynchronous_correlation_value(self) -> bytes | None:
+        """Copy the exact binary correlation bytes associated with the result."""
+        present = ffi.new("uint8_t *")
+        value = ffi.new("kmipkit_byte_span_v1_t *")
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_async_operation_outcome_correlation_value(
+                    self._pointer(), present, value
+                )
+            )
+            return _optional_output_span(present, value)
+
+    @property
+    def response_payload_ttlv(self) -> ttlv.Structure | None:
+        """Copy a successful generic Response Payload into an owned TTLV handle."""
+        present = ffi.new("uint8_t *")
+        output = ffi.new("kmipkit_ttlv_structure_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_client_async_operation_outcome_response_payload_ttlv(
+                    self._pointer(), present, output
+                )
+            )
+            if present[0] == 0:
+                if output[0] != ffi.NULL:
+                    lib.kmipkit_ttlv_structure_release(output[0])
+                    errors.raise_for_status(4)
+                return None
+            if present[0] != 1 or output[0] == ffi.NULL:
+                if output[0] != ffi.NULL:
+                    lib.kmipkit_ttlv_structure_release(output[0])
+                errors.raise_for_status(4)
+            address = int(ffi.cast("uintptr_t", output[0]))
+            try:
+                return ttlv._structure_from_native_address(address)
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(output[0])
+                raise
 
 
 class Batch(_ClientHandle):
@@ -1951,6 +2109,37 @@ class Client(_ClientHandle):
             if response_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
             return _batch_result(response_output[0], limits)
+
+    def execute_poll(
+        self,
+        correlation_value: bytes | bytearray | memoryview,
+        limits: ttlv.CodecLimits,
+    ) -> AsyncOperationOutcome:
+        """Send exactly one Poll and return its explicit result without auto-polling."""
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        raw_correlation, staged_correlation = _owned_bytes(
+            correlation_value, maximum=_MAX_INPUT_BYTES
+        )
+        output = ffi.new("kmipkit_client_async_operation_outcome_t **")
+        try:
+            with _NATIVE_CALL_LOCK:
+                try:
+                    status = lib.kmipkit_client_execute_poll(
+                        self._pointer(),
+                        staged_correlation,
+                        len(raw_correlation),
+                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+                        output,
+                    )
+                except (OverflowError, TypeError, ValueError):
+                    raise errors.InvalidInputError() from None
+                _raise_client_status(status)
+                if output[0] == ffi.NULL:
+                    errors.raise_for_status(7)
+                return _wrap_owned_handle(AsyncOperationOutcome, output[0])
+        finally:
+            _wipe_staging_buffer(staged_correlation)
 
     def execute_with_options(
         self,
@@ -4849,6 +5038,8 @@ __all__ = [
     "AddAttributeResponse",
     "AdjustAttributeResponse",
     "ArchiveResponse",
+    "AsyncOperationMetadataV1",
+    "AsyncOperationOutcome",
     "Batch",
     "BatchItemMetadataV2",
     "BatchItemResult",
