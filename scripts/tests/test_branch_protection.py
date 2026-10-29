@@ -45,14 +45,36 @@ class BranchProtectionTests(unittest.TestCase):
 
     def test_normalizer_rejects_missing_or_malformed_policy_fields(self) -> None:
         response = self.protection_response()
-        del response["required_pull_request_reviews"]["bypass_pull_request_allowances"]
-        with self.assertRaises(ValueError):
-            branch_protection.normalize_branch_protection(response)
-
-        response = self.protection_response()
         response["required_pull_request_reviews"]["required_approving_review_count"] = True
         with self.assertRaises(ValueError):
             branch_protection.normalize_branch_protection(response)
+
+    def test_normalizer_accepts_single_maintainer_policy_and_api_omitted_bypass(self) -> None:
+        response = self.protection_response()
+        reviews = response["required_pull_request_reviews"]
+        reviews["required_approving_review_count"] = 0
+        reviews["require_code_owner_reviews"] = False
+        del reviews["bypass_pull_request_allowances"]
+
+        normalized = branch_protection.normalize_branch_protection(response)
+
+        self.assertEqual(0, normalized["required_pull_request_reviews"]["required_approving_review_count"])
+        self.assertFalse(normalized["required_pull_request_reviews"]["require_code_owner_reviews"])
+        self.assertEqual(
+            {"users": [], "teams": [], "apps": []},
+            normalized["required_pull_request_reviews"]["bypass_pull_request_allowances"],
+        )
+
+    def test_normalizer_rejects_review_policy_that_blocks_solo_maintainer(self) -> None:
+        for field, value in (
+            ("required_approving_review_count", 1),
+            ("require_code_owner_reviews", True),
+        ):
+            response = self.protection_response()
+            response["required_pull_request_reviews"][field] = value
+            with self.subTest(field=field):
+                with self.assertRaisesRegex(ValueError, "review policy is insufficient"):
+                    branch_protection.normalize_branch_protection(response)
 
     def test_normalizer_rejects_each_nonempty_bypass_allowance_without_echoing_entries(self) -> None:
         for field in ("users", "teams", "apps"):
