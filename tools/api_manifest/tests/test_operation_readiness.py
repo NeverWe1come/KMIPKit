@@ -909,6 +909,22 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         del operation["declarations"]["java"]
         self.assertTrue(self.errors(manifest))
 
+    def test_authorized_wip_operation_records_direct_authorization_without_approval(self) -> None:
+        manifest = _contract_manifest()
+        operation = _discover_versions_operation(manifest)
+        operation.pop("blockedReason")
+        operation["apiState"] = "authorized_wip"
+        operation["candidateSpecId"] = "KMIPKIT-0009"
+        operation["implementationAuthorization"] = {
+            "kind": "direct-human-instruction",
+            "path": "specs/009-asynchronous-operations/spec.md",
+            "status": "Draft",
+            "evidence": "Direct human instruction for this implementation task authorizes autonomous work without further approval requests.",
+        }
+        operation["declarations"] = _four_language_mappings()
+
+        self.assertEqual(self.errors(manifest), [])
+
     def test_verified_operation_requires_resolvable_parity_evidence(self) -> None:
         manifest = _contract_manifest()
         operation = _discover_versions_operation(manifest)
