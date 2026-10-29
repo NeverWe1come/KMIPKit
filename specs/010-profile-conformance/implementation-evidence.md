@@ -8249,18 +8249,18 @@ prerequisites and eligible protected-push evidence exist.
 
 The repository administrator requested setup of the protected branches needed
 to continue KMIPKIT-0010. Live GitHub API verification now confirms that both
-`master` and `release/1.0.0` require one approving review, dismiss stale
-approvals, enforce rules for administrators, disable force pushes and deletion,
-require the `CI summary / at a glance` check from GitHub Actions, and require
-conversation resolution. `master` also requires a code-owner approval, and the
-existing `.github/CODEOWNERS` assigns all paths to `@NeverWe1come`. On
-`release/1.0.0`, code-owner approval is disabled, so the required approval can
-come from any collaborator with write permission. The collaborator API
-currently lists only `NeverWe1come`; PRs authored by that account cannot receive
-a valid self-approval. The `release-evidence` Actions environment now allows
-only `release/1.0.0`; its deployment-branch policy was verified through the
-GitHub API. Workflow permissions remain read-only by default and cannot approve
-pull requests.
+Both `master` and `release/1.0.0` require the `CI summary / at a glance` check
+from GitHub Actions, conversation resolution, administrator enforcement, and
+disabled force pushes/deletion. `master` requires one approval and code-owner
+approval; the existing `.github/CODEOWNERS` assigns all paths to
+`@NeverWe1come`. Because the collaborator API currently lists only
+`NeverWe1come`, `release/1.0.0` temporarily requires zero approvals while still
+requiring PRs and CI. Restore at least one required approval after a verified
+collaborator with write access is added. This temporary solo-maintainer policy
+does not satisfy T026's protected-evidence review requirement. The
+`release-evidence` Actions environment allows only `release/1.0.0`; its
+deployment-branch policy was verified through the GitHub API. Workflow
+permissions remain read-only by default and cannot approve pull requests.
 
 The exact T026 bypass-policy contract cannot currently be represented by this
 personal repository's branch-protection API. GitHub returned HTTP 422 when the
