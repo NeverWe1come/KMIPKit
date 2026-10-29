@@ -134,14 +134,16 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             normalized_typed.lower(),
         )
         self.assertIn(
-            "which remain blocked in the manifest pending kmipkit-0009",
+            "which are declared in the manifest under the approved kmipkit-0009 scope",
             normalized_typed.lower(),
         )
         for operation in async_followups:
             with self.subTest(excluded_async_operation=operation):
                 self.assertIn(operation.lower(), normalized_typed.lower())
-                self.assertEqual("blocked", operations_by_name[operation]["apiState"])
-                self.assertEqual("blocked", documented_states.get(operation))
+                self.assertEqual("declared", operations_by_name[operation]["apiState"])
+                self.assertEqual("declared", documented_states.get(operation))
+        self.assertIn("generic ttlv response", normalized_typed.lower())
+        self.assertIn("kmipkit-dec-015", normalized_typed.lower())
         self.assertIn(
             "[java and python package guide](../user-guide/en/language-packages.md)",
             normalized_typed.lower(),

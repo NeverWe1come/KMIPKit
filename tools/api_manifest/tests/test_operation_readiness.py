@@ -847,7 +847,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             )
         )
 
-    def test_directly_authorized_async_operations_are_wip_not_formally_approved(self) -> None:
+    def test_approved_async_operations_are_declared_but_not_conformance_claims(self) -> None:
         manifest = self._release_manifest()
         asynchronous_names = {
             "Cancel",
@@ -862,14 +862,22 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         }
 
         self.assertEqual(asynchronous_names, set(operations))
+        owner_spec = (ROOT / ASYNC_OWNER_SPEC_PATH).read_text(encoding="utf-8")
+        approval_record = ROOT / "specs" / "009-asynchronous-operations" / "approval-record.md"
+        self.assertIn("**Status**: Approved for implementation", owner_spec)
+        self.assertTrue(approval_record.is_file())
         for operation in operations.values():
             with self.subTest(operation=operation["name"]):
-                self.assertEqual("authorized_wip", operation["apiState"])
-                self.assertEqual("KMIPKIT-0009", operation["candidateSpecId"])
-                self.assertEqual("candidate", operation["ownerDependency"]["state"])
-                self.assertEqual("Draft", operation["implementationAuthorization"]["status"])
-                self.assertNotIn("approvalEvidence", operation)
-                self.assertNotIn("featureSpecId", operation)
+                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("KMIPKIT-0009", operation["featureSpecId"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                self.assertEqual("Approved", operation["approvalEvidence"]["status"])
+                self.assertEqual(
+                    "Approved for implementation by explicit maintainer approval on 2026-10-29",
+                    operation["approvalEvidence"]["evidence"],
+                )
+                self.assertNotIn("implementationAuthorization", operation)
+                self.assertNotIn("candidateSpecId", operation)
 
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()

@@ -243,7 +243,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 for statement in required_scope[language]:
                     self.assertIn(statement, normalized_guide)
 
-    def test_public_api_reference_marks_async_followups_blocked(self) -> None:
+    def test_public_api_reference_marks_async_followups_declared(self) -> None:
         reference = (ROOT / "docs/architecture/public-api.md").read_text(
             encoding="utf-8"
         )
@@ -266,8 +266,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
 
         for operation_name in asynchronous_followups:
             with self.subTest(operation=operation_name):
-                self.assertEqual("blocked", operations[operation_name]["apiState"])
-                self.assertEqual("blocked", documented_states.get(operation_name))
+                self.assertEqual("declared", operations[operation_name]["apiState"])
+                self.assertEqual("declared", documented_states.get(operation_name))
 
     def test_public_api_reference_lists_every_verified_rust_operation(self) -> None:
         reference = (ROOT / "docs/architecture/public-api.md").read_text(
