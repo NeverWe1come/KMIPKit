@@ -4871,6 +4871,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 ("source_clause_ids", "SOURCE_CLAUSE", "PROFILE_SOURCE_CLAUSE_ID_POOL"),
                 ("requirement_ids", "REQUIREMENT", "PROFILE_REQUIREMENT_ID_POOL"),
             ):
+                self.assertEqual(profile[field], sorted(set(profile[field])))
                 values = set(profile[field])
                 universe = universes[field]
                 bits = bytearray((len(universe) + 7) // 8)

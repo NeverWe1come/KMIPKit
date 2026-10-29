@@ -857,6 +857,29 @@ fn policy_context(policy: &generated_attribute_policy::AttributePolicy) -> Strin
 }
 
 #[test]
+fn generated_attribute_policy_reports_tag_multiplicity() {
+    let find_policy = |tag| {
+        ATTRIBUTE_POLICIES
+            .iter()
+            .find(|policy| policy.tag == tag)
+            .expect("the selected attribute tag is present in the generated policy")
+    };
+
+    assert_eq!(
+        find_policy(0x42_00_94).multiplicity(),
+        generated_attribute_policy::AttributeMultiplicity::Single
+    );
+    assert_eq!(
+        find_policy(0x42_00_53).multiplicity(),
+        generated_attribute_policy::AttributeMultiplicity::Multiple
+    );
+    assert_eq!(
+        find_policy(0x42_00_AE).multiplicity(),
+        generated_attribute_policy::AttributeMultiplicity::PgpKeyOrX509Certificate
+    );
+}
+
+#[test]
 fn every_generated_unconditional_standard_policy_is_rejected_before_transport() {
     let non_modifiable = ATTRIBUTE_POLICIES
         .iter()

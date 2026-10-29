@@ -964,6 +964,34 @@ struct TypedRuleMapping {
     constraints: &'static [RuleConstraint],
 }
 
+const fn rule_test_evidence(test_id: &'static str, kind: RuleTestKind) -> RuleTestEvidence {
+    RuleTestEvidence { test_id, kind }
+}
+
+const fn rule_constraint(key: &'static str, value: &'static str) -> RuleConstraint {
+    RuleConstraint { key, value }
+}
+
+const fn typed_rule_mapping(
+    requirement_id: &'static str,
+    source_clause_id: &'static str,
+    source_gap_id: Option<&'static str>,
+    verification_category: GeneratedVerificationCategory,
+    evaluator: Option<RuleEvaluator>,
+    test_evidence: &'static [RuleTestEvidence],
+    constraints: &'static [RuleConstraint],
+) -> TypedRuleMapping {
+    TypedRuleMapping {
+        requirement_id,
+        source_clause_id,
+        source_gap_id,
+        verification_category,
+        evaluator,
+        test_evidence,
+        constraints,
+    }
+}
+
 type ContextRuleEvaluator =
     fn(&RequestMessage, &ProfileValidationContext, &str) -> Result<(), ProfileValidationError>;
 
@@ -9139,5207 +9167,5167 @@ fn tag_has_kmip_21_prefix(raw_tag: u32) -> bool {
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_tls_for_basic_authentication_suite_transport",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls13",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-3.1.1-005",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls13",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-3.1.2-002",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "tls13_cipher_suites",
-            value: "kmip_profiles_3_1_2",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-3.1.2-005",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "tls13_cipher_suites",
-            value: "kmip_profiles_3_1_2",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_opaque_object_context_custom_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.3-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_opaque_object_context_managed_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.3-003",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_opaque_object_has_required_data_fields),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_fields_of_opaque_register_object",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(import_preserves_wrapped_secret_data_shape),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_secret_data",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.8-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.8-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_split_key_part_identifier_is_within_declared_parts),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_payloads",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-2.8-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.8-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_create_split_key_requires_prime_field_size_for_polynomial_method),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_request_requires_the_explicit_client_input",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_size_is_preserved_as_big_integer",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::table_193_prime_field_size_remains_optional_for_other_methods_and_future_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_no_encoding_excludes_key_value_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.3-009",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-009",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.7-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.7-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_transparent_rsa_private_key_has_material_alternative),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_each_complete_transparent_rsa_private_key_material_alternative",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_transparent_rsa_private_key_without_any_complete_material_alternative",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_transparent_rsa_private_key_component_pairs",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alternatives",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_multi_instance_attributes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "caller_supplies_distinct_values_for_multi_instance_attributes",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_preserves_single_instance_attribute_cardinality),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_get_attributes_response",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_create_request",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_single_instance_attribute_in_create_request",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_conditional_dsa_without_object_context",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_requests",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_nested_key_value_groups",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_response",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_key_value",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_dsa_for_pgp_certificate_context",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_repeated_dsa_for_pgp_key_object_type",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.4-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_application_specific_information_can_omit_data),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_application_specific_information_request_shapes",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.26-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.26-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_server_generated_key_format_type_is_enumeration),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_requested_key_format_for_server_generated_material_operations",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_wrapped_key_value_requires_key_wrapping_data),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_wrapping_data_is_only_present_for_wrapped_key_value),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.2-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.2-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_key_value_attributes_are_structured),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_key_value_attributes_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-5.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_repeated_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_attributes_for_client_requests_and_responses",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-5.2-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.2-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_common_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-5.3-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.3-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_private_key_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-5.4-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-5.4-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_public_key_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_check_requires_multi_item_batch_when_check_is_present),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_check_only_in_a_multi_item_batch_without_ordering",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_check_batch_order_option_is_true_when_check_is_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_batch_order_true_when_check_is_present",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_leaves_recommended_batch_options_explicitly_selected_by_the_caller",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(
-            client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_present,
-        ),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_stop_or_undo_when_check_is_present",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_check_additional_attributes_are_limited_to_listed_set),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_check_optional_usage_limits_count_is_long_integer),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_usage_limits_count",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_usage_allocation_requires_usage_limits_count),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.25-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.25-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_import_preserves_wrapped_object_and_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/import_execution_tests.rs::explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.4-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_archive_request_is_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_archive_request_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs::request_omits_the_optional_unique_identifier",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_check_optional_cryptographic_usage_mask_is_integer),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_intended_cryptographic_uses",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-004-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_check_optional_cryptographic_usage_mask_is_integer),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_cryptographic_usage_mask",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_check_optional_lease_time_is_interval),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_lease_time",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_common_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_create_key_pair_differing_attributes_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_create_key_pair_table_191_values_match),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.9-007",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.9-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_create_key_pair_table_191_values_match),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_block_algorithm_may_be_omitted_if_value_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_key_block_length_may_be_omitted_if_value_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_block_algorithm_requires_length),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_key_block_length_requires_algorithm),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_has_required_object_type_and_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_object_type_and_attributes_as_required",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-007",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_has_required_object_type_and_attributes),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_object_type_and_attributes_as_required",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_table293_pair_may_be_in_key_block),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_table293_pair_may_be_in_key_block),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-011",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_signature_algorithm_may_be_in_certificate),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_algorithm_requires_length),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_length_requires_algorithm),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.27-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.27-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_key_value_location_requires_omitted_key_value),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_register_does_not_specify_key_value_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_in_register_but_preserves_locate_criterion",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attributes_type_for_register_key_value_present",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_attributes_for_register_key_value_present",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_register_key_value_present_for_each_batch_item",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_key_value_present_is_not_modified),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_attribute_mutations",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_read_only_attribute_modification_is_not_requested),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_modification_on_all_client_routes",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.57-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_state_modify_attribute_is_not_requested),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_modify_attribute_for_state",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.57-005-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "compromised_object_protected_information_only_trusted_client_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_read_only_attribute_deletion_is_not_requested),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_deletion",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_usage_limits_count_is_not_set_by_add_or_modify),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_usage_limits_count_in_add_and_modify_attribute",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_locate_key_value_present_is_boolean_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_key_value_present_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_nist_key_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_register_nist_key_type_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "usage_limits_total_immutable_after_protection_begins_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "usage_limits_total_immutable_after_count_allocation_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "single_cryptographic_usage_per_key_object_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.31-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.31-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_omit_link_when_associated_key_material_is_unavailable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_absent_link_for_unavailable_associated_key_material",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.31-004",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_link_type_is_required_in_object_state),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.31-005",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_linked_object_identifier_is_required_in_object_state),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.32-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.32-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "name_unique_within_target_server_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_certify_requests_at_most_one_certificate),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_certify_certificate_request_value_is_omittable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_certify_omitted_request_requires_unique_identifier),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_certify_omitted_request_requires_certificate_type_attribute),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_retrieve_certified_certificate_with_get_in_batch),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-007",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_certify_request_type_required_with_request_value),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_preserves_optional_wrapped_key_value),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_wrapped_key_value_with_embedded_attributes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_object_group_names_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_object_group_membership_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_object_group_names_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_object_group_membership_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.35-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.35-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_object_group_names_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_object_group_name_attribute_when_assigning_group",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_object_group_names_on_every_client_assignment_route",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_add_original_creation_date_is_datetime_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_original_creation_date",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.39-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.39-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_pkcs12_friendly_name_uses_lowercase_text),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_lowercase_pkcs12_friendly_name_values",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.38-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_non_add_mutation_with_known_absent_state_is_rejected",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "original_creation_date_immutable_after_set_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_random_number_generator_is_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_add_attribute_random_number_generator_is_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_random_number_generator",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.36-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_rng_parameters_are_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_rng_parameters_are_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_without_rng_algorithm",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_algorithm_with_wrong_type_or_duplicate",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.36-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_rng_parameters_are_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.36-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.36-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_rng_parameters_are_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_rng_responses_by_batch_id",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "activation_date_reached_before_use_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "no_cryptographic_use_before_activation_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.1-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.17-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "target_usage_mask_allows_requested_function_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.17-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.17-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "target_usage_mask_excludes_requested_function_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.18-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.18-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.18-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "process_start_date_use_after_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "no_cryptographic_use_before_process_start_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "process_start_date_must_not_precede_activation_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.40-001-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.40-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "process_start_date_immutable_after_occurrence_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.41-001-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.41-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "protect_stop_date_immutable_after_occurrence_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.30-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.30-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "lease_not_expired_or_renewed_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_revoke_revocation_message_is_text_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_revoke_revocation_message_is_text_when_used),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "usage_allocation_obtained_before_protection_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "usage_allocation_requested_within_object_date_window_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.23-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "usage_allocation_remains_available_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "lease_not_expired_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(
-            client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons,
-        ),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
-            kind: RuleTestKind::RecommendedBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_compromise_occurrence_date_only_for_key_or_ca_compromise),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "recertify_once_per_existing_certificate_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "rekey_once_per_existing_key_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "rekey_key_pair_once_per_existing_pair_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "reprovision_when_credentials_are_required_caller_directed",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_recertify_requests_at_most_one_certificate),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_recertify_identifier_required_when_request_value_is_omitted),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_recertify_identifier_required_when_request_value_is_omitted),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_without_identifier_when_request_value_is_present",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_id_placeholder_when_request_value_is_present",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_without_identifier_when_request_value_is_omitted",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_id_placeholder_when_request_value_is_omitted",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_recertify_offset_is_optional_interval),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-008",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_recertify_request_type_required_with_request_value),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_type_with_request_value",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_without_certificate_request_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_requires_type_when_certificate_request_value_is_present",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.46-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_rekey_offset_is_optional_interval),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_offset_as_optional_interval",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_rekey_key_pair_offset_is_optional_interval),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_offset_as_optional_interval",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.48-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_reprovision_request_fields_are_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_certificate_request_forms",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_supports_certificate_request_certificate_or_no_parameters",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_preserves_both_optional_certificate_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_parameterless_server_credential_form",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.55-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.55-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_sign_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_sign_cryptographic_parameters_omission_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::request_table_fields_reach_the_fake_transport_unchanged",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.50-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_accepts_rng_seed_zero_data_length),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.51-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.51-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_set_attribute_does_not_mutate_read_only_attributes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_set_attribute_on_read_only_standard_attribute",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.56-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_signature_verify_original_data_is_optional_byte_string),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_original_data_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.56-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_signature_verify_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.32-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.32-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_mac_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_cryptographic_parameters_omission_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_mac_verify_original_data_is_optional_byte_string),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_original_data_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.33-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_mac_verify_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_validate_chain_list_members_are_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_validate_validity_date_is_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_validity_date_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_validate_chain_list_members_are_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_mixed_chain_inputs_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_validate_repeated_certificates_are_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_certificates_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_validate_repeated_unique_identifiers_are_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_unique_identifiers_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.62-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.62-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_response_preserves_x509_optional_values),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.63-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_response_preserves_x509_optional_values),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.63-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_response_preserves_x509_optional_values),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_obtain_lease_response_values_are_typed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_obtain_lease_response_values_are_typed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.35-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.35-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_obtain_lease_response_values_are_typed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_request_batch_items),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_client_operations_in_one_batch_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_request_batch_items),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_batch_item_repetition_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8.2-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.2-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_request_attestation_types),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_attestation_types_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_sets_attestation_indicator_true),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_authentication_contains_a_credential_if_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.4-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_omit_authentication_when_not_required),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.4-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.4-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_credentials_within_authentication),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_roundtrip_preserves_unknown_fields_and_credential_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_device_credential_has_identifier_if_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "device_identifiers_caller_asserted_unique",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-004-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_device_credential_password_is_text_string_if_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_device_password_authentication_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_attestation_credential_has_evidence_if_present),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_rejects_equal_or_earlier_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequences_are_independent",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "hashed_password_timestamp_monotonicity_per_username",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-010-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-010",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_omission_exposes_sha256_default_without_materializing_field",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_preserves_explicit_and_unknown_algorithm_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "hashed_password_sha256_default",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.11-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.11-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::credential_and_authentication_public_views_preserve_order_and_redact",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "credential_authentication_representation",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.5-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/cancel_tests.rs::cancel_request_preserves_exact_correlation_bytes_in_table_order",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_exposes_matching_echo_and_assigned_cancellation_result",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.1-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.19-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.19-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_uses_async_correlation_value_for_poll_or_cancel),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::pending_correlation_is_exact_borrowed_and_redacted_from_formatted_output",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.9-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.9-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_client_correlation_value),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_client_correlation_value_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::message_headers_preserve_independent_client_correlation_values",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/extension_outbound.rs::execute_encodes_every_optional_batch_header_and_item_identifier",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_maximum_response_size),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_maximum_response_size_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "declared_response_capacity",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(client_sends_maximum_response_size_only_for_possible_large_replies),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_maximum_response_size_only_for_possible_large_replies",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
-                kind: RuleTestKind::RecommendedBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.20-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_request_time_stamp),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_time_stamp_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::request_time_stamp_is_optional_and_preserved_as_raw_date_time",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.20-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_unique_batch_item_id),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_unique_batch_item_id_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8.3-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_includes_unique_batch_item_id_for_multi_item_request),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8.3-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_request_message_extensions),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_message_extensions_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::response_payload_is_required_for_non_failure_and_absent_for_failure",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "optional_failure_response_payload_and_message_extensions",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_message_field_order_for_client_requests_and_responses",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::request_known_fields_and_envelope_reject_reordering",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::response_known_fields_and_envelope_reject_reordering",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "request_response_fields_follow_kmip_specified_order",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.7-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.7-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_items_for_client_requests_and_responses",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "request_response_include_one_or_more_batch_items",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "caller_selects_message_extension_presence_and_processing",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "message_extension_fields_and_vendor_data_validated_by_message_model",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "vendor_identification_is_caller_assigned_unique_text",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_rejects_unknown_critical_response_extensions),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.13-001-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.13-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_process_unknown_noncritical_response_extensions),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_noncritical_response_extension_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.5-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_sets_batch_count_to_request_item_count),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_count_to_request_item_count",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.5-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_sets_batch_count_to_one_for_single_operation),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_operation_batch_count_to_one",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_includes_batch_error_continuation_only_for_multi_item_request),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_batch_error_continuation_option_only_for_multi_item_batches",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_uses_assigned_batch_error_continuation_values),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_assigned_batch_error_continuation_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_defaults_batch_error_continuation_to_stop),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_default_batch_error_continuation_to_stop",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-005",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_omit_authentication_when_not_required),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_request_authentication_from_profiles_clause",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_unique_batch_item_id),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-9.17-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.17-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_inspect_optional_result_message),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::result_message_client_access_has_an_optional_typed_rule",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/result_contract.rs::operation_result_display_and_debug_redact_message",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.16-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_variable_iv_cryptographic_parameters_include_iv_length),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.16-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_gcm_cryptographic_parameters_include_tag_length),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_encrypt_aad_is_on_initial_request),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_encrypt_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_encrypt_iv_counter_nonce_is_optional_byte_string),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_decrypt_cryptographic_parameters_are_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_decrypt_iv_counter_nonce_is_optional_byte_string),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_decrypt_aad_is_on_initial_request),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.11-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_decrypt_tag_is_on_initial_request),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-003",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_delegated_login_rights_is_required_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_rights_as_required_structure",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-005",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_delegated_login_lease_time_is_optional_interval_or_date_time),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-006",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_delegated_login_request_count_is_optional_integer),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_request_count_as_optional_integer",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.12-007",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_delegated_login_usage_limits_is_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_usage_limits_as_optional_structure",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-001",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_login_lease_time_is_optional_interval_or_date_time),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-002",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_login_request_count_is_optional_integer),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.30-003",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_login_usage_limits_is_optional_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.31-001",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_logout_ticket_is_required_structure),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_logout_required_ticket_as_required_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(discover_versions_advertises_only_client_supported_versions),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.10-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.10-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_create_split_key_source_identifier),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(discover_versions_advertises_only_client_supported_versions),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_discover_versions_preference_order_for_single_supported_version",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.13-005",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_optional_delete_attribute_selector),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_current_attribute_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.13-006",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_optional_delete_attribute_selector),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_represent_optional_modify_attribute_selector),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_current_attribute_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.34-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "modify_attribute_existing_instance_named",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_join_split_key_has_validated_identifier_entries),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_join_split_key_secret_data_type_is_valid_when_applicable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_join_split_key_secret_data_type",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.27-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.27-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_join_split_key_has_validated_identifier_entries),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_locate_maximum_items),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_maximum_items_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_locate_offset_items),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-007",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_can_send_partial_structured_locate_attributes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_partial_structured_attribute_fields",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_supplies_locate_attributes_structure),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_attributes_as_required_behavior",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_supplies_locate_attributes_structure),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_empty_attributes_match_all_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(get_attributes_references_are_not_repeated),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_identical_get_attributes_references",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_include_optional_get_attributes_attribute_references),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_export_controls_have_get_semantics),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_controls_with_get_semantics",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-005",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_export_key_format_type_is_enumeration),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-006",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_export_key_wrap_type_is_enumeration),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-007",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.18-008",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_or_export_optional_wrapping_specification_is_structure),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_or_export_key_format_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_key_format_client_assumption",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-003",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_key_format_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-004",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_key_wrap_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-005",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.19-006",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_get_optional_wrapping_specification_is_structure),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.31-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.31-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "profile_specific_query_information_preserved",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.32-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.32-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_query_profile_information_is_well_formed),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.8-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.8-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_multipart_continuation_has_server_correlation),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_server_generated_correlation_to_multipart_continuations",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.18-006",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_get_or_export_wrapping_attribute_names),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.18-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_supports_get_or_export_wrapped_key_request),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.18-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.18-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.18-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_get_or_export_wrapping_specification_has_key_information),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-014",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_query_contains_one_or_more_functions),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_at_least_one_client_query_function",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-016",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_repeat_query_functions),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_query_function_repetition_as_optional_capability",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "derive_key_source_usage_mask_caller_asserted",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "derive_key_multiple_inputs_caller_selected",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_specifies_cryptographic_length),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_length",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_includes_required_attributes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_attributes",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_symmetric_output_specifies_cryptographic_attributes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_symmetric_output_attributes",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-009",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_includes_required_object_type),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_object_type",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-010",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_specifies_explicit_source_identifiers),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_unique_identifier",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-011",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_includes_required_derivation_method),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_derivation_method",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-012",
-        source_clause_id: "",
-        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED"),
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_includes_required_derivation_parameters),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_parameters",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(derive_key_secret_data_uses_total_cryptographic_length),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(derive_key_repeated_unique_identifiers_are_usable),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_repeated_derive_key_unique_identifiers",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(derive_key_specifies_explicit_source_identifiers),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
-            kind: RuleTestKind::NegativeBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.12-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.12-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(derive_key_hash_method_selects_explicit_prf),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_prf_parameters_with_source_condition",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-7.12-005-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-7.12-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(derive_key_optional_input_forms_are_representable),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_derive_key_input_forms",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_table_145_unique_identifier_encodings_for_derive_key",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-8-003-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_signal_asynchronous_response_support),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_asynchronous_indicator_capability",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "encoding",
-            value: "ttlv",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "encoding",
-            value: "ttlv",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "encoding",
-            value: "ttlv",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "encoding",
-            value: "ttlv",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "encoding",
-            value: "ttlv",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/https.rs::https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls13",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/tls_integrity.rs::raw_tls_rejects_a_tampered_post_handshake_application_record",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/tls_integrity.rs::https_invalidates_a_connection_after_a_tampered_post_handshake_application_record",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls13",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-10.4-001-003",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.4-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_unknown_server_ca",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_expired_server_certificate",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_server_name_mismatch",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "transport_security",
-            value: "tls13",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-11.56-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_request_tags_use_kmip_prefixes),
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-11-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-11-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
-        evaluator: Some(client_request_tags_are_allocated),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-ttlv/tests/tag_allocation.rs::individually_and_residually_reserved_tags_are_rejected",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-ttlv/tests/codec_negative.rs::public_decoder_rejects_received_reserved_tags",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-12-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-12-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_mask_values_use_ttlv_integer_encoding),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_ttlv_mask_integer_values",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_integer_ttlv_mask_values",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-001",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "profiles_4_1_2_test_variations",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-6-001",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-6-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "all_applicable_profile_normative_statements",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-6.1-001",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-6.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "kmip_specification_v2_1",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-6.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-6.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "profiles_3_1_basic_authentication_suite",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-6.1-003",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-6.1-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "baseline_client_conditions_5_1_1",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-PROF-6.1-004",
-        source_clause_id: "KMIPKIT-CLAUSE-PROF-6.1-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_conformance_evidence",
-            value: "one_or_more_baseline_mandatory_tests_5_1_3_or_5_6_3",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "implemented_operations",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_understands_response_operations),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-003-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-003",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "id_placeholder",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-004",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
-                kind: RuleTestKind::OptionalCapabilityUsable,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "zero_or_more_create_attributes",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1-005",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1-005",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::recover_before_use_remains_explicit_caller_controlled_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_executes_encrypt_only_after_completed_recover_using_the_returned_identifier",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "recover_before_use_caller_controlled",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "archived_locate_recover_get_workflow_caller_directed",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "recover_poll_caller_directed",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
-            kind: RuleTestKind::OptionalCapabilityUsable,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_capability",
-            value: "recover_get_caller_directed",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-14.1-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-001",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_selection",
-            value: "at_least_one",
-        }],
-    },
-    TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-14.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-002",
-        source_gap_id: None,
-        verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: None,
-        test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
-            kind: RuleTestKind::PositiveBehavior,
-        }],
-        constraints: &[RuleConstraint {
-            key: "client_profile_closure",
-            value: "all_normative_statements",
-        }],
-    },
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-CLAUSE-PROF-3.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_tls_for_basic_authentication_suite_transport",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint("transport_security", "tls")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1.1-002",
+        "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[rule_constraint("transport_security", "tls13")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1.1-005",
+        "KMIPKIT-CLAUSE-PROF-3.1.1-005",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint("transport_security", "tls13")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1.2-002",
+        "KMIPKIT-CLAUSE-PROF-3.1.2-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "tls13_cipher_suites",
+            "kmip_profiles_3_1_2",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1.2-005",
+        "KMIPKIT-CLAUSE-PROF-3.1.2-005",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "tls13_cipher_suites",
+            "kmip_profiles_3_1_2",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.3-001",
+        "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_opaque_object_context_custom_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.3-002",
+        "KMIPKIT-CLAUSE-SPEC-2.3-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_opaque_object_context_managed_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.3-003",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_register_opaque_object_has_required_data_fields),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_fields_of_opaque_register_object",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.4-001-001",
+        "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(import_preserves_pgp_key_form_and_opaque_bytes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.4-001-002",
+        "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(import_preserves_pgp_key_form_and_opaque_bytes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.4-002-001",
+        "KMIPKIT-CLAUSE-SPEC-2.4-002",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(import_preserves_pgp_key_form_and_opaque_bytes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.7-001",
+        "KMIPKIT-CLAUSE-SPEC-2.7-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(import_preserves_wrapped_secret_data_shape),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_secret_data",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.8-001-002",
+        "KMIPKIT-CLAUSE-SPEC-2.8-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_split_key_part_identifier_is_within_declared_parts),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_payloads",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-2.8-003",
+        "KMIPKIT-CLAUSE-SPEC-2.8-003",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_create_split_key_requires_prime_field_size_for_polynomial_method),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_prime_field_size_for_polynomial_split_key_requests",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_request_requires_the_explicit_client_input",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::polynomial_prime_field_size_is_preserved_as_big_integer",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::table_193_prime_field_size_remains_optional_for_other_methods_and_future_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-001-001",
+        "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-001-002",
+        "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-002",
+        "KMIPKIT-CLAUSE-SPEC-3.3-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-006",
+        "KMIPKIT-CLAUSE-SPEC-3.3-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-003",
+        "KMIPKIT-CLAUSE-SPEC-3.3-003",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_no_encoding_excludes_key_value_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-004",
+        "KMIPKIT-CLAUSE-SPEC-3.3-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.3-009",
+        "KMIPKIT-CLAUSE-SPEC-3.3-009",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_unique_identifier_for_key_wrapping_key_information",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.7-002",
+        "KMIPKIT-CLAUSE-SPEC-3.7-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_transparent_rsa_private_key_has_material_alternative),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_each_complete_transparent_rsa_private_key_material_alternative",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_transparent_rsa_private_key_without_any_complete_material_alternative",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_transparent_rsa_private_key_component_pairs",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_inspect_wrapped_or_non_rsa_private_key_material_for_rsa_alternatives",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_represent_multi_instance_attributes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "caller_supplies_distinct_values_for_multi_instance_attributes",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_preserves_single_instance_attribute_cardinality),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_get_attributes_response",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_create_request",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_single_instance_attribute_in_create_request",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_conditional_dsa_without_object_context",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_requests",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_nested_key_value_groups",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_response",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_single_instance_attributes_in_export_key_value",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_dsa_for_pgp_certificate_context",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_repeated_dsa_for_pgp_key_object_type",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.4-001",
+        "KMIPKIT-CLAUSE-SPEC-4.4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_application_specific_information_can_omit_data),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_application_specific_information_request_shapes",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.26-001",
+        "KMIPKIT-CLAUSE-SPEC-4.26-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_server_generated_key_format_type_is_enumeration),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_requested_key_format_for_server_generated_material_operations",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-002",
+        "KMIPKIT-CLAUSE-SPEC-3.1-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_wrapped_key_value_requires_key_wrapping_data),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_key_wrapping_data_for_wrapped_register_and_import_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-006",
+        "KMIPKIT-CLAUSE-SPEC-3.1-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_key_wrapping_data_is_only_present_for_wrapped_key_value),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_omits_key_wrapping_data_for_plaintext_register_and_import_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIPKIT-CLAUSE-SPEC-3.2-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_key_value_attributes_are_structured),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_key_value_attributes_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_or_export_key_compression_type_is_enumeration),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.14-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.14-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-5.1-002",
+        "KMIPKIT-CLAUSE-SPEC-5.1-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_repeated_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_attributes_for_client_requests_and_responses",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-5.2-002",
+        "KMIPKIT-CLAUSE-SPEC-5.2-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_common_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-5.3-002",
+        "KMIPKIT-CLAUSE-SPEC-5.3-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_private_key_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-5.4-002",
+        "KMIPKIT-CLAUSE-SPEC-5.4-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_public_key_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_create_key_pair_attribute_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_check_requires_multi_item_batch_when_check_is_present),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_check_only_in_a_multi_item_batch_without_ordering",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_check_batch_order_option_is_true_when_check_is_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_batch_order_true_when_check_is_present",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_leaves_recommended_batch_options_explicitly_selected_by_the_caller",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_present),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_stop_or_undo_when_check_is_present",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_check_additional_attributes_are_limited_to_listed_set),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_check_additional_attributes_to_the_listed_set",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_check_optional_usage_limits_count_is_long_integer),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_usage_limits_count",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_get_usage_allocation_requires_usage_limits_count),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_usage_allocation_required_usage_limits_count",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.25-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.25-006",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_import_preserves_wrapped_object_and_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/import_execution_tests.rs::explicit_import_sends_supplied_attributes_and_object_once_and_preserves_server_error",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.4-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_archive_request_is_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_archive_request_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs::request_omits_the_optional_unique_identifier",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_check_optional_cryptographic_usage_mask_is_integer),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_intended_cryptographic_uses",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_check_optional_cryptographic_usage_mask_is_integer),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_cryptographic_usage_mask",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.7-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_check_optional_lease_time_is_interval),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_check_lease_time",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.9-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_common_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.9-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_create_key_pair_differing_attributes_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_create_key_pair_attribute_assignment_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.9-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.9-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_create_key_pair_table_191_values_match),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.9-007",
+        "KMIPKIT-CLAUSE-SPEC-6.1.9-007",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_create_key_pair_table_191_values_match),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_equal_create_key_pair_table_191_effective_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unequal_create_key_pair_table_191_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_inherited_table_191_conflict_in_mixed_batch",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_accepts_absent_values_and_common_attribute_fallback_without_copying",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::table_191_rejects_one_sided_effective_values_and_conflicts_for_each_attribute",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_key_block_algorithm_may_be_omitted_if_value_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_key_block_length_may_be_omitted_if_value_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_from_key_value",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_key_block_algorithm_and_length_omission_for_import",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_key_block_algorithm_requires_length),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+        "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_key_block_length_requires_algorithm),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_register_has_required_object_type_and_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_object_type_and_attributes_as_required",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-007",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-007",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_register_has_required_object_type_and_attributes),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_object_type_and_attributes_as_required",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_table293_pair_may_be_in_key_block),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_table293_pair_may_be_in_key_block),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-011",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_signature_algorithm_may_be_in_certificate),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_register_algorithm_requires_length),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_register_length_requires_algorithm),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.27-001",
+        "KMIPKIT-CLAUSE-SPEC-4.27-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_key_value_location_requires_omitted_key_value),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.28-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_register_does_not_specify_key_value_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_in_register_but_preserves_locate_criterion",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attributes_type_for_register_key_value_present",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_attributes_for_register_key_value_present",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_register_key_value_present_for_each_batch_item",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.28-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_key_value_present_is_not_modified),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_attribute_mutations",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_read_only_attribute_modification_is_not_requested),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_modification_on_all_client_routes",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.57-001",
+        "KMIPKIT-CLAUSE-SPEC-4.57-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_state_modify_attribute_is_not_requested),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_modify_attribute_for_state",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.57-005-002",
+        "KMIPKIT-CLAUSE-SPEC-4.57-005",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[],
+        &[rule_constraint(
+            "client_profile_capability",
+            "compromised_object_protected_information_only_trusted_client_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4-001-005",
+        "KMIPKIT-CLAUSE-SPEC-4-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_read_only_attribute_deletion_is_not_requested),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_read_only_attribute_deletion",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.59-003-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_usage_limits_count_is_not_set_by_add_or_modify),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_usage_limits_count_in_add_and_modify_attribute",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.28-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_locate_key_value_present_is_boolean_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_key_value_present_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.34-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_nist_key_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_register_nist_key_type_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "usage_limits_total_immutable_after_protection_begins_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.59-003-001",
+        "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "usage_limits_total_immutable_after_count_allocation_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.34-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "single_cryptographic_usage_per_key_object_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.31-002",
+        "KMIPKIT-CLAUSE-SPEC-4.31-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_omit_link_when_associated_key_material_is_unavailable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_absent_link_for_unavailable_associated_key_material",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_link_type_is_required_in_object_state),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.31-005",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_linked_object_identifier_is_required_in_object_state),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.32-001",
+        "KMIPKIT-CLAUSE-SPEC-4.32-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "name_unique_within_target_server_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_certify_requests_at_most_one_certificate),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_certify_certificate_request_value_is_omittable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_certify_omitted_request_requires_unique_identifier),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_certify_omitted_request_requires_certificate_type_attribute),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_retrieve_certified_certificate_with_get_in_batch),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.6-007",
+        "KMIPKIT-CLAUSE-SPEC-6.1.6-007",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_certify_request_type_required_with_request_value),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_preserves_optional_wrapped_key_value),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_wrapped_key_value_with_embedded_attributes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.35-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_object_group_names_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_object_group_membership_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.35-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_object_group_names_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_object_group_membership_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.35-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_object_group_names_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_object_group_name_attribute_when_assigning_group",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_object_group_names_on_every_client_assignment_route",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.38-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_original_creation_date_is_datetime_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.38-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_original_creation_date_is_datetime_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_add_original_creation_date_is_datetime_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_original_creation_date",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.39-002-001",
+        "KMIPKIT-CLAUSE-SPEC-4.39-002",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_pkcs12_friendly_name_uses_lowercase_text),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_lowercase_pkcs12_friendly_name_values",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.38-003",
+        "KMIPKIT-CLAUSE-SPEC-4.38-003",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_non_add_mutation_with_known_absent_state_is_rejected",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "original_creation_date_immutable_after_set_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.46-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_register_random_number_generator_is_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.46-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_add_attribute_random_number_generator_is_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_random_number_generator",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.36-001",
+        "KMIPKIT-CLAUSE-SPEC-7.36-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_rng_parameters_are_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.36-002-001",
+        "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_rng_parameters_are_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_without_rng_algorithm",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_algorithm_with_wrong_type_or_duplicate",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.36-002-002",
+        "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_rng_parameters_are_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.36-003",
+        "KMIPKIT-CLAUSE-SPEC-7.36-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_rng_parameters_are_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_shared_rng_parameters_to_client_request_and_response_rules",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_on_client_create_operation_attribute_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_get_attributes_rng_parameters",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_rng_responses_by_batch_id",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_parameters_with_optional_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_rng_parameters_with_malformed_optional_field_type",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_rng_optional_field",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "activation_date_reached_before_use_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "no_cryptographic_use_before_activation_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.1-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.17-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "target_usage_mask_allows_requested_function_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.17-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "target_usage_mask_excludes_requested_function_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.18-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "process_start_date_use_after_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "no_cryptographic_use_before_process_start_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "process_start_date_must_not_precede_activation_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.40-001-005",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "process_start_date_immutable_after_occurrence_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.41-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "protect_stop_date_immutable_after_occurrence_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-CLAUSE-SPEC-4.30-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "lease_not_expired_or_renewed_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.47-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_revoke_revocation_message_is_text_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.47-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_revoke_revocation_message_is_text_when_used),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "usage_allocation_obtained_before_protection_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "usage_allocation_requested_within_object_date_window_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "usage_allocation_remains_available_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "lease_not_expired_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_revoke_compromise_occurrence_date_for_compromise_reasons",
+            RuleTestKind::RecommendedBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.44-003-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_compromise_occurrence_date_only_for_key_or_ca_compromise),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "recertify_once_per_existing_certificate_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "rekey_once_per_existing_key_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.47-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "rekey_key_pair_once_per_existing_pair_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.48-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "reprovision_when_credentials_are_required_caller_directed",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_recertify_requests_at_most_one_certificate),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_recertify_identifier_required_when_request_value_is_omitted),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_recertify_identifier_required_when_request_value_is_omitted),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_identifier_when_request_value_is_omitted",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_without_identifier_when_request_value_is_present",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_id_placeholder_when_request_value_is_present",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_without_identifier_when_request_value_is_omitted",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_id_placeholder_when_request_value_is_omitted",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_recertify_offset_is_optional_interval),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_recertify_offset_as_optional_interval",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.45-008",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_recertify_request_type_required_with_request_value),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_type_with_request_value",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_without_certificate_request_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_requires_type_when_certificate_request_value_is_present",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.46-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_rekey_offset_is_optional_interval),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_offset_as_optional_interval",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_rekey_key_pair_offset_is_optional_interval),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_offset_as_optional_interval",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.48-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_reprovision_request_fields_are_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reprovision_certificate_request_forms",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_supports_certificate_request_certificate_or_no_parameters",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/reprovision_operation_tests.rs::request_preserves_both_optional_certificate_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_parameterless_server_credential_form",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_replacement_certificate_form",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.55-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.55-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_sign_cryptographic_parameters_are_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_sign_cryptographic_parameters_omission_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/sign_execution_tests.rs::request_table_fields_reach_the_fake_transport_unchanged",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.50-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_accepts_rng_seed_zero_data_length),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/rng_seed_operation_tests.rs::successful_response_preserves_zero_data_length_and_unknown_fields",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.51-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.51-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_set_attribute_does_not_mutate_read_only_attributes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_set_attribute_on_read_only_standard_attribute",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.56-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_signature_verify_original_data_is_optional_byte_string),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_original_data_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.56-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.56-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_signature_verify_cryptographic_parameters_are_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.32-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.32-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_mac_cryptographic_parameters_are_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_cryptographic_parameters_omission_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_mac_verify_original_data_is_optional_byte_string),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_original_data_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_emits_optional_identifier_parameters_original_data_mac_and_framing_in_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_mac_verify_cryptographic_parameters_are_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.57-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_validate_chain_list_members_are_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_validate_validity_date_is_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_validity_date_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_validate_chain_list_members_are_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_mixed_chain_inputs_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.57-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_validate_repeated_certificates_are_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_certificates_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.57-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_validate_repeated_unique_identifiers_are_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_unique_identifiers_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.62-003",
+        "KMIPKIT-CLAUSE-SPEC-4.62-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_response_preserves_x509_optional_values),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.63-004",
+        "KMIPKIT-CLAUSE-SPEC-4.63-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_response_preserves_x509_optional_values),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.63-005",
+        "KMIPKIT-CLAUSE-SPEC-4.63-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_response_preserves_x509_optional_values),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_obtain_lease_response_values_are_typed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_obtain_lease_response_values_are_typed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_obtain_lease_response_values_are_typed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_response_capabilities",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_batches",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-001-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_request_batch_items),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multiple_client_operations_in_one_batch_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8.1-002",
+        "KMIPKIT-CLAUSE-SPEC-8.1-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_request_batch_items),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_batch_item_repetition_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8.2-002",
+        "KMIPKIT-CLAUSE-SPEC-8.2-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_request_attestation_types),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_attestation_types_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.3-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.3-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_sets_attestation_indicator_true),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.4-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.4-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_authentication_contains_a_credential_if_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_credential_when_request_authentication_is_present",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.4-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.4-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_omit_authentication_when_not_required),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.4-002",
+        "KMIPKIT-CLAUSE-SPEC-9.4-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_credentials_within_authentication),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_authentication_and_repeated_credentials",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_roundtrip_preserves_unknown_fields_and_credential_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-004-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_device_credential_has_identifier_if_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-004-002",
+        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "device_identifiers_caller_asserted_unique",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-004-003",
+        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_device_credential_password_is_text_string_if_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_device_password_authentication_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-006",
+        "KMIPKIT-CLAUSE-SPEC-9.11-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_attestation_credential_has_evidence_if_present),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_measurement_or_assertion_when_attestation_is_used",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::attestation_requires_nonce_type_and_one_or_both_evidence_fields",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_rejects_equal_or_earlier_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequences_are_independent",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "hashed_password_timestamp_monotonicity_per_username",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-010-002",
+        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_omission_exposes_sha256_default_without_materializing_field",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_preserves_explicit_and_unknown_algorithm_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "hashed_password_sha256_default",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.11-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_public_api.rs::credential_and_authentication_public_views_preserve_order_and_redact",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "credential_authentication_representation",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.5-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/cancel_tests.rs::cancel_request_preserves_exact_correlation_bytes_in_table_order",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_exposes_matching_echo_and_assigned_cancellation_result",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.1-001",
+        "KMIPKIT-CLAUSE-SPEC-9.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/poll_tests.rs::poll_request_preserves_arbitrary_correlation_bytes_in_table_order",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.19-002",
+        "KMIPKIT-CLAUSE-SPEC-9.19-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_uses_async_correlation_value_for_poll_or_cancel),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::pending_correlation_is_exact_borrowed_and_redacted_from_formatted_output",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.9-001",
+        "KMIPKIT-CLAUSE-SPEC-9.9-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_client_correlation_value),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_client_correlation_value_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::message_headers_preserve_independent_client_correlation_values",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/extension_outbound.rs::execute_encodes_every_optional_batch_header_and_item_identifier",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.12-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_maximum_response_size),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_maximum_response_size_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.12-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_rejects_one_byte_over_local_limit_before_decoder_entry",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "declared_response_capacity",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.12-001-003",
+        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        None,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        Some(client_sends_maximum_response_size_only_for_possible_large_replies),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_maximum_response_size_only_for_possible_large_replies",
+                RuleTestKind::RecommendedBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit",
+                RuleTestKind::RecommendedBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.20-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_request_time_stamp),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_time_stamp_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::request_time_stamp_is_optional_and_preserved_as_raw_date_time",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.20-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.21-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.21-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_unique_batch_item_id),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_unique_batch_item_id_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8.3-003",
+        "KMIPKIT-CLAUSE-SPEC-8.3-003",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_includes_unique_batch_item_id_for_multi_item_request),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8.3-004",
+        "KMIPKIT-CLAUSE-SPEC-8.3-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_request_message_extensions),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_message_extensions_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8-001",
+        "KMIPKIT-CLAUSE-SPEC-8-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::response_payload_is_required_for_non_failure_and_absent_for_failure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "optional_failure_response_payload_and_message_extensions",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8-002",
+        "KMIPKIT-CLAUSE-SPEC-8-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_message_field_order_for_client_requests_and_responses",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::request_known_fields_and_envelope_reject_reordering",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::response_known_fields_and_envelope_reject_reordering",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "request_response_fields_follow_kmip_specified_order",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.7-001",
+        "KMIPKIT-CLAUSE-SPEC-9.7-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_items_for_client_requests_and_responses",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "request_response_include_one_or_more_batch_items",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "caller_selects_message_extension_presence_and_processing",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.13-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "message_extension_fields_and_vendor_data_validated_by_message_model",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.13-001-003",
+        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/message_validation.rs::malformed_request_message_extension_is_rejected",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "vendor_identification_is_caller_assigned_unique_text",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.13-001-004",
+        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_rejects_unknown_critical_response_extensions),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_response_with_critical_message_extension",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_critical_message_extension_rejects_the_response",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_process_unknown_noncritical_response_extensions),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_noncritical_response_extension_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/option_tests.rs::unknown_non_critical_message_extension_is_preserved_opaque",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::noncritical_response_extension_is_preserved_and_critical_extension_is_rejected",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.5-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_sets_batch_count_to_request_item_count),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_count_to_request_item_count",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.5-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_sets_batch_count_to_one_for_single_operation),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_operation_batch_count_to_one",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.6-001-001",
+        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_includes_batch_error_continuation_only_for_multi_item_request),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_batch_error_continuation_option_only_for_multi_item_batches",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.6-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_uses_assigned_batch_error_continuation_values),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_assigned_batch_error_continuation_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.6-001-003",
+        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_defaults_batch_error_continuation_to_stop),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_default_batch_error_continuation_to_stop",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-4.1.2-005",
+        "KMIPKIT-CLAUSE-PROF-4.1.2-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_omit_authentication_when_not_required),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_request_authentication_from_profiles_clause",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-4.1.2-007",
+        "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_unique_batch_item_id),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.17-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_inspect_optional_result_message),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::result_message_client_access_has_an_optional_typed_rule",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/result_contract.rs::operation_result_display_and_debug_redact_message",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(type_specific_parameters_do_not_infer_remote_object_type),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(type_specific_parameters_do_not_infer_remote_object_type),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-CLAUSE-SPEC-4.16-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_variable_iv_cryptographic_parameters_include_iv_length),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-CLAUSE-SPEC-4.16-003",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_gcm_cryptographic_parameters_include_tag_length),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_encrypt_aad_is_on_initial_request),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_encrypt_cryptographic_parameters_are_optional_structure),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_encrypt_iv_counter_nonce_is_optional_byte_string),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_decrypt_cryptographic_parameters_are_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_decrypt_iv_counter_nonce_is_optional_byte_string),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_decrypt_optional_fields_from_section_6_1_11",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_decrypt_aad_is_on_initial_request),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_decrypt_tag_is_on_initial_request),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multipart_aead_fields_to_initial_requests",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_delegated_login_rights_is_required_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_rights_as_required_structure",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_delegated_login_lease_time_is_optional_interval_or_date_time),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_delegated_login_request_count_is_optional_integer),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_request_count_as_optional_integer",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_delegated_login_usage_limits_is_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_delegated_login_usage_limits_as_optional_structure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_login_lease_time_is_optional_interval_or_date_time),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_login_request_count_is_optional_integer),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_login_usage_limits_is_optional_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs::optional_request_fields_keep_table_253_order_and_both_lease_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_logout_ticket_is_required_structure),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_logout_required_ticket_as_required_behavior",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs::table_256_request_requires_and_preserves_the_explicit_secret_ticket",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(discover_versions_advertises_only_client_supported_versions),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.10-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.10-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_create_split_key_source_identifier),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.16-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(discover_versions_advertises_only_client_supported_versions),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_discover_versions_preference_order_for_single_supported_version",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_represent_optional_delete_attribute_selector),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_current_attribute_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.13-006",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_represent_optional_delete_attribute_selector),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_delete_attribute_reference_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_represent_optional_modify_attribute_selector),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_modify_attribute_current_attribute_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "modify_attribute_existing_instance_named",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.27-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_join_split_key_has_validated_identifier_entries),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::entry_count_must_meet_the_maximum_threshold_and_thresholds_may_differ",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.27-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.27-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_join_split_key_secret_data_type_is_valid_when_applicable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_join_split_key_secret_data_type",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.27-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1.27-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_join_split_key_has_validated_identifier_entries),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_locate_maximum_items),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_maximum_items_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_locate_offset_items),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-007",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_can_send_partial_structured_locate_attributes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_partial_structured_attribute_fields",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_supplies_locate_attributes_structure),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_attributes_as_required_behavior",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_supplies_locate_attributes_structure),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_empty_attributes_match_all_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.20-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(get_attributes_references_are_not_repeated),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_identical_get_attributes_references",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.20-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_include_optional_get_attributes_attribute_references),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_export_controls_have_get_semantics),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_controls_with_get_semantics",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_export_key_format_type_is_enumeration),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_export_key_wrap_type_is_enumeration),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_or_export_key_compression_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_or_export_optional_wrapping_specification_is_structure),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_get_or_export_key_format_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_key_format_client_assumption",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_key_format_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_key_wrap_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_or_export_key_compression_type_is_enumeration),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_get_optional_wrapping_specification_is_structure),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.31-001",
+        "KMIPKIT-CLAUSE-SPEC-7.31-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "profile_specific_query_information_preserved",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.32-001",
+        "KMIPKIT-CLAUSE-SPEC-7.32-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_query_profile_information_is_well_formed),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_version_in_query_profile_responses",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.8-001",
+        "KMIPKIT-CLAUSE-SPEC-7.8-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_multipart_continuation_has_server_correlation),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_server_generated_correlation_to_multipart_continuations",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIPKIT-CLAUSE-SPEC-7.18-006",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_get_or_export_wrapping_attribute_names),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.18-001-001",
+        "KMIPKIT-CLAUSE-SPEC-7.18-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_supports_get_or_export_wrapped_key_request),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.18-004",
+        "KMIPKIT-CLAUSE-SPEC-7.18-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_get_or_export_wrapping_specification_has_key_information),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.18-005",
+        "KMIPKIT-CLAUSE-SPEC-7.18-005",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_get_or_export_wrapping_specification_has_key_information),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_get_and_export_wrapping_key_information_pairing",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.40-014",
+        "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_query_contains_one_or_more_functions),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_at_least_one_client_query_function",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.40-016",
+        "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_repeat_query_functions),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_query_function_repetition_as_optional_capability",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "derive_key_source_usage_mask_caller_asserted",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "derive_key_multiple_inputs_caller_selected",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_specifies_cryptographic_length),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_length",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_includes_required_attributes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_attributes",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_symmetric_output_specifies_cryptographic_attributes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_symmetric_output_attributes",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_includes_required_object_type),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_object_type",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_specifies_explicit_source_identifiers),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_unique_identifier",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_includes_required_derivation_method),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_derivation_method",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED"),
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_includes_required_derivation_parameters),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_parameters",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(derive_key_secret_data_uses_total_cryptographic_length),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(derive_key_repeated_unique_identifiers_are_usable),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_repeated_derive_key_unique_identifiers",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(derive_key_specifies_explicit_source_identifiers),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
+            RuleTestKind::NegativeBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.12-003",
+        "KMIPKIT-CLAUSE-SPEC-7.12-003",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(derive_key_hash_method_selects_explicit_prf),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_prf_parameters_with_source_condition",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-7.12-005-001",
+        "KMIPKIT-CLAUSE-SPEC-7.12-005",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(derive_key_optional_input_forms_are_representable),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_derive_key_input_forms",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_table_145_unique_identifier_encodings_for_derive_key",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::both_derivation_input_forms_are_sent_and_server_error_is_not_rejected_locally",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-8-003-001",
+        "KMIPKIT-CLAUSE-SPEC-8-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        Some(client_can_signal_asynchronous_response_support),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_asynchronous_indicator_capability",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_asynchronous_indicator_preserves_each_assigned_value",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.1.2-001",
+        "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[rule_constraint("encoding", "ttlv")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+        "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint("encoding", "ttlv")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+        "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint("encoding", "ttlv")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+        "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint("encoding", "ttlv")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+        "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint("encoding", "ttlv")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.4-001-001",
+        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/https.rs::https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint("transport_security", "tls13")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.4-001-002",
+        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/tls_integrity.rs::raw_tls_rejects_a_tampered_post_handshake_application_record",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/tls_integrity.rs::https_invalidates_a_connection_after_a_tampered_post_handshake_application_record",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint("transport_security", "tls13")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-10.4-001-003",
+        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_unknown_server_ca",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_expired_server_certificate",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_server_name_mismatch",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint("transport_security", "tls13")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-11.56-001",
+        "KMIPKIT-CLAUSE-SPEC-11.56-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_request_tags_use_kmip_prefixes),
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-11-001",
+        "KMIPKIT-CLAUSE-SPEC-11-001",
+        None,
+        GeneratedVerificationCategory::ProhibitedBehavior,
+        Some(client_request_tags_are_allocated),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-ttlv/tests/tag_allocation.rs::individually_and_residually_reserved_tags_are_rejected",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-ttlv/tests/codec_negative.rs::public_decoder_rejects_received_reserved_tags",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-12-001-001",
+        "KMIPKIT-CLAUSE-SPEC-12-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_mask_values_use_ttlv_integer_encoding),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_ttlv_mask_integer_values",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_integer_ttlv_mask_values",
+                RuleTestKind::NegativeBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-4.1.2-001",
+        "KMIPKIT-CLAUSE-PROF-4.1.2-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "profiles_4_1_2_test_variations",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-6-001",
+        "KMIPKIT-CLAUSE-PROF-6-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "all_applicable_profile_normative_statements",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-6.1-001",
+        "KMIPKIT-CLAUSE-PROF-6.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "kmip_specification_v2_1",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-6.1-002",
+        "KMIPKIT-CLAUSE-PROF-6.1-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "profiles_3_1_basic_authentication_suite",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-6.1-003",
+        "KMIPKIT-CLAUSE-PROF-6.1-003",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "baseline_client_conditions_5_1_1",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-6.1-004",
+        "KMIPKIT-CLAUSE-PROF-6.1-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_conformance_evidence",
+            "one_or_more_baseline_mandatory_tests_5_1_3_or_5_6_3",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "implemented_operations",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        Some(client_understands_response_operations),
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
+                RuleTestKind::NegativeBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1-003",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "id_placeholder",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1-004",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order",
+                RuleTestKind::OptionalCapabilityUsable,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "zero_or_more_create_attributes",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1-005",
+        "KMIPKIT-CLAUSE-SPEC-6.1-005",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[
+            rule_test_evidence(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::recover_before_use_remains_explicit_caller_controlled_behavior",
+                RuleTestKind::PositiveBehavior,
+            ),
+            rule_test_evidence(
+                "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_executes_encrypt_only_after_completed_recover_using_the_returned_identifier",
+                RuleTestKind::PositiveBehavior,
+            ),
+        ],
+        &[rule_constraint(
+            "client_profile_capability",
+            "recover_before_use_caller_controlled",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "archived_locate_recover_get_workflow_caller_directed",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "recover_poll_caller_directed",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        None,
+        GeneratedVerificationCategory::OptionalCapability,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
+            RuleTestKind::OptionalCapabilityUsable,
+        )],
+        &[rule_constraint(
+            "client_profile_capability",
+            "recover_get_caller_directed",
+        )],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-14.1-001",
+        "KMIPKIT-CLAUSE-SPEC-14.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint("client_profile_selection", "at_least_one")],
+    ),
+    typed_rule_mapping(
+        "KMIPKIT-REQ-SPEC-14.1-002",
+        "KMIPKIT-CLAUSE-SPEC-14.1-002",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint(
+            "client_profile_closure",
+            "all_normative_statements",
+        )],
+    ),
 ];
 
 /// Redacted validation failure containing only stable IDs and a fixed code.
