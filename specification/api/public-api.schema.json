@@ -2123,6 +2123,20 @@
       },
       "additionalProperties": false
     },
+    "implementationAuthorization": {
+      "type": "object",
+      "required": ["kind", "path", "status", "evidence"],
+      "properties": {
+        "kind": {"const": "direct-human-instruction"},
+        "path": {
+          "type": "string",
+          "pattern": "^specs/[0-9]{3}-[a-z0-9-]+/spec\\.md$"
+        },
+        "status": {"const": "Draft"},
+        "evidence": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
     "publicDeclaration": {
       "type": "object",
       "required": [
@@ -2659,9 +2673,13 @@
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
         },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
         "apiState": {
           "enum": [
             "blocked",
+            "authorized_wip",
             "declared",
             "verified"
           ]
@@ -2711,6 +2729,35 @@
                 {"required": ["featureSpecId"]},
                 {"required": ["approvalEvidence"]},
                 {"required": ["declarations"]},
+                {"required": ["parityEvidenceIds"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "declarations"
+            ],
+            "properties": {
+              "declarations": {
+                "required": ["rust", "c", "java", "python"]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["featureSpecId"]},
+                {"required": ["approvalEvidence"]},
+                {"required": ["blockedReason"]},
                 {"required": ["parityEvidenceIds"]}
               ]
             }
