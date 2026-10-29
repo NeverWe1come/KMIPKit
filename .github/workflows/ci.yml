@@ -916,8 +916,8 @@ jobs:
           mkdir -p coverage-normative
           python -m coverage run --data-file=coverage-normative/.coverage --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types
           branch="${GITHUB_HEAD_REF:-}"
-          if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" || "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then
-            # The temporary coverage-threshold waiver skips only the minimum check; tests and measurement still run.
+          if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then
+            # The temporary waiver applies only to the remaining KMIPKIT-0043 branch; tests and measurement still run.
             python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py
             printf '%s\n' \
               '### Normative generator coverage' \
@@ -1170,9 +1170,8 @@ jobs:
           merge-multiple: false
 
       - name: Enforce coverage thresholds
-        # Temporary exception for only the two active feature PRs; coverage collection remains enabled.
+        # Temporary exception only for the remaining in-progress KMIPKIT-0043 feature PR; coverage collection remains enabled.
         if: >-
-          github.head_ref != 'feature/KMIPKIT-0010-profile-conformance-implementation-refresh' &&
           github.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'
         id: enforce
         env:
@@ -1185,7 +1184,6 @@ jobs:
         if: >-
           always() &&
           steps.enforce.outcome == 'skipped' &&
-          github.head_ref != 'feature/KMIPKIT-0010-profile-conformance-implementation-refresh' &&
           github.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'
         env:
           CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
@@ -1198,8 +1196,7 @@ jobs:
         if: >-
           always() &&
           steps.enforce.outcome == 'skipped' &&
-          (github.head_ref == 'feature/KMIPKIT-0010-profile-conformance-implementation-refresh' ||
-           github.head_ref == 'feature/KMIPKIT-0043-t076-shared-client-mapping')
+          (github.head_ref == 'feature/KMIPKIT-0043-t076-shared-client-mapping')
         run: |
           printf '### Coverage gate\n\n**Result:** TEMPORARY WAIVER — minimum coverage thresholds are skipped for this in-progress feature branch.\n\nCoverage producers still run and publish reports. Restore the minimum coverage thresholds and pass them before completing this specification and merging its PR.\n\n' >> "$GITHUB_STEP_SUMMARY"
 
@@ -1383,8 +1380,8 @@ jobs:
           mkdir -p coverage-python
           branch="${GITHUB_HEAD_REF:-}"
           coverage_threshold_args=()
-          if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" || "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then
-            # Override only pytest-cov's configured minimum on the two in-progress feature PRs.
+          if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then
+            # Override pytest-cov's configured minimum only while KMIPKIT-0043 remains in progress.
             coverage_threshold_args+=(--cov-fail-under=0)
             {
               echo "### Python coverage"
