@@ -1518,18 +1518,18 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
         ) {
             match finding_probe_preflight(row) {
                 Ok(FindingProbePreflight::SendExactTarget) => {}
-                Ok(FindingProbePreflight::NotSent(reason)) => {
+                Ok(FindingProbePreflight::NotSent(_reason)) => {
                     let observation =
                         cryptographic_observation_line(row, "preflight_not_sent", "false");
-                    println!("{observation} preflight_reason={reason}");
-                    failures.push(format!("{id} (preflight NotSent: {reason})"));
+                    println!("{observation} preflight_reason=target_not_sent");
+                    failures.push(format!("{id} (preflight NotSent)"));
                     continue;
                 }
-                Err(error) => {
+                Err(_error) => {
                     println!(
-                        "case_id={id} classification=preflight_error request_sent=false interoperability=false detail={error}"
+                        "case_id={id} classification=preflight_error request_sent=false interoperability=false detail=redacted"
                     );
-                    failures.push(format!("{id} (invalid finding probe: {error})"));
+                    failures.push(format!("{id} (invalid finding probe)"));
                     continue;
                 }
             }

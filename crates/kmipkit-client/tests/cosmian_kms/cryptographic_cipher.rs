@@ -22,7 +22,7 @@ const P_SOURCE: u32 = 0x0042_0103;
 const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
 const DATA: &[u8] = b"KMIPKit matrix data";
-const NONCE: &[u8] = b"KMIPKitNonce1234";
+const MAX_RANDOM_NONCE_BYTES: usize = 64;
 const AAD: &[u8] = b"KMIPKit additional data";
 
 /// Runs a symmetric algorithm case. Returns `None` for asymmetric object rows,
@@ -493,10 +493,12 @@ fn nonce_for(row: &JsonValue) -> Result<Option<SecretBytes>, Box<dyn Error>> {
                     "ChaCha20Poly1305" => 12,
                     _ => 16,
                 });
-            if bytes > NONCE.len() {
-                return Err("manifest nonce length exceeds deterministic test nonce".into());
+            if bytes > MAX_RANDOM_NONCE_BYTES {
+                return Err("manifest nonce length exceeds the test input limit".into());
             }
-            Ok(Some(SecretBytes::new(NONCE[..bytes].to_vec())))
+            let mut nonce = vec![0; bytes];
+            aws_lc_rs::rand::fill(&mut nonce).map_err(|_| "secure test nonce generation failed")?;
+            Ok(Some(SecretBytes::new(nonce)))
         }
         Some("server" | "inapplicable") | None => Ok(None),
         Some(other) => Err(format!("unknown nonce source {other}").into()),

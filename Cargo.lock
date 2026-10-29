@@ -332,6 +332,7 @@ dependencies = [
 name = "kmipkit-client"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "kmipkit-protocol",
  "kmipkit-test-support",
  "kmipkit-transport",
