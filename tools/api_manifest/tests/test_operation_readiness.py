@@ -975,6 +975,56 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
         self.assertEqual(self.errors(manifest), [])
 
+    def test_authorized_wip_declaration_validates_draft_owner_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            status_value = (
+                "Draft. Direct human instruction for this implementation task "
+                "authorizes autonomous work without further approval requests."
+            )
+            spec_path = root / "specs" / "009-asynchronous-operations" / "spec.md"
+            spec_path.parent.mkdir(parents=True)
+            spec_path.write_text(
+                f"# Async operations\n\n**Status**: {status_value}\n",
+                encoding="utf-8",
+            )
+            authorization = {
+                "kind": "direct-human-instruction",
+                "path": "specs/009-asynchronous-operations/spec.md",
+                "status": "Draft",
+                "evidence": status_value,
+            }
+            manifest = _contract_manifest()
+            operation = _discover_versions_operation(manifest)
+            operation["apiState"] = "authorized_wip"
+            operation["candidateSpecId"] = "KMIPKIT-0009"
+            operation["implementationAuthorization"] = authorization
+            declarations = _ready_declarations(
+                declaration_id="async_operation",
+                capability_id=operation["operationId"],
+            )
+            for declaration in declarations:
+                declaration["declarationState"] = "authorized_wip"
+                declaration["candidateSpecId"] = "KMIPKIT-0009"
+                declaration["implementationAuthorization"] = authorization
+                declaration.pop("approvalSource")
+
+            packages = {
+                package["id"]: package["language"]
+                for package in manifest["publicPackages"]
+            }
+            requirements = set(manifest["requirementIds"])
+            operations = {operation["operationId"]: operation}
+            generate._validate_public_declarations(
+                declarations, {}, operations, packages, requirements, root
+            )
+
+            declarations[0]["implementationAuthorization"]["evidence"] = "not in owner spec"
+            with self.assertRaisesRegex(ManifestError, "authorization evidence"):
+                generate._validate_public_declarations(
+                    declarations, {}, operations, packages, requirements, root
+                )
+
     def test_verified_operation_requires_resolvable_parity_evidence(self) -> None:
         manifest = _contract_manifest()
         operation = _discover_versions_operation(manifest)
