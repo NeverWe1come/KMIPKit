@@ -23,6 +23,7 @@ const IV_LENGTH: u32 = 0x0042_00CD;
 const TAG_LENGTH: u32 = 0x0042_00CE;
 const DATA: &[u8] = b"KMIPKit matrix data";
 const MAX_RANDOM_NONCE_BYTES: usize = 64;
+const FPE_TEST_TWEAK_LENGTH: usize = 13;
 const AAD: &[u8] = b"KMIPKit additional data";
 
 /// Runs a symmetric algorithm case. Returns `None` for asymmetric object rows,
@@ -477,7 +478,12 @@ fn nonce_for(row: &JsonValue) -> Result<Option<SecretBytes>, Box<dyn Error>> {
     if text(row, "algorithm")? == "FPE_FF1" {
         return Ok(match row["parameters"]["tweak"].as_str() {
             Some("empty") => Some(SecretBytes::new(Vec::new())),
-            Some("nonempty") => Some(SecretBytes::new(b"KMIPKit-tweak".to_vec())),
+            Some("nonempty") => {
+                let mut tweak = vec![0; FPE_TEST_TWEAK_LENGTH];
+                aws_lc_rs::rand::fill(&mut tweak)
+                    .map_err(|_| "secure test FPE tweak generation failed")?;
+                Some(SecretBytes::new(tweak))
+            }
             Some(other) => return Err(format!("unknown FPE tweak class {other}").into()),
             None => None,
         });
@@ -714,12 +720,14 @@ mod tests {
         let second = nonce_for(&row)
             .expect("second secure FPE tweak")
             .expect("nonempty FPE tweak");
-        let (length, matches) = first.with_bytes(|first| {
-            second.with_bytes(|second| (first.len(), first == second))
-        });
+        let (length, matches) =
+            first.with_bytes(|first| second.with_bytes(|second| (first.len(), first == second)));
 
         assert_eq!(length, 13);
-        assert!(!matches, "separate FPE Encrypt inputs must not reuse a tweak");
+        assert!(
+            !matches,
+            "separate FPE Encrypt inputs must not reuse a tweak"
+        );
     }
 
     #[test]
