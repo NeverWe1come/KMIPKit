@@ -922,7 +922,7 @@ jobs:
             printf '%s\n' \
               '### Normative generator coverage' \
               '' \
-              '**Result:** temporary coverage-threshold waiver — report collected; the 95% minimum is not enforced for this in-progress feature branch.' \
+              '**Result:** temporary coverage-threshold waiver — report collected; the 95% minimum is not enforced only while KMIPKIT-0043 remains in progress.' \
               '' \
               'Restore and pass the minimum before completing this specification and merging its PR.' \
               '' >> "$GITHUB_STEP_SUMMARY"
@@ -1196,9 +1196,9 @@ jobs:
         if: >-
           always() &&
           steps.enforce.outcome == 'skipped' &&
-          (github.head_ref == 'feature/KMIPKIT-0043-t076-shared-client-mapping')
+          github.head_ref == 'feature/KMIPKIT-0043-t076-shared-client-mapping'
         run: |
-          printf '### Coverage gate\n\n**Result:** TEMPORARY WAIVER — minimum coverage thresholds are skipped for this in-progress feature branch.\n\nCoverage producers still run and publish reports. Restore the minimum coverage thresholds and pass them before completing this specification and merging its PR.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          printf '### Coverage gate\n\n**Result:** TEMPORARY WAIVER — minimum coverage thresholds are skipped only for the remaining KMIPKIT-0043 branch.\n\nCoverage producers still run and publish reports. Restore the minimum coverage thresholds and pass them before completing this specification and merging its PR.\n\n' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1386,7 +1386,7 @@ jobs:
             {
               echo "### Python coverage"
               echo
-              echo "**Result:** temporary coverage-threshold waiver — tests ran and the coverage report was generated, but the 85% minimum is not enforced for this in-progress feature branch."
+              echo "**Result:** temporary coverage-threshold waiver — tests ran and the coverage report was generated, but the 85% minimum is not enforced only while KMIPKIT-0043 remains in progress."
               echo
               echo "Restore and pass the minimum before completing this specification and merging its PR."
               echo

@@ -8154,7 +8154,7 @@ After T040 closed, T045's replay check was rerun. The test records 13 replayed p
 | Independent closeout review | Read-only review of `e38052ad8` | PASS: no remaining findings; Baseline remains `evidence_incomplete`. |
 | Immutable upstream sources | `python -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha d14f6566cb05a48bfe1cc6b3c271181f2cc9e8d4` | PASS: pinned OASIS upstream sources match the release base. |
 
-T026 and T043 remain open. T026 awaits protected-release evidence requiring repository administration; T043 restores the coverage thresholds after the remaining KMIPKIT-0010 gates are completed. PR #90 remains a draft.
+T026 and T057 remain open. T026 awaits the post-integration protected-release evidence gate; T057 restores the coverage thresholds for KMIPKIT-0010. PR #90 remains a draft.
 
 ## KMIPKIT-0010 T056 exact-head closeout (2026-10-28)
 
@@ -8171,7 +8171,7 @@ T056 is complete: the 14 requirements listed in the task have typed Baseline map
 
 The DCO merge commit `662f776b7a472610798d0cd4d1715e9939340606` syncs `release/1.0.0` commit `6c9f577fcc1e5a9322b22e06de6102f111e06347` into the feature branch. Exact-head PR CI [run 40686772197](https://github.com/NeverWe1come/KMIPKit/actions/runs/40686772197) completed with conclusion `success`: 35 jobs succeeded, 3 jobs were skipped, and none failed. The skipped jobs were informational nightly branch coverage, the active-release-schedule dependency job, and `Profile evidence / protected release aggregate`. Fast preflight, JNI coverage/Linux, Core/Windows Rust 1.94, and Script Contracts on Ubuntu, Windows, and macOS all passed. The earlier JNI coverage abort and Windows DNS socket-allocation failures were not reproduced in this run.
 
-This was a `pull_request` run. The protected-release aggregate was skipped by design, so this exact-head CI result does not prove the App-backed installation token or the live release branch-protection API response. T026 remains open solely for the eligible protected `push` evidence and external repository administration prerequisites recorded in `tasks.md`; no secret or protection setting was accessed or changed in this follow-up. T043 remains open until the temporary coverage-threshold exception can be removed after the remaining KMIPKIT-0010 gates. PR #90 remains open as a draft, with GitHub reporting a clean merge state.
+This was a `pull_request` run. The protected-release aggregate was skipped by design, so this exact-head CI result does not prove the App-backed installation token or the live release branch-protection API response. T026 remains open solely for the eligible protected `push` evidence and external repository administration prerequisites recorded in `tasks.md`; no secret or protection setting was accessed or changed in this follow-up. T057 remains open until the temporary coverage-threshold exception is removed and every required threshold passes. PR #90 remains open as a draft, with GitHub reporting a clean merge state.
 
 ## KMIPKIT-0010 exact-head JNI coverage recurrence and retry (2026-10-28)
 
@@ -8183,7 +8183,7 @@ I reproduced the collector in a fresh detached checkout of `4eb88b7e` without to
 
 The hosted runner used Ubuntu 24.04.5, Temurin Java 17.0.21+9, Maven 3.9.16, rustc 1.94.1, LLVM/Clang 20.1.8, `CXX=clang++-20`, and JaCoCo 0.8.12. The local WSL reproduction used Ubuntu 26.04/glibc 2.43 and Java 17.0.20.1; Maven, Rust, LLVM/Clang, C++ selection, JaCoCo agent, and empty `CARGO_ENCODED_RUSTFLAGS` matched. The runner log did not expose comparable CPU/memory measurements. The source-level trace found the boundary JNI path checks array lengths and per-input limits before resizing exact-sized `std::vector` storage, then copies Java byte arrays into those buffers; the aggregate budget is checked after each entry is copied. The preceding coverage test explicitly releases its raw handle variables once in `finally`, but this static trace did not isolate the heap corruption. Root cause remains undetermined. The same-head rerun is evidence of a pass after a failure, not evidence that the failure is fixed or attributable to the runner.
 
-PR #90 remains open as a draft. T026 remains open for the eligible protected release push and external protected-evidence prerequisites; no secret or repository-protection setting was inspected or changed. T043 remains open pending restoration of the coverage thresholds after the remaining KMIPKIT-0010 gates.
+PR #90 remains open as a draft. T026 remains open for the eligible protected release push and external protected-evidence prerequisites; no secret or repository-protection setting was inspected or changed. T057 remains open pending restoration of the coverage thresholds.
 
 ## Protected release prerequisites rechecked (2026-10-29)
 
@@ -8556,3 +8556,11 @@ At the maintainer's direction, T026 is complete at the implementation and config
 Read-only GitHub verification on 2026-10-30 confirmed release/1.0.0 protection: strict CI summary / at a glance; zero required approvals; code-owner review disabled; stale-review dismissal and administrator enforcement enabled; force pushes and deletion disabled. The restricted release-evidence environment contains PROFILE_EVIDENCE_APP_CLIENT_ID and PROFILE_EVIDENCE_APP_PRIVATE_KEY; secret values were not read. No CI workflow run for a push to release/1.0.0 exists yet, so the App installation token and live policy query have not been exercised in an eligible run.
 
 The first protected push after integration remains a release gate, not evidence that has already passed. The protected-release aggregate must succeed before Baseline profile readiness can be claimed; until then the catalog remains evidence_incomplete and no profile-support claim is made. The aggregate is skipped on pull_request events, so this release gate cannot be satisfied from the draft PR run alone. This note supersedes earlier task notes that kept T026 open solely for the post-integration run.
+
+## KMIPKIT-0010 T057 coverage gate restoration (2026-10-30)
+
+The duplicate task number was corrected: T043 remains the completed live branch-protection verification, and T057 exclusively tracks restoration of the KMIPKIT-0010 coverage thresholds. The temporary exception was removed from this feature branch only; it remains for the still-incomplete KMIPKIT-0043 branch.
+
+Red: DCO-signed commit 61dd30ee2 changed the workflow contract tests to require the single remaining exception and failed against the old two-branch workflow. Green: DCO-signed commit 010bfc538 removed the KMIPKIT-0010 branch from normative-generator coverage, Python coverage, and the selected-scope/aggregate coverage gate; the three focused workflow contract tests passed. The Refactor keeps branch conditions and the T057 evidence explicit.
+
+T057 remains open until exact-head CI passes the normative-generator 95% line threshold, selected scope thresholds, and Rust workspace aggregate gate. The protected-release aggregate remains a separate post-integration release gate under T026; Baseline remains evidence_incomplete and no profile claim is made.
