@@ -12,6 +12,8 @@ import subprocess
 import sys
 import tomllib
 import unicodedata
+import urllib.error
+import urllib.request
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -36,6 +38,9 @@ else:
 
 REPORT_PATH = Path("specification/catalog/coverage-report.md")
 PROFILE_RULE_SOURCE = "crates/kmipkit-protocol/src/profile.rs"
+_GITHUB_API_MAX_RESPONSE_BYTES = 1_048_576
+_GITHUB_API_BASE = "https://api.github.com/repos/NeverWe1come/KMIPKit"
+_VERIFIED_EVIDENCE_PROOF = object()
 _EMPTY_TYPED_RULE_REGISTRY = re.compile(
     r"(?m)^\s*const TYPED_RULE_MAPPINGS:\s*&\[TypedRuleMapping\]\s*=\s*&\[\];\s*$"
 )
@@ -1359,6 +1364,140 @@ def _effective_catalog_evidence_state(
     return effective_state, sorted(set(unique_blockers))
 
 
+def _github_api_json(endpoint: str, token: str) -> Any:
+    """Read one bounded GitHub API JSON response without exposing credentials."""
+    if not token or len(token) > 8192:
+        raise ValueError("GitHub verification credentials are unavailable")
+    request = urllib.request.Request(
+        f"{_GITHUB_API_BASE}{endpoint}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "KMIPKit-profile-evidence",
+        },
+        method="GET",
+    )
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(request, timeout=10) as response:
+            raw = response.read(_GITHUB_API_MAX_RESPONSE_BYTES + 1)
+    except (OSError, TimeoutError, urllib.error.URLError):
+        # Do not propagate HTTP exception text: it can contain request details.
+        raise ValueError("GitHub verification request failed") from None
+    if len(raw) > _GITHUB_API_MAX_RESPONSE_BYTES:
+        raise ValueError("GitHub verification response exceeds the input limit")
+    try:
+        return json.loads(raw, object_pairs_hook=_unique_json_object)
+    except (RecursionError, UnicodeError, ValueError):
+        raise ValueError("GitHub verification response is malformed") from None
+
+
+def _verified_current_workflow_evidence(
+    manifest: Mapping[str, Any] | None,
+    context: Mapping[str, Any],
+    current_head: str,
+    *,
+    actions_token: str,
+    branch_protection_token: str,
+) -> bool:
+    """Authenticate current workflow and branch-policy evidence using GitHub's live API."""
+    if manifest is None:
+        return False
+    run_id = context.get("run_id")
+    run_attempt = context.get("run_attempt")
+    sha = context.get("sha")
+    if (
+        not isinstance(run_id, str)
+        or re.fullmatch(r"[1-9][0-9]*", run_id) is None
+        or not isinstance(run_attempt, str)
+        or re.fullmatch(r"[1-9][0-9]*", run_attempt) is None
+        or not isinstance(sha, str)
+        or re.fullmatch(r"[0-9a-fA-F]{40,64}", sha) is None
+        or not isinstance(current_head, str)
+        or sha.lower() != current_head.lower()
+    ):
+        return False
+
+    try:
+        run = _github_api_json(f"/actions/runs/{run_id}", actions_token)
+        if not isinstance(run, Mapping):
+            return False
+        repository = run.get("repository")
+        if not isinstance(repository, Mapping) or (
+            type(run.get("id")) is not int
+            or run["id"] != int(run_id)
+            or repository.get("full_name") != "NeverWe1come/KMIPKit"
+            or run.get("event") != "push"
+            or run.get("head_branch") != "release/1.0.0"
+            or not isinstance(run.get("head_sha"), str)
+            or run["head_sha"].lower() != sha.lower()
+            or type(run.get("run_attempt")) is not int
+            or run["run_attempt"] != int(run_attempt)
+            or run.get("path") != ".github/workflows/ci.yml"
+            or run.get("status") != "in_progress"
+        ):
+            return False
+
+        jobs_payload = _github_api_json(
+            f"/actions/runs/{run_id}/jobs?per_page=100", actions_token
+        )
+        if not isinstance(jobs_payload, Mapping):
+            return False
+        jobs = jobs_payload.get("jobs")
+        total_count = jobs_payload.get("total_count")
+        if (
+            not isinstance(jobs, list)
+            or type(total_count) is not int
+            or total_count != len(jobs)
+            or total_count > 100
+        ):
+            return False
+
+        required_prefixes = ("Core /", "Script contracts /", "Normative inventory /", "Coverage /")
+        required_exact = {
+            "Coverage gate / selected scopes",
+            "Dependency policy / active release schedule",
+        }
+        observed_prefixes: set[str] = set()
+        observed_exact: set[str] = set()
+        aggregate_in_progress = 0
+        for job in jobs:
+            if not isinstance(job, Mapping) or not isinstance(job.get("name"), str):
+                return False
+            name = job["name"]
+            for prefix in required_prefixes:
+                if name.startswith(prefix):
+                    if job.get("status") != "completed" or job.get("conclusion") != "success":
+                        return False
+                    observed_prefixes.add(prefix)
+            if name in required_exact:
+                if job.get("status") != "completed" or job.get("conclusion") != "success":
+                    return False
+                observed_exact.add(name)
+            if name == "Profile evidence / protected release aggregate":
+                if job.get("status") == "in_progress" and job.get("conclusion") is None:
+                    aggregate_in_progress += 1
+                else:
+                    return False
+        if (
+            observed_prefixes != set(required_prefixes)
+            or observed_exact != required_exact
+            or aggregate_in_progress != 1
+        ):
+            return False
+
+        raw_policy = _github_api_json(
+            "/branches/release%2F1.0.0/protection", branch_protection_token
+        )
+        from scripts.branch_protection import normalize_branch_protection
+
+        live_policy = normalize_branch_protection(raw_policy)
+        return live_policy == manifest.get("branch_protection")
+    except (ImportError, OSError, TypeError, ValueError, urllib.error.URLError):
+        return False
+
+
 def _evaluate_profile_readiness(
     catalog: dict[str, Any],
     profile_id: str,
@@ -1370,6 +1509,7 @@ def _evaluate_profile_readiness(
     current_head: str | None = None,
     repository_root: Path | None = None,
     dependency_path: tuple[str, ...],
+    evidence_proof: object | None = None,
 ) -> dict[str, Any]:
     """Evaluate stable catalog obligations against one current CI run, without publishing a claim."""
     profiles_by_id = {
@@ -1390,7 +1530,7 @@ def _evaluate_profile_readiness(
         }
 
     blockers: list[str] = []
-    if verification_manifest is None:
+    if verification_manifest is None or evidence_proof is not _VERIFIED_EVIDENCE_PROOF:
         blockers.append("current protected-release-push verification manifest is unavailable")
     else:
         try:
@@ -1507,6 +1647,7 @@ def _evaluate_profile_readiness(
             current_context=current_context,
             current_head=current_head,
             repository_root=repository_root,
+            evidence_proof=evidence_proof,
             dependency_path=current_dependency_path,
         )
         if (
@@ -1545,7 +1686,7 @@ def evaluate_profile_readiness(
     current_head: str | None = None,
     repository_root: Path | None = None,
 ) -> dict[str, Any]:
-    """Evaluate one public profile request and its dependency closure."""
+    """Evaluate local profile inputs; supplied workflow evidence remains unverified."""
     return _evaluate_profile_readiness(
         catalog,
         profile_id,
@@ -1982,7 +2123,7 @@ def evaluate_current_readiness(
     repository: Path,
     environment: Mapping[str, str],
 ) -> dict[str, Any]:
-    """Evaluate Baseline against current workflow context and an optional same-run manifest."""
+    """Evaluate Baseline using same-run evidence only after live GitHub verification."""
     code_root = Path(__file__).resolve().parents[2]
     if str(code_root) not in sys.path:
         sys.path.insert(0, str(code_root))
@@ -2025,7 +2166,16 @@ def evaluate_current_readiness(
         capture_output=True,
         text=True,
     ).stdout.strip()
-    return evaluate_profile_readiness(
+    evidence_verified = _verified_current_workflow_evidence(
+        manifest,
+        context,
+        head,
+        actions_token=environment.get("PROFILE_EVIDENCE_GITHUB_TOKEN", ""),
+        branch_protection_token=environment.get(
+            "PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN", ""
+        ),
+    )
+    return _evaluate_profile_readiness(
         catalog,
         BASELINE_PROFILE_ID,
         selected_profile_ids=selected_profile_ids,
@@ -2034,6 +2184,10 @@ def evaluate_current_readiness(
         current_context=context,
         current_head=head,
         repository_root=repository,
+        evidence_proof=(
+            _VERIFIED_EVIDENCE_PROOF if evidence_verified else None
+        ),
+        dependency_path=(),
     )
 
 

@@ -1858,6 +1858,9 @@ jobs:
     name: Profile evidence / protected release aggregate
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0' && github.ref_protected == true
     environment: release-evidence
+    permissions:
+      actions: read
+      contents: read
     runs-on: ubuntu-latest
     needs:
       - core
@@ -1909,6 +1912,8 @@ jobs:
         if: always() && steps.checkout.outcome == 'success'
         env:
           PROFILE_EVIDENCE_MANIFEST: ${{ steps.write-summary.outputs.profile_evidence_manifest }}
+          PROFILE_EVIDENCE_GITHUB_TOKEN: ${{ github.token }}
+          PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN: ${{ steps.branch-protection-token.outputs.token }}
         run: python3 -B tools/normative_catalog/report.py --repo-root . --readiness
 
       - name: Fallback summary when checkout or rendering fails

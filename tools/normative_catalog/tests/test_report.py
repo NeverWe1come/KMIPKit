@@ -3037,7 +3037,7 @@ mod unrelated {
             self._complete_profile_readiness_fixture()
         )
 
-        acyclic_readiness = report_module.evaluate_profile_readiness(
+        acyclic_readiness = report_module._evaluate_profile_readiness(
             catalog,
             profile_a_id,
             selected_profile_ids={profile_a_id, profile_b_id},
@@ -3045,6 +3045,8 @@ mod unrelated {
             verification_manifest=manifest,
             current_context=context,
             current_head=context["sha"],
+            dependency_path=(),
+            evidence_proof=report_module._VERIFIED_EVIDENCE_PROOF,
         )
         self.assertEqual("evidence_complete", acyclic_readiness["effective_state"])
         self.assertEqual([], acyclic_readiness["blockers"])
@@ -3053,7 +3055,7 @@ mod unrelated {
             row for row in catalog["profiles"] if row["profile_id"] == profile_b_id
         )
         profile_b["dependency_profile_ids"] = [profile_a_id]
-        cyclic_readiness = report_module.evaluate_profile_readiness(
+        cyclic_readiness = report_module._evaluate_profile_readiness(
             catalog,
             profile_a_id,
             selected_profile_ids={profile_a_id, profile_b_id},
@@ -3061,6 +3063,8 @@ mod unrelated {
             verification_manifest=manifest,
             current_context=context,
             current_head=context["sha"],
+            dependency_path=(),
+            evidence_proof=report_module._VERIFIED_EVIDENCE_PROOF,
         )
 
         self.assertTrue(
