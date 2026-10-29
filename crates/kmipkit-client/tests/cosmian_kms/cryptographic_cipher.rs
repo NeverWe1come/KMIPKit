@@ -702,6 +702,27 @@ mod tests {
     }
 
     #[test]
+    fn nonempty_fpe_tweaks_are_fresh_for_each_encryption_input() {
+        let row = serde_json::json!({
+            "algorithm": "FPE_FF1",
+            "parameters": {"tweak": "nonempty"}
+        });
+
+        let first = nonce_for(&row)
+            .expect("first secure FPE tweak")
+            .expect("nonempty FPE tweak");
+        let second = nonce_for(&row)
+            .expect("second secure FPE tweak")
+            .expect("nonempty FPE tweak");
+        let (length, matches) = first.with_bytes(|first| {
+            second.with_bytes(|second| (first.len(), first == second))
+        });
+
+        assert_eq!(length, 13);
+        assert!(!matches, "separate FPE Encrypt inputs must not reuse a tweak");
+    }
+
+    #[test]
     // OASIS KMIP v2.1 §11.6/Table 436 distinguishes AEAD from GCM.
     fn aead_and_gcm_keep_their_distinct_wire_modes() {
         for (mode, expected) in [("AEAD", 0x12), ("GCM", 9)] {
