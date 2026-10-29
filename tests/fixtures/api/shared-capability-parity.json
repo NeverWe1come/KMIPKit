@@ -921,17 +921,17 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-      "test": "execute_public_tls_request",
-      "supportingTests": [
-        {
-          "language": "rust",
-          "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-          "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
-          "assertions": [
-            "fixture-derived-result-message-is-returned-by-C"
+          "test": "execute_public_tls_request",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+              "assertions": [
+                "fixture-derived-result-message-is-returned-by-C"
+              ]
+            }
           ]
-        }
-      ]
         },
         "java": {
           "status": "available",
