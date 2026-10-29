@@ -244,12 +244,13 @@ elementos del lote cuando Batch Order Option es true, su valor predeterminado.
 KMIPKit no afirma controlar esos efectos del servidor.
 
 `execute_query_async_requests` admite los filtros opcionales de valor de
-correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Su payload de
-respuesta se expone como TTLV genérico mientras siga abierto
-`KMIPKIT-DISC-039`. KMIPKit no presenta una interpretación tipada del pie de
-tabla 286 en disputa. También sigue abierto bajo `OD-002` el hueco del
-catálogo para el campo obligatorio de la petición Process de la Tabla 278; no
-se modificaron el catálogo generado ni la fuente OASIS upstream.
+correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Esta
+especificación expone el payload de respuesta como TTLV genérico.
+`KMIPKIT-DEC-015` registra la interpretación aceptada de la Tabla 286 para el
+trabajo de tipado separado en KMIPKIT-0043 T035; el pie impreso y la fuente
+OASIS fijada permanecen intactos. Esta interpretación no constituye una
+afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
+catálogo para el campo obligatorio de la petición Process de la Tabla 278.
 
 ## Límites de recursos
 

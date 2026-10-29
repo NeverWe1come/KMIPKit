@@ -137150,9 +137150,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "The response payload mapping for Query Asynchronous Requests must remain gated until the table caption/context inconsistency is resolved; the catalog preserves the printed caption.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "KMIPKit interprets the response item as the §7.2 Asynchronous Request structure with optional, repeatable cardinality. The printed caption remains preserved as a source defect; this decision does not amend the pinned OASIS source.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-015",
       "erratum_source_refs": []
     },
     {
@@ -138080,43 +138080,27 @@
       "status": "accepted"
     },
     {
-      "decision_id": "KMIPKIT-DEC-034",
+      "decision_id": "KMIPKIT-DEC-015",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1"
+          "section": "6.1.41"
         },
         {
           "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.11"
-        },
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.17"
-        },
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.24"
-        },
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.32"
-        },
-        {
-          "source_id": "KMIPKIT-SRC-spec",
-          "section": "6.1.55"
+          "section": "7.2"
         }
       ],
       "requirement_ids": [],
       "discrepancy_ids": [
-        "KMIPKIT-DISC-045"
+        "KMIPKIT-DISC-039"
       ],
       "policy_ids": [],
-      "interpretation": "For single-part requests, Tables 196, 214, 235, 259, and 334 control Data requiredness even when Init Indicator and Final Indicator are both true and Correlation Value is absent; Table 334 keeps Digested Data as the Sign alternative to Data. For multi-part requests, a table value of No does not make Data universally required: §6.1 paragraph 009 requires Data when both indicators are absent or false, and omission is permitted when either indicator is true. This is our recommended reading of the source tension and preserves the distinction between single-part and multi-part shapes. The paragraph uses lowercase “required”, not the formal RFC keyword REQUIRED. No standalone paragraph-009 requirement ID or formal conformance claim is created.",
-      "approver": "KMIPKit maintainer, direct authorization in current task",
-      "approval_evidence": "The user directed this task to treat pinned OASIS KMIP 2.1 as the source of truth and use best judgment where it does not uniquely decide.",
-      "approved_at": "2026-10-19",
-      "consequence": "Existing request validation remains unchanged: Encrypt, Decrypt, Hash, and MAC require Data for single-part requests, including the framed true/true form; Sign permits Digested Data as its single-part alternative. In multi-part requests, Data is required when neither indicator is true and may be omitted when either is true. The operation-table rows and paragraph-009 clause receive no standalone REQ ID; the pinned OASIS source files remain immutable.",
+      "interpretation": "For KMIPKit's Query Asynchronous Requests response mapping, treat Table 286's printed PKCS#11 caption as erroneous in this location. The §6.1.41 response-payload text immediately before the table explicitly names Asynchronous Request as an optional, repeatable item; §7.2 and Table 353 define that structure. The selected interpretation is limited to the response item and its structure. The pinned source caption is preserved verbatim, unknown TTLV content remains lossless, and no additional required fields are inferred.",
+      "approver": "KMIPKit maintainer under delegated source-of-truth authorization",
+      "approval_evidence": "The maintainer's standing instruction is to use OASIS KMIP 2.1 as the source of truth and to use the recommended option where ambiguity requires interpretation. Section 6.1.41 explicitly defines the Query response item as Asynchronous Request, optional and repeatable, directly before Table 286; the caption is the sole contradictory text. The official OASIS Standard, its CS02 publication, and the 2019 Query Asynch proposal history corroborate this contextual interpretation; no erratum is claimed.",
+      "approved_at": "2026-10-29",
+      "consequence": "The Query Asynchronous Requests response may be modeled using repeated §7.2 structures while preserving unknown TTLV members. The printed Table 286 caption and immutable OASIS source remain unchanged; this interpretation does not by itself claim formal KMIP conformance.",
       "status": "accepted"
     },
     {
@@ -138640,6 +138624,46 @@
       ],
       "interpretation": "Section 6.1.25 describes a request to the server to Import an object, then requires supplied attribute values rather than server-generated values. Although the MUST sentence does not name its actor, the server controls Import processing and generated attribute values. Assign this MUST to server-side Import processing; preserve the source actor as server/actor-ambiguous. The Attributes Required request-table row remains a separate client-side obligation.",
       "consequence": "The MUST remains a normative server_only catalog record and is excluded from client profile closures. It no longer appears as an unresolved client-scope blocker, and no client claim is inferred from this processing rule."
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-034",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.11"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.24"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.32"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.55"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-045"
+      ],
+      "policy_ids": [],
+      "interpretation": "For single-part requests, Tables 196, 214, 235, 259, and 334 control Data requiredness even when Init Indicator and Final Indicator are both true and Correlation Value is absent; Table 334 keeps Digested Data as the Sign alternative to Data. For multi-part requests, a table value of No does not make Data universally required: §6.1 paragraph 009 requires Data when both indicators are absent or false, and omission is permitted when either indicator is true. This is our recommended reading of the source tension and preserves the distinction between single-part and multi-part shapes. The paragraph uses lowercase “required”, not the formal RFC keyword REQUIRED. No standalone paragraph-009 requirement ID or formal conformance claim is created.",
+      "approver": "KMIPKit maintainer, direct authorization in current task",
+      "approval_evidence": "The user directed this task to treat pinned OASIS KMIP 2.1 as the source of truth and use best judgment where it does not uniquely decide.",
+      "approved_at": "2026-10-19",
+      "consequence": "Existing request validation remains unchanged: Encrypt, Decrypt, Hash, and MAC require Data for single-part requests, including the framed true/true form; Sign permits Digested Data as its single-part alternative. In multi-part requests, Data is required when neither indicator is true and may be omitted when either is true. The operation-table rows and paragraph-009 clause receive no standalone REQ ID; the pinned OASIS source files remain immutable.",
+      "status": "accepted"
     }
   ],
   "normative_inclusions": [

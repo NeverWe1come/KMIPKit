@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 634 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 33 |
+| Open discrepancies | 32 |
 | Project policies | 4 |
 
 ### Elements by kind
@@ -3394,7 +3394,6 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-DISC-035 | open | review before dependent implementation | none linked | Signed JSON test section 2.97 links to the previous case | KMIPKIT-SRC-testcases §2.96, KMIPKIT-SRC-testcases §2.97 |
 | KMIPKIT-DISC-036 | open | review before dependent implementation | none linked | 180 of 203 linked XML fixtures remain absent from the pinned source tree | KMIPKIT-SRC-profiles §5.1.3.1, KMIPKIT-SRC-testcases §2.1 |
 | KMIPKIT-DISC-038 | open | blocked for affected records | 3 elements, 2 profiles | JSON profile example uses Template for a reserved Object Type value | KMIPKIT-SRC-profiles §5.5.4.1, KMIPKIT-SRC-spec §11.34 |
-| KMIPKIT-DISC-039 | open | blocked for affected records | 1 elements | Query Asynchronous Requests response table is labeled as a PKCS#11 response | KMIPKIT-SRC-spec §6.1.41 |
 | KMIPKIT-DISC-040 | open | blocked for affected records | 1 elements | Table 315 RNG Retrieve Errors caption is stranded in Re-Provision error handling | KMIPKIT-SRC-spec §6.1.48.1 |
 | KMIPKIT-DISC-041 | open | blocked for affected records | 1 requirements, 1 elements | The lowercase “must” in section 9.4 has unresolved RFC 2119 classification under the uppercase key-word definition in section 1.2. | KMIPKIT-SRC-spec §1.2, KMIPKIT-SRC-spec §9.4 |
 | KMIPKIT-DISC-042 | open | blocked for affected records | 1 requirements, 6 elements | The section 9.11 requirement to provide at least one Device Credential field does not specify its field set. | KMIPKIT-SRC-spec §9.11 |
