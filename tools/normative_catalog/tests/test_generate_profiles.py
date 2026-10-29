@@ -4835,6 +4835,64 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
+    def test_profile_clause_and_requirement_closures_use_compact_const_expansions(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+        profile_table = generated.split("pub const CLIENT_PROFILES", 1)[1]
+        self.assertIn("PROFILE_SOURCE_CLAUSE_ID_POOL", generated)
+        self.assertIn("PROFILE_REQUIREMENT_ID_POOL", generated)
+        self.assertIn("decode_profile_id_set", generated)
+        self.assertNotIn("\n        source_clause_ids: &[", profile_table)
+        self.assertNotIn("\n        requirement_ids: &[", profile_table)
+
+        profiles = sorted(
+            (profile for profile in catalog["profiles"] if profile.get("role") == "client"),
+            key=lambda profile: profile["profile_id"],
+        )
+        universes = {
+            field: sorted(
+                {
+                    value
+                    for candidate in profiles
+                    for value in candidate[field]
+                }
+            )
+            for field in ("source_clause_ids", "requirement_ids")
+        }
+        for index, profile in enumerate(profiles):
+            for field, constant, pool in (
+                ("source_clause_ids", "SOURCE_CLAUSE", "PROFILE_SOURCE_CLAUSE_ID_POOL"),
+                ("requirement_ids", "REQUIREMENT", "PROFILE_REQUIREMENT_ID_POOL"),
+            ):
+                values = set(profile[field])
+                universe = universes[field]
+                bits = bytearray((len(universe) + 7) // 8)
+                for bit_index, value in enumerate(universe):
+                    if value in values:
+                        bits[bit_index // 8] |= 1 << (bit_index % 8)
+                encoded = bytes(bits).hex()
+                bitmap_name = f"PROFILE_{constant}_IDS_{index}_BITMAP"
+                bitmap_declaration = f"const {bitmap_name}: &str = \"{encoded}\";"
+                array_declaration = re.compile(
+                    rf"const PROFILE_{constant}_IDS_{index}: \[&str; {len(values)}\] =\s*"
+                    rf"decode_profile_id_set::<{len(values)}>\(\s*{pool},\s*{bitmap_name},?\s*\);"
+                )
+                count_assertion = re.compile(
+                    rf"const _: \[\(\); {len(values)}\] =\s*"
+                    rf"\[\(\); profile_id_set_len\(\s*{pool},\s*{bitmap_name},?\s*\)\];"
+                )
+                with self.subTest(profile=profile["profile_id"], field=field):
+                    self.assertTrue(bitmap_declaration in generated, bitmap_name)
+                    self.assertRegex(generated, array_declaration)
+                    self.assertRegex(generated, count_assertion)
+
     def test_profile_test_case_metadata_is_declared_once_and_referenced_by_each_profile(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
