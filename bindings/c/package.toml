@@ -1,4 +1,6 @@
 [package]
+# Repository-owned logical C distribution metadata for the public API manifest.
+# This identity does not assert that a C artifact has been published.
 name = "kmipkit-c"
 artifact_family = "c-distribution"
 version_source = "releaseLine"

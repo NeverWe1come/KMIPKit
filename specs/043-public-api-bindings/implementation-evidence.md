@@ -6335,3 +6335,21 @@ The English and Spanish language-package guides and the active release-gate chec
 ### Exact-head CI confirmation after T037 (2026-10-28)
 
 GitHub Actions run [40772921111](https://github.com/NeverWe1come/KMIPKit/actions/runs/40772921111) passed on `b429fad46020691f023d5ed10ab251a646693acf`: 35 jobs succeeded, 2 schedule-only jobs were skipped, and none failed. The run completed in 11 minutes 30 seconds. This exact head includes the T037 Add/Adjust closure and T071 bilingual snapshot refresh. The temporary coverage-threshold waiver remained active; coverage reports were produced, but this result does not claim that minimum coverage thresholds passed. T035, T036, T042, T071, T073, T075, and T085 remain open, and PR #104 remains a draft.
+
+### T073 C package identity reconciliation (2026-10-29)
+
+Repository-owned C package metadata in `bindings/c/package.toml` now defines the logical `c-kmipkit` identity as `kmipkit-c`, its artifact family, synchronized release-line source, and supported targets. The manifest generator validates these values against the checked-in public API manifest. This does not claim an external registry publication. At this intermediate checkpoint T073 remained open; the complete reconciliation audit is recorded below.
+
+### T073 full reconciliation audit (2026-10-29)
+
+T073 is complete. The release-line validator now checks all eight logical package identities and version sources, including the repository-owned C identity. The Rust audit was regenerated from the pinned Rust 1.94.0 toolchain; 9,520 public declaration paths match the manifest, all 24 exact approved exclusions remain accounted for, and no missing, unobserved, kind, conditional, or other issues remain. The newly observed `kmipkit::Client::get_attribute_list` re-export is recorded as blocked pending an approved API mapping. C, Java, and Python pass with 430/430 C, 789/789 Java, and 768/768 Python exact matches and no issues.
+
+The generator verifies all 12 fixed outputs. The 69 manifest contract tests pass, including package identity/version validation and language inventories. The 48 T073, package documentation, operation-readiness, and requirement-traceability tests pass. The operation dependency matrix, compliance traceability, API reference, and English/Spanish package guides match the manifest. The active snapshot is 44/56 verified client operations, 14 declared and 1 blocked capability, and 955 verified, 1,440 declared, and 9,117 blocked declarations, with 897 approved exclusions. T071, T075, and T085 remain separate open tasks. The C metadata defines a logical package identity and does not claim an external registry publication.
+
+| Check | Command or evidence | Result |
+|---|---|---|
+| Rust export audit | `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-29.json --check` | Pass: 9,520/9,520 paths matched; 24 exclusions; zero issues. |
+| Binding export audit | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-28.json --check` | Pass: 430/430 C, 789/789 Java, and 768/768 Python exact matches; zero issues. |
+| Manifest contracts | `python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -q` | Pass: 69 tests. |
+| Reconciliation and traceability contracts | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness scripts.tests.test_requirement_traceability -q` | Pass: 48 tests. |
+| Generated outputs | `python -B tools/api_manifest/generate.py --check` | Pass: all 12 generated outputs current. |

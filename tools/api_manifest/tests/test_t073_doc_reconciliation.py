@@ -186,7 +186,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             "T073 is complete",
             re.sub(r"\s+", " ", reconciliation),
         )
-        self.assertIn("9,520 Rust declarations matched", reconciliation)
+        self.assertIn("9,520 public declaration paths match the manifest", reconciliation)
         self.assertIn("430/430 C, 789/789 Java, and 768/768 Python", reconciliation)
         self.assertIn("all 12 generated outputs current", reconciliation)
         self.assertIn(

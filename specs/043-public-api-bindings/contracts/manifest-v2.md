@@ -8,7 +8,7 @@ The manifest is a repository build and review input. It is not downloaded, loade
 
 ## Required top-level records
 
-The strict v2 schema requires these records and rejects undeclared fields. Stable package IDs are exactly `rust-kmipkit-ttlv`, `rust-kmipkit-protocol`, `rust-kmipkit-transport`, `rust-kmipkit-client`, `rust-kmipkit`, `c-kmipkit`, `java-kmipkit`, and `python-kmipkit`. The last three identify logical distribution families; their external coordinates and platform artifact names are read from their package metadata and are not invented by 0043.
+The strict v2 schema requires these records and rejects undeclared fields. Stable package IDs are exactly `rust-kmipkit-ttlv`, `rust-kmipkit-protocol`, `rust-kmipkit-transport`, `rust-kmipkit-client`, `rust-kmipkit`, `c-kmipkit`, `java-kmipkit`, and `python-kmipkit`. The last three identify logical distribution families. The C family identity and targets are defined in repository-owned `bindings/c/package.toml`; this logical identity is not a publication claim. Java and Python coordinates and platform artifact names are read from their package metadata and are not invented by 0043.
 
 | Record | Required content |
 |---|---|

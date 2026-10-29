@@ -317282,6 +317282,20 @@
         "tools/api_manifest/tests/test_t076_client_mapping.py",
         "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs"
       ]
+    },
+    {
+      "declarationId": "rust-observed-01336b46a4463a0004be",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::Client::get_attribute_list",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0007",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
