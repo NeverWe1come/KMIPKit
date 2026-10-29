@@ -8460,3 +8460,48 @@ reported 8.7% new-code duplication against the 3% SonarCloud limit, and the JNI
 coverage and Windows stable core jobs failed. CI and SonarCloud must complete
 again against the latest Refactor commits before their status is reported. The
 3% Sonar gate, coverage threshold policy, and CI lint settings were not changed.
+
+## Compact generated profile constructor rows (2026-10-29)
+
+SonarCloud's analysis of `e3670d1aa` still reported 8.6724% new-code
+duplication. Its largest remaining source was repeated formatting in generated
+profile requirement and conformance-case constructor rows. The pinned generator
+now emits each constructor row on one source line while preserving every field,
+identifier, array value, and stable ordering. `profiles_generated.rs` shrank by
+7,294 net lines; the public generated types and their values did not change.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `9e9798b6b` | Focused generator contract test — expected failure: 7,315 requirement-table source lines were emitted for 483 constructor rows. |
+| Green | `f76f1168d` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` — PASS: 71 tests (1 skipped); `cargo test -p kmipkit-protocol --all-features` — PASS: 1,215 unit tests plus integration and documentation tests. Generated output uses one constructor invocation per source line; existing catalog-to-field assertions remain in force. |
+| Refactor | `30bb536fa` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; generator and report `--check`; `py -3 -B -m unittest tools.normative_catalog.tests.test_report` — PASS: 71 and 74 tests respectively (one skipped in each); `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `git diff --check` — PASS. Shared row rendering is extracted and generated output is byte-for-byte unchanged from Green. |
+
+The previous head `e3670d1aa` had an Ubuntu Java/JNI job abort after 121 tests
+passed, with glibc reporting `corrupted double-linked list` during
+`NativeTransportConfigurationBoundaryTest`. The same Java/JNI job passed on
+`30bb536fa`; no JNI code was changed in this compact-row update. A rerun of the
+failed older job is pending before treating the earlier abort as environmental.
+The fresh SonarCloud result for `30bb536fa` is pending; no duplication-gate pass
+is claimed, and no threshold or analysis exclusion was changed.
+
+## Compact generated profile test-case references (2026-10-29)
+
+SonarCloud continued to report duplicated source lines in each profile's
+expanded `test_cases` array. The generator now interns each test-case record
+once and emits a compact ordered index list for each profile, expanded at
+compile time to preserve the existing public `&[GeneratedProfileTestCase]`
+field. Generator tests compare every emitted index and order with the reviewed
+catalog. The 483 profile requirement values and existing profile metadata are
+unchanged.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `c42b18987` | Focused profile test-case mapping test — expected failure because `expand_profile_test_cases` and per-profile index arrays were absent. |
+| Green | `3748d7af3` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` — PASS: 71 tests (1 skipped); `py -3 -B -m unittest tools.normative_catalog.tests.test_report` — PASS: 74 tests (1 skipped); `cargo test -p kmipkit-protocol --all-features` — PASS: 1,215 unit tests plus integration and documentation tests; generator/report `--check`, `cargo fmt --all --check`, and workspace Clippy — PASS. Clippy reported existing `aws-lc-sys` toolchain warnings for MSVC/NASM, but no denied lints. |
+| Refactor | `0231df074` | Generator suite — PASS: 71 tests (1 skipped); generator and report `--check`, `cargo fmt --all --check`, `git diff --check` — PASS. Extracting the test-case membership renderer left `profiles_generated.rs` byte-for-byte unchanged from Green. |
+
+The generated profile test-case rows changed from expanded `PROFILE_TEST_CASES`
+references to compact index lists; profile order, test identifiers, official
+case IDs, mandatory status, and fixture availability remain unchanged. The
+Rust tests compiled and exercised the generated constants. No coverage or
+Sonar threshold, analysis exclusion, or generated-file rule changed.
