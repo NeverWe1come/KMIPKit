@@ -1553,7 +1553,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertIn("Asynchronous Request", decision["interpretation"])
-        self.assertIn("caption is erroneous", decision["interpretation"])
+        self.assertIn("caption as erroneous in this location", decision["interpretation"])
 
     def test_reprovision_error_caption_conflict_is_an_open_discrepancy(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))

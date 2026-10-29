@@ -108729,9 +108729,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "The response payload mapping for Query Asynchronous Requests must remain gated until the table caption/context inconsistency is resolved; the catalog preserves the printed caption.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "KMIPKit interprets the response item as the §7.2 Asynchronous Request structure with optional, repeatable cardinality. The printed caption remains preserved as a source defect; this decision does not amend the pinned OASIS source.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-015",
       "erratum_source_refs": []
     },
     {
@@ -109467,6 +109467,30 @@
       "approval_evidence": "On 2026-10-11 the maintainer selected the Table 314 interpretation, keeping Unique Identifier optional in parsed Re-Provision responses, including CSR and certificate forms.",
       "approved_at": "2026-10-11",
       "consequence": "The current Re-Provision parser contract and optional-identifier tests remain unchanged. The specification and catalog now record the prose/table discrepancy and distinguish client parsing from the server-side SHALL. Pinned OASIS source files remain unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-015",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.41"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.2"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-039"
+      ],
+      "policy_ids": [],
+      "interpretation": "For KMIPKit's Query Asynchronous Requests response mapping, treat Table 286's printed PKCS#11 caption as erroneous in this location. The §6.1.41 response-payload text immediately before the table explicitly names Asynchronous Request as an optional, repeatable item; §7.2 and Table 353 define that structure. The selected interpretation is limited to the response item and its structure. The pinned source caption is preserved verbatim, unknown TTLV content remains lossless, and no additional required fields are inferred.",
+      "approver": "KMIPKit maintainer under delegated source-of-truth authorization",
+      "approval_evidence": "The maintainer's standing instruction is to use OASIS KMIP 2.1 as the source of truth and to use the recommended option only where the standard is silent. Section 6.1.41 explicitly defines the Query response item as Asynchronous Request, optional and repeatable, directly before Table 286; the caption is the sole contradictory text. The official OASIS Standard and its CS02 publication preserve this same response row and caption; no erratum is claimed.",
+      "approved_at": "2026-10-29",
+      "consequence": "The Query Asynchronous Requests response may be modeled using repeated §7.2 Asynchronous Request structures while preserving unknown TTLV members. The printed Table 286 caption and immutable OASIS source remain unchanged; this interpretation does not by itself claim formal KMIP conformance.",
       "status": "accepted"
     }
   ]
