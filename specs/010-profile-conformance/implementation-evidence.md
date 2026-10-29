@@ -8528,3 +8528,22 @@ test evidence, and constraints are preserved while `source_gap_id` and
 mapping table. Clippy reported existing `aws-lc-sys` MSVC/NASM environment
 warnings but no denied lints. SonarCloud and the full CI result for the new head
 remain pending; this change does not claim the 3% gate has passed.
+
+## Compact profile mapping parser support (2026-10-29)
+
+The declarative mapping shorthand also needed to remain visible to the normative
+coverage report. Its parser now accepts the compact tuple macro only with the
+same strict requirement IDs, clause IDs, verification categories, test kinds,
+and reviewed constraint allowlist used by the existing constructor form. The
+normalized output explicitly supplies absent source-gap and evaluator values.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `d92fd4e04` | Focused parser contract test — expected failure: the report parser rejected `simple_typed_rule_mapping!`. |
+| Green | `2350e7e8a` | Full normative suite — PASS: 730 tests (10 skipped); report suite — PASS: 75 tests (1 skipped); the focused profile-rule traceability test — PASS. |
+| Refactor | `e4a383e01` | Shared test-evidence and constraint parsing across constructor, struct, and tuple forms; report suite — PASS: 75 tests (1 skipped); full profile-rule traceability test — PASS in 56 seconds; `git diff --check` and Python compilation — PASS. |
+
+The complete GitHub CI run for preceding head `1ad8f1b41` completed with every
+job successful; its only failed check was SonarCloud at 3.3518% duplication.
+Fresh GitHub CI and SonarCloud results for the current head are pending. No
+coverage, duplication threshold, or analysis exclusion was changed.
