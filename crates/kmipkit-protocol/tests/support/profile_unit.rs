@@ -26481,3 +26481,31 @@ fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability(
     assert_eq!(server_timestamp, 1);
     assert_eq!(relative_date, Some(9));
 }
+
+#[test]
+fn simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent() {
+    let test_evidence = [RuleTestEvidence {
+        test_id: "profile_unit::simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent",
+        kind: RuleTestKind::OptionalCapabilityUsable,
+    }];
+    let constraints = [RuleConstraint {
+        key: "caller_assertion",
+        value: "explicit",
+    }];
+
+    let mapping = super::typed_rule_mapping_without_evaluator(
+        "KMIPKIT-REQ-SPEC-TEST-001",
+        "KMIPKIT-CLAUSE-SPEC-TEST-001",
+        super::GeneratedVerificationCategory::OptionalCapability,
+        &test_evidence,
+        &constraints,
+    );
+
+    assert_eq!(mapping.requirement_id, "KMIPKIT-REQ-SPEC-TEST-001");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-TEST-001");
+    assert_eq!(mapping.source_gap_id, None);
+    assert_eq!(mapping.verification_category, super::GeneratedVerificationCategory::OptionalCapability);
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(mapping.test_evidence, &test_evidence);
+    assert_eq!(mapping.constraints, &constraints);
+}
