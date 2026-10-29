@@ -1957,10 +1957,9 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
     })
 }
 
-fn write_unique_identifier_v1(
+fn empty_unique_identifier_v1(
     out_identifier: *mut kmipkit_unique_identifier_v1_t,
-    identifier: Option<&kmipkit_protocol::UniqueIdentifier>,
-) -> FfiResult<()> {
+) -> FfiResult<kmipkit_unique_identifier_v1_t> {
     if out_identifier.is_null() {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -1976,7 +1975,7 @@ fn write_unique_identifier_v1(
     {
         return Err(ERROR_INVALID_INPUT);
     }
-    let mut output = kmipkit_unique_identifier_v1_t {
+    Ok(kmipkit_unique_identifier_v1_t {
         struct_size,
         abi_version: 1,
         kind: 0,
@@ -1985,7 +1984,14 @@ fn write_unique_identifier_v1(
         text_length: 0,
         enumeration_value: 0,
         integer_value: 0,
-    };
+    })
+}
+
+fn write_unique_identifier_v1(
+    out_identifier: *mut kmipkit_unique_identifier_v1_t,
+    identifier: Option<&kmipkit_protocol::UniqueIdentifier>,
+) -> FfiResult<()> {
+    let mut output = empty_unique_identifier_v1(out_identifier)?;
     if let Some(identifier) = identifier {
         match identifier {
             kmipkit_protocol::UniqueIdentifier::TextString(text) => {
@@ -2013,31 +2019,7 @@ fn write_unique_identifier_text_v1(
     out_identifier: *mut kmipkit_unique_identifier_v1_t,
     text: Option<&str>,
 ) -> FfiResult<()> {
-    if out_identifier.is_null() {
-        return Err(ERROR_INVALID_INPUT);
-    }
-    // SAFETY: the caller supplies readable version and size fields in the output record.
-    let (struct_size, abi_version) = unsafe {
-        (
-            std::ptr::addr_of!((*out_identifier).struct_size).read(),
-            std::ptr::addr_of!((*out_identifier).abi_version).read(),
-        )
-    };
-    if struct_size as usize != std::mem::size_of::<kmipkit_unique_identifier_v1_t>()
-        || abi_version != 1
-    {
-        return Err(ERROR_INVALID_INPUT);
-    }
-    let mut output = kmipkit_unique_identifier_v1_t {
-        struct_size,
-        abi_version: 1,
-        kind: 0,
-        reserved: 0,
-        text_data: ptr::null(),
-        text_length: 0,
-        enumeration_value: 0,
-        integer_value: 0,
-    };
+    let mut output = empty_unique_identifier_v1(out_identifier)?;
     if let Some(text) = text {
         output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
         output.text_data = text.as_ptr();
@@ -2782,6 +2764,54 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
     })
 }
 
+#[derive(Clone, Copy)]
+enum RegisterRevokeResponseKind {
+    Register,
+    Revoke,
+}
+
+fn copy_register_revoke_identifier_impl(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    kind: RegisterRevokeResponseKind,
+) -> i32 {
+    if out_present.is_null()
+        || out_unique_identifier.is_null()
+        || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+    {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let present = scalar_out!(out_present);
+    if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+        return record_ffi_error(status);
+    }
+    *present = 0;
+    let response_handle = read_handle!(item, ClientBatchItemResponse);
+    let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+    if item.outcome().result().status().raw() != 0 {
+        return SUCCESS;
+    }
+    let identifier = match (kind, item.outcome()) {
+        (
+            RegisterRevokeResponseKind::Register,
+            kmipkit_client::ClientBatchOutcome::Register(value),
+        ) => value.unique_identifier(),
+        (RegisterRevokeResponseKind::Revoke, kmipkit_client::ClientBatchOutcome::Revoke(value)) => {
+            value.unique_identifier()
+        }
+        _ => return SUCCESS,
+    };
+    let Some(identifier) = identifier else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
+        return record_ffi_error(status);
+    }
+    *present = 1;
+    SUCCESS
+}
+
 /// Copies the required returned Unique Identifier only from a successful Register result.
 /// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]
@@ -2791,34 +2821,58 @@ pub extern "C" fn kmipkit_client_batch_item_response_register(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-        *present = 0;
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
-            return SUCCESS;
-        }
-        if let kmipkit_client::ClientBatchOutcome::Register(register) = item.outcome() {
-            let Some(identifier) = register.unique_identifier() else {
-                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: successful Register responses require a Unique Identifier during protocol parsing.
-            };
-            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
-            {
-                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same output record passed preflight above; concurrent caller mutation would be a data race.
-            }
-            *present = 1;
-        }
-        SUCCESS
+        copy_register_revoke_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
+            RegisterRevokeResponseKind::Register,
+        )
     })
+}
+
+fn copy_register_revoke_ttlv_impl(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+    kind: RegisterRevokeResponseKind,
+) -> i32 {
+    if out_present.is_null()
+        || out_response_ttlv.is_null()
+        || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+    {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let present = scalar_out!(out_present);
+    let response_ttlv = out_slot!(out_response_ttlv);
+    *present = 0;
+    let response_handle = read_handle!(item, ClientBatchItemResponse);
+    let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+    if item.outcome().result().status().raw() != 0 {
+        return SUCCESS;
+    }
+    let structure = match (kind, item.outcome()) {
+        (
+            RegisterRevokeResponseKind::Register,
+            kmipkit_client::ClientBatchOutcome::Register(value),
+        ) => Some(try_ffi!(
+            value.with_ttlv(|view| super::clone_structure_view(&view))
+        )),
+        (RegisterRevokeResponseKind::Revoke, kmipkit_client::ClientBatchOutcome::Revoke(value)) => {
+            Some(try_ffi!(
+                value.with_ttlv(|view| super::clone_structure_view(&view))
+            ))
+        }
+        _ => None,
+    };
+    let Some(structure) = structure else {
+        return SUCCESS;
+    };
+    *response_ttlv = try_ffi!(try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(structure),
+    ));
+    *present = 1;
+    SUCCESS
 }
 
 /// Copies the complete ordered response TTLV only from successful Register results.
@@ -2830,29 +2884,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_register_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_response_ttlv.is_null()
-            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let response_ttlv = out_slot!(out_response_ttlv);
-        *present = 0;
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
-            return SUCCESS;
-        }
-        if let kmipkit_client::ClientBatchOutcome::Register(register) = item.outcome() {
-            let structure = try_ffi!(register.with_ttlv(|view| super::clone_structure_view(&view)));
-            *response_ttlv = try_ffi!(try_make_handle(
-                Kind::Structure,
-                HandleValue::Structure(structure),
-            ));
-            *present = 1;
-        }
-        SUCCESS
+        copy_register_revoke_ttlv_impl(
+            item,
+            out_present,
+            out_response_ttlv,
+            RegisterRevokeResponseKind::Register,
+        )
     })
 }
 
@@ -2865,33 +2902,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_revoke(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-        *present = 0;
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
-            return SUCCESS;
-        }
-        if let kmipkit_client::ClientBatchOutcome::Revoke(revoke) = item.outcome() {
-            let Some(identifier) = revoke.unique_identifier() else {
-                return record_ffi_error(ERROR_INTERNAL);
-            };
-            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
-            {
-                return record_ffi_error(status);
-            }
-            *present = 1;
-        }
-        SUCCESS
+        copy_register_revoke_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
+            RegisterRevokeResponseKind::Revoke,
+        )
     })
 }
 
@@ -2904,29 +2920,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_revoke_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_response_ttlv.is_null()
-            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let response_ttlv = out_slot!(out_response_ttlv);
-        *present = 0;
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        if item.outcome().result().status().raw() != 0 {
-            return SUCCESS;
-        }
-        if let kmipkit_client::ClientBatchOutcome::Revoke(revoke) = item.outcome() {
-            let structure = try_ffi!(revoke.with_ttlv(|view| super::clone_structure_view(&view)));
-            *response_ttlv = try_ffi!(try_make_handle(
-                Kind::Structure,
-                HandleValue::Structure(structure),
-            ));
-            *present = 1;
-        }
-        SUCCESS
+        copy_register_revoke_ttlv_impl(
+            item,
+            out_present,
+            out_response_ttlv,
+            RegisterRevokeResponseKind::Revoke,
+        )
     })
 }
 
@@ -3376,6 +3375,39 @@ fn attribute_mutation_response_identifier(
     }
 }
 
+fn attribute_mutation_response_identifier_impl(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    kind: AttributeMutationResponseKind,
+) -> i32 {
+    if out_present.is_null()
+        || out_unique_identifier.is_null()
+        || !out_present.is_aligned()
+        || !out_unique_identifier.is_aligned()
+        || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+    {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let present = scalar_out!(out_present);
+    let unique_identifier = scalar_out!(out_unique_identifier);
+    *present = 0;
+    if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
+        return record_ffi_error(status);
+    }
+
+    let response_handle = read_handle!(item, ClientBatchItemResponse);
+    let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+    let Some(value) = attribute_mutation_response_identifier(item.outcome(), kind) else {
+        return SUCCESS;
+    };
+    if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
+        return record_ffi_error(status);
+    }
+    *present = 1;
+    SUCCESS
+}
+
 /// Copies the successful Add Attribute response's required Text String Unique
 /// Identifier. The borrowed identifier span remains valid while `item` is open.
 /// Non-success and other-operation results set `out_present` to zero.
@@ -3386,34 +3418,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_add_attribute(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || !out_present.is_aligned()
-            || !out_unique_identifier.is_aligned()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let unique_identifier = scalar_out!(out_unique_identifier);
-        *present = 0;
-        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        let Some(value) = attribute_mutation_response_identifier(
-            item.outcome(),
+        attribute_mutation_response_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
             AttributeMutationResponseKind::Add,
-        ) else {
-            return SUCCESS;
-        };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            return record_ffi_error(status);
-        }
-        *present = 1;
-        SUCCESS
+        )
     })
 }
 
@@ -3427,34 +3437,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_modify_attribute(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || !out_present.is_aligned()
-            || !out_unique_identifier.is_aligned()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let unique_identifier = scalar_out!(out_unique_identifier);
-        *present = 0;
-        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        let Some(value) = attribute_mutation_response_identifier(
-            item.outcome(),
+        attribute_mutation_response_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
             AttributeMutationResponseKind::Modify,
-        ) else {
-            return SUCCESS;
-        };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            return record_ffi_error(status);
-        }
-        *present = 1;
-        SUCCESS
+        )
     })
 }
 
@@ -3468,34 +3456,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_attribute(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || !out_present.is_aligned()
-            || !out_unique_identifier.is_aligned()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let unique_identifier = scalar_out!(out_unique_identifier);
-        *present = 0;
-        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        let Some(value) = attribute_mutation_response_identifier(
-            item.outcome(),
+        attribute_mutation_response_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
             AttributeMutationResponseKind::Set,
-        ) else {
-            return SUCCESS;
-        };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            return record_ffi_error(status);
-        }
-        *present = 1;
-        SUCCESS
+        )
     })
 }
 
@@ -3509,34 +3475,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_adjust_attribute(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || !out_present.is_aligned()
-            || !out_unique_identifier.is_aligned()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let unique_identifier = scalar_out!(out_unique_identifier);
-        *present = 0;
-        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        let Some(value) = attribute_mutation_response_identifier(
-            item.outcome(),
+        attribute_mutation_response_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
             AttributeMutationResponseKind::Adjust,
-        ) else {
-            return SUCCESS;
-        };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            return record_ffi_error(status);
-        }
-        *present = 1;
-        SUCCESS
+        )
     })
 }
 
@@ -3550,34 +3494,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_delete_attribute(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_present.is_null()
-            || out_unique_identifier.is_null()
-            || !out_present.is_aligned()
-            || !out_unique_identifier.is_aligned()
-            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let present = scalar_out!(out_present);
-        let unique_identifier = scalar_out!(out_unique_identifier);
-        *present = 0;
-        if let Err(status) = write_unique_identifier_v1(unique_identifier, None) {
-            return record_ffi_error(status);
-        }
-
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        let Some(value) = attribute_mutation_response_identifier(
-            item.outcome(),
+        attribute_mutation_response_identifier_impl(
+            item,
+            out_present,
+            out_unique_identifier,
             AttributeMutationResponseKind::Delete,
-        ) else {
-            return SUCCESS;
-        };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
-            return record_ffi_error(status);
-        }
-        *present = 1;
-        SUCCESS
+        )
     })
 }
 
