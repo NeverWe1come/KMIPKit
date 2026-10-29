@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0009-asynchronous-operations-spec`
 **Created**: 2026-10-06
-**Status**: Approved for implementation by explicit maintainer approval on 2026-10-29, recorded in [approval-record.md](approval-record.md). Reviewer-owned checklists remain unchecked and retain their owners. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made.
+**Status**: Approved for implementation by the repository maintainer on 2026-10-29; see [approval-record.md](approval-record.md). Reviewer-owned requirements, protocol, and readiness checklists remain open. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made.
 **Input**: Roadmap item `KMIPKIT-0009-asynchronous-operations`.
 
 ## Scope and normative sources
@@ -169,4 +169,4 @@ A caller can construct Query Asynchronous Requests with zero or more correlation
 
 ## Implementation gates
 
-The human instruction authorizing this implementation task permits autonomous work without further approval prompts. It does not claim formal approval of this draft specification or its reviewer-owned checklists; their owners retain review responsibility, and their unchecked items remain open. The accepted KMIPKIT-0006/0007 contracts, pinned source, and `KMIPKIT-DEC-015` were checked before implementation. The separate Process catalog traceability gap remains open under OD-002. Implementation requires strict Red, Green, Refactor commits and the project-required tests, coverage, source immutability, and security checks. DEC-015 does not claim formal KMIP conformance.
+The repository maintainer approved this specification on 2026-10-29; see [approval-record.md](approval-record.md). Reviewer-owned requirements, protocol, and readiness checklists retain their owners and remain open until independently completed. The accepted KMIPKIT-0006/0007 contracts, pinned sources, and `KMIPKIT-DEC-015` define the implementation boundaries. The separate Process catalog traceability gap remains open under OD-002. Any remaining implementation work requires strict Red, Green, Refactor commits and the project-required tests, coverage, source immutability, and security checks. DEC-015 does not claim formal KMIP conformance.
