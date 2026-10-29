@@ -226,12 +226,14 @@ This is local safety hardening; it does not change the KMIP test results.
 
 | Phase / check | Evidence | Result |
 | --- | --- | --- |
-| Red | DCO commit `f8b366739` | The new output-ownership contract failed because the generator had neither an explicit output path nor an ownership check. |
-| Green | DCO commit `a669252b4` | Generator validates the marker/empty-directory state before touching known PKI subdirectories; output paths are quoted and the chain certificate argument no longer uses word splitting. |
-| Shell regression | `bash -n tests/integration/cosmian/generate-pki.sh`; run under WSL with a temporary unowned output directory containing `ca/keep.txt` | PASS: the script refuses cleanup and preserves the sentinel contents. |
-| Script contracts | `py -3 -B -m unittest discover --failfast -s scripts/tests -p 'test_*.py'` | PASS: 285 tests, 27 platform-specific skips. Windows skips the POSIX runtime case; the same runtime case passed in WSL. |
+| Red | DCO commits `f8b366739`, `84e711391`, `cd3d0d972`, and `fc805c484` | Expected failures covered missing ownership checks, non-portable `find` flags, a complete unmarked directory bypassing the guard, symlinked cleanup subdirectories, and a symlinked ownership marker. |
+| Green | DCO commits `a669252b4` and `ef0a1d8b1` | Generator validates the marker before the complete-output fast path; rejects non-empty unmarked roots, marker/root/subdirectory symlinks, and non-directory cleanup paths; uses portable shell globs; and quotes generated output paths. |
+| Shell regression | `bash -n tests/integration/cosmian/generate-pki.sh`; `python3 -B -m unittest scripts.tests.test_cosmian_compose -v` under WSL | PASS: all 9 focused tests, including empty/marked-complete output, unmarked-complete rejection, non-empty sentinel preservation, symlinked marker/subdirectory rejection, and portable shell guard. |
+| Windows script contracts | `py -3 -B -m unittest scripts.tests.test_cosmian_compose -v` | PASS; the six POSIX runtime cases skip on Windows and execute under WSL and hosted POSIX CI. |
+| Full script contracts | `py -3 -B -m unittest discover --failfast -s scripts/tests -p 'test_*.py'` | PASS: 291 tests, 32 platform-specific skips. The six POSIX-only ownership runtime cases pass under WSL. |
 | Refactor / documentation | Current change in `scripts/tests/test_cosmian_compose.py`, the integration README, this report, and the quickstart | Adds a runtime regression on POSIX and documents the empty-or-marked directory requirement. |
+| Independent security re-review | Read-only review of HEAD `ef0a1d8b1` and the regression cases | PASS: no remaining actionable issue; the marker and path checks precede both the complete-output return and destructive cleanup. |
 
-The current PR head still needs a fresh hosted CodeQL and CI run after this
-follow-up, plus independent review of the cleanup guard. T047 remains open
-until those checks complete.
+The independent re-review findings were addressed by `ef0a1d8b1`; the final
+post-fix re-review is complete. Hosted CodeQL and CI still need to finish after
+publication. T047 remains open until those checks complete.

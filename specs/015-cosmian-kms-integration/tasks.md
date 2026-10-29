@@ -131,5 +131,13 @@ The approved scope expands the earlier selected integration to every applicable 
   contain user files under the generator's known subdirectories. Red `f8b366739` added an ownership
   guard contract that failed before the fix; Green `a669252b4` refuses non-empty unmarked output
   before cleanup. The shell regression preserved a sentinel file under WSL, and the script-contract
-  suite passed 285 tests (27 platform-specific skips). Refactor and hosted CodeQL re-run are pending.
+  suite initially passed 285 tests (27 platform-specific skips). Independent re-review then found
+  that the complete-output shortcut preceded the marker check, symlinked subdirectories could
+  redirect cleanup, and `find -maxdepth` was not portable. Red commits `84e711391`, `cd3d0d972`, and
+  `fc805c484` reproduce the portability, unmarked-complete-output, symlinked-directory, and
+  symlinked-marker cases; Green `ef0a1d8b1` checks ownership and path types before the fast path and
+  uses POSIX globs. All nine focused cases pass under WSL; final full-suite and hosted CodeQL/CI
+  verification are pending. Independent security re-review found no remaining actionable issue.
+  The full local script-contract suite passed 291 tests with 32 Windows platform skips; only the
+  fresh hosted CodeQL and CI run on the final head remain for T047.
   Details are in `task-6-report.md`.

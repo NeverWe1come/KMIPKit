@@ -25,10 +25,11 @@ client CA; KMIPKit reads the local CA and client identity. Cosmian's SQLite
 database is container-local (`clear_database = true`) with no mounted volume,
 and the HTTP service is not published to the host.
 
-Before regenerating, the PKI script verifies its ownership marker. It accepts a
-new empty output directory or a directory previously initialized by KMIPKit,
-and refuses to clean a non-empty unmarked directory. This protects existing
-files when `KMIPKIT_COSMIAN_CERT_DIR` points at an unexpected location.
+Before reuse or regeneration, the PKI script verifies its ownership marker. It
+initializes a new empty output directory and accepts only a directory carrying
+the regular KMIPKit marker. It refuses non-empty unmarked directories and
+symlinked roots, markers, or `ca`/`server`/`client`/`validation` subdirectories,
+including when `KMIPKIT_COSMIAN_CERT_DIR` points at an unexpected location.
 
 The PKI generator also creates PEM and DER PKCS#10 fixtures for Certify under
 `.local/cosmian-kms/certs/validation/`. It records whether the container
