@@ -24,9 +24,7 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
         return 0
 
     def metadata(_outcome, output) -> int:
-        output.struct_size = ffi.sizeof(
-            "kmipkit_client_async_operation_metadata_v1_t"
-        )
+        output.struct_size = ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
         output.abi_version = 1
         output.operation = 0x1A
         output.outcome_kind = int(client.BatchOutcome.PENDING)
@@ -54,7 +52,9 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
 
     fake = SimpleNamespace(
         kmipkit_client_execute_poll=execute_poll,
-        kmipkit_client_async_operation_outcome_release=lambda value: released.append(value),
+        kmipkit_client_async_operation_outcome_release=lambda value: released.append(
+            value
+        ),
         kmipkit_client_async_operation_outcome_metadata_v1=metadata,
         kmipkit_client_async_operation_outcome_correlation_value=correlation,
         kmipkit_client_async_operation_outcome_response_payload_ttlv=response_payload,
@@ -74,7 +74,9 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
             assert outcome.metadata_v1.operation == 0x1A
             assert outcome.metadata_v1.outcome == client.BatchOutcome.PENDING
             assert outcome.metadata_v1.result_status == 2
-            assert outcome.asynchronous_correlation_value == expected_response_correlation
+            assert (
+                outcome.asynchronous_correlation_value == expected_response_correlation
+            )
             assert outcome.response_payload_ttlv is None
         finally:
             outcome.close()
@@ -99,9 +101,7 @@ def _outcome_stubs(
     )
 
     def metadata(_outcome, output) -> int:
-        output.struct_size = ffi.sizeof(
-            "kmipkit_client_async_operation_metadata_v1_t"
-        )
+        output.struct_size = ffi.sizeof("kmipkit_client_async_operation_metadata_v1_t")
         output.abi_version = 1
         output.operation = operation
         output.outcome_kind = int(client.BatchOutcome.COMPLETED)
@@ -129,7 +129,9 @@ def _outcome_stubs(
 
     return SimpleNamespace(
         outcome_handle=outcome_handle,
-        kmipkit_client_async_operation_outcome_release=lambda value: released.append(value),
+        kmipkit_client_async_operation_outcome_release=lambda value: released.append(
+            value
+        ),
         kmipkit_client_async_operation_outcome_metadata_v1=metadata,
         kmipkit_client_async_operation_outcome_correlation_value=correlation,
         kmipkit_client_async_operation_outcome_response_payload_ttlv=response_payload,
