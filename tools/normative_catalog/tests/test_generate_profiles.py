@@ -4835,6 +4835,86 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
+    def test_profile_test_case_metadata_is_declared_once_and_referenced_by_each_profile(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+
+        profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
+        test_profiles: dict[str, list[str]] = {}
+        for profile in profiles:
+            for test_id in profile["test_case_ids"]:
+                test_profiles.setdefault(test_id, []).append(profile["profile_id"])
+        test_case_indexes = {test_id: index for index, test_id in enumerate(sorted(test_profiles))}
+        shared_test_id = next(
+            test_id for test_id, linked_profiles in test_profiles.items() if len(linked_profiles) > 1
+        )
+        test_case = next(
+            test_case for test_case in catalog["test_cases"] if test_case["test_id"] == shared_test_id
+        )
+        test_case_index = sorted(test_profiles).index(shared_test_id)
+
+        self.assertTrue(
+            "pub const PROFILE_TEST_CASES" in generated,
+            "generated source should intern shared profile test-case metadata",
+        )
+        self.assertEqual(
+            generated.count(f'official_case_id: "{test_case["official_case_id"]}"'),
+            1,
+        )
+        self.assertEqual(
+            generated.count(f"PROFILE_TEST_CASES[{test_case_index}]"),
+            len(test_profiles[shared_test_id]),
+        )
+        shared_table = generated.split(
+            "pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[", 1
+        )[1].split("];", 1)[0]
+        self.assertEqual(
+            re.findall(r'test_id: "([^"]+)"', shared_table),
+            sorted(test_profiles),
+        )
+        rendered_cases = re.findall(
+            r"    GeneratedProfileTestCase \{(.*?)\n    \},",
+            shared_table,
+            re.DOTALL,
+        )
+        test_cases_by_id = {
+            test_case["test_id"]: test_case
+            for test_case in catalog["test_cases"]
+            if test_case["test_id"] in test_profiles
+        }
+        self.assertEqual(len(rendered_cases), len(test_profiles))
+        for test_id, rendered_case in zip(sorted(test_profiles), rendered_cases, strict=True):
+            test_case = test_cases_by_id[test_id]
+            expected_fields = {
+                "test_id": test_id,
+                "official_case_id": test_case["official_case_id"],
+                "mandatory_status": test_case["mandatory_status"],
+                "fixture_availability": test_case["fixture_availability"],
+            }
+            for field, value in expected_fields.items():
+                with self.subTest(test_id=test_id, field=field):
+                    self.assertIn(f"{field}: {rust_string_literal(value)}", rendered_case)
+        profile_blocks = generated.split("    GeneratedClientProfile {")[1:]
+        self.assertEqual(len(profile_blocks), len(profiles))
+        for profile_block in profile_blocks:
+            profile_id = re.search(r'profile_id: "([^"]+)"', profile_block).group(1)
+            profile_body = profile_block.split("\n    },", 1)[0]
+            actual_indexes = re.findall(r"PROFILE_TEST_CASES\[(\d+)\]", profile_body)
+            expected_indexes = [
+                str(test_case_indexes[test_id])
+                for test_id in next(
+                    profile["test_case_ids"] for profile in profiles if profile["profile_id"] == profile_id
+                )
+            ]
+            self.assertEqual(actual_indexes, expected_indexes, profile_id)
+
     def test_target_and_profile_prose_do_not_change_requirement_evidence_metadata(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
