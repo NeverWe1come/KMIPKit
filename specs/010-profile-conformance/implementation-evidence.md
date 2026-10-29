@@ -8184,3 +8184,21 @@ I reproduced the collector in a fresh detached checkout of `4eb88b7e` without to
 The hosted runner used Ubuntu 24.04.5, Temurin Java 17.0.21+9, Maven 3.9.16, rustc 1.94.1, LLVM/Clang 20.1.8, `CXX=clang++-20`, and JaCoCo 0.8.12. The local WSL reproduction used Ubuntu 26.04/glibc 2.43 and Java 17.0.20.1; Maven, Rust, LLVM/Clang, C++ selection, JaCoCo agent, and empty `CARGO_ENCODED_RUSTFLAGS` matched. The runner log did not expose comparable CPU/memory measurements. The source-level trace found the boundary JNI path checks array lengths and per-input limits before resizing exact-sized `std::vector` storage, then copies Java byte arrays into those buffers; the aggregate budget is checked after each entry is copied. The preceding coverage test explicitly releases its raw handle variables once in `finally`, but this static trace did not isolate the heap corruption. Root cause remains undetermined. The same-head rerun is evidence of a pass after a failure, not evidence that the failure is fixed or attributable to the runner.
 
 PR #90 remains open as a draft. T026 remains open for the eligible protected release push and external protected-evidence prerequisites; no secret or repository-protection setting was inspected or changed. T043 remains open pending restoration of the coverage thresholds after the remaining KMIPKIT-0010 gates.
+
+## Protected release prerequisites rechecked (2026-10-29)
+
+Read-only GitHub API queries confirmed that `release/1.0.0` currently reports
+`protected: false` and that the repository has only the `copilot` Actions
+environment; `release-evidence` is absent. The latest exact-head CI for PR #90
+(`0257ff95961c352e87fe6e42932398386e7e5dd2`) passed its pull-request checks,
+but `Profile evidence / protected release aggregate` was skipped because this
+was not an eligible protected-branch push. These checks do not provide the
+required App-backed token or live policy evidence.
+
+T026 therefore remains open until the repository administrator configures the
+required `release/1.0.0` protection policy and `release-evidence` environment,
+including its protected App credentials, and an eligible push produces the
+strict ephemeral manifest. Required policy fields and fail-closed behavior
+remain enforced by the workflow and tests. No protection, environment, or
+secret setting was changed, and no secret value was read. T043 remains gated
+on completion of T026.
