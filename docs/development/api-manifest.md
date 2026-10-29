@@ -8,8 +8,10 @@ public-package, declaration, operation-readiness, and parity inventory. The
 first six generated destinations preserve the registry slice; the six
 additional destinations carry the full public API contract. Only declarations
 and capabilities marked `declared` or `verified` may appear in generated API
-outputs. Blocked inventory records are review metadata and do not create API
-signatures. Do not edit generated output by hand.
+outputs. `authorized_wip` records require direct human implementation
+authorization from a draft owner spec, are branch-only, and cannot satisfy the
+release-completeness gate. Blocked inventory records remain review metadata
+and do not create API signatures. Do not edit generated output by hand.
 
 Ready language mappings resolve to exact declared or verified exports, and
 each ready capability mapping lists exactly those exports for its language.
