@@ -152,7 +152,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         )
         self.assertNotIn("manifest status table below", reference)
 
-    def test_t073_closes_with_repository_owned_c_package_identity_evidence(self) -> None:
+    def test_t073_full_reconciliation_is_recorded(self) -> None:
         tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
         tasks = tasks_path.read_text(encoding="utf-8")
         t073_line = next(line for line in tasks.splitlines() if "T073 [US1]" in line)
@@ -166,6 +166,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         )
         self.assertEqual(package_metadata["name"], c_package["packageName"])
         self.assertEqual(package_metadata["artifact_family"], c_package["artifactFamily"])
+        self.assertEqual(package_metadata["version_source"], c_package["versionSource"])
         self.assertEqual(package_metadata["supported_targets"], c_package["supportedTargets"])
 
         data_model = (
@@ -178,13 +179,16 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             ROOT / "specs" / "043-public-api-bindings" / "implementation-evidence.md"
         ).read_text(encoding="utf-8")
         reconciliation = _markdown_section(
-            evidence, "T073 C package identity reconciliation (2026-10-29)"
+            evidence, "T073 full reconciliation audit (2026-10-29)"
         )
         self.assertIsNotNone(reconciliation)
         self.assertIn(
-            "repository-owned C package metadata",
+            "T073 is complete",
             re.sub(r"\s+", " ", reconciliation),
         )
+        self.assertIn("9,520 Rust declarations matched", reconciliation)
+        self.assertIn("430/430 C, 789/789 Java, and 768/768 Python", reconciliation)
+        self.assertIn("all 12 generated outputs current", reconciliation)
         self.assertIn(
             "does not claim an external registry publication",
             re.sub(r"\s+", " ", reconciliation).lower(),
