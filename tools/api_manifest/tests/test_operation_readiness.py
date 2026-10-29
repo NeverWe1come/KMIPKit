@@ -826,6 +826,30 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             )
         )
 
+    def test_directly_authorized_async_operations_are_wip_not_formally_approved(self) -> None:
+        manifest = self._release_manifest()
+        asynchronous_names = {
+            "Cancel",
+            "Poll",
+            "Process",
+            "Query Asynchronous Requests",
+        }
+        operations = {
+            operation["name"]: operation
+            for operation in manifest["operations"]
+            if operation["name"] in asynchronous_names
+        }
+
+        self.assertEqual(asynchronous_names, set(operations))
+        for operation in operations.values():
+            with self.subTest(operation=operation["name"]):
+                self.assertEqual("authorized_wip", operation["apiState"])
+                self.assertEqual("KMIPKIT-0009", operation["candidateSpecId"])
+                self.assertEqual("candidate", operation["ownerDependency"]["state"])
+                self.assertEqual("Draft", operation["implementationAuthorization"]["status"])
+                self.assertNotIn("approvalEvidence", operation)
+                self.assertNotIn("featureSpecId", operation)
+
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()
         operation = manifest["operations"][0]
