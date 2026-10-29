@@ -851,6 +851,18 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         .iter()
         .find(|case| case["id"] == "discover-versions.supported-versions.v1")
         .expect("the Discover Versions fixture case exists");
+    let creation_failure_case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.result-message-on-failure.v1")
+        .expect("the creation failure fixture case exists");
+    let failure_message = CString::new(
+        creation_failure_case["expectedOutput"]["resultMessage"]
+            .as_str()
+            .expect("fixture result message is text"),
+    )
+    .expect("fixture result message contains no NUL byte");
     let discover_expected = &discover_versions_case["expectedOutput"];
     let fixture_versions = discover_expected["supportedVersions"]
         .as_array()
@@ -962,6 +974,7 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         server_config,
         Arc::clone(&exchange_count),
         fixture_versions.clone(),
+        failure_message.as_bytes().to_vec(),
     );
 
     let executable = CString::new("kmipkit_public_client_consumer")
@@ -997,6 +1010,7 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
             .iter()
             .map(|version| version.as_ptr().cast_mut()),
     );
+    arguments.push(failure_message.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot and the successful handle is
@@ -1051,6 +1065,7 @@ fn spawn_public_client_batch_peer(
     server_config: Arc<ServerConfig>,
     exchange_count: Arc<AtomicU64>,
     fixture_versions: Vec<(i32, i32)>,
+    failure_message: Vec<u8>,
 ) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         let (stream, _) = listener
@@ -1100,7 +1115,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_login(&request),
             "C ABI consumer must transmit the typed Login request through the public batch API"
         );
-        tls.write_all(&mixed_discover_versions_response(&fixture_versions))
+        tls.write_all(&mixed_discover_versions_response(
+            &fixture_versions,
+            &failure_message,
+        ))
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -2464,7 +2482,10 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 // This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.
-fn mixed_discover_versions_response(fixture_versions: &[(i32, i32)]) -> Vec<u8> {
+fn mixed_discover_versions_response(
+    fixture_versions: &[(i32, i32)],
+    failure_message: &[u8],
+) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -2491,7 +2512,7 @@ fn mixed_discover_versions_response(fixture_versions: &[(i32, i32)]) -> Vec<u8> 
         0x0042_007B,
         std::iter::once(header)
             .chain(discover_version_response_items(response_payload))
-            .chain(creation_response_items())
+            .chain(creation_response_items(failure_message))
             .chain(cryptographic_response_items())
             .chain([
                 derive_key_response_item(),
@@ -2902,7 +2923,7 @@ fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
     ]
 }
 
-fn creation_response_items() -> [Vec<u8>; 4] {
+fn creation_response_items(failure_message: &[u8]) -> [Vec<u8>; 4] {
     let create_payload = structure(
         0x0042_007C,
         [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
@@ -2935,7 +2956,7 @@ fn creation_response_items() -> [Vec<u8>; 4] {
                 ttlv_item(0x0042_0093, 0x08, b"item-5"),
                 enumeration(0x0042_007F, 1),
                 enumeration(0x0042_007E, 5),
-                ttlv_item(0x0042_007D, 0x07, "création refusée ✓".as_bytes()),
+                ttlv_item(0x0042_007D, 0x07, failure_message),
             ],
         ),
         structure(
