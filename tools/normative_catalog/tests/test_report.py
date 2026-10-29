@@ -1644,6 +1644,18 @@ mod unrelated {
                 github_summary = summary_path.read_text(encoding="utf-8")
                 self.assertEqual(3, api_client.call_count)
 
+                plain_path_summary_path = Path(directory) / "plain-path-summary.md"
+                environment["GITHUB_STEP_SUMMARY"] = str(plain_path_summary_path)
+                api_responses[
+                    f"https://api.github.com/repos/NeverWe1come/KMIPKit/actions/runs/{context['run_id']}"
+                ]["path"] = ".github/workflows/ci.yml"
+                with patch.dict(os.environ, environment, clear=False):
+                    plain_path_exit_code = report_module.main(
+                        ["--readiness", "--repo-root", str(ROOT)]
+                    )
+                plain_path_summary = plain_path_summary_path.read_text(encoding="utf-8")
+                self.assertEqual(6, api_client.call_count)
+
                 mismatched_summary_path = Path(directory) / "mismatched-summary.md"
                 environment["GITHUB_STEP_SUMMARY"] = str(mismatched_summary_path)
                 api_responses[
@@ -1654,7 +1666,7 @@ mod unrelated {
                         ["--readiness", "--repo-root", str(ROOT)]
                     )
                 mismatched_summary = mismatched_summary_path.read_text(encoding="utf-8")
-                self.assertEqual(4, api_client.call_count)
+                self.assertEqual(7, api_client.call_count)
 
                 local_summary_path = Path(directory) / "local-summary.md"
                 environment["GITHUB_STEP_SUMMARY"] = str(local_summary_path)
@@ -1664,17 +1676,22 @@ mod unrelated {
                 with patch.dict(os.environ, environment, clear=False):
                     local_exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
 
-                self.assertEqual(4, api_client.call_count)
+                self.assertEqual(7, api_client.call_count)
 
             local_summary = local_summary_path.read_text(encoding="utf-8")
 
         self.assertEqual(0, exit_code)
+        self.assertEqual(0, plain_path_exit_code)
         self.assertEqual(0, mismatched_exit_code)
         self.assertEqual(0, local_exit_code)
         self.assertIn("Current profile readiness", github_summary)
         self.assertNotIn("current verification manifest is invalid or does not match this run", github_summary)
         self.assertIn("Public claim: no", github_summary)
         self.assertNotIn("123456789", github_summary)
+        self.assertNotIn(
+            "current verification manifest is invalid or does not match this run",
+            plain_path_summary,
+        )
         self.assertIn(
             "current protected-release-push verification manifest is unavailable",
             mismatched_summary,
