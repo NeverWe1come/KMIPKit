@@ -368,6 +368,11 @@ def _rust_string_field(record: Mapping[str, Any], field: str) -> str:
     return rust_string_literal(value)
 
 
+def _rust_const_constructor_call(name: str, arguments: Sequence[str]) -> str:
+    """Render one compact generated const-constructor row."""
+    return "    " + name + "(" + ", ".join(arguments) + "),"
+
+
 def _rust_string_array(
     record: Mapping[str, Any], field: str, *, compact: bool = False
 ) -> str:
@@ -741,9 +746,9 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             requirement, accepted_decision_ids
         )
         lines.append(
-            "    generated_client_requirement("
-            + ", ".join(constructor_arguments)
-            + "),"
+            _rust_const_constructor_call(
+                "generated_client_requirement", constructor_arguments
+            )
         )
     lines.extend(["];", ""])
 
@@ -759,7 +764,9 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             _rust_string_field(test_case, "mandatory_status"),
             _rust_string_field(test_case, "fixture_availability"),
         )
-        lines.append("    generated_profile_test_case(" + ", ".join(arguments) + "),")
+        lines.append(
+            _rust_const_constructor_call("generated_profile_test_case", arguments)
+        )
     lines.extend(["];", ""])
 
     source_clause_id_pool = sorted(
