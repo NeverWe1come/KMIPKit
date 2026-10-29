@@ -57,6 +57,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertEqual(inventory["observedRustDeclarationCount"], 9525)
         self.assertEqual(inventory["mappedRustDeclarationCount"], 143)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
+        self.assertNotIn("KMIPKIT-0009", inventory["draftOwnerGates"])
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
