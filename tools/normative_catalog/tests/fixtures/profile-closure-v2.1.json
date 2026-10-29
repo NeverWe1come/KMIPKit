@@ -83847,7 +83847,7 @@
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "This locator is the Query Asynchronous Requests response payload table header. REQUIRED is only a column heading; the response body row is server response payload data. Table 286 retains its printed PKCS#11 caption while KMIPKIT-DISC-039 remains open.",
+      "review_note": "This locator is the Query Asynchronous Requests response payload table header. REQUIRED is only a column heading; the response body row is server response payload data. Accepted KMIPKIT-DEC-015 resolves KMIPKIT-DISC-039 by interpreting the response item as the §7.2 Asynchronous Request structure while preserving Table 286's printed caption.",
       "source_request_rows": [],
       "source_payload_rows": [
         {
@@ -83860,7 +83860,7 @@
             32555
           ],
           "source_excerpt": "Asynchronous Request No, MAY be repeated The details regarding a particular asynchronous request,",
-          "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DISC-039 remains open and this evidence does not resolve the operation mapping."
+          "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DEC-015 resolves KMIPKIT-DISC-039 by interpreting the response item as the §7.2 Asynchronous Request structure."
         }
       ]
     },

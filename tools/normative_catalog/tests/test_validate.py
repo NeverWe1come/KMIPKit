@@ -9968,7 +9968,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
                          ["KMIPKIT-REQ-SPEC-6.1.55-001"])
         self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
-        self.assertIn("DEC-015", request_rows["Data"]["source_note"])
+        self.assertIn("DEC-034", request_rows["Data"]["source_note"])
         self.assertIn("neither indicator is true", request_rows["Data"]["source_note"])
         self.assertIn("single-part", request_rows["Digested Data"]["source_note"])
 

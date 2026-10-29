@@ -8202,3 +8202,19 @@ strict ephemeral manifest. Required policy fields and fail-closed behavior
 remain enforced by the workflow and tests. No protection, environment, or
 secret setting was changed, and no secret value was read. T043 remains gated
 on completion of T026.
+
+## PR #90 Script Contracts follow-up for DEC-015 (2026-10-29)
+
+After release merged `KMIPKIT-DEC-015` for `KMIPKIT-DISC-039`, the Query source-review test and hand-maintained source-review oracle still described the discrepancy as open. Red commit `920ed9b39` changed the test to require `resolved_by_approved_decision`, `KMIPKIT-DEC-015`, and the reviewed response interpretation; the focused test failed as expected on the stale oracle note. The oracle now cites DEC-015 while preserving Table 286's printed caption. Full-suite execution also exposed a stale Sign/Data test expectation left behind by the earlier identifier-collision correction (`DEC-015` to `DEC-034`); only that test reference was corrected, with no catalog or specification scope change.
+
+| Phase / check | Command | Result |
+| --- | --- | --- |
+| Red | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_41_query_async_requests_keeps_server_results_and_optional_client_inputs -v` | Expected FAIL: the source-review oracle still said DISC-039 remained open. |
+| Green — focused | `python -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_41_query_async_requests_keeps_server_results_and_optional_client_inputs tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_6_1_55_sign_reviews_client_inputs_and_server_effects -v` | PASS: both Query/DEC-015 and Sign/Data/DEC-034 source-review tests. |
+| Script tests | `python -m unittest discover --failfast -s scripts/tests -p 'test_*.py' -v` | PASS under Python 3.12.14. |
+| Full normative suite | `python -B -m unittest discover --failfast -s tools/normative_catalog/tests -p 'test_*.py' -v` | Initial run: 691 tests, one stale Sign/Data DEC-015 expectation failed, 10 environment skips. After correcting that test reference, a rerun advanced through Query and Sign and into final validator tests with no reported failures, then was stopped after exceeding nine minutes on Windows; full completion remains pending hosted CI. |
+| API extension fixtures | `python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v` | PASS: 17 tests, one Windows symlink-privilege skip. |
+| Generated checks | `python -B tools/api_manifest/generate.py --check`; `python -B tools/extension_fixtures/generate.py --check` | PASS; API manifest verified 12 files. |
+| Catalog validation | `python -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,143 records. |
+
+The fixture is source-review evidence, not generated output; no generator was run in write mode and pinned OASIS upstream files were not modified. No Refactor phase was needed for these test and oracle corrections.
