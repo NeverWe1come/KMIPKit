@@ -833,34 +833,17 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
 
 #[test]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
-    let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
-    ))
-    .expect("the shared API fixture is valid JSON");
-    let creation_failure_case = fixture["cases"]
-        .as_array()
-        .expect("fixture cases are an array")
-        .iter()
-        .find(|case| case["id"] == "creation.result-message-on-failure.v1")
-        .expect("the creation failure fixture case exists")
-        .clone();
+    let creation_failure_case = creation_result_message_fixture_case();
 
-    run_generated_public_client_abi_consumer(&creation_failure_case, false);
+    run_generated_public_client_abi_consumer(
+        &creation_failure_case,
+        CreationResultMessageExpectation::MatchesFixture,
+    );
 }
 
 #[test]
 fn compiled_c_consumer_rejects_divergent_creation_message_input_and_expected_output() {
-    let fixture: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/api/shared-capability-parity.json"
-    ))
-    .expect("the shared API fixture is valid JSON");
-    let mut creation_failure_case = fixture["cases"]
-        .as_array()
-        .expect("fixture cases are an array")
-        .iter()
-        .find(|case| case["id"] == "creation.result-message-on-failure.v1")
-        .expect("the creation failure fixture case exists")
-        .clone();
+    let mut creation_failure_case = creation_result_message_fixture_case();
     creation_failure_case["input"]["resultMessage"] =
         serde_json::json!("server result differs from fixture expectation");
     assert_ne!(
@@ -869,14 +852,37 @@ fn compiled_c_consumer_rejects_divergent_creation_message_input_and_expected_out
         "the test must present separate server input and expected output values"
     );
 
-    run_generated_public_client_abi_consumer(&creation_failure_case, true);
+    run_generated_public_client_abi_consumer(
+        &creation_failure_case,
+        CreationResultMessageExpectation::RejectsDivergence,
+    );
+}
+
+#[derive(Clone, Copy)]
+enum CreationResultMessageExpectation {
+    MatchesFixture,
+    RejectsDivergence,
+}
+
+fn creation_result_message_fixture_case() -> serde_json::Value {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.result-message-on-failure.v1")
+        .expect("the creation failure fixture case exists")
+        .clone()
 }
 
 // Keep the fixture-backed argv values and TLS server alive through one visible FFI call.
 #[allow(clippy::too_many_lines)]
 fn run_generated_public_client_abi_consumer(
     creation_failure_case_override: &serde_json::Value,
-    expect_creation_message_mismatch: bool,
+    message_expectation: CreationResultMessageExpectation,
 ) {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/fixtures/api/shared-capability-parity.json"
@@ -1091,19 +1097,17 @@ fn run_generated_public_client_abi_consumer(
         )
     };
     assert_eq!(metadata_status, 0);
-    if expect_creation_message_mismatch {
-        assert_ne!(
-            result,
-            0,
-            "the compiled C consumer accepted a Result Message that differs from expectedOutput"
-        );
-    } else {
-        assert_eq!(
+    match message_expectation {
+        CreationResultMessageExpectation::MatchesFixture => assert_eq!(
             result,
             0,
             "generated public C consumer failed (status {last_status}, category {last_category}, cause {last_cause}, delivery {last_delivery}); server exchanges: {}",
             exchange_count.load(Ordering::Relaxed)
-        );
+        ),
+        CreationResultMessageExpectation::RejectsDivergence => assert_ne!(
+            result, 0,
+            "the compiled C consumer accepted a Result Message that differs from expectedOutput"
+        ),
     }
     peer.join().expect("the loopback TLS peer completes");
     assert_eq!(
