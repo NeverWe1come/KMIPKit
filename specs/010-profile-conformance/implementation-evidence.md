@@ -8379,3 +8379,29 @@ was regenerated with its pinned tool.
 | Red | `a4a52f650` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_shared_rust_inventory.SharedRustInventoryTests.test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements` — expected failure: approved KMIPKIT-0009 still appeared in `draftOwnerGates`. |
 | Green | `400262f83` | Focused inventory assertions passed; `python tools/api_manifest/audit_shared_rust_inventory.py --repo-root .` regenerated the report. |
 | Refactor | `0c98abe16b32a60b61412f7acb321a7cbe4761dd` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -m unittest discover -s tools/api_manifest/tests` — PASS: 255 tests (3 skipped). The regression now proves the approved owner is omitted from draft gates while all four APIs remain blocked. |
+
+## SonarCloud profile metadata and rule table compaction (2026-10-29)
+
+The later SonarCloud analysis still reported duplicated generated profile
+closure metadata and repeated Rust rule-mapping declarations. The profile
+generator now interns the complete, sorted clause and requirement universes,
+encodes each profile's exact closure as bitmaps, and expands the existing
+public string-slice fields at compile time. The generator tests independently
+recompute every bitmap from the normative catalog and assert that source
+closures are sorted and unique. The typed rule table now uses `const`
+constructors for the existing mapping, test-evidence, and constraint values;
+all 298 mapping records and their IDs, evaluators, categories, evidence, and
+constraints remain explicit. Attribute multiplicity is emitted once as a tag
+match rather than repeated per policy record, and its three classifications
+are exercised from the client test view.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `8836e2cf6` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_profile_clause_and_requirement_closures_use_compact_const_expansions -v` — expected failure before implementation: generated profiles had no compact clause/requirement closure pools. |
+| Green | `8c7f5ebdb` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_generate_attribute_policy`; both generators with `--check`; `cargo fmt --all --check`; `git diff --check`; `cargo test -p kmipkit-protocol --all-features` — PASS: 82 generator tests (1 skipped), generated outputs current, and the protocol crate's 1,215 unit tests, integration tests, and doctests passed. |
+| Refactor | `f3ee85d9d` | `cargo test -p kmipkit-protocol --all-features`; `cargo test -p kmipkit-client --lib generated_attribute_policy_reports_tag_multiplicity`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` — PASS. The client test verifies Single, Multiple, and PGP/X.509 multiplicity from the generated table. |
+
+The new-code coverage threshold and SonarCloud quality gate were not changed.
+A new SonarCloud analysis is required to measure whether these source
+reductions bring PR #90 below its configured duplication limit; no pass is
+claimed until that analysis completes.
