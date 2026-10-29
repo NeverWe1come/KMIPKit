@@ -2,7 +2,7 @@
 
 **Feature Branch**: `feature/KMIPKIT-0009-asynchronous-operations-spec`
 **Created**: 2026-10-06
-**Status**: Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests. This does not claim formal approval of this specification or its reviewer-owned checklists. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made.
+**Status**: Approved for implementation by explicit maintainer approval on 2026-10-29, recorded in [approval-record.md](approval-record.md). Reviewer-owned checklists remain unchecked and retain their owners. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made.
 **Input**: Roadmap item `KMIPKIT-0009-asynchronous-operations`.
 
 ## Scope and normative sources
