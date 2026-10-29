@@ -58,7 +58,7 @@ Add typed Poll, Cancel, Process, and Query Asynchronous Requests operation model
 |---|---|---|
 | FR-001, FR-003–FR-007 | `crates/kmipkit-protocol/src/{poll,cancel,process,query_async_requests}.rs`; protocol module exports | Model and exact TTLV field/order tests; operation-level pending/completed/error vectors |
 | FR-002, FR-008–FR-010 | `crates/kmipkit-client/src/execute.rs` or a focused async execution module; existing private encoder/response decoder | Fake-transport one-exchange tests, borrowed accessor and no-duplicate checks, zeroization, exact-byte correlation sentinels, pending lifecycle tests, terminal Poll Failure, rejected Cancel Pending, response association/error delivery tests |
-| FR-006–FR-007, FR-009 | `crates/kmipkit-protocol/src/query_async_requests.rs` and generic response view | Filter encoding, sentinel redaction, encoded request-owner zeroization, caller-owned buffer boundary, and opaque response round-trip; no Table 286 typed mapping |
+| FR-006–FR-007, FR-009 | `crates/kmipkit-protocol/src/query_async_requests.rs` and generic response view | Filter encoding, sentinel redaction, encoded request-owner zeroization, caller-owned buffer boundary, and opaque response round-trip; typed Table 286 mapping is tracked separately in KMIPKIT-0043 T035 under DEC-015 |
 | FR-009 | `crates/kmipkit-client/tests/unit/` plus current zeroization test-support seams | Debug/Display/error/log sentinel checks, borrowed-only Pending access, no ordinary unzeroized duplicate, encoded request-owner drop observation for Cancel/Query success and exchange-error paths, Query request-drop-before-exchange AST assertion, and caller-owned input boundary |
 | FR-012 | `specification/catalog/kmip-2.1.json` workflow is out of scope here; tests remain in protocol/client suites | Before release, catalog-owner workflow must assign/verify a stable requirement for Table 278's client field; feature tests cite this feature FR until then |
 
@@ -108,4 +108,4 @@ Tests must include the §6.1.38 special Pending Poll shape (no payload but Pendi
 
 ## Complexity Tracking
 
-No constitution violation or new architectural pattern is proposed. The generic response path is required to avoid inventing a Query response schema while a primary-source discrepancy remains open.
+No constitution violation or new architectural pattern is proposed. The generic response path remains this feature's compatibility surface. DEC-015 records the accepted contextual interpretation for a later typed mapping; the printed source caption remains unchanged and the decision alone makes no conformance claim.

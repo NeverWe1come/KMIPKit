@@ -45,8 +45,8 @@ All wire values use the existing generic TTLV model and source field order. Type
 ### Query Asynchronous Requests
 
 - Request filters: optional Asynchronous Correlation Values structure with zero or more values; optional Operations structure with zero or more operation values. Preserve order, repetition, and unknown values. Correlation filter values are redacted. Caller-owned input storage remains caller-owned; any KMIPKit-owned copy is zeroized and is not copied into ordinary unzeroized storage.
-- Response: generic TTLV while Table 286's caption and placement remain disputed in `KMIPKIT-DISC-039`.
-- The §7.2/Table 353 Asynchronous Request model is not exposed as a typed Query response until that conflict is reviewed.
+- Response: generic TTLV in this feature. `KMIPKIT-DEC-015` records the accepted Table 286 context interpretation; typed mapping is tracked separately in KMIPKIT-0043 T035.
+- The §7.2/Table 353 Asynchronous Request model remains available to the separate typed mapping; unknown response members continue to require lossless generic TTLV access.
 
 ## Relationships
 
@@ -69,5 +69,5 @@ Each arrow that sends a request is a distinct call and one transport exchange. N
 - Poll completion is not decoded as an unrelated operation's type.
 - Cancel echo must associate to its request; unknown cancellation enumeration values survive.
 - Every non-Failure Process response, including Pending, carries an empty Response Payload Structure per §6.1.39/Table 279 and §8.6/Table 399; Failure has no payload under the general response shape.
-- Query filters and opaque response tree survive round trips; typed Table 286 semantics stay gated.
+- Query filters and opaque response tree survive round trips; typed Table 286 mapping is tracked in KMIPKIT-0043 T035 under DEC-015.
 - All decode paths use configured `CodecLimits` before allocation.
