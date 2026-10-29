@@ -468,6 +468,22 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
     if not profiles:
         raise ProfileGenerationError("catalog contains no client profiles")
 
+    test_ids_by_profile: dict[str, tuple[str, ...]] = {}
+    for profile in profiles:
+        profile_id = profile.get("profile_id")
+        test_ids = profile.get("test_case_ids")
+        if (
+            not isinstance(profile_id, str)
+            or not profile_id
+            or not isinstance(test_ids, list)
+            or any(not isinstance(test_id, str) or test_id not in tests_by_id for test_id in test_ids)
+            or len(test_ids) != len(set(test_ids))
+        ):
+            raise ProfileGenerationError("client profile has unresolved or duplicate test identifiers")
+        test_ids_by_profile[profile_id] = tuple(test_ids)
+    shared_test_ids = sorted({test_id for test_ids in test_ids_by_profile.values() for test_id in test_ids})
+    test_case_indexes = {test_id: index for index, test_id in enumerate(shared_test_ids)}
+
     lines = [
         "//! Generated from the reviewed normative catalog and fixed profile target manifest.",
         "//! This file contains metadata only; it does not contain executable conformance rules.",
@@ -616,6 +632,23 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
     lines.extend(["];", ""])
 
     lines.append("")
+    lines.append("/// Official conformance cases referenced by client profiles, interned by stable test identifier.")
+    lines.append("pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[")
+    for test_id in shared_test_ids:
+        test_case = tests_by_id[test_id]
+        lines.extend(
+            [
+                "    GeneratedProfileTestCase {",
+                f"        test_id: {rust_string_literal(test_id)},",
+                f"        official_case_id: {_rust_string_field(test_case, 'official_case_id')},",
+                f"        mandatory_status: {_rust_string_field(test_case, 'mandatory_status')},",
+                f"        fixture_availability: {_rust_string_field(test_case, 'fixture_availability')},",
+                "    },",
+            ]
+        )
+    lines.extend(["];", ""])
+
+    lines.append("")
     lines.append("/// Client profile metadata sorted by stable profile identifier.")
     lines.append("pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[")
     for profile in profiles:
@@ -640,28 +673,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             )
             for obligation in closure.unresolved_scope_obligations
         ]
-        test_ids = profile.get("test_case_ids")
-        if (
-            not isinstance(test_ids, list)
-            or any(not isinstance(test_id, str) or test_id not in tests_by_id for test_id in test_ids)
-            or len(test_ids) != len(set(test_ids))
-        ):
-            raise ProfileGenerationError("client profile has unresolved or duplicate test identifiers")
-        tests = []
-        for test_id in test_ids:
-            test_case = tests_by_id[test_id]
-            tests.append(
-                "\n".join(
-                    [
-                        "            GeneratedProfileTestCase {",
-                        f"                test_id: {rust_string_literal(test_id)},",
-                        f"                official_case_id: {_rust_string_field(test_case, 'official_case_id')},",
-                        f"                mandatory_status: {_rust_string_field(test_case, 'mandatory_status')},",
-                        f"                fixture_availability: {_rust_string_field(test_case, 'fixture_availability')},",
-                        "            },",
-                    ]
-                )
-            )
+        test_ids = test_ids_by_profile[profile_id]
+        tests = [f"            PROFILE_TEST_CASES[{test_case_indexes[test_id]}]," for test_id in test_ids]
         lines.extend(
             [
                 "    GeneratedClientProfile {",
