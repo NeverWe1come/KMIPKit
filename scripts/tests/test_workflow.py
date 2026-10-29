@@ -900,7 +900,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
 
 
-    def test_coverage_threshold_waiver_is_limited_to_the_two_active_feature_branches(self) -> None:
+    def test_coverage_threshold_waiver_is_limited_to_the_remaining_active_feature_branch(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-gate")
         enforcement = re.search(
             r"(?ms)^      - name: Enforce coverage thresholds\n(.*?)(?=^      - name: |\Z)",
@@ -910,8 +910,6 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(
             enforcement.group(1),
             r"(?ms)^        if: >-\s+"
-            r"github\.head_ref != 'feature/KMIPKIT-0010-profile-conformance-implementation-refresh'\s+"
-            r"&&\s+"
             r"github\.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'$",
         )
         self.assertIn("Record temporary coverage-threshold waiver", job)
@@ -919,7 +917,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("Restore the minimum coverage thresholds", job)
 
 
-    def test_normative_generator_threshold_waiver_is_limited_to_two_feature_branches(self) -> None:
+    def test_normative_generator_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
         job = self.require_job(self.require_workflow(), "normative-inventory")
         step = re.search(
             r"(?ms)^      - name: Verify normative generator line coverage\n(.*?)(?=^      - name: |\Z)",
@@ -928,15 +926,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(step)
         self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', step.group(1))
         self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" '
-            '|| "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
             step.group(1),
         )
         self.assertIn("--fail-under=95", step.group(1))
         self.assertIn("temporary coverage-threshold waiver", step.group(1))
 
 
-    def test_python_coverage_threshold_waiver_is_limited_to_two_feature_branches(self) -> None:
+    def test_python_coverage_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
         job = self.require_job(self.require_workflow(), "coverage-python")
         step = re.search(
             r"(?ms)^      - name: Run Python coverage suite\n(.*?)(?=^      - name: |\Z)",
@@ -946,8 +943,7 @@ class WorkflowContractTests(unittest.TestCase):
         body = step.group(1)
         self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', body)
         self.assertIn(
-            'if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" '
-            '|| "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
             body,
         )
         self.assertIn("coverage_threshold_args+=(--cov-fail-under=0)", body)
