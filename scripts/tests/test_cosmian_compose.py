@@ -70,6 +70,12 @@ class CosmianComposeTests(unittest.TestCase):
             self.assertIn("Refusing to clean an unowned PKI output directory", result.stderr)
             self.assertEqual(existing_file.read_text(encoding="utf-8"), "preserve me\n")
 
+    def test_pki_output_guard_uses_portable_shell_globs(self) -> None:
+        generator = PKI_GENERATOR.read_text(encoding="utf-8")
+
+        self.assertNotIn("-maxdepth", generator)
+        self.assertIn('for output_entry in "$output_dir"/*', generator)
+
 
 if __name__ == "__main__":
     unittest.main()
