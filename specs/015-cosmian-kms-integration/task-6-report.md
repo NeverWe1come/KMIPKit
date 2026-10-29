@@ -196,3 +196,21 @@ sanitizers, bindings, normative inventory and aggregate coverage. The source-cit
 will receive ordinary PR CI on its updated head. The exhaustive live run retains nine failed test
 functions; these target/interoperability outcomes remain recorded. The
 two-independent-KMIP-2.1-implementation release gate remains open.
+
+## CodeQL test-diagnostic follow-up — 2026-10-29
+
+The exact PR head `ba066573316f75b76e92093b5e77fb65f0b85638` produced two CodeQL alerts:
+dynamic preflight diagnostics in `cryptographic.rs` and a fixed caller nonce in
+`cryptographic_cipher.rs`. Independent source review found no production secret flow: the
+preflight result contains case-matrix validation metadata, and each old fixed nonce was used for
+one Encrypt with a fresh disposable key, then reused only for its matching Decrypt. These findings
+were confined to ignored integration-test code.
+
+Red commit `8d7c32168` added a test requiring independently generated caller nonces; it failed
+against the fixed value. Green commit `c014b2e97` uses AWS-LC system randomness with a 64-byte
+input limit and replaces the dynamic preflight error text written to logs with fixed diagnostics.
+Local verification passed: `cargo fmt --all --check`, the focused nonce regression, the complete
+Cosmian test binary (122 passed, 110 ignored live tests), and client Clippy with `-D warnings`.
+The expected AWS-LC build warnings on Windows did not fail the build. The updated PR head still
+requires hosted CodeQL and ordinary CI confirmation. This evidence does not change the measured
+interoperability outcomes or establish a KMIP conformance claim.

@@ -117,3 +117,14 @@ The approved scope expands the earlier selected integration to every applicable 
   fmt --all --check, protocol unit tests (723), focused client unit tests (12), offline Cosmian
   tests (118 passed, 110 live ignored), full workspace tests, Clippy, and workspace coverage (92.93%
   overall; every touched protocol model is 95.36% or higher). FR-017; SC-010.
+
+## Static-analysis follow-up — 2026-10-29
+
+- [ ] T047 Review and resolve the two CodeQL alerts on the Cosmian test matrix. Red commit
+  `8d7c32168` added a freshness regression that failed against the fixed nonce. Green commit
+  `c014b2e97` uses bounded AWS-LC system randomness for caller nonces and replaces dynamic
+  preflight error output with fixed, redacted diagnostics. `cargo fmt --all --check`, the focused
+  regression, the full Cosmian test binary (122 passed, 110 live tests ignored), and client Clippy
+  passed locally. The source review found no production secret exposure or nonce reuse under the
+  same case key; hosted CodeQL must confirm the diagnostic and nonce alerts are gone on the updated
+  PR head. Details are in `task-6-report.md`.
