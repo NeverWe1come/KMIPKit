@@ -674,7 +674,10 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             for obligation in closure.unresolved_scope_obligations
         ]
         test_ids = test_ids_by_profile[profile_id]
-        tests = [f"            PROFILE_TEST_CASES[{test_case_indexes[test_id]}]," for test_id in test_ids]
+        test_case_references = [
+            f"            PROFILE_TEST_CASES[{test_case_indexes[test_id]}],"
+            for test_id in test_ids
+        ]
         lines.extend(
             [
                 "    GeneratedClientProfile {",
@@ -693,7 +696,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 f"        transport_requirements: {_rust_string_array(profile, 'transport_requirements')},",
                 f"        encoding_requirements: {_rust_string_array(profile, 'encoding_requirements')},",
                 "        test_cases: &[",
-                *tests,
+                *test_case_references,
                 "        ],",
                 "    },",
             ]

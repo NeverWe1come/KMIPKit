@@ -8324,3 +8324,26 @@ to `release/1.0.0` has been made, so the workflow has not yet demonstrated a
 short-lived App installation token and live branch-protection query in its
 required same-run evidence. T026 remains open until that protected-push run
 passes; Baseline remains `evidence_incomplete` and no conformance claim is made.
+
+## SonarCloud new-code duplication remediation (2026-10-29)
+
+The last authoritative SonarCloud run reported 24.17445% new-code duplication
+(31,318 of 129,550 new lines), above the 3% gate. The profile generator now
+emits every client-linked `GeneratedProfileTestCase` once in stable
+`test_id` order and stores each profile's original ordered case list as indexes
+into that table. The public `GeneratedClientProfile.test_cases` slice type,
+profile membership, all four test metadata fields, rule metadata, target
+selection, and evidence state are preserved. The Green commit reduces the
+generated Rust output by 1,263 lines (927 added, 2,190 removed); the combined
+generator and output change is 1,250 lines smaller.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `3e2f2c300` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_profile_test_case_metadata_is_declared_once_and_referenced_by_each_profile -v` — expected failure: generated output had no interned `PROFILE_TEST_CASES` table. |
+| Green | `812f0cfee` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `rustfmt --check crates/kmipkit-protocol/src/profiles_generated.rs`; `cargo test -p kmipkit-protocol --quiet` — PASS: 69 generator tests (1 skipped); generated output current and formatted; protocol crate unit, integration, and doc tests passed (1,215 library tests). |
+| Refactor | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `rustfmt --check crates/kmipkit-protocol/src/profiles_generated.rs`; `cargo test -p kmipkit-protocol --quiet`; `git diff --check` — PASS: same results after clarifying the profile test-case reference variable name. |
+
+SonarCloud has not produced a fresh analysis for these commits; the PR analysis
+must refresh the new-code duplication metric. No threshold or exclusion was
+changed. T026 remains open: this work does not provide eligible protected
+release-push evidence and makes no readiness or conformance claim.
