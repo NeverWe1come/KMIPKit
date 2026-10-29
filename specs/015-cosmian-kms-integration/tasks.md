@@ -141,3 +141,10 @@ The approved scope expands the earlier selected integration to every applicable 
   The full local script-contract suite passed 291 tests with 32 Windows platform skips; only the
   fresh hosted CodeQL and CI run on the final head remain for T047.
   Details are in `task-6-report.md`.
+  Follow-up: Red commit `e919c982f` adds a regression that fails when separate FPE Encrypt inputs
+  reuse a tweak; Green commit `9a13ed4f6` generates a fresh 13-byte AWS-LC random tweak for each
+  input while retaining the empty-tweak case and the same generated tweak for its matching
+  Encrypt/Decrypt round trip. Windows and WSL/Linux verification passed: formatting, the focused
+  regression, the full Cosmian test binary (123 passed, 110 live-server tests ignored), and client
+  Clippy. Alert #20 still refers to an older CodeQL commit on the PR merge ref; T047 remains open
+  until CodeQL and the full CI suite pass on the updated PR head.

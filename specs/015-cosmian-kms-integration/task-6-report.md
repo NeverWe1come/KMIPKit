@@ -237,3 +237,23 @@ This is local safety hardening; it does not change the KMIP test results.
 The independent re-review findings were addressed by `ef0a1d8b1`; the final
 post-fix re-review is complete. Hosted CodeQL and CI still need to finish after
 publication. T047 remains open until those checks complete.
+
+## FPE test-tweak CodeQL follow-up — 2026-10-29
+
+The PR's CodeQL check failed on head `a8247bfb3` with alert #20, whose reported
+instance references an earlier analyzed commit. Independent data-flow review
+traced the fixed nonempty FPE test tweak from `nonce_for` into the KMIP
+IV/Counter/Nonce field. That test value is now generated freshly for each
+Encrypt input with AWS-LC system randomness. The 13-byte size is unchanged, an
+empty tweak remains empty, and each generated value is retained for only its
+matching Encrypt/Decrypt round trip. This affects ignored interoperability
+tests, not the production nonce API.
+
+| Phase / check | Evidence | Result |
+| --- | --- | --- |
+| Red | DCO commit `e919c982f` | Freshness regression failed against the fixed tweak and passed after the change. |
+| Green | DCO commit `9a13ed4f6` | Nonempty FPE test tweaks use 13 bytes from AWS-LC system randomness; generation errors use a fixed diagnostic. |
+| Windows | `cargo +1.94 fmt --all -- --check`; focused freshness test; full `cosmian_kms` test binary; client Clippy with `-D warnings` | PASS: 123 tests passed, 110 live-server tests ignored; formatting and Clippy passed. |
+| Linux / WSL | Same focused and full Rust tests, plus client Clippy with `-D warnings` | PASS: freshness regression passed; 123 tests passed, 110 live-server tests ignored; Clippy passed. |
+| Independent security re-review | Read-only review of the final code change and nonce flow | PASS: no fixed tweak remains on this test path; no production API or wire-model changes. |
+| Hosted verification | CodeQL and complete CI on the updated PR head | Pending; T047 remains open until the alert is absent and checks pass. |
