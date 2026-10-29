@@ -6386,3 +6386,14 @@ After KMIPKIT-0009 was approved on `release/1.0.0`, the exact-head `Script contr
 | Green | `eacef0a28` | `python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass: all 12 generated outputs current; no whitespace errors. |
 
 This repairs only the approval provenance used by the API manifest and its generated fixtures. It does not close KMIPKIT-0009's reviewer-owned checklist items, claim formal conformance, or close PR #104. A fresh exact-head CI run remains required after publication.
+## T073 operation-owner matrix reconciliation follow-up (2026-10-29)
+
+| Phase | Commit | Evidence | Result |
+| --- | --- | --- | --- |
+| Red | `54539e36e` | `py -3 -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation.T073DocumentationReconciliationTests.test_dependency_matrix_owner_state_matches_manifest -v` | Expected failure: Add Attribute, Adjust Attribute, Delete Attribute, and Get Attribute List were still described as candidate-owned although the manifest resolves all four to approved KMIPKIT-0016. |
+| Green | `79dd8fc97` | `py -3 -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation -v` | PASS: all 6 documentation reconciliation tests; the operation matrix now reflects the manifest and specification PR #58 approval evidence. |
+| Refactor | this evidence update | `git diff --check` | PASS: no whitespace errors. |
+
+The correction reconciles documentation with the approved KMIPKIT-0016 owner
+and T037 mapping evidence; it does not assert complete KMIP conformance or
+close the broader T073, T071, or T075 release gates.
