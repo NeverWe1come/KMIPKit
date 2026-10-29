@@ -428,6 +428,15 @@ def _source_gap_locator(requirement: Mapping[str, Any]) -> str | None:
     )
 
 
+def _encode_profile_id_bitmap(values: Sequence[str], universe: Sequence[str]) -> str:
+    selected_values = set(values)
+    bitmap = bytearray((len(universe) + 7) // 8)
+    for bit_index, value in enumerate(universe):
+        if value in selected_values:
+            bitmap[bit_index // 8] |= 1 << (bit_index % 8)
+    return bytes(bitmap).hex()
+
+
 def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
@@ -585,6 +594,55 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub test_cases: &'static [GeneratedProfileTestCase],",
         "}",
         "",
+        "const fn profile_bitmap_nibble(value: u8) -> u8 {",
+        "    match value {",
+        "        b'0'..=b'9' => value - b'0',",
+        "        b'a'..=b'f' => value - b'a' + 10,",
+        "        _ => 0,",
+        "    }",
+        "}",
+        "",
+        "const fn profile_bitmap_contains(bitmap: &str, bit_index: usize) -> bool {",
+        "    let byte_index = bit_index / 8;",
+        "    let character_index = byte_index * 2;",
+        "    let encoded = bitmap.as_bytes();",
+        "    if character_index + 1 >= encoded.len() {",
+        "        return false;",
+        "    }",
+        "    let byte = (profile_bitmap_nibble(encoded[character_index]) << 4)",
+        "        | profile_bitmap_nibble(encoded[character_index + 1]);",
+        "    byte & (1 << (bit_index % 8)) != 0",
+        "}",
+        "",
+        "const fn profile_id_set_len(pool: &[&str], bitmap: &str) -> usize {",
+        "    let mut index = 0;",
+        "    let mut count = 0;",
+        "    while index < pool.len() {",
+        "        if profile_bitmap_contains(bitmap, index) {",
+        "            count += 1;",
+        "        }",
+        "        index += 1;",
+        "    }",
+        "    count",
+        "}",
+        "",
+        "const fn decode_profile_id_set<const N: usize>(",
+        "    pool: &[&'static str],",
+        "    bitmap: &str,",
+        ") -> [&'static str; N] {",
+        "    let mut result = [\"\"; N];",
+        "    let mut pool_index = 0;",
+        "    let mut result_index = 0;",
+        "    while pool_index < pool.len() {",
+        "        if profile_bitmap_contains(bitmap, pool_index) && result_index < N {",
+        "            result[result_index] = pool[pool_index];",
+        "            result_index += 1;",
+        "        }",
+        "        pool_index += 1;",
+        "    }",
+        "    result",
+        "}",
+        "",
     ]
     selected_ids = set(targets.profile_ids)
     lines.extend(
@@ -648,10 +706,58 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         )
     lines.extend(["];", ""])
 
+    source_clause_id_pool = sorted(
+        {
+            source_clause_id
+            for profile in profiles
+            for source_clause_id in profile.get("source_clause_ids", [])
+        }
+    )
+    requirement_id_pool = sorted(
+        {
+            requirement_id
+            for profile in profiles
+            for requirement_id in profile.get("requirement_ids", [])
+        }
+    )
+    lines.extend(
+        [
+            "",
+            "/// Unique sorted clause IDs used by compact profile closure bitmaps.",
+            "const PROFILE_SOURCE_CLAUSE_ID_POOL: &[&str] = &[",
+            *[f"    {rust_string_literal(value)}," for value in source_clause_id_pool],
+            "];",
+            "",
+            "/// Unique sorted requirement IDs used by compact profile closure bitmaps.",
+            "const PROFILE_REQUIREMENT_ID_POOL: &[&str] = &[",
+            *[f"    {rust_string_literal(value)}," for value in requirement_id_pool],
+            "];",
+            "",
+        ]
+    )
+    for index, profile in enumerate(profiles):
+        for field, constant, pool, universe in (
+            ("source_clause_ids", "SOURCE_CLAUSE", "PROFILE_SOURCE_CLAUSE_ID_POOL", source_clause_id_pool),
+            ("requirement_ids", "REQUIREMENT", "PROFILE_REQUIREMENT_ID_POOL", requirement_id_pool),
+        ):
+            values = profile[field]
+            bitmap_name = f"PROFILE_{constant}_IDS_{index}_BITMAP"
+            array_name = f"PROFILE_{constant}_IDS_{index}"
+            encoded = _encode_profile_id_bitmap(values, universe)
+            lines.extend(
+                [
+                    f"const {bitmap_name}: &str = {rust_string_literal(encoded)};",
+                    f"const {array_name}: [&str; {len(values)}] =",
+                    f"    decode_profile_id_set::<{len(values)}>({pool}, {bitmap_name});",
+                    f"const _: [(); {len(values)}] = [(); profile_id_set_len({pool}, {bitmap_name})];",
+                    "",
+                ]
+            )
+
     lines.append("")
     lines.append("/// Client profile metadata sorted by stable profile identifier.")
     lines.append("pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[")
-    for profile in profiles:
+    for profile_index, profile in enumerate(profiles):
         profile_id = profile.get("profile_id")
         if not isinstance(profile_id, str) or not profile_id:
             raise ProfileGenerationError("client profile lacks a stable identity")
@@ -687,8 +793,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 f"        claim_state: {_rust_string_field(profile, 'claim_state')},",
                 f"        selected_target: {str(profile_id in selected_ids).lower()},",
                 f"        direct_source_clause_ids: {_rust_string_array(profile, 'direct_source_clause_ids')},",
-                f"        source_clause_ids: {_rust_string_array(profile, 'source_clause_ids')},",
-                f"        requirement_ids: {_rust_string_array(profile, 'requirement_ids')},",
+                f"        source_clause_ids: &PROFILE_SOURCE_CLAUSE_IDS_{profile_index},",
+                f"        requirement_ids: &PROFILE_REQUIREMENT_IDS_{profile_index},",
                 "        unresolved_scope_obligations: &[",
                 *scope_blockers,
                 "        ],",

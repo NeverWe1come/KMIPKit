@@ -430,7 +430,7 @@ pub(crate) fn validate_single_instance_attribute_items(
                 continue;
             };
 
-            let is_single_instance = match policy.multiplicity {
+            let is_single_instance = match policy.multiplicity() {
                 crate::attribute_policy::AttributeMultiplicity::Single => Some(true),
                 crate::attribute_policy::AttributeMultiplicity::Multiple => Some(false),
                 crate::attribute_policy::AttributeMultiplicity::PgpKeyOrX509Certificate => {

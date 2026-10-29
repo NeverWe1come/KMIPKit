@@ -248,6 +248,35 @@ def _render_rules(field: str, rules: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _render_multiplicity_method(policies: list[dict[str, Any]]) -> list[str]:
+    tags_by_variant: dict[str, list[str]] = {}
+    for policy in policies:
+        variant = _multiplicity_variant(policy)
+        if variant != "Single":
+            tags_by_variant.setdefault(variant, []).append(
+                f"0x{policy['tag'] >> 16:02X}_{(policy['tag'] >> 8) & 0xFF:02X}_{policy['tag'] & 0xFF:02X}"
+            )
+
+    lines = [
+        "#[rustfmt::skip]",
+        "impl AttributePolicy {",
+        "    pub(super) const fn multiplicity(self) -> AttributeMultiplicity {",
+        "        match self.tag {",
+    ]
+    for variant, tags in tags_by_variant.items():
+        lines.append(f"            {' | '.join(tags)} => AttributeMultiplicity::{variant},")
+    lines.extend(
+        [
+            "            _ => AttributeMultiplicity::Single,",
+            "        }",
+            "    }",
+            "}",
+            "",
+        ]
+    )
+    return lines
+
+
 def render_rust(catalog: dict[str, Any]) -> str:
     """Render deterministic, source-preserving private policy metadata."""
     policies = _standard_policies(catalog)
@@ -273,7 +302,6 @@ def render_rust(catalog: dict[str, Any]) -> str:
         "    pub(super) name: &'static str,",
         "    pub(super) source_refs: &'static [SourceRef],",
         "    pub(super) source_policy_table: &'static str,",
-        "    pub(super) multiplicity: AttributeMultiplicity,",
         "    pub(super) source_initially_set_by: &'static str,",
         "    pub(super) source_modifiable_by_client: &'static str,",
         "    pub(super) source_deletable_by_client: &'static str,",
@@ -289,26 +317,31 @@ def render_rust(catalog: dict[str, Any]) -> str:
         "    PgpKeyOrX509Certificate,",
         "}",
         "",
-        "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
-        "pub(super) struct VendorAttributePolicy {",
-        "    pub(super) source_refs: &'static [SourceRef],",
-        "    pub(super) structure_table: &'static str,",
-        "    pub(super) source_text: &'static str,",
-        "    pub(super) member_element_id: &'static str,",
-        "    pub(super) equals: &'static str,",
-        "    pub(super) source_indicates_origin: &'static str,",
-        "    pub(super) prohibited_client_operations: &'static [&'static str],",
-        "}",
-        "",
-        "impl VendorAttributePolicy {",
-        "    pub(super) fn matches_vendor_identification(self, value: &str) -> bool {",
-        "        value == self.equals",
-        "    }",
-        "}",
-        "",
-        "#[rustfmt::skip]",
-        "pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[",
     ]
+    lines.extend(_render_multiplicity_method(policies))
+    lines.extend(
+        [
+            "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+            "pub(super) struct VendorAttributePolicy {",
+            "    pub(super) source_refs: &'static [SourceRef],",
+            "    pub(super) structure_table: &'static str,",
+            "    pub(super) source_text: &'static str,",
+            "    pub(super) member_element_id: &'static str,",
+            "    pub(super) equals: &'static str,",
+            "    pub(super) source_indicates_origin: &'static str,",
+            "    pub(super) prohibited_client_operations: &'static [&'static str],",
+            "}",
+            "",
+            "impl VendorAttributePolicy {",
+            "    pub(super) fn matches_vendor_identification(self, value: &str) -> bool {",
+            "        value == self.equals",
+            "    }",
+            "}",
+            "",
+            "#[rustfmt::skip]",
+            "pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[",
+        ]
+    )
     for policy in policies:
         lines.extend(
             [
@@ -324,7 +357,6 @@ def render_rust(catalog: dict[str, Any]) -> str:
             [
                 "        ],",
                 f"        source_policy_table: {_rust_string(policy['source_policy_table'])},",
-                f"        multiplicity: AttributeMultiplicity::{_multiplicity_variant(policy)},",
                 f"        source_initially_set_by: {_rust_string(policy['source_initially_set_by'])},",
                 f"        source_modifiable_by_client: {_rust_string(policy['source_modifiable_by_client'])},",
                 f"        source_deletable_by_client: {_rust_string(policy['source_deletable_by_client'])},",
