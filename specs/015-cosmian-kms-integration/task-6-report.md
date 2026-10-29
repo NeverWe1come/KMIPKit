@@ -304,3 +304,4 @@ and backslash path components.
 | Transfer inventory | `cargo test --offline -p kmipkit-client --test cosmian_kms transfer::inventory_tests -- --nocapture` | PASS: 29 tests. |
 | Full offline integration-test target | `cargo test --offline -p kmipkit-client --test cosmian_kms` | PASS: 124 tests; 110 live-KMS tests ignored. Existing AWS-LC MSVC/NASM environment warnings did not prevent completion. |
 | Lint and formatting | `cargo clippy --offline -p kmipkit-client --tests --all-features -- -D warnings`; `cargo fmt --all --check` | PASS. |
+| Independent security re-review | Read-only review of `c8f87baf0..c696ebeda` | PASS: the guard rejects separators and other non-alphanumeric path syntax before either fixture path is built; all 11 current curve names remain supported; the error does not echo the manifest value. |

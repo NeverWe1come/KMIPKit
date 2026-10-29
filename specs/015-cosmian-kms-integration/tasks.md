@@ -167,4 +167,6 @@ The approved scope expands the earlier selected integration to every applicable 
   before path construction without echoing the value. The focused regression passed 1/1, all
   transfer inventory tests passed 29/29, and the complete offline Cosmian test target passed
   124 tests with 110 live tests ignored. Package Clippy and formatting passed. The change is confined
-  to the test harness; independent post-fix security review and hosted CI remain pending.
+  to the test harness. Independent post-fix review confirmed that the guard closes both POSIX and
+  Windows separator syntax, preserves all 11 current curve names, and does not echo the value.
+  Hosted CI remains pending on the updated PR head.
