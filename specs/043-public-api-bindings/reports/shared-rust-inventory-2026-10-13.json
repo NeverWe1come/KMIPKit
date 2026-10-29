@@ -3330,10 +3330,6 @@
     }
   ],
   "draftOwnerGates": {
-    "KMIPKIT-0009": {
-      "blockedDeclarations": 257,
-      "blockedOperations": 4
-    },
     "KMIPKIT-0010": {
       "blockedDeclarations": 0,
       "blockedOperations": 0

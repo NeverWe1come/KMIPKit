@@ -46,7 +46,7 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportResponse::new",
     "kmipkit_transport::TransportResponse::as_bytes",
 }
-DRAFT_SPEC_IDS = {"KMIPKIT-0009", "KMIPKIT-0010"}
+DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-13.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
