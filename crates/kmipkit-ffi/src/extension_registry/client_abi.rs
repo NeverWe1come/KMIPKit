@@ -1036,6 +1036,310 @@ pub extern "C" fn kmipkit_client_execute(
     })
 }
 
+/// Executes exactly one KMIP 2.1 Poll request with the caller's opaque correlation bytes.
+///
+/// The outcome is caller-owned and must be released with
+/// `kmipkit_client_async_operation_outcome_release`. This function performs one exchange and
+/// never issues another Poll or retries the request.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_poll(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_poll(
+                kmipkit_protocol::PollRequest::new(correlation_value),
+                limits,
+            )
+        })
+    })
+}
+
+/// Executes exactly one KMIP 2.1 Cancel request with the caller's opaque correlation bytes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_cancel(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_cancel(
+                kmipkit_protocol::CancelRequest::new(correlation_value),
+                limits,
+            )
+        })
+    })
+}
+
+/// Executes exactly one KMIP 2.1 Process request with caller-selected asynchronous behavior.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_process(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    has_asynchronous_indicator: u8,
+    asynchronous_indicator: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        if has_asynchronous_indicator > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let indicator = (has_asynchronous_indicator == 1).then_some(asynchronous_indicator);
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_process(
+                kmipkit_protocol::ProcessRequest::new(correlation_value),
+                indicator,
+                limits,
+            )
+        })
+    })
+}
+
+/// Executes exactly one KMIP 2.1 Query Asynchronous Requests operation.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_query_async_requests(
+    client: *mut kmipkit_client_t,
+    has_correlation_values: u8,
+    correlation_values: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value_count: u64,
+    has_operations: u8,
+    operations: *const u32,
+    operation_count: u64,
+    has_asynchronous_indicator: u8,
+    asynchronous_indicator: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        if has_correlation_values > 1 || has_operations > 1 || has_asynchronous_indicator > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let correlation_spans = try_ffi!(input_array(
+            correlation_values,
+            correlation_value_count,
+            100_000,
+        ));
+        let operation_values = try_ffi!(input_array(operations, operation_count, 100_000));
+        let mut request = kmipkit_protocol::QueryAsyncRequestsRequest::new();
+        if has_correlation_values == 0 && correlation_value_count != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if has_operations == 0 && operation_count != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if has_correlation_values == 1 {
+            let values = correlation_spans
+                .iter()
+                .map(|span| input_span(span.data, span.length, MAX_FFI_INPUT_BYTES))
+                .collect::<FfiResult<Vec<_>>>();
+            let values = try_ffi!(values);
+            request = request.with_correlation_values(values.into_iter().map(<[u8]>::to_vec));
+        }
+        if has_operations == 1 {
+            request = request.with_operations(operation_values.iter().copied());
+        }
+        let indicator = (has_asynchronous_indicator == 1).then_some(asynchronous_indicator);
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_query_async_requests(request, indicator, limits)
+        })
+    })
+}
+
+fn execute_async_client_operation(
+    client_pointer: *mut kmipkit_client_t,
+    limits_pointer: *mut kmipkit_codec_limits_t,
+    out: &mut *mut kmipkit_client_async_operation_outcome_t,
+    execute: impl FnOnce(
+        &mut Client,
+        &CodecLimits,
+    ) -> Result<kmipkit_client::ClientOperationOutcome, ClientError>,
+) -> i32 {
+    let client_handle = read_handle!(client_pointer, Client);
+    let HandleValue::Client(client) = &client_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let limits_handle = read_handle!(limits_pointer, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let Ok(mut client) = client.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    match execute(&mut client, limits) {
+        Ok(outcome) => {
+            *out = try_ffi!(try_make_handle(
+                Kind::ClientAsyncOperationOutcome,
+                HandleValue::ClientAsyncOperationOutcome(Mutex::new(outcome)),
+            ));
+            SUCCESS
+        }
+        Err(error) => record_client_error(&error),
+    }
+}
+
+/// Releases one caller-owned asynchronous operation outcome.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_release(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+) {
+    ffi_entrypoint(|| release(outcome, Kind::ClientAsyncOperationOutcome));
+}
+
+/// Reads common KMIP result metadata; result-message bytes borrow from `outcome`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_metadata_v1(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    out_metadata: *mut kmipkit_client_async_operation_metadata_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_metadata.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = read_handle!(outcome, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let result = outcome.result();
+        let message = result
+            .message()
+            .map(kmipkit_protocol::ResultMessage::as_bytes);
+        let cancellation_result = outcome.cancellation_result();
+        let Ok(struct_size) = u32::try_from(std::mem::size_of::<
+            kmipkit_client_async_operation_metadata_v1_t,
+        >()) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        // SAFETY: the caller provides a writable pointer to the complete v1 record.
+        unsafe {
+            *out_metadata = kmipkit_client_async_operation_metadata_v1_t {
+                struct_size,
+                abi_version: 1,
+                operation: outcome.operation().raw(),
+                outcome_kind: if outcome.is_pending() {
+                    BATCH_OUTCOME_PENDING
+                } else {
+                    BATCH_OUTCOME_COMPLETED
+                },
+                result_status: result.status().raw(),
+                has_result_reason: u32::from(result.reason().is_some()),
+                result_reason: result
+                    .reason()
+                    .map_or(0, kmipkit_protocol::ResultReason::raw),
+                has_cancellation_result: u32::from(cancellation_result.is_some()),
+                cancellation_result: cancellation_result.map_or(0, |value| value.raw()),
+                has_result_message: u32::from(message.is_some()),
+                reserved: 0,
+                result_message_data: message.map_or(ptr::null(), <[u8]>::as_ptr),
+                result_message_length: message
+                    .map_or(0, |value| u64::try_from(value.len()).unwrap_or(u64::MAX)),
+            };
+        }
+        SUCCESS
+    })
+}
+
+/// Borrows the exact asynchronous correlation bytes while the outcome remains open.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_correlation_value(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let value = scalar_out!(out_value);
+        *present = 0;
+        *value = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        let handle = read_handle!(outcome, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some((data, length)) =
+            outcome.with_asynchronous_correlation_value(|bytes| (bytes.as_ptr(), bytes.len()))
+        {
+            *present = 1;
+            *value = crate::kmipkit_byte_span_v1_t {
+                data: if length == 0 { ptr::null() } else { data },
+                length: u64::try_from(length).unwrap_or(u64::MAX),
+            };
+        }
+        SUCCESS
+    })
+}
+
+/// Copies a successful operation's generic Response Payload into a caller-owned TTLV handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_async_operation_outcome_response_payload_ttlv(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    out_present: *mut u8,
+    out_payload: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let payload = out_slot!(out_payload);
+        *present = 0;
+        let handle = read_handle!(outcome, ClientAsyncOperationOutcome);
+        let HandleValue::ClientAsyncOperationOutcome(outcome) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(outcome) = outcome.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        let Some(structure) =
+            outcome.with_response_payload(|view| super::clone_structure_view(&view))
+        else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(structure);
+        *payload = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Creates local accounting from a live successful Get Usage Allocation item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_usage_allocation_context_create(

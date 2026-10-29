@@ -10,6 +10,7 @@ use std::{collections::HashMap, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
 
 use crate::{
+    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
     kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
@@ -332,6 +333,7 @@ enum Kind {
     ClientBatch,
     ClientBatchResponse,
     ClientBatchItemResponse,
+    ClientAsyncOperationOutcome,
     UsageAllocationContext,
     SplitKeyReference,
     RevocationReason,
@@ -383,6 +385,7 @@ enum HandleValue {
         response: Arc<ClientBatchResponse>,
         index: usize,
     },
+    ClientAsyncOperationOutcome(Mutex<kmipkit_client::ClientOperationOutcome>),
     UsageAllocationContext(Mutex<UsageAllocationContext>),
     SplitKeyReference(SplitKeyReference),
 }

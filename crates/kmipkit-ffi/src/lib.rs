@@ -62,6 +62,28 @@ pub struct kmipkit_client_batch_item_response_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_client_async_operation_outcome_t {
+    _private: [u8; 0],
+}
+
+/// Common result fields for one explicit asynchronous follow-up operation.
+#[repr(C)]
+pub struct kmipkit_client_async_operation_metadata_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operation: u32,
+    pub outcome_kind: u32,
+    pub result_status: u32,
+    pub has_result_reason: u32,
+    pub result_reason: u32,
+    pub has_cancellation_result: u32,
+    pub cancellation_result: u32,
+    pub has_result_message: u32,
+    pub reserved: u32,
+    pub result_message_data: *const u8,
+    pub result_message_length: u64,
+}
+#[repr(C)]
 pub struct kmipkit_usage_allocation_context_t {
     _private: [u8; 0],
 }
