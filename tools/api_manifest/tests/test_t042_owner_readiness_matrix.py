@@ -100,5 +100,15 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
         self.assertIn("profile-validation APIs and profile capability claims blocked", profile_row)
 
 
+    def test_t042_stays_open_while_t036_owner_is_draft(self) -> None:
+        tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
+        task_rows = [
+            line
+            for line in tasks_path.read_text(encoding="utf-8").splitlines()
+            if line.startswith("- [") and " T042 " in line
+        ]
+        self.assertEqual(len(task_rows), 1)
+        self.assertTrue(task_rows[0].startswith("- [ ] T042 "))
+
 if __name__ == "__main__":
     unittest.main()
