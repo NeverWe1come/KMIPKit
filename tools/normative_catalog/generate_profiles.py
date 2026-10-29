@@ -409,6 +409,45 @@ def _rust_optional_string(value: Any) -> str:
     return f"Some({rust_string_literal(value)})"
 
 
+def _render_profile_test_case_membership(
+    profiles: Sequence[Mapping[str, Any]],
+    test_ids_by_profile: Mapping[str, tuple[str, ...]],
+    test_case_indexes: Mapping[str, int],
+) -> list[str]:
+    """Render compact, ordered test-case references for each client profile."""
+    lines: list[str] = [
+        "const fn expand_profile_test_cases<const N: usize>(",
+        "    indexes: [usize; N],",
+        ") -> [GeneratedProfileTestCase; N] {",
+        "    let mut result = [generated_profile_test_case(\"\", \"\", \"\", \"\"); N];",
+        "    let mut index = 0;",
+        "    while index < N {",
+        "        result[index] = PROFILE_TEST_CASES[indexes[index]];",
+        "        index += 1;",
+        "    }",
+        "    result",
+        "}",
+        "",
+    ]
+    for profile_index, profile in enumerate(profiles):
+        profile_id = profile["profile_id"]
+        test_indexes = ", ".join(
+            str(test_case_indexes[test_id])
+            for test_id in test_ids_by_profile[profile_id]
+        )
+        test_count = len(test_ids_by_profile[profile_id])
+        lines.extend(
+            [
+                "#[rustfmt::skip]",
+                f"const PROFILE_TEST_CASES_FOR_PROFILE_{profile_index}: "
+                f"[GeneratedProfileTestCase; {test_count}] = "
+                f"expand_profile_test_cases([{test_indexes}]);",
+                "",
+            ]
+        )
+    return lines
+
+
 def _source_gap_locator(requirement: Mapping[str, Any]) -> str | None:
     if requirement.get("source_gap_id") is None:
         return None
@@ -769,38 +808,12 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         )
     lines.extend(["];", ""])
     lines.extend(
-        [
-            "const fn expand_profile_test_cases<const N: usize>(",
-            "    indexes: [usize; N],",
-            ") -> [GeneratedProfileTestCase; N] {",
-            "    let mut result = [generated_profile_test_case(\"\", \"\", \"\", \"\"); N];",
-            "    let mut index = 0;",
-            "    while index < N {",
-            "        result[index] = PROFILE_TEST_CASES[indexes[index]];",
-            "        index += 1;",
-            "    }",
-            "    result",
-            "}",
-            "",
-        ]
+        _render_profile_test_case_membership(
+            profiles,
+            test_ids_by_profile,
+            test_case_indexes,
+        )
     )
-
-    for profile_index, profile in enumerate(profiles):
-        profile_id = profile["profile_id"]
-        test_indexes = ", ".join(
-            str(test_case_indexes[test_id])
-            for test_id in test_ids_by_profile[profile_id]
-        )
-        test_count = len(test_ids_by_profile[profile_id])
-        lines.extend(
-            [
-                "#[rustfmt::skip]",
-                f"const PROFILE_TEST_CASES_FOR_PROFILE_{profile_index}: "
-                f"[GeneratedProfileTestCase; {test_count}] = "
-                f"expand_profile_test_cases([{test_indexes}]);",
-                "",
-            ]
-        )
 
     source_clause_id_pool = sorted(
         {
