@@ -59,6 +59,8 @@ mod set_attribute_abi_tests;
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
 mod set_defaults_abi_tests;
+#[path = "async_operation_abi_tests.rs"]
+mod async_operation_abi_tests;
 
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;
