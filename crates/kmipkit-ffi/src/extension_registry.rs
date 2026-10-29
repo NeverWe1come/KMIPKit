@@ -9,6 +9,10 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::{collections::HashMap, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
 
+#[cfg(test)]
+#[path = "../tests/support/ffi_pointer_safety_tests.rs"]
+mod ffi_pointer_safety_tests;
+
 use crate::{
     kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
     kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
