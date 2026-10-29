@@ -221,11 +221,12 @@ true, its default. KMIPKit does not claim to control those server-side effects.
 
 `execute_query_async_requests` supports the optional correlation-value and
 operation filters from OASIS KMIP v2.1 §6.1.41, Table 285. Its response payload
-is exposed as generic TTLV while `KMIPKIT-DISC-039` remains open. KMIPKit does
-not present a typed interpretation of the disputed Table 286 caption. The
-catalog gap for the required Process request field in Table 278 also remains
-open under `OD-002`; no generated catalog output or upstream OASIS source was
-changed.
+is exposed as generic TTLV by this feature. `KMIPKIT-DEC-015` records the
+accepted interpretation of Table 286 for the separate typed mapping work in
+KMIPKIT-0043 T035; the printed caption and pinned OASIS source remain
+unchanged. This interpretation is not a formal conformance claim. The catalog
+gap for the required Process request field in Table 278 remains open under
+`OD-002`.
 
 ## Resource limits
 

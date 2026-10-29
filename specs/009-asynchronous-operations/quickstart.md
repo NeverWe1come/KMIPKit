@@ -13,7 +13,7 @@ This document is a behavior walkthrough for reviewers using the implemented Rust
 
 ## Query outstanding requests
 
-The caller may submit Query Asynchronous Requests with no filters or with correlation-value and operation filters. Until `KMIPKIT-DISC-039` is resolved, the response remains a generic TTLV value. It is not labeled as an authoritative typed interpretation of Table 286.
+The caller may submit Query Asynchronous Requests with no filters or with correlation-value and operation filters. This feature exposes the response as generic TTLV. `KMIPKIT-DEC-015` records the accepted interpretation of Table 286 for the separate typed mapping work in KMIPKIT-0043 T035; it does not change the pinned caption or establish formal conformance.
 
 `Client::execute_query_async_requests` is the explicit one-exchange entry point. The `ClientOperationOutcome` exposes its payload only through a callback-scoped generic structure view. `Client::execute_process` accepts the caller-selected Asynchronous Indicator for the Process operation; a Pending result returns immediately for a later caller decision.
 
