@@ -65,7 +65,7 @@ T035 is complete based on the exact implementation-head CI evidence below. T001 
 - [Three-platform coverage gate](https://github.com/NeverWe1come/KMIPKit/actions/runs/37504189228/job/112421715948) passed: changed Rust 693/711 (97.47%), TTLV/protocol 2420/2487 (97.31%), transport/FFI 87/87 (100%), and workspace 4253/4395 (96.77%). Each category exceeded its configured threshold; the report counted zero summary-only lines as uncovered.
 - [Normative inventory job](https://github.com/NeverWe1come/KMIPKit/actions/runs/37504189228/job/112421730691) passed immutable-source comparison, the 1,411-candidate source audit, catalog validation (4 sources, 1,411 clauses, 4,024 records), coverage-report verification, and generated TTLV-tag/result checks.
 - [Dependency-policy job](https://github.com/NeverWe1come/KMIPKit/actions/runs/37504189228/job/112421731153) passed root and fuzz workspace checks with cargo-deny 0.20.2 and unchanged lockfile hashes. The independent security scan recorded under T037 found no reportable findings; these checks do not substitute for the qualified human security review required before 1.0.
-- The merge followed successful completion of the full CI run; this evidence makes no claim about repository branch-protection configuration. Reviewer-owned checklist items, the open KMIPKIT-DISC-039/catalog issue, and release-wide qualification gates remain unchanged.
+- The merge followed successful completion of the full CI run; this evidence makes no claim about repository branch-protection configuration. At merge time, KMIPKIT-DISC-039 remained open. Follow-up decision KMIPKIT-DEC-015 now records the accepted response interpretation; typed mapping remains separate in KMIPKIT-0043 T035. Reviewer-owned checklist items and release-wide qualification gates remain unchanged.
 
 ## Phase 0: Review and readiness gates
 
@@ -135,14 +135,14 @@ T035 is complete based on the exact implementation-head CI evidence below. T001 
 
 ## Phase 4: User Story 3 — Query outstanding asynchronous requests (Priority: P2)
 
-**Goal**: Typed optional filters and generic response access while DISC-039 is unresolved.
+**Goal**: Typed optional filters and generic response access; typed Query response mapping remains separate in KMIPKIT-0043 T035 under DEC-015.
 
 **Independent Test**: Encode absent/empty/repeated filters and round-trip opaque response subtrees losslessly.
 
 ### Red — tests first
 
 - [x] T025 [US3] Add failing Query request filter field/order/repetition and correlation-sentinel redaction tests in `crates/kmipkit-protocol/tests/unit/query_async_requests_tests.rs`; cite §6.1.41/Table 285 and §7.1/Table 352 (KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009).
-- [x] T026 [US3] Add failing generic Query response round-trip tests in `crates/kmipkit-protocol/tests/unit/query_async_response_tests.rs`; assert no typed Table 286 mapping or conformance claim while DISC-039 is open (KMIPKIT-0009-FR-007).
+- [x] T026 [US3] Add failing generic Query response round-trip tests in `crates/kmipkit-protocol/tests/unit/query_async_response_tests.rs`; at implementation time, assert no typed Table 286 mapping or conformance claim while DISC-039 is open (KMIPKIT-0009-FR-007).
 - [x] T027 [US3] Add failing Query one-exchange/response-association, caller-input non-retention, redaction, no ordinary unzeroized duplicate, and KMIPKit-owned filter-copy zeroization tests on success/error paths in `crates/kmipkit-client/tests/unit/query_async_execution_tests.rs`; cite §6.1.41/Tables 285–287 and §8.6/Table 399, without asserting a typed Table 286 schema (KMIPKIT-0009-FR-006–KMIPKIT-0009-FR-010). Follow-up tests use the existing observer specifically for the encoded request owner on success and exchange error; the Query model-drop AST test and separate caller-owned-buffer assertion cover the input lifetime boundary.
 
 ### Green — minimum implementation
@@ -174,7 +174,7 @@ T035 is complete based on the exact implementation-head CI evidence below. T001 
 
 ## Definition of completion for this feature
 
-All unblocked scope, exact byte behavior, response-state semantics, error/delivery evidence, traceability, docs, tests, coverage, CI, QA, and security gates pass. If DISC-039 or the Process catalog ID remains unresolved, generic response access and typed Process behavior may be complete, but the associated typed Query mapping/catalog conformance gate is explicitly still open and release-wide traceability is not claimed closed.
+All unblocked scope, exact byte behavior, response-state semantics, error/delivery evidence, traceability, docs, tests, coverage, CI, QA, and security gates pass. DEC-015 resolves the Table 286 context interpretation, but generic response access remains the implementation in this feature and typed Query mapping remains tracked in KMIPKIT-0043 T035. The Process catalog requirement ID remains open under OD-002; release-wide traceability and formal conformance are not claimed closed.
 
 ## Phase 6: Convergence
 

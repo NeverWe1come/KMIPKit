@@ -15,6 +15,7 @@ from typing import Any, Mapping
 
 PR_REQUIRED_JOBS = (
     ("Documentation contracts", "docs-contracts"),
+    ("Fast preflight (Linux)", "fast-preflight"),
     ("Core matrix (3 OS × Rust 1.94 and stable)", "core"),
     ("Script contracts (3 OS)", "script-contracts"),
     ("C consumer (3 OS)", "language-c"),

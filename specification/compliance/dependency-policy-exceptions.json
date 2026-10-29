@@ -19,7 +19,7 @@
       "id": "KMIPKIT-0011-EX-004",
       "kind": "duplicate",
       "package": "syn",
-      "version": "3.0.6",
+      "version": "3.0.9",
       "source": "registry+https://github.com/rust-lang/crates.io-index",
       "rationale": "This version is required by tokio-macros. The same graph requires syn 2 for serde_derive and KMIPKit test dependencies.",
       "mitigation": "Reassess the exact proc-macro graph when Tokio or test dependencies change; remove this exception when upstream requirements converge. Do not downgrade syn below the versions required by the current graph. Expire this exception by 2026-12-31.",

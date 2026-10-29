@@ -20,7 +20,7 @@ deny = [
 ]
 skip = [
     { crate = "syn@2.0.119", reason = "KMIPKIT-0011-EX-003: approved proc-macro dependency split" },
-    { crate = "syn@3.0.6", reason = "KMIPKIT-0011-EX-004: approved Tokio proc-macro dependency" },
+    { crate = "syn@3.0.9", reason = "KMIPKIT-0011-EX-004: approved Tokio proc-macro dependency" },
 ]
 
 [licenses]
