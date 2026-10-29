@@ -282,3 +282,25 @@ open-alert query passed on the final reviewed head. The first CI attempt's Linux
 JVM abort did not reproduce in either the focused local test or full Java/JNI
 suite. Alert #20 is recorded as dismissed false positive. The PR remains a draft
 pending human review.
+
+## Windows transfer-fixture path traversal correction — 2026-10-29
+
+Independent security review found that a malicious `parameters.curve` value in
+the checked-in capability matrix could add path components to the EC fixture
+stem. On Windows, a value such as `/../../client/client` could make an ignored
+Import/Register test read the generated mTLS `client.key` and include those
+bytes as KMIP key material in the request to the local test KMS. The issue was
+limited to the opt-in integration harness and required a poisoned matrix row
+plus running that case; it did not affect production client code. The fixture
+stem now accepts only nonempty ASCII alphanumeric curve labels, which covers
+the KMIP curve names represented by this fixture set and prevents both slash
+and backslash path components.
+
+| Phase / check | Evidence | Result |
+| --- | --- | --- |
+| Red | DCO commit `c8f87baf0` | `fixture_material_path_rejects_curve_path_traversal` failed because the malicious curve produced a path instead of an error. |
+| Green | DCO commit `c696ebeda` | Rejects empty or non-alphanumeric EC curve labels before constructing a fixture filename; error text does not echo the input. |
+| Focused regression | `cargo test --offline -p kmipkit-client --test cosmian_kms fixture_material_path_rejects_curve_path_traversal -- --nocapture` | PASS: 1 test. |
+| Transfer inventory | `cargo test --offline -p kmipkit-client --test cosmian_kms transfer::inventory_tests -- --nocapture` | PASS: 29 tests. |
+| Full offline integration-test target | `cargo test --offline -p kmipkit-client --test cosmian_kms` | PASS: 124 tests; 110 live-KMS tests ignored. Existing AWS-LC MSVC/NASM environment warnings did not prevent completion. |
+| Lint and formatting | `cargo clippy --offline -p kmipkit-client --tests --all-features -- -D warnings`; `cargo fmt --all --check` | PASS. |

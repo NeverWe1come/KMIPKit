@@ -160,3 +160,11 @@ The approved scope expands the earlier selected integration to every applicable 
   both passed under WSL Ubuntu 26.04. CI attempt 2 passed all 35 jobs (2 schedule-only skips), and
   CodeQL analysis `40847461425` plus zizmor run `40847461274` passed on the same SHA. The open-alert
   query returned none; alert #20 remains recorded as dismissed false positive.
+  Windows transfer-fixture path traversal follow-up (2026-10-29): independent review found that a
+  poisoned EC curve label could make an ignored Import/Register case read the generated mTLS
+  `client.key` and send it as key material to the local KMS. Red commit `c8f87baf0` records the
+  expected regression failure; Green `c696ebeda` rejects empty or non-alphanumeric curve labels
+  before path construction without echoing the value. The focused regression passed 1/1, all
+  transfer inventory tests passed 29/29, and the complete offline Cosmian test target passed
+  124 tests with 110 live tests ignored. Package Clippy and formatting passed. The change is confined
+  to the test harness; independent post-fix security review and hosted CI remain pending.
