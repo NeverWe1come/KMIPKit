@@ -368,7 +368,9 @@ def _rust_string_field(record: Mapping[str, Any], field: str) -> str:
     return rust_string_literal(value)
 
 
-def _rust_string_array(record: Mapping[str, Any], field: str) -> str:
+def _rust_string_array(
+    record: Mapping[str, Any], field: str, *, compact: bool = False
+) -> str:
     values = record.get(field)
     if (
         not isinstance(values, list)
@@ -381,6 +383,8 @@ def _rust_string_array(record: Mapping[str, Any], field: str) -> str:
     encoded = [rust_string_literal(value) for value in values]
     if len(encoded) == 1:
         return f"&[{encoded[0]}]"
+    if compact:
+        return f"&[{', '.join(encoded)}]"
     encoded_values = ",\n            ".join(encoded) + ","
     return f"&[\n            {encoded_values}\n        ]"
 
@@ -453,9 +457,9 @@ def _client_requirement_constructor_arguments(
         _rust_optional_string(_source_gap_locator(requirement)),
         f"GeneratedVerificationCategory::{_verification_category(category_source)}",
         _rust_string_field(requirement, "scope_state"),
-        _rust_string_array(requirement, "source_clause_ids"),
-        _rust_string_array(requirement, "profile_ids"),
-        _rust_string_array(requirement, "test_case_ids"),
+        _rust_string_array(requirement, "source_clause_ids", compact=True),
+        _rust_string_array(requirement, "profile_ids", compact=True),
+        _rust_string_array(requirement, "test_case_ids", compact=True),
         str(
             requirement.get("status") == "deviated"
             and requirement.get("decision_id") in accepted_decision_ids
@@ -728,6 +732,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         [
             "",
             "/// Client requirements in the approved product scope, sorted by stable identifier.",
+            "#[rustfmt::skip]",
             "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[",
         ]
     )
@@ -735,30 +740,26 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         constructor_arguments = _client_requirement_constructor_arguments(
             requirement, accepted_decision_ids
         )
-        lines.extend(
-            [
-                "    generated_client_requirement(",
-                *(f"        {argument}," for argument in constructor_arguments),
-                "    ),",
-            ]
+        lines.append(
+            "    generated_client_requirement("
+            + ", ".join(constructor_arguments)
+            + "),"
         )
     lines.extend(["];", ""])
 
     lines.append("")
     lines.append("/// Official conformance cases referenced by client profiles, interned by stable test identifier.")
+    lines.append("#[rustfmt::skip]")
     lines.append("pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[")
     for test_id in shared_test_ids:
         test_case = tests_by_id[test_id]
-        lines.extend(
-            [
-                "    generated_profile_test_case(",
-                f"        {rust_string_literal(test_id)},",
-                f"        {_rust_string_field(test_case, 'official_case_id')},",
-                f"        {_rust_string_field(test_case, 'mandatory_status')},",
-                f"        {_rust_string_field(test_case, 'fixture_availability')},",
-                "    ),",
-            ]
+        arguments = (
+            rust_string_literal(test_id),
+            _rust_string_field(test_case, "official_case_id"),
+            _rust_string_field(test_case, "mandatory_status"),
+            _rust_string_field(test_case, "fixture_availability"),
         )
+        lines.append("    generated_profile_test_case(" + ", ".join(arguments) + "),")
     lines.extend(["];", ""])
 
     source_clause_id_pool = sorted(
