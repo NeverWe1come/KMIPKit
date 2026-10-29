@@ -428,6 +428,41 @@ def _source_gap_locator(requirement: Mapping[str, Any]) -> str | None:
     )
 
 
+def _client_requirement_constructor_arguments(
+    requirement: Mapping[str, Any],
+    accepted_decision_ids: set[Any],
+) -> tuple[str, ...]:
+    """Render the ordered values passed to one generated client-requirement row."""
+    requirement_id = requirement.get("requirement_id")
+    source_keyword = requirement.get("source_keyword")
+    source_force = requirement.get("source_force")
+    category_source = source_keyword if isinstance(source_keyword, str) else source_force
+    if (
+        not isinstance(requirement_id, str)
+        or not requirement_id
+        or not isinstance(category_source, str)
+        or not category_source
+    ):
+        raise ProfileGenerationError("client requirement lacks stable source metadata")
+
+    return (
+        rust_string_literal(requirement_id),
+        _rust_optional_string(source_keyword),
+        _rust_optional_string(source_force),
+        _rust_optional_string(requirement.get("source_gap_id")),
+        _rust_optional_string(_source_gap_locator(requirement)),
+        f"GeneratedVerificationCategory::{_verification_category(category_source)}",
+        _rust_string_field(requirement, "scope_state"),
+        _rust_string_array(requirement, "source_clause_ids"),
+        _rust_string_array(requirement, "profile_ids"),
+        _rust_string_array(requirement, "test_case_ids"),
+        str(
+            requirement.get("status") == "deviated"
+            and requirement.get("decision_id") in accepted_decision_ids
+        ).lower(),
+    )
+
+
 def _encode_profile_id_bitmap(values: Sequence[str], universe: Sequence[str]) -> str:
     selected_values = set(values)
     bitmap = bytearray((len(universe) + 7) // 8)
@@ -697,37 +732,13 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         ]
     )
     for requirement in requirements:
-        requirement_id = requirement.get("requirement_id")
-        source_keyword = requirement.get("source_keyword")
-        source_force = requirement.get("source_force")
-        category_source = source_keyword if isinstance(source_keyword, str) else source_force
-        if (
-            not isinstance(requirement_id, str)
-            or not requirement_id
-            or not isinstance(category_source, str)
-            or not category_source
-        ):
-            raise ProfileGenerationError("client requirement lacks stable source metadata")
+        constructor_arguments = _client_requirement_constructor_arguments(
+            requirement, accepted_decision_ids
+        )
         lines.extend(
             [
                 "    generated_client_requirement(",
-                f"        {rust_string_literal(requirement_id)},",
-                f"        {_rust_optional_string(source_keyword)},",
-                f"        {_rust_optional_string(source_force)},",
-                f"        {_rust_optional_string(requirement.get('source_gap_id'))},",
-                f"        {_rust_optional_string(_source_gap_locator(requirement))},",
-                (
-                    "        GeneratedVerificationCategory::"
-                    f"{_verification_category(category_source)},"
-                ),
-                f"        {_rust_string_field(requirement, 'scope_state')},",
-                f"        {_rust_string_array(requirement, 'source_clause_ids')},",
-                f"        {_rust_string_array(requirement, 'profile_ids')},",
-                f"        {_rust_string_array(requirement, 'test_case_ids')},",
-                (
-                    "        "
-                    f"{str(requirement.get('status') == 'deviated' and requirement.get('decision_id') in accepted_decision_ids).lower()},"
-                ),
+                *(f"        {argument}," for argument in constructor_arguments),
                 "    ),",
             ]
         )
