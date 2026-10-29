@@ -1434,7 +1434,12 @@ def _verified_current_workflow_evidence(
             or run["head_sha"].lower() != sha.lower()
             or type(run.get("run_attempt")) is not int
             or run["run_attempt"] != int(run_attempt)
-            or run.get("path") != ".github/workflows/ci.yml"
+            or run.get("path")
+            not in {
+                ".github/workflows/ci.yml",
+                ".github/workflows/ci.yml@release/1.0.0",
+                ".github/workflows/ci.yml@refs/heads/release/1.0.0",
+            }
             or run.get("status") != "in_progress"
         ):
             return False
@@ -1457,7 +1462,7 @@ def _verified_current_workflow_evidence(
         required_prefixes = ("Core /", "Script contracts /", "Normative inventory /", "Coverage /")
         required_exact = {
             "Coverage gate / selected scopes",
-            "Dependency policy / active release schedule",
+            "Dependency policy / pull request",
         }
         observed_prefixes: set[str] = set()
         observed_exact: set[str] = set()
