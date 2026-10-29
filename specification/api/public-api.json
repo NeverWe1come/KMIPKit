@@ -328576,12 +328576,19 @@
       "name": "Cancel",
       "section": "6.1.5",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "apiState": "authorized_wip",
       "ownerDependency": {
         "state": "candidate",
         "specId": "KMIPKIT-0009"
-      }
+      },
+      "candidateSpecId": "KMIPKIT-0009",
+      "implementationAuthorization": {
+        "kind": "direct-human-instruction",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Draft",
+        "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests. This does not claim formal approval of this specification or its reviewer-owned checklists. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made."
+      },
+      "declarations": {"rust": [], "c": [], "java": [], "python": []}
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
@@ -330502,24 +330509,38 @@
       "name": "Poll",
       "section": "6.1.38",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "apiState": "authorized_wip",
       "ownerDependency": {
         "state": "candidate",
         "specId": "KMIPKIT-0009"
-      }
+      },
+      "candidateSpecId": "KMIPKIT-0009",
+      "implementationAuthorization": {
+        "kind": "direct-human-instruction",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Draft",
+        "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests. This does not claim formal approval of this specification or its reviewer-owned checklists. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made."
+      },
+      "declarations": {"rust": [], "c": [], "java": [], "python": []}
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-PROCESS",
       "name": "Process",
       "section": "6.1.39",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "apiState": "authorized_wip",
       "ownerDependency": {
         "state": "candidate",
         "specId": "KMIPKIT-0009"
-      }
+      },
+      "candidateSpecId": "KMIPKIT-0009",
+      "implementationAuthorization": {
+        "kind": "direct-human-instruction",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Draft",
+        "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests. This does not claim formal approval of this specification or its reviewer-owned checklists. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made."
+      },
+      "declarations": {"rust": [], "c": [], "java": [], "python": []}
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-QUERY",
@@ -330571,12 +330592,19 @@
       "name": "Query Asynchronous Requests",
       "section": "6.1.41",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "apiState": "authorized_wip",
       "ownerDependency": {
         "state": "candidate",
         "specId": "KMIPKIT-0009"
-      }
+      },
+      "candidateSpecId": "KMIPKIT-0009",
+      "implementationAuthorization": {
+        "kind": "direct-human-instruction",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Draft",
+        "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests. This does not claim formal approval of this specification or its reviewer-owned checklists. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made."
+      },
+      "declarations": {"rust": [], "c": [], "java": [], "python": []}
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-RECOVER",
