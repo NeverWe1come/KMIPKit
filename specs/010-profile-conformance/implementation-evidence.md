@@ -8405,3 +8405,54 @@ The new-code coverage threshold and SonarCloud quality gate were not changed.
 A new SonarCloud analysis is required to measure whether these source
 reductions bring PR #90 below its configured duplication limit; no pass is
 claimed until that analysis completes.
+
+## Compact profile rows and generated-rule report compatibility (2026-10-29)
+
+SonarCloud's latest completed analysis for `dc23746b4` still reported 8.69057%
+new-code duplication against the unchanged 3% limit. The largest remaining
+duplication source was the generated `GeneratedClientRequirement` and
+`GeneratedProfileTestCase` struct literals. The generator now constructs those
+records through shared `const fn` helpers; the public struct fields and values
+remain unchanged. Generator tests parse every constructor row and compare all
+requirement fields and profile test-case fields with the validated catalog.
+The new SonarCloud analysis for `9774af4a7` has not completed, so no duplication
+gate pass is claimed.
+
+This generator change also emits the full computed normative clause closure in
+each profile's public `source_clause_ids` field. The prior checked-in output
+contained direct root clauses only, despite the approved KMIPKIT-0010 model and
+catalog requiring the complete closure. All 18 generated profiles now match
+the pinned closure oracle and catalog. This corrects stale generated evidence;
+it does not broaden runtime rule selection, which continues to use the
+requirement-level mappings and fails closed when an applicable mapping is
+missing.
+
+The compact `TypedRuleMapping` constructor calls exposed an assumption in the
+coverage and traceability source reader, which accepted only struct literals.
+The reader now accepts both strict literal rows and the named const-constructor
+grammar, validating each argument, nested test-evidence call, and constraint
+against its existing allowlists. The generator evidence and report parsers do
+not execute Rust source.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `27d986967` | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_reader_parses_const_mapping_constructors` — expected failure: the strict reader rejected the approved static constructor form. |
+| Green | `55e32d7e2` | The focused parser test, `test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`, and `report.py --check` — PASS; the CI reader now resolves all 567 emitted mapping/test-evidence rows. |
+| Red | `f8fc0f16c` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_generated_normative_tables_use_shared_const_constructors` — expected failure: generated normative rows were still repeated struct literals. |
+| Green | `9774af4a7` | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` — PASS: 71 tests (1 skipped); `cargo test -p kmipkit-protocol --all-features` — PASS: 1,215 unit tests plus integration and documentation tests; both profile generator and coverage report checks, and `cargo fmt --all --check` — PASS. Each generated requirement argument, closure array, test-case value, and deviation flag is checked against the catalog. |
+
+The Windows-hosted generator and protocol checks pass locally. CI for `9774af4a7`
+reported `clippy::too_many_arguments` for the generated 11-field constructor
+on its core matrix jobs. The generated constructor now carries one narrow,
+adjacent lint allowance with a comment explaining that it mirrors the public
+metadata fields so generated rows can stay compact; no workspace lint or gate
+was relaxed.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `633246f65` | The generated-table contract test now requires the local lint allowance and its rationale; expected failure before generator implementation. CI on `9774af4a7` confirmed the missing allowance in six core Clippy jobs. |
+| Green | `21d761709` | The focused generated-table contract test; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; profile generator `--check`; `cargo fmt --all --check`; `git diff --check` — PASS. Clippy reports only existing non-fatal aws-lc-sys toolchain/NASM warnings. |
+
+The run for `9774af4a7` is obsolete; CI and SonarCloud must finish against the
+corrected head before their status is reported. The 3% Sonar gate, coverage
+threshold policy, and CI lint settings were not changed.
