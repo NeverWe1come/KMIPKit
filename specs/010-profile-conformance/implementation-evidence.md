@@ -8244,3 +8244,40 @@ This closes the caller-forgeable evidence finding. It does not create the
 administrator-managed protected-branch policy or Actions App credential;
 T026 remains open and release readiness stays fail-closed until those external
 prerequisites and eligible protected-push evidence exist.
+
+## Protected release repository setup follow-up (2026-10-29)
+
+The repository administrator requested setup of the protected branches needed
+to continue KMIPKIT-0010. Live GitHub API verification now confirms that both
+`master` and `release/1.0.0` require one approving review, dismiss stale
+approvals, enforce rules for administrators, disable force pushes and deletion,
+require the `CI summary / at a glance` check from GitHub Actions, and require
+conversation resolution. The `release-evidence` Actions environment now allows
+only `release/1.0.0`; its deployment-branch policy was verified through the
+GitHub API. Workflow permissions remain read-only by default and cannot approve
+pull requests.
+
+The exact T026 bypass-policy contract cannot currently be represented by this
+personal repository's branch-protection API. GitHub returned HTTP 422 when the
+update included `bypass_pull_request_allowances`, including the empty `users`,
+`teams`, and `apps` lists required by T026. Omitting the field allows GitHub to
+apply the other protection settings, but the subsequent GET response omits
+`bypass_pull_request_allowances`; `scripts/branch_protection.py` therefore
+rejects the response as designed. GitHub's protected-branch documentation
+limits bypass-list actors to organization-owned repositories
+([protected-branch documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)).
+No ruleset or code change was used to weaken this fail-closed requirement.
+
+The `release-evidence` environment currently has neither the
+`PROFILE_EVIDENCE_APP_CLIENT_ID` variable nor the
+`PROFILE_EVIDENCE_APP_PRIVATE_KEY` secret. The authenticated terminal session
+does not provide a registered, installed App or its private key. No credential
+was created, read, or stored. The feature branch already contains the current
+`release/1.0.0` head, so no merge was necessary; the worktree retains an
+untracked `bindings/java/target/` build directory, which was left untouched.
+
+T026 remains incomplete: an eligible protected-release push cannot pass until
+the repository is organization-owned (or its approved requirements are changed
+to match GitHub's personal-repository API behavior) and the restricted
+read-only GitHub App credentials are configured. No protected-release push
+was made, and no profile readiness or conformance claim is asserted.
