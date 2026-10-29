@@ -256,7 +256,8 @@ tests, not the production nonce API.
 | Windows | `cargo +1.94 fmt --all -- --check`; focused freshness test; full `cosmian_kms` test binary; client Clippy with `-D warnings` | PASS: 123 tests passed, 110 live-server tests ignored; formatting and Clippy passed. |
 | Linux / WSL | Same focused and full Rust tests, plus client Clippy with `-D warnings` | PASS: freshness regression passed; 123 tests passed, 110 live-server tests ignored; Clippy passed. |
 | Independent security re-review | Read-only review of the final code change and nonce flow | PASS: no fixed tweak remains on this test path; no production API or wire-model changes. |
-| Hosted verification | CodeQL analysis `40845851962`, CodeQL check `123353425580`, and complete CI `40845851898` on exact head `653e66365d2f430714e7aa83c0ca023bbc7e30a2` | PASS; alert #20 is recorded as dismissed false positive, and the exact-head CodeQL and CI checks passed. |
+| Hosted verification | On `653e66365d2f430714e7aa83c0ca023bbc7e30a2`, CodeQL analysis `40845851962`, CodeQL check `123353425580`, and CI `40845851898` passed. On final documentation head `ac0255696aee2bedd5b4d4d7a065a8f524f2d5fa`, CodeQL `40847461425` and zizmor `40847461274` passed; CI `40847461198` attempt 1 hit a Linux JVM heap abort in `NativeTransportConfigurationBoundaryTest`, and attempt 2 passed all 35 jobs (2 schedule-only skips). | PASS after rerun; no open CodeQL alerts, with alert #20 recorded as dismissed false positive. |
+| Reproduction check | WSL Ubuntu 26.04: focused `NativeTransportConfigurationBoundaryTest` and complete `mvn --batch-mode --file bindings/java/pom.xml test` | PASS: focused class 8/8; complete suite 130 passed, 1 skipped, plus the Java example. |
 
 ### CodeQL alert #20 triage — 2026-10-29
 
@@ -276,6 +277,8 @@ Alert #20 was dismissed as **false positive** through the GitHub code-scanning
 alert API, with a concise rationale recorded on the alert. No rule, query,
 repository configuration, or source suppression was changed. The full CI run
 `40844237405` passed on head `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`.
-T047 is complete: exact-head CodeQL analysis and full CI passed after the evidence
-update, and the reported alert is recorded as dismissed false positive. The PR
-remains a draft pending human review.
+T047 is complete: CodeQL, zizmor, the successful rerun of complete CI, and the
+open-alert query passed on the final reviewed head. The first CI attempt's Linux
+JVM abort did not reproduce in either the focused local test or full Java/JNI
+suite. Alert #20 is recorded as dismissed false positive. The PR remains a draft
+pending human review.

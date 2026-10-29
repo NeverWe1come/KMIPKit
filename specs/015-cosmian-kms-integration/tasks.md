@@ -154,3 +154,9 @@ The approved scope expands the earlier selected integration to every applicable 
   `653e66365d2f430714e7aa83c0ca023bbc7e30a2`, CodeQL analysis `40845851962` and complete CI run
   `40845851898` both passed. Alert #20 is recorded as dismissed false positive, and the exact-head
   CodeQL check passed. T047 is complete; the PR remains a draft pending human review.
+  Exact-head follow-up on `ac0255696aee2bedd5b4d4d7a065a8f524f2d5fa`: CI attempt 1 reported a
+  Linux JVM abort (`corrupted double-linked list`) while entering `NativeTransportConfigurationBoundaryTest`;
+  no Java assertion failed. The focused 8-test class and full Java/JNI suite (130 passed, 1 skipped)
+  both passed under WSL Ubuntu 26.04. CI attempt 2 passed all 35 jobs (2 schedule-only skips), and
+  CodeQL analysis `40847461425` plus zizmor run `40847461274` passed on the same SHA. The open-alert
+  query returned none; alert #20 remains recorded as dismissed false positive.
