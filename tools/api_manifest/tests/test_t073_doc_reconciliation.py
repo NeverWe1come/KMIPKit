@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -151,27 +152,42 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         )
         self.assertNotIn("manifest status table below", reference)
 
-    def test_t073_stays_open_until_c_package_identity_is_authoritative(self) -> None:
+    def test_t073_closes_with_repository_owned_c_package_identity_evidence(self) -> None:
         tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
         tasks = tasks_path.read_text(encoding="utf-8")
         t073_line = next(line for line in tasks.splitlines() if "T073 [US1]" in line)
-        self.assertTrue(t073_line.startswith("- [ ] T073 [US1]"))
-        self.assertIn(
-            "C package identity lacks authoritative metadata; leave T073 open",
-            t073_line,
+        self.assertTrue(t073_line.startswith("- [x] T073 [US1]"))
+
+        package_metadata = tomllib.loads(
+            (ROOT / "bindings" / "c" / "package.toml").read_text(encoding="utf-8")
+        )["package"]
+        c_package = next(
+            item for item in self.manifest["publicPackages"] if item["id"] == "c-kmipkit"
         )
-        self.assertNotRegex(tasks, r"(?m)^- \[x\] T073 \[US1\]")
+        self.assertEqual(package_metadata["name"], c_package["packageName"])
+        self.assertEqual(package_metadata["artifact_family"], c_package["artifactFamily"])
+        self.assertEqual(package_metadata["supported_targets"], c_package["supportedTargets"])
+
+        data_model = (
+            ROOT / "specs" / "043-public-api-bindings" / "data-model.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("`bindings/c/package.toml`", data_model)
+        self.assertIn("does not establish publication", data_model.lower())
 
         evidence = (
             ROOT / "specs" / "043-public-api-bindings" / "implementation-evidence.md"
         ).read_text(encoding="utf-8")
         reconciliation = _markdown_section(
-            evidence, "T073 readiness wording reconciliation (2026-10-22)"
+            evidence, "T073 C package identity reconciliation (2026-10-29)"
         )
         self.assertIsNotNone(reconciliation)
         self.assertIn(
-            "C distribution identity still lacks authoritative package metadata",
+            "repository-owned C package metadata",
             re.sub(r"\s+", " ", reconciliation),
+        )
+        self.assertIn(
+            "does not claim an external registry publication",
+            re.sub(r"\s+", " ", reconciliation).lower(),
         )
 
     def test_named_t073_evidence_section_excludes_later_sections(self) -> None:
