@@ -26484,11 +26484,11 @@ fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability(
 
 #[test]
 fn simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent() {
-    let test_evidence = [RuleTestEvidence {
+    const TEST_EVIDENCE: &[RuleTestEvidence] = &[RuleTestEvidence {
         test_id: "profile_unit::simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent",
         kind: RuleTestKind::OptionalCapabilityUsable,
     }];
-    let constraints = [RuleConstraint {
+    const CONSTRAINTS: &[RuleConstraint] = &[RuleConstraint {
         key: "caller_assertion",
         value: "explicit",
     }];
@@ -26497,15 +26497,18 @@ fn simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent() {
         "KMIPKIT-REQ-SPEC-TEST-001",
         "KMIPKIT-CLAUSE-SPEC-TEST-001",
         super::GeneratedVerificationCategory::OptionalCapability,
-        &test_evidence,
-        &constraints,
+        TEST_EVIDENCE,
+        CONSTRAINTS,
     );
 
     assert_eq!(mapping.requirement_id, "KMIPKIT-REQ-SPEC-TEST-001");
     assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-TEST-001");
     assert_eq!(mapping.source_gap_id, None);
-    assert_eq!(mapping.verification_category, super::GeneratedVerificationCategory::OptionalCapability);
+    assert_eq!(
+        mapping.verification_category,
+        super::GeneratedVerificationCategory::OptionalCapability
+    );
     assert!(mapping.evaluator.is_none());
-    assert_eq!(mapping.test_evidence, &test_evidence);
-    assert_eq!(mapping.constraints, &constraints);
+    assert_eq!(mapping.test_evidence, TEST_EVIDENCE);
+    assert_eq!(mapping.constraints, CONSTRAINTS);
 }
