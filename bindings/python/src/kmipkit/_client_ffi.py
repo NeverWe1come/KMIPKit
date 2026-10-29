@@ -32,6 +32,7 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+    typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
     typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
     typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
@@ -102,6 +103,22 @@ ffi.cdef(
         uint32_t has_result_reason;
         uint32_t result_reason;
     } kmipkit_client_batch_item_metadata_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t operation;
+        uint32_t outcome_kind;
+        uint32_t result_status;
+        uint32_t has_result_reason;
+        uint32_t result_reason;
+        uint32_t has_cancellation_result;
+        uint32_t cancellation_result;
+        uint32_t has_result_message;
+        uint32_t reserved;
+        const uint8_t *result_message_data;
+        uint64_t result_message_length;
+    } kmipkit_client_async_operation_metadata_v1_t;
 
     typedef struct {
         uint32_t struct_size;
@@ -195,6 +212,51 @@ ffi.cdef(
         const kmipkit_request_options_v1_t *options,
         kmipkit_client_batch_response_t **out_response,
         kmipkit_ttlv_structure_t **out_error_response_ttlv);
+    int32_t kmipkit_client_execute_poll(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_cancel(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_process(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        uint8_t has_asynchronous_indicator,
+        uint32_t asynchronous_indicator,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_query_async_requests(
+        kmipkit_client_t *client,
+        uint8_t has_correlation_values,
+        const kmipkit_byte_span_v1_t *correlation_values,
+        uint64_t correlation_value_count,
+        uint8_t has_operations,
+        const uint32_t *operations,
+        uint64_t operation_count,
+        uint8_t has_asynchronous_indicator,
+        uint32_t asynchronous_indicator,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    void kmipkit_client_async_operation_outcome_release(
+        kmipkit_client_async_operation_outcome_t *outcome);
+    int32_t kmipkit_client_async_operation_outcome_metadata_v1(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        kmipkit_client_async_operation_metadata_v1_t *out_metadata);
+    int32_t kmipkit_client_async_operation_outcome_correlation_value(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_client_async_operation_outcome_response_payload_ttlv(
+        kmipkit_client_async_operation_outcome_t *outcome,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_payload);
 
     int32_t kmipkit_usage_allocation_context_create(
         kmipkit_client_batch_item_response_t *item,
