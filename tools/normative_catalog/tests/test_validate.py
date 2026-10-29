@@ -7782,13 +7782,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "disposition": "response_payload_data",
                 "html_line_range": [32537, 32555],
                 "source_excerpt": pinned_source_excerpt(source_path, [32537, 32555]),
-                "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DISC-039 remains open and this evidence does not resolve the operation mapping.",
+                "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DEC-015 resolves KMIPKIT-DISC-039 by interpreting the response item as the §7.2 Asynchronous Request structure.",
             }],
         )
         catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         caption_discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039")
-        self.assertEqual(caption_discrepancy["state"], "open")
-        self.assertIsNone(caption_discrepancy["decision_id"])
+        self.assertEqual(caption_discrepancy["state"], "resolved_by_approved_decision")
+        self.assertEqual(caption_discrepancy["decision_id"], "KMIPKIT-DEC-015")
         async_operation = next(row for row in catalog["elements"] if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS")
         self.assertEqual(
             next(table for table in async_operation["payload_tables"] if table["role"] == "response"),
