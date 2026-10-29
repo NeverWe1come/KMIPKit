@@ -146,5 +146,9 @@ The approved scope expands the earlier selected integration to every applicable 
   input while retaining the empty-tweak case and the same generated tweak for its matching
   Encrypt/Decrypt round trip. Windows and WSL/Linux verification passed: formatting, the focused
   regression, the full Cosmian test binary (123 passed, 110 live-server tests ignored), and client
-  Clippy. Alert #20 still refers to an older CodeQL commit on the PR merge ref; T047 remains open
-  until CodeQL and the full CI suite pass on the updated PR head.
+  Clippy. Follow-up CodeQL analysis `2052242424` reported alert #20 through a SARIF path from
+  Hashing Algorithm Enumeration IDs to the server-returned IV. Independent review confirmed the
+  enum fields and IV/Counter/Nonce are separate values with no enum-to-nonce conversion. The alert
+  was dismissed as a false positive with the rationale recorded on GitHub. Full CI run
+  `40844237405` passed on `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`. T047 remains open until
+  fresh hosted CodeQL and CI checks pass on the evidence update's exact head.

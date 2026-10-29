@@ -256,4 +256,25 @@ tests, not the production nonce API.
 | Windows | `cargo +1.94 fmt --all -- --check`; focused freshness test; full `cosmian_kms` test binary; client Clippy with `-D warnings` | PASS: 123 tests passed, 110 live-server tests ignored; formatting and Clippy passed. |
 | Linux / WSL | Same focused and full Rust tests, plus client Clippy with `-D warnings` | PASS: freshness regression passed; 123 tests passed, 110 live-server tests ignored; Clippy passed. |
 | Independent security re-review | Read-only review of the final code change and nonce flow | PASS: no fixed tweak remains on this test path; no production API or wire-model changes. |
-| Hosted verification | CodeQL and complete CI on the updated PR head | Pending; T047 remains open until the alert is absent and checks pass. |
+| Hosted verification | CodeQL and complete CI on the updated PR head | Pending; T047 remains open until no unresolved alert remains and checks pass. |
+
+### CodeQL alert #20 triage — 2026-10-29
+
+CodeQL analysis `2052242424` on PR merge commit
+`fe90b02d1c4f18597bd4d6c9eca90d3c629955e8` reported one Rust alert. The
+SARIF path begins at the literal values returned by the test helper
+`hash_value`, follows the Hashing Algorithm and Mask Generator Hashing
+Algorithm fields in Cryptographic Parameters, crosses the Encrypt exchange,
+and ends at the response IV used as a Decrypt input. This is not a dataflow
+from those Enumeration IDs to nonce bytes: the protocol request keeps
+Cryptographic Parameters separate from IV/Counter/Nonce, and the response IV
+is parsed from the server response. The actual request nonce is independently
+generated through AWS-LC randomness. Independent read-only security review
+confirmed no runtime conversion from algorithm IDs to nonce bytes.
+
+Alert #20 was dismissed as **false positive** through the GitHub code-scanning
+alert API, with a concise rationale recorded on the alert. No rule, query,
+repository configuration, or source suppression was changed. The full CI run
+`40844237405` passed on head `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`.
+T047 remains open until fresh exact-head CodeQL and CI checks pass after this
+evidence update.
