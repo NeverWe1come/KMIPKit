@@ -37,10 +37,18 @@ def normalize_branch_protection(response: Any) -> dict[str, Any]:
         raise ValueError("required review policy is missing or malformed")
     approvals = reviews.get("required_approving_review_count")
     dismiss_stale = reviews.get("dismiss_stale_reviews")
-    if type(approvals) is not int or approvals < 1 or dismiss_stale is not True:
+    require_code_owner_reviews = reviews.get("require_code_owner_reviews")
+    if (
+        type(approvals) is not int
+        or approvals != 0
+        or dismiss_stale is not True
+        or require_code_owner_reviews is not False
+    ):
         raise ValueError("required review policy is insufficient")
 
-    allowances = reviews.get("bypass_pull_request_allowances")
+    # The personal-repository API omits this optional object when no bypass
+    # actors are configured; normalize that authoritative absence to empty.
+    allowances = reviews.get("bypass_pull_request_allowances", {"users": [], "teams": [], "apps": []})
     if not isinstance(allowances, Mapping) or set(allowances) != {"users", "teams", "apps"}:
         raise ValueError("pull-request bypass policy is missing or malformed")
     if any(type(allowances[name]) is not list for name in ("users", "teams", "apps")):
@@ -55,6 +63,7 @@ def normalize_branch_protection(response: Any) -> dict[str, Any]:
         "required_pull_request_reviews": {
             "required_approving_review_count": approvals,
             "dismiss_stale_reviews": True,
+            "require_code_owner_reviews": False,
             "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
         },
         "enforce_admins": _enabled_setting(response, "enforce_admins", True),

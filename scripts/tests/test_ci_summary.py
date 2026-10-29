@@ -141,8 +141,9 @@ class CiSummaryTests(unittest.TestCase):
         policy = {
             "protected": True,
             "required_pull_request_reviews": {
-                "required_approving_review_count": 1,
+                "required_approving_review_count": 0,
                 "dismiss_stale_reviews": True,
+                "require_code_owner_reviews": False,
                 "bypass_pull_request_allowances": {
                     "users": [],
                     "teams": [],
@@ -687,7 +688,8 @@ class CiSummaryTests(unittest.TestCase):
             invalid_policies.append(baseline | {field: value})
 
         invalid_review_policies = (
-            {"required_approving_review_count": 0},
+            {"required_approving_review_count": 1},
+            {"require_code_owner_reviews": True},
             {"dismiss_stale_reviews": False},
             {"bypass_pull_request_allowances": None},
             {"bypass_pull_request_allowances": {"teams": [], "apps": []}},

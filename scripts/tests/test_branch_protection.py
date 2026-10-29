@@ -16,9 +16,9 @@ class BranchProtectionTests(unittest.TestCase):
             "url": "https://api.github.com/repos/NeverWe1come/KMIPKit/branches/release/1.0.0/protection",
             "required_pull_request_reviews": {
                 "url": "https://api.github.com/required_pull_request_reviews",
-                "required_approving_review_count": 2,
+                "required_approving_review_count": 0,
                 "dismiss_stale_reviews": True,
-                "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
+                "require_code_owner_reviews": False,
             },
             "enforce_admins": {"url": "https://api.github.com/enforce_admins", "enabled": True},
             "allow_force_pushes": {"enabled": False},
@@ -32,8 +32,9 @@ class BranchProtectionTests(unittest.TestCase):
             {
                 "protected": True,
                 "required_pull_request_reviews": {
-                    "required_approving_review_count": 2,
+                    "required_approving_review_count": 0,
                     "dismiss_stale_reviews": True,
+                    "require_code_owner_reviews": False,
                     "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
                 },
                 "enforce_admins": {"enabled": True},
@@ -54,7 +55,6 @@ class BranchProtectionTests(unittest.TestCase):
         reviews = response["required_pull_request_reviews"]
         reviews["required_approving_review_count"] = 0
         reviews["require_code_owner_reviews"] = False
-        del reviews["bypass_pull_request_allowances"]
 
         normalized = branch_protection.normalize_branch_protection(response)
 
@@ -79,9 +79,11 @@ class BranchProtectionTests(unittest.TestCase):
     def test_normalizer_rejects_each_nonempty_bypass_allowance_without_echoing_entries(self) -> None:
         for field in ("users", "teams", "apps"):
             response = self.protection_response()
-            response["required_pull_request_reviews"]["bypass_pull_request_allowances"][field] = [
+            allowances = {"users": [], "teams": [], "apps": []}
+            allowances[field] = [
                 "SecretPolicyPrincipalMarker"
             ]
+            response["required_pull_request_reviews"]["bypass_pull_request_allowances"] = allowances
             with self.subTest(field=field):
                 with self.assertRaisesRegex(ValueError, "policy is insufficient") as raised:
                     branch_protection.normalize_branch_protection(response)

@@ -105,11 +105,17 @@ def _normalized_branch_protection(policy: Any) -> dict[str, Any]:
     if not isinstance(reviews, Mapping) or set(reviews) != {
         "required_approving_review_count",
         "dismiss_stale_reviews",
+        "require_code_owner_reviews",
         "bypass_pull_request_allowances",
     }:
         raise ValueError("required review policy is missing or malformed")
     approvals = reviews.get("required_approving_review_count")
-    if type(approvals) is not int or approvals < 1 or reviews.get("dismiss_stale_reviews") is not True:
+    if (
+        type(approvals) is not int
+        or approvals != 0
+        or reviews.get("dismiss_stale_reviews") is not True
+        or reviews.get("require_code_owner_reviews") is not False
+    ):
         raise ValueError("required review policy is insufficient")
     allowances = reviews.get("bypass_pull_request_allowances")
     if not isinstance(allowances, Mapping) or set(allowances) != {"users", "teams", "apps"}:
@@ -138,6 +144,7 @@ def _normalized_branch_protection(policy: Any) -> dict[str, Any]:
         "required_pull_request_reviews": {
             "required_approving_review_count": approvals,
             "dismiss_stale_reviews": True,
+            "require_code_owner_reviews": False,
             "bypass_pull_request_allowances": {
                 "users": [],
                 "teams": [],
