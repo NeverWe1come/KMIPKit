@@ -1624,13 +1624,19 @@ fn fixture_stem(row: &serde_json::Value) -> Result<String, Box<dyn Error>> {
             "rsa-{}",
             row["parameters"]["key_bits"].as_i64().unwrap_or(2048)
         ),
-        "EC" => match row["parameters"]["curve"].as_str().unwrap_or("P256") {
-            "CURVE25519" => "x25519".to_owned(),
-            "CURVE448" => "x448".to_owned(),
-            "CURVEED25519" => "ed25519".to_owned(),
-            "CURVEED448" => "ed448".to_owned(),
-            curve => format!("ec-{curve}"),
-        },
+        "EC" => {
+            let curve = row["parameters"]["curve"].as_str().unwrap_or("P256");
+            if curve.is_empty() || !curve.bytes().all(|byte| byte.is_ascii_alphanumeric()) {
+                return Err("EC fixture curve is not a safe filename component".into());
+            }
+            match curve {
+                "CURVE25519" => "x25519".to_owned(),
+                "CURVE448" => "x448".to_owned(),
+                "CURVEED25519" => "ed25519".to_owned(),
+                "CURVEED448" => "ed448".to_owned(),
+                curve => format!("ec-{curve}"),
+            }
+        }
         "DSA" => format!(
             "dsa-{}",
             row["parameters"]["key_bits"].as_i64().unwrap_or(2048)
