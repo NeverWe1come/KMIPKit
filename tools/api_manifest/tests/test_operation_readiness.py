@@ -925,6 +925,38 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
         self.assertEqual(self.errors(manifest), [])
 
+    def test_authorized_wip_operation_validates_owner_evidence_and_stays_out_of_release(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            status_value = (
+                "Draft. Direct human instruction for this implementation task "
+                "authorizes autonomous work without further approval requests."
+            )
+            status = f"**Status**: {status_value}"
+            spec_path = root / "specs" / "009-asynchronous-operations" / "spec.md"
+            spec_path.parent.mkdir(parents=True)
+            spec_path.write_text(f"# Async operations\n\n{status}\n", encoding="utf-8")
+            operation = {
+                "apiState": "authorized_wip",
+                "candidateSpecId": "KMIPKIT-0009",
+                "ownerDependency": {"state": "candidate", "specId": "KMIPKIT-0009"},
+                "implementationAuthorization": {
+                    "kind": "direct-human-instruction",
+                    "path": "specs/009-asynchronous-operations/spec.md",
+                    "status": "Draft",
+                    "evidence": status_value,
+                },
+                "declarations": {language: [] for language in LANGUAGES},
+            }
+
+            generate._validate_operation_readiness([operation], {}, root)
+            with self.assertRaisesRegex(ManifestError, "incomplete operation API"):
+                generate._require_complete_readiness([operation] * 56, [], [])
+
+            operation["implementationAuthorization"]["evidence"] = "not in owner spec"
+            with self.assertRaisesRegex(ManifestError, "authorization evidence"):
+                generate._validate_operation_readiness([operation], {}, root)
+
     def test_verified_operation_requires_resolvable_parity_evidence(self) -> None:
         manifest = _contract_manifest()
         operation = _discover_versions_operation(manifest)
