@@ -557,6 +557,37 @@ def _parse_typed_rule_mapping_constructor(
     return fields, evidence, constraints
 
 
+def _parse_typed_rule_mapping_entry(
+    entry: str,
+) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
+    """Normalize either accepted static row form before shared validation."""
+    match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
+    if match is None:
+        return _parse_typed_rule_mapping_constructor(entry)
+
+    fields = match.groupdict()
+    evidence: list[dict[str, str]] = []
+    for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
+        evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
+        if evidence_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence_fields = evidence_match.groupdict()
+        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence.append(evidence_fields)
+
+    constraints: list[dict[str, str]] = []
+    for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
+        constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
+        if constraint_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraint = constraint_match.groupdict()
+        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraints.append(constraint)
+    return fields, evidence, constraints
+
+
 def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     body = _typed_rule_registry_body(text)
     if not body.strip():
@@ -565,13 +596,7 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     mappings: list[dict[str, Any]] = []
     seen_requirement_ids: set[str] = set()
     for entry in _split_rust_registry_entries(body):
-        match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
-        if match is None:
-            fields, evidence, constraints = _parse_typed_rule_mapping_constructor(entry)
-        else:
-            fields = match.groupdict()
-            evidence = []
-            constraints = []
+        fields, evidence, constraints = _parse_typed_rule_mapping_entry(entry)
         requirement_id = fields["requirement_id"]
         category = fields["category"]
         source_clause_id = fields["source_clause_id"] or None
@@ -587,25 +612,6 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
             r"Some\s*\(\s*[A-Za-z_][A-Za-z0-9_]*\s*,?\s*\)", evaluator
         ):
             raise ValueError("unsupported typed profile rule mapping")
-
-        if match is not None:
-            for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
-                evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
-                if evidence_match is None:
-                    raise ValueError("unsupported typed profile rule mapping")
-                evidence_fields = evidence_match.groupdict()
-                if evidence_fields["kind"] not in _RULE_TEST_KINDS:
-                    raise ValueError("unsupported typed profile rule mapping")
-                evidence.append(evidence_fields)
-
-            for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
-                constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
-                if constraint_match is None:
-                    raise ValueError("unsupported typed profile rule mapping")
-                constraint = constraint_match.groupdict()
-                if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
-                    raise ValueError("unsupported typed profile rule mapping")
-                constraints.append(constraint)
 
         transport_only = (
             evaluator == "None"
