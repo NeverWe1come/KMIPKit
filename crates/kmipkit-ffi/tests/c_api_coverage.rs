@@ -1119,7 +1119,7 @@ fn spawn_public_client_batch_peer(
             &fixture_versions,
             &failure_message,
         ))
-            .expect("the typed KMIP response is written");
+        .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
     })

@@ -3018,9 +3018,6 @@ static int execute_public_tls_request(
         {'p', 'i', 'n', 'g', '0', '0'},
         {'q', 'u', 'e', 'r', 'y', '0'},
     };
-    static const uint8_t expected_failure_message[] = {
-        'c', 'r', 0xc3, 0xa9, 'a', 't', 'i', 'o', 'n', ' ', 'r', 'e', 'f', 'u', 's', 0xc3,
-        0xa9, 'e', ' ', 0xe2, 0x9c, 0x93};
     kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
     kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
     kmipkit_transport_config_v1_t transport_input = {0};
@@ -3046,6 +3043,8 @@ static int execute_public_tls_request(
     uint64_t fixture_item_count = 0;
     uint64_t fixture_pending_count = 0;
     uint64_t fixture_version_count = 0;
+    const uint8_t *fixture_failure_message = NULL;
+    uint64_t fixture_failure_message_length = 0;
     kmipkit_protocol_version_v1_t fixture_versions[FIXTURE_VERSION_CAPACITY] = {{0}};
     uint64_t actual_pending_count = 0;
     uint64_t response_count = 0;
@@ -3077,9 +3076,14 @@ static int execute_public_tls_request(
             fixture_item_count != UINT64_C(3) ||
             fixture_pending_count > fixture_item_count ||
             fixture_version_count > FIXTURE_VERSION_CAPACITY ||
-            (uint64_t)argc != FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)) {
+            (uint64_t)argc != FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2) +
+                    UINT64_C(1) ||
+            argv[FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)] == NULL) {
             return 3;
         }
+        fixture_failure_message = (const uint8_t *)
+            argv[FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)];
+        fixture_failure_message_length = (uint64_t)strlen((const char *)fixture_failure_message);
         for (uint64_t index = 0; index < fixture_version_count; ++index) {
             uint64_t major = 0;
             uint64_t minor = 0;
@@ -3587,10 +3591,10 @@ static int execute_public_tls_request(
                 metadata_v2.operation != 1 || metadata_v2.outcome_kind != 1 ||
                 metadata_v2.result_status != 1 || metadata_v2.has_result_reason != 1 ||
                 metadata_v2.result_reason != 5 || metadata_v2.has_result_message != 1 ||
-                metadata_v2.result_message_length != sizeof(expected_failure_message) ||
+                metadata_v2.result_message_length != fixture_failure_message_length ||
                 metadata_v2.result_message_data == 0 ||
-                memcmp(metadata_v2.result_message_data, expected_failure_message,
-                    sizeof(expected_failure_message)) != 0 ||
+                memcmp(metadata_v2.result_message_data, fixture_failure_message,
+                    fixture_failure_message_length) != 0 ||
                 kmipkit_client_batch_item_response_create(
                     response_item, &create_present, &object_type, &identifier) != 0 ||
                 create_present != 0) {
