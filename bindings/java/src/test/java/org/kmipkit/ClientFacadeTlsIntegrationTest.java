@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.HexFormat;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.kmipkit.extensions.AttributeReference;
+import org.kmipkit.extensions.AsyncOperationOutcome;
 import org.kmipkit.extensions.BatchOutcomeKind;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
@@ -2486,6 +2488,132 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(3)),
                 structure(0x420079,
                         item(0x420094, 7, "recover-target".getBytes(StandardCharsets.UTF_8)))));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
+    void explicitPollPreservesOpaqueCorrelationAndReturnsOnePendingOutcome() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        byte[] correlation = {0, (byte) 0x81, 0x00, (byte) 0xfe};
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, pollPendingResponseMessage(correlation)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-poll-follow-up-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                AsyncOperationOutcome outcome = client.executePoll(correlation, CodecLimits.defaults())) {
+            var metadata = outcome.metadataV1();
+            assertEquals(0x1a, metadata.operation());
+            assertTrue(metadata.outcomeKind().isPending());
+            assertEquals(2, metadata.resultStatus());
+            assertTrue(metadata.resultMessage().isEmpty());
+            assertArrayEquals(correlation, outcome.asynchronousCorrelationValue().orElseThrow());
+            assertTrue(outcome.responsePayloadTtlv().isEmpty());
+            assertFalse(outcome.toString().contains(Arrays.toString(correlation)));
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, enumeration(0x42005c, 0x1a));
+        assertContains(request, item(0x420006, 8, correlation));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
+    void cancelProcessAndQueryAsyncRequestsCrossJniWithGenericPayloads() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        byte[] correlation = {0, (byte) 0xfe, 0x00};
+        byte[] queryCorrelation = {(byte) 0x91, 0, 0x22};
+        byte[] cancelPayload = structure(0x42007c,
+                item(0x420006, 8, correlation), enumeration(0x420012, 1));
+        byte[] emptyPayload = structure(0x42007c);
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> {
+            List<byte[]> requests = new ArrayList<>();
+            requests.add(serveOneResponse(listener, singleAsyncResponseMessage(0x19, 0, null, cancelPayload)));
+            requests.add(serveOneResponse(listener, singleAsyncResponseMessage(0x3a, 0, null, emptyPayload)));
+            requests.add(serveOneResponse(listener, singleAsyncResponseMessage(0x39, 0, null, emptyPayload)));
+            return requests;
+        });
+        Thread peerThread = new Thread(peer, "kmipkit-java-async-operations-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        List<byte[]> requests;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport)) {
+            try (AsyncOperationOutcome outcome = client.executeCancel(correlation, CodecLimits.defaults())) {
+                assertEquals(0x19, outcome.metadataV1().operation());
+                assertEquals(1, outcome.metadataV1().cancellationResult().orElseThrow());
+                try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(2, view.itemCount());
+                }
+            }
+            try (AsyncOperationOutcome outcome = client.executeProcess(
+                    correlation, CodecLimits.defaults(), OptionalLong.empty())) {
+                assertEquals(0x3a, outcome.metadataV1().operation());
+                try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+            }
+            try (AsyncOperationOutcome outcome = client.executeQueryAsyncRequests(
+                    CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
+                    OptionalLong.of(2))) {
+                assertEquals(0x39, outcome.metadataV1().operation());
+                try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
+                        TtlvStructureView view = payload.view()) {
+                    assertEquals(0, view.itemCount());
+                }
+            }
+            requests = peer.get(20, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(requests.get(0), item(0x420006, 8, correlation));
+        assertContains(requests.get(1), item(0x420006, 8, correlation));
+        assertContains(requests.get(2), item(0x420006, 8, queryCorrelation));
+        assertContains(requests.get(2), enumeration(0x42005c, (int) 0xdead_beefL));
+        assertContains(requests.get(2), enumeration(0x420007, 2));
         assertTrue(peer.isDone());
     }
 
@@ -4953,6 +5081,30 @@ final class ClientFacadeTlsIntegrationTest {
                 structure(0x42007c));
         return structure(0x42007b, header,
                 activateFailure, archiveFailure, destroyPending, recoverPending);
+    }
+
+    private static byte[] pollPendingResponseMessage(byte[] correlation) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] response = structure(0x42000f, enumeration(0x42005c, 0x1a),
+                enumeration(0x42007f, 2), item(0x420006, 8, correlation));
+        return structure(0x42007b, header, response);
+    }
+
+    private static byte[] singleAsyncResponseMessage(
+            int operation, int status, byte[] correlation, byte[] payload) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        List<byte[]> fields = new ArrayList<>();
+        fields.add(enumeration(0x42005c, operation));
+        fields.add(enumeration(0x42007f, status));
+        if (correlation != null) fields.add(item(0x420006, 8, correlation));
+        if (payload != null) fields.add(payload);
+        return structure(0x42007b, header, structure(0x42000f, fields.toArray(byte[][]::new)));
     }
 
     private static byte[] lifecycleSuccessResponseMessage() throws Exception {

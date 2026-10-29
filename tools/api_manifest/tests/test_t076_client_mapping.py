@@ -106,6 +106,16 @@ T076_EXCLUDED = {
     "kmipkit_transport_config_release",
 }
 T076_READY = T076_SYMBOLS - T076_BLOCKED - T076_EXCLUDED
+T035_ASYNC_SYMBOLS = {
+    "kmipkit_client_execute_poll",
+    "kmipkit_client_execute_cancel",
+    "kmipkit_client_execute_process",
+    "kmipkit_client_execute_query_async_requests",
+    "kmipkit_client_async_operation_outcome_release",
+    "kmipkit_client_async_operation_outcome_metadata_v1",
+    "kmipkit_client_async_operation_outcome_correlation_value",
+    "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+}
 
 C_SEMANTIC_FIELDS = {
     "kmipkit_client_batch_item_metadata_v1_t.has_result_reason",
@@ -1540,6 +1550,30 @@ class T076ClientMappingTests(unittest.TestCase):
                 "__slots__",
             )
         }
+        async_metadata_dataclass_exclusions = {
+            f"kmipkit.client.AsyncOperationMetadataV1.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        async_metadata_repr_exclusion = {
+            "kmipkit.client.AsyncOperationMetadataV1.__repr__"
+        }
+        async_outcome_constructor_exclusion = {
+            "kmipkit.client.AsyncOperationOutcome.__init__"
+        }
+        async_outcome_lifecycle_exclusions = {
+            f"kmipkit.client.AsyncOperationOutcome.{member}"
+            for member in ("closed", "__enter__", "__exit__")
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1568,6 +1602,10 @@ class T076ClientMappingTests(unittest.TestCase):
             | validate_response_dataclass_exclusions
             | validate_response_repr_exclusion
             | get_attribute_list_response_dataclass_exclusions
+            | async_metadata_dataclass_exclusions
+            | async_metadata_repr_exclusion
+            | async_outcome_constructor_exclusion
+            | async_outcome_lifecycle_exclusions
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1631,6 +1669,22 @@ class T076ClientMappingTests(unittest.TestCase):
                         exclusion["reason"],
                     )
                     self.assertIn("T037", exclusion["evidence"])
+                elif path in async_metadata_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("not an independent cross-language product capability", exclusion["reason"])
+                    self.assertIn("T035", exclusion["evidence"])
+                elif path in async_metadata_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("Result Message", exclusion["reason"])
+                    self.assertIn("T035", exclusion["evidence"])
+                elif path in async_outcome_constructor_exclusion:
+                    self.assertIn("private token", exclusion["reason"])
+                    self.assertIn("internal factory", exclusion["reason"])
+                    self.assertIn("T035", exclusion["evidence"])
+                elif path in async_outcome_lifecycle_exclusions:
+                    self.assertIn("lifecycle", exclusion["reason"])
+                    self.assertIn("close", exclusion["reason"])
+                    self.assertIn("T035", exclusion["evidence"])
                 elif path in log_response_repr_exclusion:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
@@ -4073,6 +4127,105 @@ class T076ClientMappingTests(unittest.TestCase):
                 if row["packageId"] == "java-kmipkit"
             )
         )
+
+    def test_async_java_bridges_and_redacted_formatters_are_exactly_accounted(self) -> None:
+        expected = {
+            "org.kmipkit.NativeExtensionRegistry.CLIENT_ASYNC_OPERATION_OUTCOME",
+            "org.kmipkit.NativeExtensionRegistry.clientExecutePoll",
+            "org.kmipkit.NativeExtensionRegistry.clientExecuteCancel",
+            "org.kmipkit.NativeExtensionRegistry.clientExecuteProcess",
+            "org.kmipkit.NativeExtensionRegistry.clientExecuteQueryAsyncRequests",
+            "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeMetadataV1",
+            "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeCorrelationValue",
+            "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeResponsePayloadTtlv",
+            "org.kmipkit.extensions.AsyncOperationOutcome.toString",
+            "org.kmipkit.extensions.AsyncOperationMetadataV1.toString",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+        for path in sorted(expected):
+            with self.subTest(export=path):
+                exclusion = exclusions[path]
+                self.assertNotIn(
+                    path,
+                    {
+                        row["exportName"]
+                        for row in self.manifest["publicDeclarations"]
+                        if row["packageId"] == "java-kmipkit"
+                    },
+                )
+                if ".NativeExtensionRegistry." in path or path.endswith("CLIENT_ASYNC_OPERATION_OUTCOME"):
+                    self.assertIn("raw-handle JNI bridge", exclusion["reason"])
+                    self.assertIn("minimal JNI bridge", exclusion["evidence"])
+                else:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("KMIPKIT-0009-FR-009", exclusion["evidence"])
+                self.assertIn("T035", exclusion["evidence"])
+
+    def test_async_c_abi_exports_are_mapped_and_present_in_the_generated_header(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "c-kmipkit"
+        }
+        for symbol in sorted(T035_ASYNC_SYMBOLS):
+            with self.subTest(symbol=symbol):
+                declaration = declarations.get(symbol)
+                self.assertIsNotNone(declaration, f"unaccounted asynchronous C export: {symbol}")
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("client_asynchronous_operations", declaration["capabilityId"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertTrue(
+                    any(
+                        requirement.startswith("KMIPKIT-0009-FR-")
+                        for requirement in declaration["requirementIds"]
+                    ),
+                    "each asynchronous C export must trace to a KMIPKIT-0009 requirement",
+                )
+                header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+                self.assertIn(symbol, header)
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        self.assertIn("struct kmipkit_client_async_operation_metadata_v1_t", header)
+
+    def test_approved_async_operations_have_four_language_client_mappings(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        operations = {row["name"]: row for row in self.manifest["operations"]}
+        expected = {
+            "Poll": ("KMIPKIT-ELEM-OP-C2S-POLL", "client_execute_poll"),
+            "Cancel": ("KMIPKIT-ELEM-OP-C2S-CANCEL", "client_execute_cancel"),
+            "Process": ("KMIPKIT-ELEM-OP-C2S-PROCESS", "client_execute_process"),
+            "Query Asynchronous Requests": (
+                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                "client_execute_query_async_requests",
+            ),
+        }
+        for name, (operation_id, function_id) in expected.items():
+            with self.subTest(operation=name):
+                operation = operations[name]
+                self.assertEqual(operation_id, operation["operationId"])
+                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                self.assertEqual("KMIPKIT-0009", operation["featureSpecId"])
+                self.assertEqual(
+                    "specs/009-asynchronous-operations/spec.md",
+                    operation["approvalEvidence"]["path"],
+                )
+                self.assertEqual("Approved", operation["approvalEvidence"]["status"])
+                for language in ("rust", "c", "java", "python"):
+                    self.assertTrue(operation["declarations"][language])
+
+                function = functions[function_id]
+                self.assertIn("KMIPKIT-0009-FR-001", function["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", function["requirementIds"])
+                self.assertTrue(function["rust"]["name"])
+                self.assertTrue(function["c"]["symbol"].startswith("kmipkit_client_execute_"))
+                self.assertEqual("Client", function["java"]["class"])
+                self.assertTrue(function["java"]["method"].startswith("execute"))
+                self.assertTrue(function["python"]["function"].startswith("Client.execute_"))
 
 
 
