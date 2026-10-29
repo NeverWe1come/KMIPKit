@@ -8505,3 +8505,26 @@ references to compact index lists; profile order, test identifiers, official
 case IDs, mandatory status, and fixture availability remain unchanged. The
 Rust tests compiled and exercised the generated constants. No coverage or
 Sonar threshold, analysis exclusion, or generated-file rule changed.
+
+## Compact defaulted typed profile mappings (2026-10-29)
+
+The SonarCloud analysis for `1ad8f1b41` improved new-code duplication from
+4.1754% (4,249 duplicated lines) to 3.3518% (3,402 lines), but remained above
+the 3% gate. The largest remaining duplication groups were in the handwritten
+`TYPED_RULE_MAPPINGS` table. Seventy-eight entries had neither a source-gap
+record nor an operation evaluator. They now use a const helper that explicitly
+defaults those two optional fields while preserving every evidence row and
+constraint; a tuple macro keeps those declarative entries concise.
+
+| Phase | Commit | Command and result |
+| --- | --- | --- |
+| Red | `5f257a5d9` | Focused profile mapping test — expected compile failure because `typed_rule_mapping_without_evaluator` was not yet defined. |
+| Green | `da125b8b9` | `cargo test -p kmipkit-protocol --all-features` — PASS: 1,216 unit tests plus integration and documentation tests; `cargo fmt --all --check`, workspace Clippy, and `git diff --check` — PASS. |
+| Refactor | `605db6277` | Replaced 78 explicit default-argument rows with the tuple macro; `cargo test -p kmipkit-protocol --all-features` — PASS: 1,216 unit tests plus integration and documentation tests; formatting, workspace Clippy, and diff checks — PASS. |
+
+The focused helper test asserts that requirement and clause IDs, category,
+test evidence, and constraints are preserved while `source_gap_id` and
+`evaluator` are absent. The existing full protocol suite exercises the entire
+mapping table. Clippy reported existing `aws-lc-sys` MSVC/NASM environment
+warnings but no denied lints. SonarCloud and the full CI result for the new head
+remain pending; this change does not claim the 3% gate has passed.
