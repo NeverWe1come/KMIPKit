@@ -11,6 +11,15 @@ use zeroize::{Zeroize, Zeroizing};
 #[path = "../../tests/support/client_abi_tests.rs"]
 mod client_abi_tests;
 
+fn batch_response_item_from_handle(
+    handle: &Handle,
+) -> FfiResult<&kmipkit_client::ClientBatchItemResponse> {
+    let HandleValue::ClientBatchItemResponse { response, index } = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    response.get(*index).ok_or(ERROR_INTERNAL)
+}
+
 fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<Vec<u8>> {
     let bytes = input_span(data, length, maximum)?;
     let mut owned = Vec::new();
@@ -35,13 +44,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(pkcs11) = item.outcome().response().pkcs11() else {
             return SUCCESS;
         };
@@ -240,13 +244,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_interop_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         let response = outcome.response();
         let Some(interop) = response.interop() else {
@@ -276,13 +275,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_log_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         let response = outcome.response();
         let Some(log) = response.log() else {
@@ -1363,13 +1357,8 @@ pub extern "C" fn kmipkit_usage_allocation_context_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_context);
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
@@ -1875,13 +1864,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_metadata_v1(
         if out_metadata.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         let result = outcome.result();
         let Ok(struct_size) =
@@ -1938,13 +1922,8 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
         {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         let result = outcome.result();
         let message_data = result
@@ -2090,13 +2069,8 @@ macro_rules! lifecycle_response_identifier {
                     return record_ffi_error(status);
                 }
                 *present = 0;
-                let item = read_handle!(item, ClientBatchItemResponse);
-                let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-                    return record_ffi_error(ERROR_INVALID_INPUT);
-                };
-                let Some(item) = response.get(*index) else {
-                    return record_ffi_error(ERROR_INTERNAL);
-                };
+                let response_handle = read_handle!(item, ClientBatchItemResponse);
+                let item = try_ffi!(batch_response_item_from_handle(&response_handle));
                 let outcome = item.outcome();
                 if outcome.result().status().raw() != 0 {
                     return SUCCESS;
@@ -2149,13 +2123,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_create(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         let object_type = scalar_out!(out_object_type);
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
@@ -2189,13 +2158,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -2227,13 +2191,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_recertify(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2266,13 +2225,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2306,13 +2260,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2364,13 +2313,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -2435,13 +2379,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_check(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(check) = item.outcome().check_response() {
             if let Some(identifier) = check.unique_identifier() {
                 if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
@@ -2480,13 +2419,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_check_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(check) = item.outcome().check_response() {
             let structure = try_ffi!(check.with_ttlv(|view| super::clone_structure_view(&view)));
             *response_ttlv = try_ffi!(try_make_handle(
@@ -2508,13 +2442,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_ping(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().response().ping().is_some() {
             *present = 1;
         }
@@ -2531,13 +2460,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_logout(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().logout_response().is_some() {
             *present = 1;
         }
@@ -2556,13 +2480,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         let response = outcome.response();
         let Some(query) = response.query() else {
@@ -2598,13 +2517,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_delegated_login(
         *present = 0;
         *ticket_type = 0;
         try_ffi!(set_borrowed_span(ticket_present, ticket_value, None));
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(delegated_login) = item.outcome().delegated_login_response() {
             *present = 1;
             if let Some(ticket) = delegated_login.ticket() {
@@ -2633,13 +2547,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_delegated_login_ttlv(
         let present = scalar_out!(out_present);
         let ticket_ttlv = out_slot!(out_ticket_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(ticket) = item
             .outcome()
             .delegated_login_response()
@@ -2676,13 +2585,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_login(
         *present = 0;
         *ticket_type = 0;
         try_ffi!(set_borrowed_span(ticket_present, ticket_value, None));
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(login) = item.outcome().login_response() {
             *present = 1;
             if let Some(ticket) = login.ticket() {
@@ -2711,13 +2615,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_login_ttlv(
         let present = scalar_out!(out_present);
         let ticket_ttlv = out_slot!(out_ticket_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(ticket) = item
             .outcome()
             .login_response()
@@ -2745,13 +2644,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2783,13 +2677,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_recertify_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2818,13 +2707,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -2852,13 +2736,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -2885,13 +2764,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -2928,13 +2802,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_register(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -2970,13 +2839,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_register_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3012,13 +2876,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_revoke(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3054,13 +2913,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_revoke_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3089,13 +2943,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3123,13 +2972,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3171,13 +3015,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease(
         *present = 0;
         *lease_time = 0;
         *last_change_date = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3213,13 +3052,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3249,13 +3083,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_import(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3287,13 +3116,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_join_split_key(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3323,13 +3147,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_join_split_key_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3357,13 +3176,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_import_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -3391,13 +3205,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_constraints_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3437,13 +3246,8 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_get_attribute_list_p
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -3494,13 +3298,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attributes(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let kmipkit_client::ClientBatchOutcome::GetAttributes(result) = item.outcome() else {
             return SUCCESS;
         };
@@ -3602,13 +3401,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_add_attribute(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Add,
@@ -3648,13 +3442,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_modify_attribute(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Modify,
@@ -3694,13 +3483,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_attribute(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Set,
@@ -3740,13 +3524,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_adjust_attribute(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Adjust,
@@ -3786,13 +3565,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_delete_attribute(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(value) = attribute_mutation_response_identifier(
             item.outcome(),
             AttributeMutationResponseKind::Delete,
@@ -3883,13 +3657,8 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_get_attribute_list(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let kmipkit_client::ClientBatchOutcome::GetAttributeList(result) = item.outcome() else {
             return SUCCESS;
         };
@@ -4035,13 +3804,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_constraints_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4079,13 +3843,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_defaults_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4123,13 +3882,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_validate(
         let validity_indicator = scalar_out!(out_validity_indicator);
         *present = 0;
         *validity_indicator = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4160,13 +3914,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_validate_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4195,13 +3944,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_derive_key(
             return record_ffi_error(status);
         }
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -4230,13 +3974,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_derive_key_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let outcome = item.outcome();
         if outcome.result().status().raw() != 0 {
             return SUCCESS;
@@ -4282,13 +4021,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(export) = item.outcome().export_response() else {
             return SUCCESS;
         };
@@ -4353,13 +4087,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_export_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(export) = item.outcome().export_response() {
             let structure = try_ffi!(
                 export
@@ -4398,13 +4127,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_get(
             return record_ffi_error(status);
         }
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(get) = item.outcome().get_response() else {
             return SUCCESS;
         };
@@ -4463,13 +4187,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_locate(
         *located_items = 0;
         *identifier_count = 0;
 
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(locate) = item.outcome().locate_response() else {
             return SUCCESS;
         };
@@ -4541,13 +4260,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
         if let Err(status) = write_unique_identifier_v1(out_public_key_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         *present = 0;
         if let Some(create) = item.outcome().create_key_pair_response()
             && let (Some(private_identifier), Some(public_identifier)) = (
@@ -4582,13 +4296,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_count(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         let count = scalar_out!(out_count);
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         *present = 0;
         *count = 0;
         if let Some(create) = item.outcome().create_split_key_response() {
@@ -4649,13 +4358,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_unique_batch_item_id(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         let value = scalar_out!(out_value);
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(bytes) = item.unique_batch_item_id() {
             *present = 1;
             *value = crate::kmipkit_byte_span_v1_t {
@@ -4682,13 +4386,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_pending_correlation_value(
     ffi_entrypoint(|| {
         let present = scalar_out!(out_present);
         let value = scalar_out!(out_value);
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if let Some(bytes) = item.outcome().asynchronous_correlation_value() {
             *present = 1;
             *value = crate::kmipkit_byte_span_v1_t {
@@ -4750,13 +4449,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_hash(
         *present = 0;
         try_ffi!(set_borrowed_span(data_present, data, None));
         try_ffi!(set_borrowed_span(correlation_present, correlation, None));
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4816,13 +4510,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_encrypt(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4887,13 +4576,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_decrypt(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -4945,13 +4629,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5006,13 +4685,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac_verify(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5063,13 +4737,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5124,13 +4793,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
         let data = scalar_out!(out_data);
         *present = 0;
         try_ffi!(set_borrowed_span(data_present, data, None));
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5167,13 +4831,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5215,13 +4874,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed(
         *present = 0;
         *data_length_present = 0;
         *data_length = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5256,13 +4910,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed_ttlv(
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5309,13 +4958,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         if item.outcome().result().status().raw() != 0 {
             return SUCCESS;
         }
@@ -5380,13 +5024,8 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_discover_versions_su
         if out_versions.is_null() && capacity != 0 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let item = read_handle!(item, ClientBatchItemResponse);
-        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
         let Some(versions) = item.discover_versions_supported_versions() else {
             *present = 0;
             *count = 0;
