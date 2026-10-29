@@ -4,15 +4,15 @@ Date: 2026-10-30
 
 Branch: `feature/KMIPKIT-0043-t076-shared-client-mapping`
 
-TDD commit range: `c5d12d1ee..090c64b34` (three commits, all local). A DCO-signed follow-up formats the fixture link; this report is recorded separately.
+TDD commit range: `c5d12d1ee..c46630915` (six Red/Green/Refactor commits, all local). The report and fixture formatting follow-ups are also local; nothing was pushed or merged.
 
 Task status: T071 remains open.
 
 ## Scope and result
 
-Audited the 13 entries in `tests/fixtures/api/shared-capability-parity.json` and their named Rust, compiled C, Java, and Python consumers. The repository parity test confirms that each fixture has all four available language mappings, verifies the named consumer references, and checks the Discover Versions and extension source-fixture relationships. Source review found one concrete fixture-to-behavior gap: the C mTLS test checked the creation failure Result Message against a hard-coded byte array, while its harness did not read `creation.result-message-on-failure.v1`.
+Audited the 13 entries in `tests/fixtures/api/shared-capability-parity.json` and their named Rust, compiled C, Java, and Python consumers. The repository parity test confirms that each fixture has all four language mappings, verifies the named consumer references, and checks the Discover Versions and extension source-fixture relationships. Source review found a concrete fixture-to-behavior gap in the C mTLS path: its assertion used a hard-coded Result Message instead of the shared fixture.
 
-The C consumer now receives the fixture-derived Result Message from its Rust harness. The harness uses the same fixture value to construct the loopback server response, and the compiled C consumer compares the returned C ABI metadata against that value. The fixture records this supporting harness. No production API or readiness state changed.
+The first repair connected the C expected argument to `expectedOutput.resultMessage`, but independent review exposed an oracle coupling: the harness also used that same expected value to build the simulated server response. A mismatch between fixture input and expected output was therefore hidden. The corrected harness now constructs the loopback server response from `input.resultMessage` and passes `expectedOutput.resultMessage` as the C consumer's expected argv value. A compiled C mTLS regression deliberately makes those values diverge and confirms the consumer rejects the response. The fixture records this supporting harness. No production API or readiness state changed.
 
 The other 12 cases did not yield a second confirmed gap during this bounded audit. This does not establish that every mapped test dynamically consumes every expected field or that the full corpus passed in every language on this head; see verification limits below.
 
@@ -64,7 +64,13 @@ This table records the fixture's named consumers; it is not a claim that every c
 - Green: `0a4a20826` — `test(0043): bind C result message to parity fixture`. C parses the fixture argument and compares the returned Result Message against it; the server response is also built from the fixture value.
 - Refactor: `090c64b34` — `refactor(0043): clarify fixture C argument validation`. Separates fixture argument-index calculation and validation without changing behavior.
 
-All three commits use `git commit -s`. They are local only; no push or merge was performed.
+The oracle-coupling correction has a separate Red/Green/Refactor sequence:
+
+- Red: `9ddb0c63c` — `test(0043): expose C result message fixture drift`. Added a compiled C mTLS test that changes only `input.resultMessage` and expects the mismatch to be rejected. Before the harness correction, it failed because the consumer returned success (`left: 0`, `right: 0`), proving that the server response was still being sourced from the expected output.
+- Green: `264d61d95` — `test(0043): separate C result fixture input and output`. The server simulator now reads `input.resultMessage`; C argv reads `expectedOutput.resultMessage`. Both the matching fixture case and divergent-value regression pass.
+- Refactor: `c46630915` — `refactor(0043): name C result message expectations`. Extracts the fixture case loader and uses a named expectation enum instead of a boolean in the shared C mTLS helper.
+
+All six TDD commits use `git commit -s`. They are local only; no push or merge was performed.
 
 ## Verification
 
@@ -72,11 +78,13 @@ All three commits use `git commit -s`. They are local only; no push or merge was
 |---|---|
 | Red focused compiled-C mTLS consumer | Failed as expected before TLS dispatch: C rejected the fixture-driven argument (`status 3`; 0 exchanges). |
 | Green/refactor focused compiled-C mTLS consumer | Passed: 1 test, 0 failed. It exercises the shared batch, Discover Versions, and creation response path, including the fixture-derived failure message. |
+| Oracle-coupling Red regression | Failed as expected before the correction: deliberately divergent `input.resultMessage` and `expectedOutput.resultMessage` produced C success (`0`), violating the test's rejection assertion. |
+| Corrected compiled C mTLS tests | Passed after Green and Refactor: `generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls` and `compiled_c_consumer_rejects_divergent_creation_message_input_and_expected_output` each passed (1 test, 0 failed). |
 | `tools/api_manifest/tests/test_parity.py` | Passed: 18 tests. |
 | Fixture JSON and C support link after formatting correction | Valid JSON; 13 cases; the creation failure support entry resolves to the C mTLS harness. |
 | Python shared fixture, client, extension registry, and Usage Allocation suites | Passed: 261 tests using Python 3.12 and a freshly built external `kmipkit_ffi.dll`. |
-| `cargo fmt --all --check` | Passed. |
-| `git diff --check` | Passed. |
+| `cargo fmt --all --check` | Passed after the oracle-coupling Refactor. |
+| `git diff --check` | Passed for the correction before commit. |
 | `cargo test --workspace --all-features` | Started with `CARGO_TARGET_DIR` outside the worktree, then stopped at the parent agent's request while still running; no workspace-wide final result is claimed. The observed output included passing API-level (1), client unit (566), creation parity (6), extension recognition (13), and extension registry (17) tests. |
 | Java 17 consumer suite | Not run in this turn. |
 
@@ -87,7 +95,7 @@ Build output used `C:\Users\ramp1953\AppData\Local\Temp\kmipkit-t071-target-red`
 ## Remaining T071 prerequisites and limits
 
 - T076, T077, and T078 are checked.
-- Within T031–T069, T036 and T042 remain unchecked. T036 is gated on formal approval of draft `specs/010-profile-conformance/spec.md` and closure of its profile gates; T042 explicitly remains open while T036 is blocked.
+- Within T031–T069, T036 and T042 remain unchecked. T036 requires formal approval of draft `specs/010-profile-conformance/spec.md`, closure of its applicable profile gates, and then the accepted profile-validation API mappings/parity evidence. T042 explicitly remains open while T036 is blocked on draft KMIPKIT-0010.
 - T071 remains unchecked. No profile-validation API, profile-support claim, API readiness state, or full-parity claim was added.
-- This turn did not complete the full Rust workspace run or execute the Java 17 suite. Therefore the entire 13-case corpus has not been verified on all four languages at the current head.
+- This audit did not complete the full Rust workspace run or execute the Java 17 suite. Therefore the entire 13-case corpus has not been verified on all four languages at the current head. The targeted C mTLS checks validate the shared batch, Discover Versions, and creation Result Message path only.
 - The Create, Create Key Pair, and Create Split Key C constructor fixture checks use compiled C behavior, but this audit did not establish a dynamic Rust fixture feed for every constructor input/output field. No second confirmed defect was changed; this remains a review limit rather than a claim of complete fixture-field parity.
