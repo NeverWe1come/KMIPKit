@@ -4909,6 +4909,11 @@ class ProfileTargetManifestTests(unittest.TestCase):
 
         self.assertIn("const fn generated_client_requirement(", generated)
         self.assertIn("const fn generated_profile_test_case(", generated)
+        self.assertIn("#[allow(clippy::too_many_arguments)]", generated)
+        self.assertIn(
+            "// This generated constructor mirrors the public fields to keep rows compact.",
+            generated,
+        )
         self.assertNotIn("GeneratedClientRequirement {", requirement_table)
         self.assertNotIn("GeneratedProfileTestCase {", test_case_table)
 
