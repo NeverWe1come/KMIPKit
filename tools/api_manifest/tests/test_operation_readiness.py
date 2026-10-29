@@ -25,6 +25,18 @@ LANGUAGES = ("rust", "c", "java", "python")
 AUTH_ONLY_OWNER_STATUS = (
     "Approved for autonomous implementation under a standing instruction"
 )
+ASYNC_OWNER_STATUS = (
+    "Draft. Direct human instruction for this implementation task authorizes "
+    "autonomous work without further approval requests. This does not claim "
+    "formal approval of this specification or its reviewer-owned checklists. "
+    "`KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project "
+    "modeling: §6.1.41 names an optional, repeatable Asynchronous Request "
+    "response item, whose structure is defined in §7.2. This feature keeps "
+    "generic TTLV response access; typed mapping is tracked separately by "
+    "KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal "
+    "conformance claim is made."
+)
+ASYNC_OWNER_SPEC_PATH = "specs/009-asynchronous-operations/spec.md"
 DELEGATED_OWNER_STATUS_CASES = (
     (
         "KMIPKIT-0005",
@@ -102,6 +114,15 @@ def _four_language_mappings() -> dict[str, list[str]]:
         "c": ["kmipkit_client_execute"],
         "java": ["org.kmipkit.Client.execute"],
         "python": ["kmipkit.Client.execute"],
+    }
+
+
+def _direct_async_implementation_authorization() -> dict[str, str]:
+    return {
+        "kind": "direct-human-instruction",
+        "path": ASYNC_OWNER_SPEC_PATH,
+        "status": "Draft",
+        "evidence": ASYNC_OWNER_STATUS,
     }
 
 
@@ -939,12 +960,9 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         operation.pop("blockedReason")
         operation["apiState"] = "authorized_wip"
         operation["candidateSpecId"] = "KMIPKIT-0009"
-        operation["implementationAuthorization"] = {
-            "kind": "direct-human-instruction",
-            "path": "specs/009-asynchronous-operations/spec.md",
-            "status": "Draft",
-            "evidence": "Direct human instruction for this implementation task authorizes autonomous work without further approval requests.",
-        }
+        operation["implementationAuthorization"] = (
+            _direct_async_implementation_authorization()
+        )
         operation["declarations"] = _four_language_mappings()
 
         self.assertEqual(self.errors(manifest), [])
@@ -952,24 +970,16 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_authorized_wip_operation_validates_owner_evidence_and_stays_out_of_release(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            status_value = (
-                "Draft. Direct human instruction for this implementation task "
-                "authorizes autonomous work without further approval requests."
-            )
-            status = f"**Status**: {status_value}"
-            spec_path = root / "specs" / "009-asynchronous-operations" / "spec.md"
+            authorization = _direct_async_implementation_authorization()
+            status = f"**Status**: {ASYNC_OWNER_STATUS}"
+            spec_path = root / ASYNC_OWNER_SPEC_PATH
             spec_path.parent.mkdir(parents=True)
             spec_path.write_text(f"# Async operations\n\n{status}\n", encoding="utf-8")
             operation = {
                 "apiState": "authorized_wip",
                 "candidateSpecId": "KMIPKIT-0009",
                 "ownerDependency": {"state": "candidate", "specId": "KMIPKIT-0009"},
-                "implementationAuthorization": {
-                    "kind": "direct-human-instruction",
-                    "path": "specs/009-asynchronous-operations/spec.md",
-                    "status": "Draft",
-                    "evidence": status_value,
-                },
+                "implementationAuthorization": authorization,
                 "declarations": {language: [] for language in LANGUAGES},
             }
 
@@ -983,12 +993,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_authorized_wip_declarations_keep_mappings_separate_from_approval(self) -> None:
         manifest = _contract_manifest()
-        authorization = {
-            "kind": "direct-human-instruction",
-            "path": "specs/009-asynchronous-operations/spec.md",
-            "status": "Draft",
-            "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests.",
-        }
+        authorization = _direct_async_implementation_authorization()
         declarations = _ready_declarations()
         for declaration in declarations:
             declaration["declarationState"] = "authorized_wip"
@@ -1002,22 +1007,13 @@ class OperationReadinessSchemaTests(unittest.TestCase):
     def test_authorized_wip_declaration_validates_draft_owner_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            status_value = (
-                "Draft. Direct human instruction for this implementation task "
-                "authorizes autonomous work without further approval requests."
-            )
-            spec_path = root / "specs" / "009-asynchronous-operations" / "spec.md"
+            authorization = _direct_async_implementation_authorization()
+            spec_path = root / ASYNC_OWNER_SPEC_PATH
             spec_path.parent.mkdir(parents=True)
             spec_path.write_text(
-                f"# Async operations\n\n**Status**: {status_value}\n",
+                f"# Async operations\n\n**Status**: {ASYNC_OWNER_STATUS}\n",
                 encoding="utf-8",
             )
-            authorization = {
-                "kind": "direct-human-instruction",
-                "path": "specs/009-asynchronous-operations/spec.md",
-                "status": "Draft",
-                "evidence": status_value,
-            }
             manifest = _contract_manifest()
             operation = _discover_versions_operation(manifest)
             operation["apiState"] = "authorized_wip"
