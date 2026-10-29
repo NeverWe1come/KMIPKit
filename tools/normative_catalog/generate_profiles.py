@@ -768,6 +768,39 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             _rust_const_constructor_call("generated_profile_test_case", arguments)
         )
     lines.extend(["];", ""])
+    lines.extend(
+        [
+            "const fn expand_profile_test_cases<const N: usize>(",
+            "    indexes: [usize; N],",
+            ") -> [GeneratedProfileTestCase; N] {",
+            "    let mut result = [generated_profile_test_case(\"\", \"\", \"\", \"\"); N];",
+            "    let mut index = 0;",
+            "    while index < N {",
+            "        result[index] = PROFILE_TEST_CASES[indexes[index]];",
+            "        index += 1;",
+            "    }",
+            "    result",
+            "}",
+            "",
+        ]
+    )
+
+    for profile_index, profile in enumerate(profiles):
+        profile_id = profile["profile_id"]
+        test_indexes = ", ".join(
+            str(test_case_indexes[test_id])
+            for test_id in test_ids_by_profile[profile_id]
+        )
+        test_count = len(test_ids_by_profile[profile_id])
+        lines.extend(
+            [
+                "#[rustfmt::skip]",
+                f"const PROFILE_TEST_CASES_FOR_PROFILE_{profile_index}: "
+                f"[GeneratedProfileTestCase; {test_count}] = "
+                f"expand_profile_test_cases([{test_indexes}]);",
+                "",
+            ]
+        )
 
     source_clause_id_pool = sorted(
         {
@@ -842,11 +875,6 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             )
             for obligation in closure.unresolved_scope_obligations
         ]
-        test_ids = test_ids_by_profile[profile_id]
-        test_case_references = [
-            f"            PROFILE_TEST_CASES[{test_case_indexes[test_id]}],"
-            for test_id in test_ids
-        ]
         lines.extend(
             [
                 "    GeneratedClientProfile {",
@@ -864,9 +892,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 f"        dependency_profile_ids: {_rust_string_array(profile, 'dependency_profile_ids')},",
                 f"        transport_requirements: {_rust_string_array(profile, 'transport_requirements')},",
                 f"        encoding_requirements: {_rust_string_array(profile, 'encoding_requirements')},",
-                "        test_cases: &[",
-                *test_case_references,
-                "        ],",
+                f"        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_{profile_index},",
                 "    },",
             ]
         )

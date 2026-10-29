@@ -777,6 +777,72 @@ pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[
     generated_profile_test_case("KMIPKIT-TEST-PROF-5-9-9-1", "CS-RNG-M-1-21", "mandatory", "unavailable"),
 ];
 
+const fn expand_profile_test_cases<const N: usize>(
+    indexes: [usize; N],
+) -> [GeneratedProfileTestCase; N] {
+    let mut result = [generated_profile_test_case("", "", "", ""); N];
+    let mut index = 0;
+    while index < N {
+        result[index] = PROFILE_TEST_CASES[indexes[index]];
+        index += 1;
+    }
+    result
+}
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_0: [GeneratedProfileTestCase; 18] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 21, 22, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_1: [GeneratedProfileTestCase; 20] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 45, 46, 47, 48]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_2: [GeneratedProfileTestCase; 16] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_3: [GeneratedProfileTestCase; 34] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_4: [GeneratedProfileTestCase; 37] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_5: [GeneratedProfileTestCase; 21] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 49, 50, 51, 52, 92]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_6: [GeneratedProfileTestCase; 17] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_7: [GeneratedProfileTestCase; 17] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 28, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_8: [GeneratedProfileTestCase; 18] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_9: [GeneratedProfileTestCase; 17] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_10: [GeneratedProfileTestCase; 18] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 23, 24, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_11: [GeneratedProfileTestCase; 19] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_12: [GeneratedProfileTestCase; 20] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 41, 42, 43, 44]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_13: [GeneratedProfileTestCase; 20] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 33, 34, 35, 36]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_14: [GeneratedProfileTestCase; 20] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 37, 38, 39, 40]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_15: [GeneratedProfileTestCase; 17] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 29, 30, 31, 32]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_16: [GeneratedProfileTestCase; 19] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 19, 20, 29, 30, 31]);
+
+#[rustfmt::skip]
+const PROFILE_TEST_CASES_FOR_PROFILE_17: [GeneratedProfileTestCase; 17] = expand_profile_test_cases([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 27, 29, 30, 31]);
+
 /// Unique sorted clause IDs used by compact profile closure bitmaps.
 const PROFILE_SOURCE_CLAUSE_ID_POOL: &[&str] = &[
     "KMIPKIT-CLAUSE-PROF-3.1-001",
@@ -2731,26 +2797,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[21],
-            PROFILE_TEST_CASES[22],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_0,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -2780,28 +2827,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[45],
-            PROFILE_TEST_CASES[46],
-            PROFILE_TEST_CASES[47],
-            PROFILE_TEST_CASES[48],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_1,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT",
@@ -2824,24 +2850,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &[],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_2,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT",
@@ -2872,42 +2881,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[74],
-            PROFILE_TEST_CASES[75],
-            PROFILE_TEST_CASES[76],
-            PROFILE_TEST_CASES[77],
-            PROFILE_TEST_CASES[78],
-            PROFILE_TEST_CASES[79],
-            PROFILE_TEST_CASES[80],
-            PROFILE_TEST_CASES[81],
-            PROFILE_TEST_CASES[82],
-            PROFILE_TEST_CASES[83],
-            PROFILE_TEST_CASES[84],
-            PROFILE_TEST_CASES[85],
-            PROFILE_TEST_CASES[86],
-            PROFILE_TEST_CASES[87],
-            PROFILE_TEST_CASES[88],
-            PROFILE_TEST_CASES[89],
-            PROFILE_TEST_CASES[90],
-            PROFILE_TEST_CASES[91],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_3,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT",
@@ -2938,45 +2912,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[53],
-            PROFILE_TEST_CASES[54],
-            PROFILE_TEST_CASES[55],
-            PROFILE_TEST_CASES[56],
-            PROFILE_TEST_CASES[57],
-            PROFILE_TEST_CASES[58],
-            PROFILE_TEST_CASES[59],
-            PROFILE_TEST_CASES[60],
-            PROFILE_TEST_CASES[61],
-            PROFILE_TEST_CASES[62],
-            PROFILE_TEST_CASES[63],
-            PROFILE_TEST_CASES[64],
-            PROFILE_TEST_CASES[65],
-            PROFILE_TEST_CASES[66],
-            PROFILE_TEST_CASES[67],
-            PROFILE_TEST_CASES[68],
-            PROFILE_TEST_CASES[69],
-            PROFILE_TEST_CASES[70],
-            PROFILE_TEST_CASES[71],
-            PROFILE_TEST_CASES[72],
-            PROFILE_TEST_CASES[73],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_4,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT",
@@ -3007,29 +2943,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[49],
-            PROFILE_TEST_CASES[50],
-            PROFILE_TEST_CASES[51],
-            PROFILE_TEST_CASES[52],
-            PROFILE_TEST_CASES[92],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_5,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-HTTPS-CLIENT",
@@ -3067,25 +2981,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &["HTTP/1.0", "HTTP/1.1", "TLS"],
         encoding_requirements: &["TTLV", "XML", "JSON"],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[26],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_6,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-JSON-CLIENT",
@@ -3116,25 +3012,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &["JSON"],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[28],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_7,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT",
@@ -3164,26 +3042,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[13],
-            PROFILE_TEST_CASES[14],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_8,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-PKCS11-CLIENT",
@@ -3215,25 +3074,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &["PKCS#11"],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[25],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_9,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT",
@@ -3281,26 +3122,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &["TLS 1.3"],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[23],
-            PROFILE_TEST_CASES[24],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_10,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT",
@@ -3331,27 +3153,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[15],
-            PROFILE_TEST_CASES[16],
-            PROFILE_TEST_CASES[17],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_11,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
@@ -3381,28 +3183,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[41],
-            PROFILE_TEST_CASES[42],
-            PROFILE_TEST_CASES[43],
-            PROFILE_TEST_CASES[44],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_12,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT",
@@ -3432,28 +3213,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[33],
-            PROFILE_TEST_CASES[34],
-            PROFILE_TEST_CASES[35],
-            PROFILE_TEST_CASES[36],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_13,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
@@ -3483,28 +3243,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[37],
-            PROFILE_TEST_CASES[38],
-            PROFILE_TEST_CASES[39],
-            PROFILE_TEST_CASES[40],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_14,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -3534,25 +3273,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-            PROFILE_TEST_CASES[32],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_15,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT",
@@ -3601,27 +3322,7 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &[],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[18],
-            PROFILE_TEST_CASES[19],
-            PROFILE_TEST_CASES[20],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_16,
     },
     GeneratedClientProfile {
         profile_id: "KMIPKIT-PROFILE-XML-CLIENT",
@@ -3652,24 +3353,6 @@ pub const CLIENT_PROFILES: &[GeneratedClientProfile] = &[
         dependency_profile_ids: &["KMIPKIT-PROFILE-BASELINE-CLIENT"],
         transport_requirements: &[],
         encoding_requirements: &["XML"],
-        test_cases: &[
-            PROFILE_TEST_CASES[0],
-            PROFILE_TEST_CASES[1],
-            PROFILE_TEST_CASES[2],
-            PROFILE_TEST_CASES[3],
-            PROFILE_TEST_CASES[4],
-            PROFILE_TEST_CASES[5],
-            PROFILE_TEST_CASES[6],
-            PROFILE_TEST_CASES[7],
-            PROFILE_TEST_CASES[8],
-            PROFILE_TEST_CASES[9],
-            PROFILE_TEST_CASES[10],
-            PROFILE_TEST_CASES[11],
-            PROFILE_TEST_CASES[12],
-            PROFILE_TEST_CASES[27],
-            PROFILE_TEST_CASES[29],
-            PROFILE_TEST_CASES[30],
-            PROFILE_TEST_CASES[31],
-        ],
+        test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_17,
     },
 ];
