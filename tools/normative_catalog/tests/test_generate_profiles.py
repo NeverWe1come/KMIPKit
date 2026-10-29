@@ -4920,6 +4920,19 @@ class ProfileTargetManifestTests(unittest.TestCase):
         requirement_rows = _generated_const_constructor_arguments(
             generated, requirement_declaration, "generated_client_requirement"
         )
+        requirement_lines = [line.strip() for line in requirement_table.splitlines() if line.strip()]
+        self.assertEqual(
+            len(requirement_lines),
+            len(requirement_rows),
+            "each generated requirement constructor must occupy one source line",
+        )
+        self.assertTrue(
+            all(
+                line.startswith("generated_client_requirement(") and line.endswith("),")
+                for line in requirement_lines
+            ),
+            "generated requirement constructors should stay on one source line",
+        )
         expected_requirement_ids = sorted(
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
@@ -4984,6 +4997,19 @@ class ProfileTargetManifestTests(unittest.TestCase):
 
         test_case_rows = _generated_const_constructor_arguments(
             generated, test_case_declaration, "generated_profile_test_case"
+        )
+        test_case_lines = [line.strip() for line in test_case_table.splitlines() if line.strip()]
+        self.assertEqual(
+            len(test_case_lines),
+            len(test_case_rows),
+            "each generated conformance test-case constructor must occupy one source line",
+        )
+        self.assertTrue(
+            all(
+                line.startswith("generated_profile_test_case(") and line.endswith("),")
+                for line in test_case_lines
+            ),
+            "generated test-case constructors should stay on one source line",
         )
         expected_test_case_ids = sorted(
             {
