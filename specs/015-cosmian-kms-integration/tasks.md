@@ -120,7 +120,7 @@ The approved scope expands the earlier selected integration to every applicable 
 
 ## Static-analysis follow-up — 2026-10-29
 
-- [ ] T047 Review and resolve the two CodeQL alerts on the Cosmian test matrix. Red commit
+- [x] T047 Review and resolve the two CodeQL alerts on the Cosmian test matrix. Red commit
   `8d7c32168` added a freshness regression that failed against the fixed nonce. Green commit
   `c014b2e97` uses bounded AWS-LC system randomness for caller nonces and replaces dynamic
   preflight error output with fixed, redacted diagnostics. `cargo fmt --all --check`, the focused
@@ -150,5 +150,7 @@ The approved scope expands the earlier selected integration to every applicable 
   Hashing Algorithm Enumeration IDs to the server-returned IV. Independent review confirmed the
   enum fields and IV/Counter/Nonce are separate values with no enum-to-nonce conversion. The alert
   was dismissed as a false positive with the rationale recorded on GitHub. Full CI run
-  `40844237405` passed on `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`. T047 remains open until
-  fresh hosted CodeQL and CI checks pass on the evidence update's exact head.
+  `40844237405` passed on `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`. On final head
+  `653e66365d2f430714e7aa83c0ca023bbc7e30a2`, CodeQL analysis `40845851962` and complete CI run
+  `40845851898` both passed. Alert #20 is recorded as dismissed false positive, and the exact-head
+  CodeQL check passed. T047 is complete; the PR remains a draft pending human review.

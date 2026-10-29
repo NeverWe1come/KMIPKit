@@ -256,7 +256,7 @@ tests, not the production nonce API.
 | Windows | `cargo +1.94 fmt --all -- --check`; focused freshness test; full `cosmian_kms` test binary; client Clippy with `-D warnings` | PASS: 123 tests passed, 110 live-server tests ignored; formatting and Clippy passed. |
 | Linux / WSL | Same focused and full Rust tests, plus client Clippy with `-D warnings` | PASS: freshness regression passed; 123 tests passed, 110 live-server tests ignored; Clippy passed. |
 | Independent security re-review | Read-only review of the final code change and nonce flow | PASS: no fixed tweak remains on this test path; no production API or wire-model changes. |
-| Hosted verification | CodeQL and complete CI on the updated PR head | Pending; T047 remains open until no unresolved alert remains and checks pass. |
+| Hosted verification | CodeQL analysis `40845851962`, CodeQL check `123353425580`, and complete CI `40845851898` on exact head `653e66365d2f430714e7aa83c0ca023bbc7e30a2` | PASS; alert #20 is recorded as dismissed false positive, and the exact-head CodeQL and CI checks passed. |
 
 ### CodeQL alert #20 triage — 2026-10-29
 
@@ -276,5 +276,6 @@ Alert #20 was dismissed as **false positive** through the GitHub code-scanning
 alert API, with a concise rationale recorded on the alert. No rule, query,
 repository configuration, or source suppression was changed. The full CI run
 `40844237405` passed on head `cebd5a42fb7c1910cac049f4e4c1f2a7500a04eb`.
-T047 remains open until fresh exact-head CodeQL and CI checks pass after this
-evidence update.
+T047 is complete: exact-head CodeQL analysis and full CI passed after the evidence
+update, and the reported alert is recorded as dismissed false positive. The PR
+remains a draft pending human review.
