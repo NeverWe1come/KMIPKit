@@ -6013,6 +6013,62 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+int kmipkit_client_abi_c_consumer_async_output_errors_clear(void) {
+    kmipkit_client_async_operation_outcome_t *outcome =
+        (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_poll(0, 0, 0, 0, &outcome) != T076_ERROR_INVALID_INPUT ||
+        outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_cancel(0, 0, 0, 0, &outcome) != T076_ERROR_INVALID_INPUT ||
+        outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_process(0, 0, 0, 0, 0, 0, &outcome) !=
+            T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+    outcome = (kmipkit_client_async_operation_outcome_t *)(uintptr_t)1;
+    if (kmipkit_client_execute_query_async_requests(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &outcome) !=
+            T076_ERROR_INVALID_INPUT || outcome != 0) {
+        return 0;
+    }
+
+    kmipkit_client_async_operation_metadata_v1_t metadata = {0};
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (kmipkit_client_async_operation_outcome_metadata_v1(0, &metadata) !=
+        T076_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+
+    uint8_t present = UINT8_C(9);
+    kmipkit_byte_span_v1_t correlation = {
+        (const uint8_t *)(uintptr_t)9,
+        UINT64_C(9),
+    };
+    if (kmipkit_client_async_operation_outcome_correlation_value(
+            0, &present, &correlation) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || correlation.data != 0 || correlation.length != 0) {
+        return 0;
+    }
+
+    present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *payload =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+    if (kmipkit_client_async_operation_outcome_response_payload_ttlv(
+            0, &present, &payload) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || payload != 0) {
+        return 0;
+    }
+
+    kmipkit_client_async_operation_outcome_release(0);
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_validate_register_response(
     kmipkit_client_batch_item_response_t *item,
     const uint8_t *expected_identifier,
