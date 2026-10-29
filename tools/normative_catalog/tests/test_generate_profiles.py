@@ -76,6 +76,30 @@ def _generated_const_constructor_arguments(
     return rows
 
 
+def _generated_rust_string_array(argument: str) -> list[str]:
+    """Decode the generated static string-slice expression used by metadata rows."""
+    from tools.normative_catalog.report import _split_rust_registry_entries
+
+    match = re.fullmatch(r"\s*&\[(.*)\]\s*", argument, re.DOTALL)
+    if match is None:
+        raise AssertionError(f"unsupported generated string array: {argument[:120]}")
+    return [json.loads(value) for value in _split_rust_registry_entries(match.group(1))]
+
+
+def _generated_rust_optional_string(argument: str) -> str | None:
+    """Decode one generated `Option<&str>` expression after rustfmt formatting."""
+    if argument.strip() == "None":
+        return None
+    match = re.fullmatch(
+        r"\s*Some\(\s*(\"(?:[^\"\\]|\\.)*\")\s*,?\s*\)\s*",
+        argument,
+        re.DOTALL,
+    )
+    if match is None:
+        raise AssertionError(f"unsupported generated optional string: {argument[:120]}")
+    return json.loads(match.group(1))
+
+
 def closure_catalog() -> dict[str, object]:
     return {
         "source_clauses": [
@@ -4258,7 +4282,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         generated = render_profiles_source(catalog, targets)
         requirement_block = generated.split("pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[", 1)[1]
         requirement_block = requirement_block.split("\n];", 1)[0]
-        metadata_ids = set(re.findall(r'requirement_id: "([^"]+)"', requirement_block))
+        metadata_ids = {
+            json.loads(arguments[0])
+            for arguments in _generated_const_constructor_arguments(
+                generated,
+                "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[",
+                "generated_client_requirement",
+            )
+        }
         closed_requirement_ids = {
             requirement_id
             for profile in catalog["profiles"]
@@ -4852,7 +4883,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertEqual(generated.count("\n    GeneratedClientProfile {"), 18)
         self.assertIn('claim_state: "not_claimed"', generated)
         self.assertIn("selected_target: true", generated)
-        self.assertIn('fixture_availability: "unavailable"', generated)
+        self.assertIn('"unavailable"', generated)
         self.assertNotIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
         self.assertNotIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
@@ -4891,6 +4922,60 @@ class ProfileTargetManifestTests(unittest.TestCase):
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         )
         self.assertEqual([json.loads(row[0]) for row in requirement_rows], expected_requirement_ids)
+        from tools.normative_catalog.generate_profiles import (
+            _source_gap_locator,
+            _verification_category,
+        )
+
+        accepted_decisions = {
+            decision["decision_id"]
+            for decision in catalog["decisions"]
+            if decision.get("status") == "accepted"
+        }
+        catalog_requirements = {
+            requirement["requirement_id"]: requirement
+            for requirement in catalog["requirements"]
+            if requirement["requirement_id"] in expected_requirement_ids
+        }
+        for arguments in requirement_rows:
+            requirement_id = json.loads(arguments[0])
+            requirement = catalog_requirements[requirement_id]
+            category_source = requirement.get("source_keyword")
+            if not isinstance(category_source, str):
+                category_source = requirement["source_force"]
+            self.assertEqual(requirement_id, json.loads(arguments[0]))
+            for argument_index, field, expected_value in (
+                (1, "source_keyword", requirement.get("source_keyword")),
+                (2, "source_force", requirement.get("source_force")),
+                (3, "source_gap_id", requirement.get("source_gap_id")),
+                (4, "source_locator", _source_gap_locator(requirement)),
+            ):
+                self.assertEqual(
+                    _generated_rust_optional_string(arguments[argument_index]),
+                    expected_value,
+                    f"{requirement_id}: {field}",
+                )
+            self.assertEqual(
+                arguments[5],
+                f"GeneratedVerificationCategory::{_verification_category(category_source)}",
+                requirement_id,
+            )
+            self.assertEqual(json.loads(arguments[6]), requirement["scope_state"], requirement_id)
+            for argument_index, field in (
+                (7, "source_clause_ids"),
+                (8, "profile_ids"),
+                (9, "test_case_ids"),
+            ):
+                self.assertEqual(
+                    _generated_rust_string_array(arguments[argument_index]),
+                    requirement[field],
+                    f"{requirement_id}: {field}",
+                )
+            expected_deviation = str(
+                    requirement.get("status") == "deviated"
+                    and requirement.get("decision_id") in accepted_decisions
+                ).lower()
+            self.assertEqual(arguments[10], expected_deviation, requirement_id)
 
         test_case_rows = _generated_const_constructor_arguments(
             generated, test_case_declaration, "generated_profile_test_case"
@@ -4994,25 +5079,19 @@ class ProfileTargetManifestTests(unittest.TestCase):
             "generated source should intern shared profile test-case metadata",
         )
         self.assertEqual(
-            generated.count(f'official_case_id: "{test_case["official_case_id"]}"'),
+            generated.count(rust_string_literal(test_case["official_case_id"])),
             1,
         )
         self.assertEqual(
             generated.count(f"PROFILE_TEST_CASES[{test_case_index}]"),
             len(test_profiles[shared_test_id]),
         )
-        shared_table = generated.split(
-            "pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[", 1
-        )[1].split("];", 1)[0]
-        self.assertEqual(
-            re.findall(r'test_id: "([^"]+)"', shared_table),
-            sorted(test_profiles),
+        rendered_cases = _generated_const_constructor_arguments(
+            generated,
+            "pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &[",
+            "generated_profile_test_case",
         )
-        rendered_cases = re.findall(
-            r"    GeneratedProfileTestCase \{(.*?)\n    \},",
-            shared_table,
-            re.DOTALL,
-        )
+        self.assertEqual([json.loads(row[0]) for row in rendered_cases], sorted(test_profiles))
         test_cases_by_id = {
             test_case["test_id"]: test_case
             for test_case in catalog["test_cases"]
@@ -5021,15 +5100,15 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertEqual(len(rendered_cases), len(test_profiles))
         for test_id, rendered_case in zip(sorted(test_profiles), rendered_cases, strict=True):
             test_case = test_cases_by_id[test_id]
-            expected_fields = {
-                "test_id": test_id,
-                "official_case_id": test_case["official_case_id"],
-                "mandatory_status": test_case["mandatory_status"],
-                "fixture_availability": test_case["fixture_availability"],
-            }
-            for field, value in expected_fields.items():
-                with self.subTest(test_id=test_id, field=field):
-                    self.assertIn(f"{field}: {rust_string_literal(value)}", rendered_case)
+            expected_fields = (
+                test_id,
+                test_case["official_case_id"],
+                test_case["mandatory_status"],
+                test_case["fixture_availability"],
+            )
+            for field_index, value in enumerate(expected_fields):
+                with self.subTest(test_id=test_id, field_index=field_index):
+                    self.assertEqual(rendered_case[field_index], rust_string_literal(value))
         profile_blocks = generated.split("    GeneratedClientProfile {")[1:]
         self.assertEqual(len(profile_blocks), len(profiles))
         for profile_block in profile_blocks:
@@ -5119,9 +5198,20 @@ class ProfileTargetManifestTests(unittest.TestCase):
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
             and isinstance(requirement.get("source_keyword"), str)
         }
+        requirement_rows = {
+            json.loads(arguments[0]): arguments
+            for arguments in _generated_const_constructor_arguments(
+                generated,
+                "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[",
+                "generated_client_requirement",
+            )
+        }
         for keyword in expected_keywords:
             with self.subTest(keyword=keyword):
-                self.assertTrue(f'source_keyword: Some("{keyword}")' in generated)
+                self.assertIn(
+                    f"Some({rust_string_literal(keyword)})",
+                    "\n".join(arguments[1] for arguments in requirement_rows.values()),
+                )
 
         table_requirements = [
             requirement
@@ -5131,14 +5221,11 @@ class ProfileTargetManifestTests(unittest.TestCase):
             and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
         ]
         for requirement in table_requirements:
-            marker = f'requirement_id: "{requirement["requirement_id"]}"'
-            row_start = generated.index(marker)
-            row_end = generated.index("    },", row_start)
-            row = generated[row_start:row_end]
+            row = requirement_rows[requirement["requirement_id"]]
             with self.subTest(requirement_id=requirement["requirement_id"]):
-                self.assertIn("source_keyword: None", row)
-                self.assertIn(f'source_force: Some("{requirement["source_force"]}")', row)
-                self.assertIn(f'source_gap_id: Some("{requirement["source_gap_id"]}")', row)
+                self.assertEqual(row[1], "None")
+                self.assertEqual(row[2], f'Some({rust_string_literal(requirement["source_force"])})')
+                self.assertEqual(row[3], f'Some({rust_string_literal(requirement["source_gap_id"])})')
                 locator = requirement["source_locator"]
                 line_start, line_end = locator["html_line_range"]
                 table = f', table {locator["table"]}' if locator.get("table") else ""
@@ -5146,8 +5233,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
                     f'Section {locator["section"]}{table}, '
                     f'row {locator["row_label"]}, HTML lines {line_start}-{line_end}'
                 )
-                self.assertIn("source_locator: Some(", row)
-                self.assertIn(expected_locator, row)
+                self.assertEqual(_generated_rust_optional_string(row[4]), expected_locator)
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_generated_requirements_classify_keyword_specific_verification_categories(self) -> None:
@@ -5190,20 +5276,18 @@ class ProfileTargetManifestTests(unittest.TestCase):
             catalog["requirements"].append(synthetic_requirement)
 
         generated = render_profiles_source(catalog, targets)
-        blocks = re.findall(
-            r"    GeneratedClientRequirement \{\n(.*?)\n    \},",
-            generated,
-            flags=re.DOTALL,
-        )
         actual_categories: dict[str, str] = {}
-        for block in blocks:
-            requirement_id = re.search(r'requirement_id: "([^"]+)"', block)
-            category = re.search(
-                r"verification_category: GeneratedVerificationCategory::([A-Za-z]+)",
-                block,
+        requirement_rows = _generated_const_constructor_arguments(
+            generated,
+            "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &[",
+            "generated_client_requirement",
+        )
+        for row in requirement_rows:
+            category = re.fullmatch(
+                r"GeneratedVerificationCategory::([A-Za-z]+)", row[5]
             )
-            if requirement_id is not None and category is not None:
-                actual_categories[requirement_id.group(1)] = category.group(1)
+            if category is not None:
+                actual_categories[json.loads(row[0])] = category.group(1)
 
         scoped_requirements = {
             requirement["requirement_id"]: expected_categories[requirement["source_keyword"]]

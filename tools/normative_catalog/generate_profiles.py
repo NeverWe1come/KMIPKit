@@ -510,6 +510,20 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub fixture_availability: &'static str,",
         "}",
         "",
+        "const fn generated_profile_test_case(",
+        "    test_id: &'static str,",
+        "    official_case_id: &'static str,",
+        "    mandatory_status: &'static str,",
+        "    fixture_availability: &'static str,",
+        ") -> GeneratedProfileTestCase {",
+        "    GeneratedProfileTestCase {",
+        "        test_id,",
+        "        official_case_id,",
+        "        mandatory_status,",
+        "        fixture_availability,",
+        "    }",
+        "}",
+        "",
         "/// Client requirement whose applicability is unresolved for a profile.",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
         "pub struct GeneratedProfileScopeBlocker {",
@@ -561,6 +575,34 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub official_test_case_ids: &'static [&'static str],",
         "    /// Whether the catalog records a reviewed deviation.",
         "    pub has_accepted_deviation: bool,",
+        "}",
+        "",
+        "const fn generated_client_requirement(",
+        "    requirement_id: &'static str,",
+        "    source_keyword: Option<&'static str>,",
+        "    source_force: Option<&'static str>,",
+        "    source_gap_id: Option<&'static str>,",
+        "    source_locator: Option<&'static str>,",
+        "    verification_category: GeneratedVerificationCategory,",
+        "    scope_state: &'static str,",
+        "    source_clause_ids: &'static [&'static str],",
+        "    profile_ids: &'static [&'static str],",
+        "    official_test_case_ids: &'static [&'static str],",
+        "    has_accepted_deviation: bool,",
+        ") -> GeneratedClientRequirement {",
+        "    GeneratedClientRequirement {",
+        "        requirement_id,",
+        "        source_keyword,",
+        "        source_force,",
+        "        source_gap_id,",
+        "        source_locator,",
+        "        verification_category,",
+        "        scope_state,",
+        "        source_clause_ids,",
+        "        profile_ids,",
+        "        official_test_case_ids,",
+        "        has_accepted_deviation,",
+        "    }",
         "}",
         "",
         "/// Immutable source and applicability metadata for one client profile.",
@@ -666,25 +708,25 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
             raise ProfileGenerationError("client requirement lacks stable source metadata")
         lines.extend(
             [
-                "    GeneratedClientRequirement {",
-                f"        requirement_id: {rust_string_literal(requirement_id)},",
-                f"        source_keyword: {_rust_optional_string(source_keyword)},",
-                f"        source_force: {_rust_optional_string(source_force)},",
-                f"        source_gap_id: {_rust_optional_string(requirement.get('source_gap_id'))},",
-                f"        source_locator: {_rust_optional_string(_source_gap_locator(requirement))},",
+                "    generated_client_requirement(",
+                f"        {rust_string_literal(requirement_id)},",
+                f"        {_rust_optional_string(source_keyword)},",
+                f"        {_rust_optional_string(source_force)},",
+                f"        {_rust_optional_string(requirement.get('source_gap_id'))},",
+                f"        {_rust_optional_string(_source_gap_locator(requirement))},",
                 (
-                    "        verification_category: GeneratedVerificationCategory::"
+                    "        GeneratedVerificationCategory::"
                     f"{_verification_category(category_source)},"
                 ),
-                f"        scope_state: {_rust_string_field(requirement, 'scope_state')},",
-                f"        source_clause_ids: {_rust_string_array(requirement, 'source_clause_ids')},",
-                f"        profile_ids: {_rust_string_array(requirement, 'profile_ids')},",
-                f"        official_test_case_ids: {_rust_string_array(requirement, 'test_case_ids')},",
+                f"        {_rust_string_field(requirement, 'scope_state')},",
+                f"        {_rust_string_array(requirement, 'source_clause_ids')},",
+                f"        {_rust_string_array(requirement, 'profile_ids')},",
+                f"        {_rust_string_array(requirement, 'test_case_ids')},",
                 (
-                    "        has_accepted_deviation: "
+                    "        "
                     f"{str(requirement.get('status') == 'deviated' and requirement.get('decision_id') in accepted_decision_ids).lower()},"
                 ),
-                "    },",
+                "    ),",
             ]
         )
     lines.extend(["];", ""])
@@ -696,12 +738,12 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         test_case = tests_by_id[test_id]
         lines.extend(
             [
-                "    GeneratedProfileTestCase {",
-                f"        test_id: {rust_string_literal(test_id)},",
-                f"        official_case_id: {_rust_string_field(test_case, 'official_case_id')},",
-                f"        mandatory_status: {_rust_string_field(test_case, 'mandatory_status')},",
-                f"        fixture_availability: {_rust_string_field(test_case, 'fixture_availability')},",
-                "    },",
+                "    generated_profile_test_case(",
+                f"        {rust_string_literal(test_id)},",
+                f"        {_rust_string_field(test_case, 'official_case_id')},",
+                f"        {_rust_string_field(test_case, 'mandatory_status')},",
+                f"        {_rust_string_field(test_case, 'fixture_availability')},",
+                "    ),",
             ]
         )
     lines.extend(["];", ""])
