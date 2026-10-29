@@ -208,3 +208,21 @@ listed above. The pinned OASIS source files and source manifest were not
 edited. The exact-base audit found 1,411 candidates and the immutable-source
 check confirmed the OASIS tree matches base
 `849b46f772fd7cbcea2f42393cdbcf58e92cac94`.
+
+## Query Asynchronous Requests response interpretation
+
+On 2026-10-29, the maintainer reviewed the pinned KMIP 2.1 text at §6.1.41,
+Table 286, and §7.2, Table 353. Section 6.1.41's response-payload description
+immediately before Table 286 identifies an Asynchronous Request item and marks
+it optional and repeatable; §7.2 and Table 353 define that structure. Table
+286's printed caption says “PKCS#11 Response Payload,” which conflicts with
+its surrounding section and row. The official OASIS Standard and CS02
+publication both retain this same context and caption; no formal OASIS
+erratum is claimed.
+
+Accepted decision `KMIPKIT-DEC-015` therefore interprets the Query response
+item as the §7.2 Asynchronous Request structure with optional, repeatable
+cardinality. It does not infer additional required fields, alter the printed
+caption, or change the immutable OASIS source. Generic TTLV remains lossless
+for unknown fields. This interpretation resolves the catalog discrepancy for
+project modeling but is not, by itself, an OASIS conformance claim.
