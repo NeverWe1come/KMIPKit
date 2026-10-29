@@ -5091,6 +5091,10 @@ class ProfileTargetManifestTests(unittest.TestCase):
 
         generated = render_profiles_source(catalog, targets)
 
+        self.assertTrue(
+            "const fn expand_profile_test_cases" in generated,
+            "profile membership should expand from compact ordered indices",
+        )
         profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         test_profiles: dict[str, list[str]] = {}
         for profile in profiles:
@@ -5103,8 +5107,6 @@ class ProfileTargetManifestTests(unittest.TestCase):
         test_case = next(
             test_case for test_case in catalog["test_cases"] if test_case["test_id"] == shared_test_id
         )
-        test_case_index = sorted(test_profiles).index(shared_test_id)
-
         self.assertTrue(
             "pub const PROFILE_TEST_CASES" in generated,
             "generated source should intern shared profile test-case metadata",
@@ -5112,10 +5114,6 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertEqual(
             generated.count(rust_string_literal(test_case["official_case_id"])),
             1,
-        )
-        self.assertEqual(
-            generated.count(f"PROFILE_TEST_CASES[{test_case_index}]"),
-            len(test_profiles[shared_test_id]),
         )
         rendered_cases = _generated_const_constructor_arguments(
             generated,
@@ -5142,17 +5140,33 @@ class ProfileTargetManifestTests(unittest.TestCase):
                     self.assertEqual(rendered_case[field_index], rust_string_literal(value))
         profile_blocks = generated.split("    GeneratedClientProfile {")[1:]
         self.assertEqual(len(profile_blocks), len(profiles))
-        for profile_block in profile_blocks:
+        for profile_index, profile_block in enumerate(profile_blocks):
             profile_id = re.search(r'profile_id: "([^"]+)"', profile_block).group(1)
             profile_body = profile_block.split("\n    },", 1)[0]
-            actual_indexes = re.findall(r"PROFILE_TEST_CASES\[(\d+)\]", profile_body)
+            self.assertIn(
+                f"test_cases: &PROFILE_TEST_CASES_FOR_PROFILE_{profile_index},",
+                profile_body,
+                profile_id,
+            )
+            array_declaration = re.search(
+                rf"const PROFILE_TEST_CASES_FOR_PROFILE_{profile_index}: "
+                r"\[GeneratedProfileTestCase; (\d+)\] = "
+                r"expand_profile_test_cases\(\[(.*?)\]\);",
+                generated,
+                re.DOTALL,
+            )
+            self.assertIsNotNone(array_declaration, profile_id)
+            actual_indexes = [
+                int(value) for value in re.findall(r"\d+", array_declaration.group(2))
+            ]
             expected_indexes = [
                 str(test_case_indexes[test_id])
                 for test_id in next(
                     profile["test_case_ids"] for profile in profiles if profile["profile_id"] == profile_id
                 )
             ]
-            self.assertEqual(actual_indexes, expected_indexes, profile_id)
+            self.assertEqual(array_declaration.group(1), str(len(expected_indexes)), profile_id)
+            self.assertEqual(actual_indexes, [int(index) for index in expected_indexes], profile_id)
 
     def test_target_and_profile_prose_do_not_change_requirement_evidence_metadata(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
