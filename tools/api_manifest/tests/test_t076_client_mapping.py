@@ -4136,7 +4136,7 @@ class T076ClientMappingTests(unittest.TestCase):
             "org.kmipkit.NativeExtensionRegistry.clientExecuteProcess",
             "org.kmipkit.NativeExtensionRegistry.clientExecuteQueryAsyncRequests",
             "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeMetadataV1",
-            "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeCorrelationValue",
+            "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue",
             "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeResponsePayloadTtlv",
             "org.kmipkit.extensions.AsyncOperationOutcome.toString",
             "org.kmipkit.extensions.AsyncOperationMetadataV1.toString",
@@ -4165,6 +4165,41 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("KMIPKIT-0009-FR-009", exclusion["evidence"])
                 self.assertIn("T035", exclusion["evidence"])
+
+    def test_async_correlation_views_are_borrowed_and_zeroized_in_managed_bindings(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] in {"java-kmipkit", "python-kmipkit"}
+        }
+        expected = {
+            "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue": "java-kmipkit",
+            "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value": "python-kmipkit",
+        }
+        for name, package_id in expected.items():
+            with self.subTest(declaration=name):
+                declaration = declarations[name]
+                self.assertEqual(package_id, declaration["packageId"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertIn("KMIPKIT-0009-FR-002", declaration["requirementIds"])
+                self.assertIn("KMIPKIT-0009-FR-009", declaration["requirementIds"])
+
+        java = (ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(encoding="utf-8")
+        python = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(encoding="utf-8")
+        python_correlation = python.split(
+            "    def with_asynchronous_correlation_value(", 1
+        )[1].split("\n    @property", 1)[0]
+        self.assertIn("DirectBufferWiper", java)
+        self.assertIn("asReadOnlyBuffer", java)
+        self.assertIn("borrowed: memoryview | None = None", python_correlation)
+        self.assertLess(
+            python_correlation.index("try:"),
+            python_correlation.index("borrowed = memoryview(secret).toreadonly()"),
+        )
+        self.assertIn("for index in range(len(secret))", python_correlation)
+        self.assertIn("secret[index] = 0", python_correlation)
+        self.assertNotIn("bytes(len(secret))", python_correlation)
 
     def test_async_c_abi_exports_are_mapped_and_present_in_the_generated_header(self) -> None:
         declarations = {

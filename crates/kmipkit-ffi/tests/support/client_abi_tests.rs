@@ -41,6 +41,8 @@ use crate::kmipkit_byte_span_v1_t;
 mod add_attribute_abi_tests;
 #[path = "adjust_attribute_abi_tests.rs"]
 mod adjust_attribute_abi_tests;
+#[path = "async_operation_abi_tests.rs"]
+mod async_operation_abi_tests;
 #[path = "delete_attribute_abi_tests.rs"]
 mod delete_attribute_abi_tests;
 #[path = "get_attribute_list_abi_tests.rs"]
@@ -59,8 +61,6 @@ mod set_attribute_abi_tests;
 mod set_constraints_abi_tests;
 #[path = "set_defaults_abi_tests.rs"]
 mod set_defaults_abi_tests;
-#[path = "async_operation_abi_tests.rs"]
-mod async_operation_abi_tests;
 
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;

@@ -2527,7 +2527,30 @@ final class ClientFacadeTlsIntegrationTest {
             assertTrue(metadata.outcomeKind().isPending());
             assertEquals(2, metadata.resultStatus());
             assertTrue(metadata.resultMessage().isEmpty());
-            assertArrayEquals(correlation, outcome.asynchronousCorrelationValue().orElseThrow());
+            ByteBuffer[] retainedCorrelationView = new ByteBuffer[1];
+            assertTrue(outcome.withAsynchronousCorrelationValue(value -> {
+                assertTrue(value.isDirect());
+                assertTrue(value.isReadOnly());
+                assertEquals(correlation.length, value.remaining());
+                byte[] observed = new byte[value.remaining()];
+                value.get(observed);
+                assertArrayEquals(correlation, observed);
+                retainedCorrelationView[0] = value.duplicate();
+            }));
+            assertNotNull(retainedCorrelationView[0]);
+            for (int index = 0; index < correlation.length; index++) {
+                assertEquals(0, retainedCorrelationView[0].get(index));
+            }
+            ByteBuffer[] retainedAfterFailure = new ByteBuffer[1];
+            assertThrows(IllegalStateException.class, () ->
+                    outcome.withAsynchronousCorrelationValue(value -> {
+                        retainedAfterFailure[0] = value.duplicate();
+                        throw new IllegalStateException("callback failure");
+                    }));
+            assertNotNull(retainedAfterFailure[0]);
+            for (int index = 0; index < correlation.length; index++) {
+                assertEquals(0, retainedAfterFailure[0].get(index));
+            }
             assertTrue(outcome.responsePayloadTtlv().isEmpty());
             assertFalse(outcome.toString().contains(Arrays.toString(correlation)));
             request = peer.get(12, TimeUnit.SECONDS);
@@ -2590,6 +2613,9 @@ final class ClientFacadeTlsIntegrationTest {
             try (AsyncOperationOutcome outcome = client.executeProcess(
                     correlation, CodecLimits.defaults(), OptionalLong.empty())) {
                 assertEquals(0x3a, outcome.metadataV1().operation());
+                assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
+                    throw new AssertionError("unexpected correlation callback: " + value.remaining());
+                }));
                 try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(0, view.itemCount());
@@ -2599,6 +2625,9 @@ final class ClientFacadeTlsIntegrationTest {
                     CodecLimits.defaults(), List.of(queryCorrelation), List.of(0xdead_beefL),
                     OptionalLong.of(2))) {
                 assertEquals(0x39, outcome.metadataV1().operation());
+                assertFalse(outcome.withAsynchronousCorrelationValue(value -> {
+                    throw new AssertionError("unexpected correlation callback: " + value.remaining());
+                }));
                 try (TtlvStructure payload = outcome.responsePayloadTtlv().orElseThrow();
                         TtlvStructureView view = payload.view()) {
                     assertEquals(0, view.itemCount());

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 from kmipkit import client, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -74,9 +76,15 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
             assert outcome.metadata_v1.operation == 0x1A
             assert outcome.metadata_v1.outcome == client.BatchOutcome.PENDING
             assert outcome.metadata_v1.result_status == 2
-            assert (
-                outcome.asynchronous_correlation_value == expected_response_correlation
-            )
+            borrowed: list[memoryview] = []
+
+            def inspect_correlation(value: memoryview) -> None:
+                assert value.readonly
+                assert bytes(value) == expected_response_correlation
+                borrowed.append(value[:])
+
+            assert outcome.with_asynchronous_correlation_value(inspect_correlation)
+            assert bytes(borrowed[0]) == bytes(len(expected_response_correlation))
             assert outcome.response_payload_ttlv is None
         finally:
             outcome.close()
@@ -173,12 +181,99 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
             assert observed == [expected]
             assert outcome.metadata_v1.operation == 0x05
             assert outcome.metadata_v1.cancellation_result == cancellation_result
-            assert outcome.asynchronous_correlation_value == echoed
+            observed_echo: list[bytes] = []
+            assert outcome.with_asynchronous_correlation_value(
+                lambda value: observed_echo.append(bytes(value))
+            )
+            assert observed_echo == [echoed]
         finally:
             outcome.close()
     finally:
         limits.close()
 
+    assert released == [stubs.outcome_handle]
+
+
+def test_async_correlation_callback_wipes_borrowed_snapshot_when_callback_raises(
+    monkeypatch,
+) -> None:
+    expected = b"\x00\xff\x81"
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released, response_correlation=expected)
+    fake = SimpleNamespace(**stubs.__dict__)
+    monkeypatch.setattr(client, "lib", fake)
+    outcome = client._wrap_owned_handle(
+        client.AsyncOperationOutcome, stubs.outcome_handle
+    )
+    retained: list[memoryview] = []
+
+    def fail_after_read(value: memoryview) -> None:
+        retained.append(value[:])
+        assert bytes(value) == expected
+        raise RuntimeError("callback failure")
+
+    with pytest.raises(RuntimeError, match="callback failure"):
+        outcome.with_asynchronous_correlation_value(fail_after_read)
+
+    assert bytes(retained[0]) == bytes(len(expected))
+    outcome.close()
+    assert released == [stubs.outcome_handle]
+
+
+def test_async_correlation_buffer_is_wiped_if_readonly_view_creation_fails(
+    monkeypatch,
+) -> None:
+    expected = b"\x00\xff\x81"
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released, response_correlation=expected)
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**stubs.__dict__))
+    outcome = client._wrap_owned_handle(
+        client.AsyncOperationOutcome, stubs.outcome_handle
+    )
+    buffers: list[bytearray] = []
+
+    def tracked_bytearray(value=b"") -> bytearray:
+        buffer = bytearray(value)
+        buffers.append(buffer)
+        return buffer
+
+    def fail_view(_buffer):
+        raise MemoryError("readonly view allocation failed")
+
+    monkeypatch.setattr(client, "bytearray", tracked_bytearray, raising=False)
+    monkeypatch.setattr(client, "memoryview", fail_view, raising=False)
+
+    with pytest.raises(MemoryError, match="readonly view allocation failed"):
+        outcome.with_asynchronous_correlation_value(lambda _value: None)
+
+    assert buffers == [bytearray(len(expected))]
+    outcome.close()
+    assert released == [stubs.outcome_handle]
+
+
+def test_async_correlation_wipe_does_not_allocate_a_zero_fill_copy(monkeypatch) -> None:
+    expected = b"\x00\xff\x81"
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released, response_correlation=expected)
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**stubs.__dict__))
+    outcome = client._wrap_owned_handle(
+        client.AsyncOperationOutcome, stubs.outcome_handle
+    )
+    retained: list[memoryview] = []
+    builtin_bytes = bytes
+
+    def reject_sized_bytes(value=b""):
+        if isinstance(value, int):
+            raise MemoryError("zero-fill allocation attempted")
+        return builtin_bytes(value)
+
+    monkeypatch.setattr(client, "bytes", reject_sized_bytes, raising=False)
+    assert outcome.with_asynchronous_correlation_value(
+        lambda value: retained.append(value[:])
+    )
+
+    assert builtin_bytes(retained[0]) == builtin_bytes(len(expected))
+    outcome.close()
     assert released == [stubs.outcome_handle]
 
 
@@ -220,6 +315,9 @@ def test_process_forwards_an_explicit_indicator_once(monkeypatch) -> None:
         try:
             assert observed == [(expected, 1, indicator)]
             assert outcome.metadata_v1.operation == 0x28
+            assert not outcome.with_asynchronous_correlation_value(
+                lambda _value: pytest.fail("unexpected correlation callback")
+            )
         finally:
             outcome.close()
     finally:

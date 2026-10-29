@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn poll_execution_clears_output_before_rejecting_an_invalid_correlation_span() {
-    let mut output = 1_usize as *mut crate::kmipkit_client_async_operation_outcome_t;
+    let mut output = ptr::dangling_mut::<crate::kmipkit_client_async_operation_outcome_t>();
 
     let status = kmipkit_client_execute_poll(
         ptr::null_mut(),
@@ -65,6 +65,16 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
 
     assert_eq!(status, SUCCESS);
     assert!(!outcome.is_null());
+    assert_pending_metadata(outcome);
+    assert_exact_correlation(outcome, &expected_correlation);
+    assert_response_payload_is_absent(outcome);
+
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+}
+
+fn assert_pending_metadata(outcome: *mut kmipkit_client_async_operation_outcome_t) {
     let mut metadata = kmipkit_client_async_operation_metadata_v1_t {
         struct_size: 0,
         abi_version: 0,
@@ -87,7 +97,12 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     assert_eq!(metadata.operation, 0x1a);
     assert_eq!(metadata.outcome_kind, BATCH_OUTCOME_PENDING);
     assert_eq!(metadata.result_status, 2);
+}
 
+fn assert_exact_correlation(
+    outcome: *mut kmipkit_client_async_operation_outcome_t,
+    expected: &[u8],
+) {
     let mut present = 0;
     let mut correlation = kmipkit_byte_span_v1_t {
         data: ptr::null(),
@@ -110,10 +125,13 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
                 usize::try_from(correlation.length).expect("correlation length fits usize"),
             )
         },
-        expected_correlation
+        expected
     );
+}
 
-    let mut payload = 1_usize as *mut kmipkit_ttlv_structure_t;
+fn assert_response_payload_is_absent(outcome: *mut kmipkit_client_async_operation_outcome_t) {
+    let mut present = 0;
+    let mut payload = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
     assert_eq!(
         kmipkit_client_async_operation_outcome_response_payload_ttlv(
             outcome,
@@ -124,8 +142,4 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
     );
     assert_eq!(present, 0);
     assert!(payload.is_null());
-
-    kmipkit_client_async_operation_outcome_release(outcome);
-    kmipkit_codec_limits_release(limits_handle);
-    kmipkit_client_release(client_handle);
 }
