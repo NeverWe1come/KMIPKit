@@ -45,6 +45,7 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_client_abi_c_consumer_async_output_errors_clear() -> i32;
     fn shared_ttlv_fixture_preserves_open_values_and_order(
         raw_tags: *const u32,
         enumeration_value: u32,
@@ -507,6 +508,18 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
     assert_eq!(
         result, 0,
         "generated public C client ABI consumer must pass its implementation checks"
+    );
+}
+
+#[test]
+fn generated_public_async_client_abi_consumer_compiles_and_runs() {
+    // SAFETY: the C consumer uses null handles to exercise documented invalid-input
+    // paths and verifies that every output is cleared before returning.
+    let result = unsafe { kmipkit_client_abi_c_consumer_async_output_errors_clear() };
+
+    assert_eq!(
+        result, 1,
+        "the compiled C consumer must call every async ABI export and observe cleared outputs"
     );
 }
 
