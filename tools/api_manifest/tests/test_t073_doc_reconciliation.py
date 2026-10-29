@@ -25,6 +25,32 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
+    def test_dependency_matrix_owner_state_matches_manifest(self) -> None:
+        matrix_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "contracts"
+            / "operation-dependencies.md"
+        )
+        matrix = matrix_path.read_text(encoding="utf-8")
+        rows = {}
+        for line in matrix.splitlines():
+            if line.startswith("| §6.1."):
+                columns = [column.strip() for column in line.strip("|").split("|")]
+                rows[columns[1]] = columns[3]
+
+        operations = {operation["name"]: operation for operation in self.manifest["operations"]}
+        self.assertEqual(set(operations), set(rows))
+
+        for name, operation in operations.items():
+            owner_state = operation["ownerDependency"]["state"]
+            with self.subTest(operation=name, owner_state=owner_state):
+                if owner_state in {"approved", "accepted"}:
+                    self.assertNotIn("Candidate owner", rows[name])
+                elif owner_state == "candidate":
+                    self.assertIn("Candidate owner", rows[name])
+
     def test_dependency_matrix_reports_declared_hash_mac_and_signature_operations(self) -> None:
         matrix_path = (
             ROOT
