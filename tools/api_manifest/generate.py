@@ -967,10 +967,30 @@ def _validate_public_declarations(
             package_id,
             package_languages,
         )
-        if declaration.get("declarationState") in {"declared", "verified"}:
+        state = declaration.get("declarationState")
+        if state == "authorized_wip":
+            candidate_spec_id = declaration.get("candidateSpecId")
+            if (
+                operation is None
+                or operation.get("apiState") != "authorized_wip"
+                or candidate_spec_id != operation.get("candidateSpecId")
+                or declaration.get("implementationAuthorization")
+                != operation.get("implementationAuthorization")
+                or declaration.get("approvalSource") is not None
+            ):
+                raise ManifestError("authorized WIP declaration does not match its operation owner")
+            if parity_scope != "four-language":
+                raise ManifestError("authorized WIP operation declaration must map four languages")
+            _validate_implementation_authorization(
+                declaration.get("implementationAuthorization"),
+                root,
+                feature_id=candidate_spec_id,
+            )
+        elif state in {"declared", "verified"}:
             _validate_public_declaration_approval(
                 declaration, capability, operation, parity_scope, root
             )
+        if state in {"authorized_wip", "declared", "verified"}:
             mappings = declaration.get("languageMappings", {})
             required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
                 "rust", "c", "java", "python"
