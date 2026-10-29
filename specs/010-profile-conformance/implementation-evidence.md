@@ -8218,3 +8218,29 @@ After release merged `KMIPKIT-DEC-015` for `KMIPKIT-DISC-039`, the Query source-
 | Catalog validation | `python -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,143 records. |
 
 The fixture is source-review evidence, not generated output; no generator was run in write mode and pinned OASIS upstream files were not modified. No Refactor phase was needed for these test and oracle corrections.
+
+## T042 protected-evidence provenance correction (2026-10-29)
+
+The independent security review found that a local caller could construct the
+same manifest and `GITHUB_*` values as the protected release workflow. The
+readiness evaluator now requires live GitHub API verification of the current
+Actions run, repository, protected release push, workflow path, run attempt,
+head SHA, required job results, and branch-protection policy. The public
+in-process evaluator cannot supply the private verification sentinel. Follow-up
+review also caught the exact REST workflow path variants and the actual
+`Dependency policy / pull request` job name; the verifier accepts only the
+three exact release-CI path forms and now checks the push job name.
+
+| Phase / check | Evidence | Result |
+| --- | --- | --- |
+| Red | DCO commits `57fa312e`, `972a9acd`, `5cd3d9b2`, and `209c4582` | The forged-local-evidence test failed before live provenance was added; the workflow-contract test then failed against the real dependency-policy job/path shape before correction. |
+| Green | DCO commits `74546bd1` and `2cfa23aa` | Live GitHub verification is required; local/mismatched evidence fails closed; actual workflow path and job names are recognized. |
+| Focused verification | `py -3 -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_readiness_cli_consumes_the_same_run_manifest_ephemerally -v` | PASS: 1 test, including documented and observed workflow path variants, SHA mismatch, and local execution without tokens. |
+| Related suite | `py -3 -B -m unittest tools.normative_catalog.tests.test_report scripts.tests.test_ci_summary scripts.tests.test_workflow` | PASS: 153 tests, one POSIX-specific skip. |
+| Independent security re-review | Reviewer read current `report.py` and tests after the correction | No actionable findings. |
+| Repository checks | `git diff --check` | PASS. |
+
+This closes the caller-forgeable evidence finding. It does not create the
+administrator-managed protected-branch policy or Actions App credential;
+T026 remains open and release readiness stays fail-closed until those external
+prerequisites and eligible protected-push evidence exist.
