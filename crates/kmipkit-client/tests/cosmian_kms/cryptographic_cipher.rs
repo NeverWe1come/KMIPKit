@@ -681,6 +681,25 @@ mod tests {
     }
 
     #[test]
+    fn caller_nonces_are_fresh_for_each_encryption_input() {
+        let row = serde_json::json!({
+            "algorithm": "AES",
+            "parameters": {"nonce_source": "caller", "iv_length_bits": 96}
+        });
+
+        let first = nonce_for(&row)
+            .expect("first secure nonce")
+            .expect("caller nonce");
+        let second = nonce_for(&row)
+            .expect("second secure nonce")
+            .expect("caller nonce");
+        let matches = first.with_bytes(|first| second.with_bytes(|second| first == second));
+
+        assert!(first.with_bytes(|nonce| nonce.len() == 12));
+        assert!(!matches, "separate Encrypt inputs must not reuse a nonce");
+    }
+
+    #[test]
     // OASIS KMIP v2.1 §11.6/Table 436 distinguishes AEAD from GCM.
     fn aead_and_gcm_keep_their_distinct_wire_modes() {
         for (mode, expected) in [("AEAD", 0x12), ("GCM", 9)] {
