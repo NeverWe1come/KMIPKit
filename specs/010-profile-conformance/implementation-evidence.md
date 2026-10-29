@@ -8547,3 +8547,12 @@ The complete GitHub CI run for preceding head `1ad8f1b41` completed with every
 job successful; its only failed check was SonarCloud at 3.3518% duplication.
 Fresh GitHub CI and SonarCloud results for the current head are pending. No
 coverage, duplication threshold, or analysis exclusion was changed.
+
+
+## T026 implementation completion and post-integration release gate (2026-10-30)
+
+At the maintainer's direction, T026 is complete at the implementation and configuration boundary so KMIPKIT-0010 can proceed to its coverage closeout without claiming that a release-only run has passed. The fail-closed evaluator, selected-job aggregation, same-run context and push-before binding, App-backed branch-policy adapter, positive and negative tests, and protected workflow are implemented. Current PR #90 head a8003809e8ca1dcc2c4e976d0011210588f2bcd0 has successful CI run https://github.com/NeverWe1come/KMIPKit/actions/runs/40966357733 (43 checks successful; 3 expected skips).
+
+Read-only GitHub verification on 2026-10-30 confirmed release/1.0.0 protection: strict CI summary / at a glance; zero required approvals; code-owner review disabled; stale-review dismissal and administrator enforcement enabled; force pushes and deletion disabled. The restricted release-evidence environment contains PROFILE_EVIDENCE_APP_CLIENT_ID and PROFILE_EVIDENCE_APP_PRIVATE_KEY; secret values were not read. No CI workflow run for a push to release/1.0.0 exists yet, so the App installation token and live policy query have not been exercised in an eligible run.
+
+The first protected push after integration remains a release gate, not evidence that has already passed. The protected-release aggregate must succeed before Baseline profile readiness can be claimed; until then the catalog remains evidence_incomplete and no profile-support claim is made. The aggregate is skipped on pull_request events, so this release gate cannot be satisfied from the draft PR run alone. This note supersedes earlier task notes that kept T026 open solely for the post-integration run.
