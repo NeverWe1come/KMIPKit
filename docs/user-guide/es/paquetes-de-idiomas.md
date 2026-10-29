@@ -69,6 +69,7 @@ tabla.
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
 | `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
+| `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y la respuesta TTLV genérica de Query, sin sondeo automático. |
 | `crypto_response_ttlv` | declared | El acceso TTLV genérico se limita a errores aprobados de forma del identificador único en respuestas correctas de MAC, MAC Verify, Sign y Signature Verify. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
@@ -76,17 +77,16 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **4 / 56** siguen en
-estado `blocked`: Cancel, Poll, Process y Query Asynchronous Requests. Sus
-mapeos de API para cuatro lenguajes quedan sujetos a la aprobación de la
-especificación propietaria KMIPKIT-0009; la respuesta discutida de Query sigue
-como TTLV genérico mientras `KMIPKIT-DISC-039` permanezca abierta.
-**8** filas están en estado `declared`: Create, Create Key Pair, Create Split
-Key, Hash, MAC, MAC Verify, Sign y Signature Verify. Sus mapeos de solicitud
-y respuesta para cuatro lenguajes están registrados; `declared` no demuestra
-la conformidad completa de las operaciones. No se debe inferir que una
-operación está disponible porque haya tipos o código en otra parte del
-repositorio.
+De las **56** filas de operaciones KMIP `client_1_0`, **0 / 56** siguen en
+estado `blocked`. **12** filas están en estado `declared`: Cancel, Create,
+Create Key Pair, Create Split Key, Hash, MAC, MAC Verify, Poll, Process, Query
+Asynchronous Requests, Sign y Signature Verify. Las API asíncronas siguen el
+alcance aprobado de KMIPKIT-0009; continúa abierta la falta de un requisito de
+catálogo para Process Table 278 y siguen pendientes las listas de revisión del
+propietario. Query devuelve una respuesta TTLV genérica según KMIPKIT-DEC-015.
+`declared` registra el mapeo, pero no demuestra la conformidad completa de las
+operaciones. No se debe inferir que una operación está disponible solo porque
+haya tipos o código en otra parte del repositorio.
 **44** mapeos de operación están en estado `verified`:
 Activate, Add Attribute, Adjust Attribute, Archive, Certify, Check, Decrypt,
 Delegated Login, Delete Attribute, Derive Key, Destroy, Discover Versions,

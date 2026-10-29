@@ -274,6 +274,11 @@ unchanged. This interpretation is not a formal conformance claim. The catalog
 gap for the required Process request field in Table 278 remains open under
 `OD-002`.
 
+Java and Python expose the correlation through an explicit callback as a
+read-only view backed by temporary KMIPKit-managed storage. The temporary
+storage is zeroized before the callback method returns, including when the
+callback raises. Any copy made by application code is caller-owned.
+
 ## Resource limits
 
 `CodecLimits` applies to each request execution. Its defaults are:

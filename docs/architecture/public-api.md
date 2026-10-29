@@ -32,15 +32,20 @@ Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
-lifecycle calls. In particular, explicit asynchronous
-follow-up operations remain blocked in the 1.0 manifest pending KMIPKIT-0009:
+lifecycle calls. The maintainer approved KMIPKIT-0009 for implementation on
+2026-10-29. Its four asynchronous follow-up APIs are mapped across Rust, C,
+Java, and Python and remain `declared` in the manifest. Each method performs
+one explicit exchange. `declared` is not a conformance claim: the Process
+Table 278 catalog requirement gap and reviewer-owned checklists remain open.
+Query Asynchronous Requests retains its generic TTLV response under
+KMIPKIT-DEC-015.
 
 | KMIP operation | Four-language 1.0 mapping |
 |---|---|
-| Cancel | blocked |
-| Poll | blocked |
-| Process | blocked |
-| Query Asynchronous Requests | blocked |
+| Cancel | declared |
+| Poll | declared |
+| Process | declared |
+| Query Asynchronous Requests | declared |
 
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
@@ -70,8 +75,12 @@ KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
 `ClientBatch` with a closed typed request set. The complete Rust typed request
 set currently contains 52 variants, covering 52 of the 56 `client_1_0`
 operation types. It excludes the four explicit asynchronous follow-up
-operations Cancel, Poll, Process, and Query Asynchronous Requests, which remain
-blocked in the manifest pending KMIPKIT-0009. Variants: Discover Versions,
+operations Cancel, Poll, Process, and Query Asynchronous Requests from batch
+items; these operations, which are declared in the manifest under the approved
+KMIPKIT-0009 scope, use dedicated one-shot methods. The Query Asynchronous
+Requests response remains available as a generic TTLV response under
+KMIPKIT-DEC-015.
+Variants: Discover Versions,
 Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
 Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
 Recover, Get, Locate, Create, Create Key Pair, Create Split Key, Add Attribute,
@@ -265,12 +274,20 @@ Pending value retains the originating typed response; `response()` returns a
 borrowed `ClientResponseView` with a shared operation-result accessor and
 operation-specific accessors. The view also preserves Discover Versions'
 supported-version accessor. Formatted output is redacted and KMIPKit-owned
-correlation storage is zeroized when the Pending value is dropped. Poll,
-Cancel, Process, and Query Asynchronous Requests remain blocked in the
-four-language 1.0 API pending approval and implementation of KMIPKIT-0009,
-even though KMIPKit preserves Pending outcomes and their correlation value.
-Automatic waiting and background execution are not implemented. See the
+correlation storage is zeroized when the Pending value is dropped. The
+four-language API exposes explicit one-exchange methods for Poll, Cancel,
+Process, and Query Asynchronous Requests. Correlation bytes are preserved;
+there is no automatic polling, waiting, retry, or background execution. Their
+manifest rows remain `declared` while the Process Table 278 catalog gap and
+reviewer-owned checklists remain open. Query returns a generic TTLV response
+under KMIPKIT-DEC-015; this is not a complete conformance claim. See the
 [client execution guide](../user-guide/en/client-execution.md).
+
+The managed Java and Python facades expose correlation bytes only inside an
+explicit callback. Each receives a temporary read-only view backed by mutable
+KMIPKit-managed storage, which is zeroized before the callback method returns,
+including on callback failure. Copies deliberately made by application code
+remain caller-owned.
 
 ## Secrets
 

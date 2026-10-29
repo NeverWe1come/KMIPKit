@@ -289,6 +289,12 @@ OASIS fijada permanecen intactos. Esta interpretación no constituye una
 afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
 catálogo para el campo obligatorio de la petición Process de la Tabla 278.
 
+Java y Python exponen la correlación mediante un callback que recibe una vista
+de solo lectura respaldada por almacenamiento temporal gestionado por KMIPKit.
+Ese almacenamiento se pone a cero antes de que el método vuelva, también si
+el callback lanza una excepción. Las copias que cree la aplicación son de su
+propiedad.
+
 ## Límites de recursos
 
 `CodecLimits` se aplica a cada ejecución de una petición. Sus valores
