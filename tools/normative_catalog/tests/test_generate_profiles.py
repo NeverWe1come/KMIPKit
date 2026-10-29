@@ -54,6 +54,28 @@ def _normalized_html_source_span(lines: list[str], line_range: list[int]) -> str
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
 
 
+def _generated_const_constructor_arguments(
+    source: str,
+    table_declaration: str,
+    constructor_name: str,
+) -> list[list[str]]:
+    """Read positional const-constructor rows from one generated Rust table."""
+    from tools.normative_catalog.report import _split_rust_registry_entries
+
+    table = source.split(table_declaration, 1)[1].split("\n];", 1)[0]
+    rows = []
+    for entry in _split_rust_registry_entries(table):
+        match = re.fullmatch(
+            rf"\s*{re.escape(constructor_name)}\s*\((.*)\)\s*",
+            entry,
+            re.DOTALL,
+        )
+        if match is None:
+            raise AssertionError(f"unsupported generated constructor row: {entry[:120]}")
+        rows.append(_split_rust_registry_entries(match.group(1)))
+    return rows
+
+
 def closure_catalog() -> dict[str, object]:
     return {
         "source_clauses": [
@@ -4834,6 +4856,54 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
         self.assertNotIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
+
+    def test_generated_normative_tables_use_shared_const_constructors(self) -> None:
+        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
+        targets = ProfileTargets(
+            "1.0",
+            ("KMIPKIT-PROFILE-BASELINE-CLIENT",),
+            "KMIPKIT-0010/FR-003",
+        )
+
+        generated = render_profiles_source(catalog, targets)
+        requirement_declaration = (
+            "pub const CLIENT_REQUIREMENTS: &[GeneratedClientRequirement] = &["
+        )
+        test_case_declaration = (
+            "pub const PROFILE_TEST_CASES: &[GeneratedProfileTestCase] = &["
+        )
+        requirement_table = generated.split(requirement_declaration, 1)[1].split("\n];", 1)[0]
+        test_case_table = generated.split(test_case_declaration, 1)[1].split("\n];", 1)[0]
+
+        self.assertIn("const fn generated_client_requirement(", generated)
+        self.assertIn("const fn generated_profile_test_case(", generated)
+        self.assertNotIn("GeneratedClientRequirement {", requirement_table)
+        self.assertNotIn("GeneratedProfileTestCase {", test_case_table)
+
+        requirement_rows = _generated_const_constructor_arguments(
+            generated, requirement_declaration, "generated_client_requirement"
+        )
+        expected_requirement_ids = sorted(
+            requirement["requirement_id"]
+            for requirement in catalog["requirements"]
+            if requirement["role"] in {"client", "both"}
+            and requirement["scope_state"] in {"client_1_0", "mixed", "profile_conditional"}
+        )
+        self.assertEqual([json.loads(row[0]) for row in requirement_rows], expected_requirement_ids)
+
+        test_case_rows = _generated_const_constructor_arguments(
+            generated, test_case_declaration, "generated_profile_test_case"
+        )
+        expected_test_case_ids = sorted(
+            {
+                test_id
+                for profile in catalog["profiles"]
+                if profile["role"] == "client"
+                for test_id in profile["test_case_ids"]
+            }
+        )
+        self.assertEqual([json.loads(row[0]) for row in test_case_rows], expected_test_case_ids)
 
     def test_profile_clause_and_requirement_closures_use_compact_const_expansions(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
