@@ -2286,7 +2286,7 @@ mod unrelated {
             "KMIPKIT-CLAUSE-SPEC-TEST-001",
             GeneratedVerificationCategory::OptionalCapability,
             [("crates/kmipkit-protocol/tests/support/profile_unit.rs::test_optional_capability", RuleTestKind::OptionalCapabilityUsable)],
-            [("client_profile_capability", "caller_asserted")],
+            [("client_profile_capability", "recover_poll_caller_directed")],
         )'''
 
         fields, evidence, constraints = report_module._parse_typed_rule_mapping_entry(entry)
@@ -2312,7 +2312,7 @@ mod unrelated {
         )
         self.assertEqual(
             constraints,
-            [{"key": "client_profile_capability", "value": "caller_asserted"}],
+            [{"key": "client_profile_capability", "value": "recover_poll_caller_directed"}],
         )
 
     def test_full_profile_report_keeps_evidence_incomplete_with_runtime_ready_baseline_and_pinned_fixtures(self) -> None:

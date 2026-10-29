@@ -62,6 +62,9 @@ _TYPED_RULE_MAPPING_ENTRY = re.compile(
 _TYPED_RULE_MAPPING_CONSTRUCTOR = re.compile(
     r"\s*typed_rule_mapping\s*\((?P<arguments>.*)\)\s*", re.DOTALL
 )
+_SIMPLE_TYPED_RULE_MAPPING_MACRO = re.compile(
+    r"\s*simple_typed_rule_mapping!\s*\((?P<arguments>.*)\)\s*", re.DOTALL
+)
 _RULE_TEST_EVIDENCE_ENTRY = re.compile(
     r'''\s*RuleTestEvidence\s*\{\s*
     test_id:\s*"(?P<test_id>[A-Za-z0-9_./:-]+)",\s*
@@ -76,6 +79,13 @@ _RULE_TEST_EVIDENCE_CONSTRUCTOR = re.compile(
     \)\s*''',
     re.DOTALL | re.VERBOSE,
 )
+_RULE_TEST_EVIDENCE_TUPLE = re.compile(
+    r'''\s*\(\s*
+    "(?P<test_id>[A-Za-z0-9_./:-]+)"\s*,\s*
+    RuleTestKind::(?P<kind>[A-Za-z][A-Za-z0-9_]*)\s*,?\s*
+    \)\s*''',
+    re.DOTALL | re.VERBOSE,
+)
 _RULE_CONSTRAINT_ENTRY = re.compile(
     r'''\s*RuleConstraint\s*\{\s*
     key:\s*"(?P<key>[A-Za-z][A-Za-z0-9_-]*)",\s*
@@ -85,6 +95,13 @@ _RULE_CONSTRAINT_ENTRY = re.compile(
 )
 _RULE_CONSTRAINT_CONSTRUCTOR = re.compile(
     r'''\s*rule_constraint\s*\(\s*
+    "(?P<key>[A-Za-z][A-Za-z0-9_-]*)"\s*,\s*
+    "(?P<value>[A-Za-z][A-Za-z0-9_-]*)"\s*,?\s*
+    \)\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_CONSTRAINT_TUPLE = re.compile(
+    r'''\s*\(\s*
     "(?P<key>[A-Za-z][A-Za-z0-9_-]*)"\s*,\s*
     "(?P<value>[A-Za-z][A-Za-z0-9_-]*)"\s*,?\s*
     \)\s*''',
@@ -494,6 +511,13 @@ def _rust_array_contents(argument: str) -> str:
     return match.group(1)
 
 
+def _rust_bracket_contents(argument: str) -> str:
+    match = re.fullmatch(r"\s*\[(.*)\]\s*", argument, re.DOTALL)
+    if match is None:
+        raise ValueError("unsupported typed profile rule mapping")
+    return match.group(1)
+
+
 def _parse_typed_rule_mapping_constructor(
     entry: str,
 ) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
@@ -557,10 +581,61 @@ def _parse_typed_rule_mapping_constructor(
     return fields, evidence, constraints
 
 
+def _parse_simple_typed_rule_mapping_macro(
+    entry: str,
+) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
+    macro = _SIMPLE_TYPED_RULE_MAPPING_MACRO.fullmatch(entry)
+    if macro is None:
+        raise ValueError("unsupported typed profile rule mapping")
+    arguments = _split_rust_registry_entries(macro.group("arguments"))
+    if len(arguments) != 5:
+        raise ValueError("unsupported typed profile rule mapping")
+
+    requirement = re.fullmatch(r'\s*"(KMIPKIT-REQ-[A-Z0-9.-]+)"\s*', arguments[0])
+    clause = re.fullmatch(r'\s*"(KMIPKIT-CLAUSE-[A-Z0-9.-]*|)"\s*', arguments[1])
+    category = re.fullmatch(
+        r"\s*GeneratedVerificationCategory::([A-Za-z][A-Za-z0-9_]*)\s*",
+        arguments[2],
+    )
+    if any(match is None for match in (requirement, clause, category)):
+        raise ValueError("unsupported typed profile rule mapping")
+
+    evidence: list[dict[str, str]] = []
+    for evidence_entry in _split_rust_registry_entries(_rust_bracket_contents(arguments[3])):
+        evidence_match = _RULE_TEST_EVIDENCE_TUPLE.fullmatch(evidence_entry)
+        if evidence_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence_fields = evidence_match.groupdict()
+        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence.append(evidence_fields)
+
+    constraints: list[dict[str, str]] = []
+    for constraint_entry in _split_rust_registry_entries(_rust_bracket_contents(arguments[4])):
+        constraint_match = _RULE_CONSTRAINT_TUPLE.fullmatch(constraint_entry)
+        if constraint_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraint = constraint_match.groupdict()
+        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraints.append(constraint)
+
+    fields = {
+        "requirement_id": requirement.group(1),
+        "source_clause_id": clause.group(1),
+        "source_gap_id": None,
+        "category": category.group(1),
+        "evaluator": "None",
+    }
+    return fields, evidence, constraints
+
+
 def _parse_typed_rule_mapping_entry(
     entry: str,
 ) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
     """Normalize either accepted static row form before shared validation."""
+    if _SIMPLE_TYPED_RULE_MAPPING_MACRO.fullmatch(entry) is not None:
+        return _parse_simple_typed_rule_mapping_macro(entry)
     match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
     if match is None:
         return _parse_typed_rule_mapping_constructor(entry)
