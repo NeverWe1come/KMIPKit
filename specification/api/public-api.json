@@ -318183,7 +318183,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318230,7 +318230,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318277,7 +318277,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318324,7 +318324,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318371,7 +318371,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318418,7 +318418,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318465,7 +318465,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318512,7 +318512,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318559,7 +318559,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318601,7 +318601,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318645,7 +318645,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318692,7 +318692,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318735,7 +318735,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318782,7 +318782,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318825,7 +318825,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318868,7 +318868,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318911,7 +318911,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -318955,7 +318955,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319002,7 +319002,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319046,7 +319046,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319090,7 +319090,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319134,7 +319134,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319178,7 +319178,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319222,7 +319222,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319266,7 +319266,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319313,7 +319313,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319355,7 +319355,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319402,7 +319402,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319447,7 +319447,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319489,7 +319489,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319532,7 +319532,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319575,7 +319575,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319618,7 +319618,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319662,7 +319662,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319709,7 +319709,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319753,7 +319753,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319797,7 +319797,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319841,7 +319841,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319885,7 +319885,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319929,7 +319929,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -319973,7 +319973,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320020,7 +320020,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320062,7 +320062,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320109,7 +320109,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320154,7 +320154,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320196,7 +320196,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320239,7 +320239,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320282,7 +320282,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320325,7 +320325,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320369,7 +320369,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320412,7 +320412,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320455,7 +320455,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320498,7 +320498,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320542,7 +320542,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320589,7 +320589,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320636,7 +320636,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320683,7 +320683,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320730,7 +320730,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320777,7 +320777,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320824,7 +320824,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -320871,7 +320871,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "languageMappings": {
         "rust": {
@@ -331932,7 +331932,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor."
     },
@@ -331944,7 +331944,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor."
     },
@@ -331956,7 +331956,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor."
     },
@@ -331968,7 +331968,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor."
     },
@@ -331980,7 +331980,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor."
     },
@@ -332543,7 +332543,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       }
     },
     {
@@ -334489,7 +334489,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       }
     },
     {
@@ -334521,7 +334521,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       }
     },
     {
@@ -334598,7 +334598,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       }
     },
     {
@@ -337387,7 +337387,7 @@
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29"
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
       },
       "mappings": {
         "rust": [

@@ -11055,7 +11055,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -11067,7 +11067,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -11079,7 +11079,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -11091,7 +11091,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -11103,7 +11103,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -13062,7 +13062,7 @@
     },
     {
       "approvalEvidence": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -42757,7 +42757,7 @@
     {
       "apiState": "declared",
       "approvalEvidence": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -44703,7 +44703,7 @@
     {
       "apiState": "declared",
       "approvalEvidence": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -44735,7 +44735,7 @@
     {
       "apiState": "declared",
       "approvalEvidence": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -44812,7 +44812,7 @@
     {
       "apiState": "declared",
       "approvalEvidence": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170525,7 +170525,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170572,7 +170572,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170619,7 +170619,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170666,7 +170666,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170713,7 +170713,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170760,7 +170760,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170807,7 +170807,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170854,7 +170854,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170901,7 +170901,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170948,7 +170948,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -170990,7 +170990,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171034,7 +171034,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171082,7 +171082,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171124,7 +171124,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171171,7 +171171,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171214,7 +171214,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171257,7 +171257,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171300,7 +171300,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171344,7 +171344,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171391,7 +171391,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171435,7 +171435,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171479,7 +171479,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171523,7 +171523,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171567,7 +171567,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171611,7 +171611,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171655,7 +171655,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171702,7 +171702,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171744,7 +171744,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171792,7 +171792,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171836,7 +171836,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171878,7 +171878,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171921,7 +171921,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -171964,7 +171964,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172007,7 +172007,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172051,7 +172051,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172098,7 +172098,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172142,7 +172142,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172186,7 +172186,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172230,7 +172230,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172274,7 +172274,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172318,7 +172318,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172362,7 +172362,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172409,7 +172409,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172451,7 +172451,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172499,7 +172499,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172543,7 +172543,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172585,7 +172585,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172628,7 +172628,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172671,7 +172671,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172714,7 +172714,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172758,7 +172758,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172801,7 +172801,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172844,7 +172844,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172887,7 +172887,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172931,7 +172931,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -172978,7 +172978,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -173025,7 +173025,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -173072,7 +173072,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -173119,7 +173119,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -173166,7 +173166,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"
@@ -173213,7 +173213,7 @@
     },
     {
       "approvalSource": {
-        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
         "kind": "feature-specification",
         "path": "specs/009-asynchronous-operations/spec.md",
         "status": "Approved"

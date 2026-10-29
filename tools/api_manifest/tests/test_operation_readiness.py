@@ -873,7 +873,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("Approved", operation["approvalEvidence"]["status"])
                 self.assertEqual(
-                    "Approved for implementation by explicit maintainer approval on 2026-10-29",
+                    "Approved for implementation by the repository maintainer on 2026-10-29",
                     operation["approvalEvidence"]["evidence"],
                 )
                 self.assertNotIn("implementationAuthorization", operation)
