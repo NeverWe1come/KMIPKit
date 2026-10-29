@@ -7,6 +7,42 @@ pki_marker_contents="KMIPKit Cosmian integration PKI v1"
 
 mkdir -p "$output_dir"
 
+refuse_unowned_output() {
+    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
+    exit 1
+}
+
+if [ -L "$output_dir" ]; then
+    refuse_unowned_output
+fi
+
+if [ -L "$pki_marker" ]; then
+    refuse_unowned_output
+elif [ -f "$pki_marker" ]; then
+    if [ "$(cat "$pki_marker")" != "$pki_marker_contents" ]; then
+        refuse_unowned_output
+    fi
+elif [ -e "$pki_marker" ]; then
+    refuse_unowned_output
+else
+    for output_entry in "$output_dir"/* "$output_dir"/.[!.]* "$output_dir"/..?*; do
+        if [ -e "$output_entry" ] || [ -L "$output_entry" ]; then
+            refuse_unowned_output
+        fi
+    done
+    printf '%s\n' "$pki_marker_contents" > "$pki_marker"
+fi
+
+for pki_subdirectory in ca server client validation; do
+    pki_subdirectory_path="$output_dir/$pki_subdirectory"
+    if [ -L "$pki_subdirectory_path" ]; then
+        refuse_unowned_output
+    fi
+    if [ -e "$pki_subdirectory_path" ] && [ ! -d "$pki_subdirectory_path" ]; then
+        refuse_unowned_output
+    fi
+done
+
 if [ -s "$output_dir/ca/ca.crt" ] \
     && [ -s "$output_dir/server/server.crt" ] \
     && [ -s "$output_dir/server/server.key" ] \
@@ -25,24 +61,6 @@ if [ -s "$output_dir/ca/ca.crt" ] \
     && [ -s "$output_dir/validation/cryptographic-fixture-capabilities.txt" ] \
     && [ -s "$output_dir/validation/fixture-set-v3" ]; then
     exit 0
-fi
-
-if [ -f "$pki_marker" ]; then
-    if [ "$(cat "$pki_marker")" != "$pki_marker_contents" ]; then
-        printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
-        exit 1
-    fi
-elif [ -e "$pki_marker" ] || [ -L "$pki_marker" ]; then
-    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
-    exit 1
-elif ! output_entry="$(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit)"; then
-    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
-    exit 1
-elif [ -n "$output_entry" ]; then
-    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
-    exit 1
-else
-    printf '%s\n' "$pki_marker_contents" > "$pki_marker"
 fi
 
 mkdir -p "$output_dir/ca" "$output_dir/server" "$output_dir/client" "$output_dir/validation"
