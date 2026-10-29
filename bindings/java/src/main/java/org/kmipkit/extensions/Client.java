@@ -1,5 +1,10 @@
 package org.kmipkit.extensions;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.OptionalLong;
+
+import org.jspecify.annotations.Nullable;
 import org.kmipkit.ClientOperationException;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -60,6 +65,125 @@ public final class Client implements AutoCloseable {
                     client, consumedBatch, NativeExtensionRegistry.codecLimitValues(limits), timeoutValues);
         });
         return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
+    }
+
+    /** Sends exactly one Poll with the caller-supplied opaque correlation bytes. */
+    public AsyncOperationOutcome executePoll(byte[] correlationValue, CodecLimits limits)
+            throws ClientOperationException {
+        return executeCorrelationOperation(correlationValue, limits, true);
+    }
+
+    /** Sends exactly one Cancel with the caller-supplied opaque correlation bytes. */
+    public AsyncOperationOutcome executeCancel(byte[] correlationValue, CodecLimits limits)
+            throws ClientOperationException {
+        return executeCorrelationOperation(correlationValue, limits, false);
+    }
+
+    private AsyncOperationOutcome executeCorrelationOperation(
+            byte[] correlationValue, CodecLimits limits, boolean poll) throws ClientOperationException {
+        if (correlationValue == null || limits == null) {
+            throw new InvalidInputException("asynchronous client inputs are invalid");
+        }
+        byte[] staged = correlationValue.clone();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long outcome = handle.withValue(client -> poll
+                    ? NativeExtensionRegistry.clientExecutePoll(
+                            client, staged, NativeExtensionRegistry.codecLimitValues(limits))
+                    : NativeExtensionRegistry.clientExecuteCancel(
+                            client, staged, NativeExtensionRegistry.codecLimitValues(limits)));
+            return new AsyncOperationOutcome(outcome);
+        } finally {
+            Arrays.fill(staged, (byte) 0);
+        }
+    }
+
+    /** Sends exactly one Process request with an optional caller-selected asynchronous indicator. */
+    public AsyncOperationOutcome executeProcess(
+            byte[] correlationValue, CodecLimits limits, OptionalLong asynchronousIndicator)
+            throws ClientOperationException {
+        if (correlationValue == null || limits == null || asynchronousIndicator == null) {
+            throw new InvalidInputException("asynchronous client inputs are invalid");
+        }
+        long indicator = asynchronousIndicator.orElse(0);
+        validateOptionalIndicator(asynchronousIndicator, indicator);
+        byte[] staged = correlationValue.clone();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long outcome = handle.withValue(client -> NativeExtensionRegistry.clientExecuteProcess(
+                    client, staged, asynchronousIndicator.isPresent(), indicator,
+                    NativeExtensionRegistry.codecLimitValues(limits)));
+            return new AsyncOperationOutcome(outcome);
+        } finally {
+            Arrays.fill(staged, (byte) 0);
+        }
+    }
+
+    /** Sends one Query Asynchronous Requests with optional filters and a generic response payload. */
+    public AsyncOperationOutcome executeQueryAsyncRequests(
+            CodecLimits limits, @Nullable List<byte[]> correlationValues,
+            @Nullable List<Long> operations, OptionalLong asynchronousIndicator)
+            throws ClientOperationException {
+        if (limits == null || asynchronousIndicator == null) {
+            throw new InvalidInputException("asynchronous client inputs are invalid");
+        }
+        long indicator = asynchronousIndicator.orElse(0);
+        validateOptionalIndicator(asynchronousIndicator, indicator);
+        byte[][] staged = null;
+        long[] operationValues = null;
+        try {
+            if (correlationValues != null) {
+                if (correlationValues.size() > 100_000) {
+                    throw new InvalidInputException("asynchronous filter count exceeds the configured limit");
+                }
+                staged = new byte[correlationValues.size()][];
+                long total = 0;
+                for (int index = 0; index < staged.length; index++) {
+                    byte[] value = correlationValues.get(index);
+                    if (value == null) {
+                        throw new InvalidInputException("asynchronous correlation filter is invalid");
+                    }
+                    total += value.length;
+                    if (total > 16 * 1024 * 1024L) {
+                        throw new InvalidInputException("asynchronous filters exceed the configured limit");
+                    }
+                    staged[index] = value.clone();
+                }
+            }
+            if (operations != null) {
+                if (operations.size() > 100_000) {
+                    throw new InvalidInputException("asynchronous filter count exceeds the configured limit");
+                }
+                operationValues = new long[operations.size()];
+                for (int index = 0; index < operationValues.length; index++) {
+                    Long value = operations.get(index);
+                    if (value == null || value < 0 || value > 0xffff_ffffL) {
+                        throw new InvalidInputException("KMIP operation filter is outside uint32");
+                    }
+                    operationValues[index] = value;
+                }
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            byte[][] finalCorrelations = staged;
+            long[] finalOperations = operationValues;
+            long outcome = handle.withValue(client -> NativeExtensionRegistry.clientExecuteQueryAsyncRequests(
+                    client, finalCorrelations, finalOperations, asynchronousIndicator.isPresent(), indicator,
+                    NativeExtensionRegistry.codecLimitValues(limits)));
+            return new AsyncOperationOutcome(outcome);
+        } finally {
+            if (staged != null) {
+                for (byte[] value : staged) {
+                    if (value != null) Arrays.fill(value, (byte) 0);
+                }
+            }
+            if (operationValues != null) Arrays.fill(operationValues, 0);
+        }
+    }
+
+    private static void validateOptionalIndicator(OptionalLong asynchronousIndicator, long indicator) {
+        if (asynchronousIndicator.isPresent() && (indicator < 0 || indicator > 0xffff_ffffL)) {
+            throw new InvalidInputException("asynchronous indicator is outside uint32");
+        }
     }
 
     /** Executes one caller-owned Encrypt, MAC, or Sign item under local Usage Allocation accounting. */

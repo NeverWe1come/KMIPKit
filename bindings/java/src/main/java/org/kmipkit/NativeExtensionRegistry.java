@@ -1,5 +1,8 @@
 package org.kmipkit;
 
+import java.nio.ByteBuffer;
+import java.util.function.Consumer;
+
 import org.jspecify.annotations.Nullable;
 import org.kmipkit.ttlv.CodecLimits;
 
@@ -49,6 +52,7 @@ public final class NativeExtensionRegistry {
     public static final int USAGE_ALLOCATION_CONTEXT = 34;
     public static final int REVOCATION_REASON = 35;
     public static final int REVOKE_REQUEST = 36;
+    public static final int CLIENT_ASYNC_OPERATION_OUTCOME = 37;
 
     private static volatile boolean loaded;
 
@@ -291,6 +295,18 @@ public final class NativeExtensionRegistry {
     public static native long clientExecute(long client, long batch, long[] codecLimits);
     public static native long clientExecuteWithOptions(
             long client, long batch, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecutePoll(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecuteCancel(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecuteProcess(
+            long client, byte[] correlationValue, boolean hasAsynchronousIndicator,
+            long asynchronousIndicator, long[] codecLimits);
+    public static native long clientExecuteQueryAsyncRequests(
+            long client, byte[][] correlationValues, long[] operations,
+            boolean hasAsynchronousIndicator, long asynchronousIndicator, long[] codecLimits);
+    public static native Object[] clientAsyncOperationOutcomeMetadataV1(long outcome);
+    public static native boolean withClientAsyncOperationOutcomeCorrelationValue(
+            long outcome, Consumer<ByteBuffer> callback);
+    public static native long clientAsyncOperationOutcomeResponsePayloadTtlv(long outcome);
     public static native long usageAllocationContextCreate(
             long itemResponse, long requestedUnits, long usageLimitsUnit);
     public static native long usageAllocationContextUsageLimitsUnit(long context);

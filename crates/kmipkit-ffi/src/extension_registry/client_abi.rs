@@ -1257,7 +1257,8 @@ pub extern "C" fn kmipkit_client_async_operation_outcome_metadata_v1(
                     .reason()
                     .map_or(0, kmipkit_protocol::ResultReason::raw),
                 has_cancellation_result: u32::from(cancellation_result.is_some()),
-                cancellation_result: cancellation_result.map_or(0, |value| value.raw()),
+                cancellation_result: cancellation_result
+                    .map_or(0, kmipkit_protocol::CancellationResult::raw),
                 has_result_message: u32::from(message.is_some()),
                 reserved: 0,
                 result_message_data: message.map_or(ptr::null(), <[u8]>::as_ptr),

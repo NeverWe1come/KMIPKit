@@ -857,9 +857,18 @@ class AsyncOperationOutcome(_ClientHandle):
                 result_message=result_message,
             )
 
-    @property
-    def asynchronous_correlation_value(self) -> bytes | None:
-        """Copy the exact binary correlation bytes associated with the result."""
+    def with_asynchronous_correlation_value(
+        self, callback: Callable[[memoryview], object]
+    ) -> bool:
+        """Borrow the exact correlation bytes for a callback and wipe the temporary view.
+
+        The callback receives a read-only memoryview backed by temporary mutable
+        storage. That storage is wiped before this method returns, including
+        when the callback raises. Any copy the callback makes is caller-owned.
+        Return ``False`` when this outcome has no correlation value.
+        """
+        if not callable(callback):
+            errors.raise_for_status(4)
         present = ffi.new("uint8_t *")
         value = ffi.new("kmipkit_byte_span_v1_t *")
         with _NATIVE_CALL_LOCK:
@@ -868,7 +877,35 @@ class AsyncOperationOutcome(_ClientHandle):
                     self._pointer(), present, value
                 )
             )
-            return _optional_output_span(present, value)
+            if present[0] == 0:
+                if value.data != ffi.NULL or value.length != 0:
+                    errors.raise_for_status(4)
+                return False
+            if (
+                present[0] != 1
+                or value.length > _MAX_INPUT_BYTES
+                or (value.length > 0 and value.data == ffi.NULL)
+            ):
+                errors.raise_for_status(4)
+
+            secret = (
+                bytearray(ffi.buffer(value.data, int(value.length)))
+                if value.length
+                else bytearray()
+            )
+            borrowed: memoryview | None = None
+            try:
+                borrowed = memoryview(secret).toreadonly()
+                callback(borrowed)
+            finally:
+                if borrowed is not None:
+                    try:
+                        borrowed.release()
+                    except ValueError:
+                        pass
+                for index in range(len(secret)):
+                    secret[index] = 0
+            return True
 
     @property
     def response_payload_ttlv(self) -> ttlv.Structure | None:

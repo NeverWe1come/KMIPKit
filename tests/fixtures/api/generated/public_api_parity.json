@@ -11052,6 +11052,354 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetAttribute",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed KMIPKit client facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor.",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.abi_version",
+      "packageId": "c-kmipkit",
+      "reason": "C ABI record version framing."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor.",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.reserved",
+      "packageId": "c-kmipkit",
+      "reason": "Reserved C ABI layout field."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor.",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.result_message_data",
+      "packageId": "c-kmipkit",
+      "reason": "Pointer carrier for the copied Result Message bytes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor.",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.result_message_length",
+      "packageId": "c-kmipkit",
+      "reason": "Length carrier paired with the Result Message pointer."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0043-FR-007 requires a versioned C ABI; the semantic Result Message is mapped through the typed Java and Python metadata fields and the Rust result accessor.",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.struct_size",
+      "packageId": "c-kmipkit",
+      "reason": "C ABI record size framing."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry is a minimal JNI bridge for callback dispatch; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_ASYNC_OPERATION_OUTCOME",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-002/009 and KMIPKIT-0043-FR-021. NativeExtensionRegistry remains a minimal JNI bridge; the typed facade owns the callback API and the native bridge zeroizes temporary direct storage on all exits. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing; its callback exposes correlation only through a temporary read-only direct buffer that is zeroized before return."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeMetadataV1",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeResponsePayloadTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteCancel",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecutePoll",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteProcess",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md defines NativeExtensionRegistry as a minimal JNI bridge; the typed Client facade is mapped across all languages. T035 inventories this bridge boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteQueryAsyncRequests",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed client facade and has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-009 and KMIPKIT-0043-FR-021. T035 accounts for the exact formatter; Result Message content remains redacted.",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java diagnostic formatter is redacted and does not expose Result Message content as a product-level cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-009 and KMIPKIT-0043-FR-021. T035 accounts for the exact formatter; Result Message content remains redacted.",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java diagnostic formatter is redacted and does not expose Result Message content as a product-level cross-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-009 and KMIPKIT-0043-FR-021. T035 accounts for the Python representation while Result Message remains redacted.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact diagnostic representation is redacted and never formats Result Message bytes."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-003 through KMIPKIT-0009-FR-010 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationMetadataV1 fields and behavior in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated member is interpreter mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-012 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationOutcome ownership and close lifecycle in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is local resource lifecycle convenience for close/context-manager use, not an independent KMIP operation capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-012 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationOutcome ownership and close lifecycle in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is local resource lifecycle convenience for close/context-manager use, not an independent KMIP operation capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-012 and KMIPKIT-0043-FR-021. T035 maps the managed outcome lifecycle; `_wrap_owned_handle` is the internal factory.",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This inherited constructor requires a private token and internal factory; direct raw-handle adoption is not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0009-FR-012 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationOutcome ownership and close lifecycle in all four languages.",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is local resource lifecycle convenience for close/context-manager use, not an independent KMIP operation capability."
     }
   ],
   "capabilities": [
@@ -12710,6 +13058,104 @@
         "KMIPKIT-REQ-SPEC-6.1.23-001-002",
         "KMIPKIT-REQ-SPEC-6.1.23-002-001",
         "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_client_async_operation_metadata_v1_t",
+          "kmipkit_client_async_operation_metadata_v1_t.cancellation_result",
+          "kmipkit_client_async_operation_metadata_v1_t.has_cancellation_result",
+          "kmipkit_client_async_operation_metadata_v1_t.has_result_message",
+          "kmipkit_client_async_operation_metadata_v1_t.has_result_reason",
+          "kmipkit_client_async_operation_metadata_v1_t.operation",
+          "kmipkit_client_async_operation_metadata_v1_t.outcome_kind",
+          "kmipkit_client_async_operation_metadata_v1_t.result_reason",
+          "kmipkit_client_async_operation_metadata_v1_t.result_status",
+          "kmipkit_client_async_operation_outcome_correlation_value",
+          "kmipkit_client_async_operation_outcome_metadata_v1",
+          "kmipkit_client_async_operation_outcome_release",
+          "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "kmipkit_client_async_operation_outcome_t",
+          "kmipkit_client_execute_cancel",
+          "kmipkit_client_execute_poll",
+          "kmipkit_client_execute_process",
+          "kmipkit_client_execute_query_async_requests"
+        ],
+        "java": [
+          "org.kmipkit.extensions.AsyncOperationMetadataV1",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.outcomeKind",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.resultMessage",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+          "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+          "org.kmipkit.extensions.AsyncOperationOutcome",
+          "org.kmipkit.extensions.AsyncOperationOutcome.close",
+          "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+          "org.kmipkit.extensions.Client.executeCancel",
+          "org.kmipkit.extensions.Client.executePoll",
+          "org.kmipkit.extensions.Client.executeProcess",
+          "org.kmipkit.extensions.Client.executeQueryAsyncRequests"
+        ],
+        "python": [
+          "kmipkit.client.AsyncOperationMetadataV1",
+          "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+          "kmipkit.client.AsyncOperationMetadataV1.operation",
+          "kmipkit.client.AsyncOperationMetadataV1.outcome",
+          "kmipkit.client.AsyncOperationMetadataV1.result_message",
+          "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+          "kmipkit.client.AsyncOperationMetadataV1.result_status",
+          "kmipkit.client.AsyncOperationOutcome",
+          "kmipkit.client.AsyncOperationOutcome.close",
+          "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+          "kmipkit.client.Client.execute_cancel",
+          "kmipkit.client.Client.execute_poll",
+          "kmipkit.client.Client.execute_process",
+          "kmipkit.client.Client.execute_query_async_requests"
+        ],
+        "rust": [
+          "kmipkit_client::Client::execute_cancel",
+          "kmipkit_client::Client::execute_poll",
+          "kmipkit_client::Client::execute_process",
+          "kmipkit_client::Client::execute_query_async_requests",
+          "kmipkit_client::ClientOperationOutcome",
+          "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "kmipkit_client::ClientOperationOutcome::is_pending",
+          "kmipkit_client::ClientOperationOutcome::operation",
+          "kmipkit_client::ClientOperationOutcome::result",
+          "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit_client::ClientOperationOutcome::with_response_payload"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0009",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-011",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
       ]
     }
   ],
@@ -41069,6 +41515,885 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Exposes a borrowed span over the exact opaque asynchronous correlation bytes when present; it remains valid while the outcome handle is alive."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "outcome",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_async_operation_outcome_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_value",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_async_operation_outcome_correlation_value"
+      },
+      "id": "client_async_operation_outcome_correlation_value",
+      "java": {
+        "class": "AsyncOperationOutcome",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_withClientAsyncOperationOutcomeCorrelationValue",
+        "method": "withAsynchronousCorrelationValue",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "Consumer<ByteBuffer>"
+          }
+        ],
+        "returnType": "boolean"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_correlation_value",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "AsyncOperationOutcome.with_asynchronous_correlation_value",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "Callable"
+          }
+        ],
+        "returnType": "bool"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_correlation_value",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_value",
+            "type": "*mut kmipkit_byte_span_v1_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies common KMIP result metadata into the caller-provided versioned output record. The Result Message pointer borrows from the outcome handle."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "outcome",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_async_operation_outcome_t *"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_metadata",
+            "ownership": "none",
+            "type": "kmipkit_client_async_operation_metadata_v1_t *",
+            "valueType": "kmipkit_client_async_operation_metadata_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_async_operation_outcome_metadata_v1"
+      },
+      "id": "client_async_operation_outcome_metadata_v1",
+      "java": {
+        "class": "AsyncOperationOutcome",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOperationOutcomeMetadataV1",
+        "method": "metadataV1",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "AsyncOperationMetadataV1"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_metadata_v1",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "AsyncOperationOutcome.metadata_v1",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "AsyncOperationMetadataV1"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_metadata",
+            "type": "*mut kmipkit_client_async_operation_metadata_v1_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Copies a successful generic Response Payload as a caller-owned TTLV structure."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "outcome",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_async_operation_outcome_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_payload",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_async_operation_outcome_response_payload_ttlv"
+      },
+      "id": "client_async_operation_outcome_response_payload_ttlv",
+      "java": {
+        "class": "AsyncOperationOutcome",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOperationOutcomeResponsePayloadTtlv",
+        "method": "responsePayloadTtlv",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<TtlvStructure>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "AsyncOperationOutcome.response_payload_ttlv",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "TtlvStructure | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "outcome",
+            "type": "*mut kmipkit_client_async_operation_outcome_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_payload",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Executes exactly one KMIP 2.1 Cancel request in a single explicit exchange; it never retries or automatically follows up."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "byteLengthParameter": "correlation_value_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "octets",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "correlation_value",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "correlation_value_length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_outcome",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_async_operation_outcome_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_execute_cancel"
+      },
+      "id": "client_execute_cancel",
+      "java": {
+        "class": "Client",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteCancel",
+        "method": "executeCancel",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "correlationValue",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_execute_cancel",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "function": "Client.execute_cancel",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_cancel",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "CancelRequest"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<ClientOperationOutcome, ClientError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Executes exactly one KMIP 2.1 Poll request in a single explicit exchange; it never retries or automatically follows up."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "byteLengthParameter": "correlation_value_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "octets",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "correlation_value",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "correlation_value_length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_outcome",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_async_operation_outcome_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_execute_poll"
+      },
+      "id": "client_execute_poll",
+      "java": {
+        "class": "Client",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecutePoll",
+        "method": "executePoll",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "correlationValue",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_execute_poll",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "function": "Client.execute_poll",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_poll",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "PollRequest"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<ClientOperationOutcome, ClientError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Executes exactly one KMIP 2.1 Process request in a single explicit exchange; it never retries or automatically follows up."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "byteLengthParameter": "correlation_value_length",
+            "byteLengthType": "uint64_t",
+            "encoding": "octets",
+            "kind": "byte-span",
+            "lengthUnit": "bytes",
+            "limitCheck": "before-dereference",
+            "maxBytes": 16777216,
+            "name": "correlation_value",
+            "nulTerminatedScan": false,
+            "type": "const uint8_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "correlation_value_length",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_asynchronous_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "asynchronous_indicator",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_outcome",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_async_operation_outcome_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_execute_process"
+      },
+      "id": "client_execute_process",
+      "java": {
+        "class": "Client",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteProcess",
+        "method": "executeProcess",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "correlationValue",
+            "type": "byte[]"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "asynchronousIndicator",
+            "type": "OptionalLong"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_execute_process",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "function": "Client.execute_process",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "int | None"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_process",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "ProcessRequest"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "Option<u32>"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<ClientOperationOutcome, ClientError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Executes exactly one KMIP 2.1 Query Asynchronous Requests request in a single explicit exchange; it never retries or automatically follows up."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "client",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_correlation_values",
+            "type": "uint8_t"
+          },
+          {
+            "countParameter": "correlation_value_count",
+            "elementType": "kmipkit_byte_span_v1_t",
+            "kind": "input-array",
+            "name": "correlation_values",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "correlation_value_count",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_operations",
+            "type": "uint8_t"
+          },
+          {
+            "countParameter": "operation_count",
+            "elementType": "uint32_t",
+            "kind": "input-array",
+            "name": "operations",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const uint32_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "operation_count",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_asynchronous_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "asynchronous_indicator",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_outcome",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_async_operation_outcome_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_execute_query_async_requests"
+      },
+      "id": "client_execute_query_async_requests",
+      "java": {
+        "class": "Client",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteQueryAsyncRequests",
+        "method": "executeQueryAsyncRequests",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "correlationValues",
+            "nullable": true,
+            "type": "List<byte[]>"
+          },
+          {
+            "name": "operations",
+            "nullable": true,
+            "type": "List<Long>"
+          },
+          {
+            "name": "asynchronousIndicator",
+            "type": "OptionalLong"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_execute_query_async_requests",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "function": "Client.execute_query_async_requests",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "correlation_values",
+            "type": "Sequence[bytes] | None"
+          },
+          {
+            "name": "operations",
+            "type": "Sequence[int] | None"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "int | None"
+          }
+        ],
+        "returnType": "AsyncOperationOutcome"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_query_async_requests",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "QueryAsyncRequestsRequest"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "Option<u32>"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "Result<ClientOperationOutcome, ClientError>"
+      }
     }
   ],
   "languages": [
@@ -41428,6 +42753,38 @@
       ],
       "scope": "client_1_0",
       "section": "6.1.4"
+    },
+    {
+      "apiState": "declared",
+      "approvalEvidence": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T035:kmipkit_client_execute_cancel"
+        ],
+        "java": [
+          "T035:org-kmipkit-extensions-Client-executeCancel"
+        ],
+        "python": [
+          "T035:kmipkit-client-Client-execute_cancel"
+        ],
+        "rust": [
+          "T035:kmipkit_client-Client-execute_cancel"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0009",
+      "name": "Cancel",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-CANCEL",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0009",
+        "state": "approved"
+      },
+      "scope": "client_1_0",
+      "section": "6.1.5"
     },
     {
       "apiState": "verified",
@@ -43344,6 +44701,70 @@
       "section": "6.1.37"
     },
     {
+      "apiState": "declared",
+      "approvalEvidence": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T035:kmipkit_client_execute_poll"
+        ],
+        "java": [
+          "T035:org-kmipkit-extensions-Client-executePoll"
+        ],
+        "python": [
+          "T035:kmipkit-client-Client-execute_poll"
+        ],
+        "rust": [
+          "T035:kmipkit_client-Client-execute_poll"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0009",
+      "name": "Poll",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-POLL",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0009",
+        "state": "approved"
+      },
+      "scope": "client_1_0",
+      "section": "6.1.38"
+    },
+    {
+      "apiState": "declared",
+      "approvalEvidence": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T035:kmipkit_client_execute_process"
+        ],
+        "java": [
+          "T035:org-kmipkit-extensions-Client-executeProcess"
+        ],
+        "python": [
+          "T035:kmipkit-client-Client-execute_process"
+        ],
+        "rust": [
+          "T035:kmipkit_client-Client-execute_process"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0009",
+      "name": "Process",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-PROCESS",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0009",
+        "state": "approved"
+      },
+      "scope": "client_1_0",
+      "section": "6.1.39"
+    },
+    {
       "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved for autonomous implementation under the maintainer's standing direct instruction (reaffirmed 2026-10-19);",
@@ -43387,6 +44808,38 @@
       ],
       "scope": "client_1_0",
       "section": "6.1.40"
+    },
+    {
+      "apiState": "declared",
+      "approvalEvidence": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T035:kmipkit_client_execute_query_async_requests"
+        ],
+        "java": [
+          "T035:org-kmipkit-extensions-Client-executeQueryAsyncRequests"
+        ],
+        "python": [
+          "T035:kmipkit-client-Client-execute_query_async_requests"
+        ],
+        "rust": [
+          "T035:kmipkit_client-Client-execute_query_async_requests"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0009",
+      "name": "Query Asynchronous Requests",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0009",
+        "state": "approved"
+      },
+      "scope": "client_1_0",
+      "section": "6.1.41"
     },
     {
       "apiState": "verified",
@@ -169069,6 +170522,2741 @@
         "KMIPKIT-0043-FR-019",
         "KMIPKIT-0043-FR-021"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-cancellation_result",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.cancellation_result",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.cancellation_result",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-has_cancellation_result",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.has_cancellation_result",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.has_cancellation_result",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-has_result_message",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.has_result_message",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.has_result_message",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultMessage",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_message",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-has_result_reason",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.has_result_reason",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.has_result_reason",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-operation",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.operation",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.operation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.operation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::operation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-outcome_kind",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.outcome_kind",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.outcome_kind",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.outcomeKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.outcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-result_reason",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.result_reason",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_reason",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_metadata_v1_t-result_status",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_metadata_v1_t.result_status",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_status",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_status",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_outcome_correlation_value",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_outcome_correlation_value",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_correlation_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_outcome_metadata_v1",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_outcome_metadata_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_outcome_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_outcome_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_outcome_response_payload_ttlv",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_response_payload",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_async_operation_outcome_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_async_operation_outcome_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_execute_cancel",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_execute_cancel",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_cancel",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeCancel",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_cancel",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_cancel",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_execute_poll",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_execute_poll",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_poll",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executePoll",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_poll",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_poll",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_execute_process",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_execute_process",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_process",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeProcess",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_process",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_process",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client_execute_query_async_requests",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_execute_query_async_requests",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_query_async_requests",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_query_async_requests",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_query_async_requests",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-cancellationResult",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.cancellation_result",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-operation",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.operation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.operation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::operation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-outcomeKind",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.outcomeKind",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.outcome_kind",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.outcomeKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.outcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-resultMessage",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultMessage",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.has_result_message",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultMessage",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_message",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-resultReason",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_reason",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationMetadataV1-resultStatus",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_status",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_status",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationOutcome",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationOutcome-withAsynchronousCorrelationValue",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_correlation_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationOutcome-close",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationOutcome-metadataV1",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-AsyncOperationOutcome-responsePayloadTtlv",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_response_payload",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-Client-executeCancel",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.Client.executeCancel",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_cancel",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeCancel",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_cancel",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_cancel",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-Client-executePoll",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.Client.executePoll",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_poll",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executePoll",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_poll",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_poll",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-Client-executeProcess",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.Client.executeProcess",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_process",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeProcess",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_process",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_process",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:org-kmipkit-extensions-Client-executeQueryAsyncRequests",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_query_async_requests",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_query_async_requests",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_query_async_requests",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-cancellation_result",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.cancellation_result",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.cancellationResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.cancellation_result",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-operation",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.operation",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.operation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.operation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.operation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::operation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-outcome",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.outcome",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.outcome_kind",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.outcomeKind",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.outcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-result_message",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.result_message",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.has_result_message",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultMessage",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_message",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-result_reason",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_reason",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultReason",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_reason",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationMetadataV1-result_status",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationMetadataV1.result_status",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t.result_status",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1.resultStatus",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1.result_status",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationOutcome",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationOutcome",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationOutcome-with_asynchronous_correlation_value",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_correlation_value",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationOutcome-close",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationOutcome-metadata_v1",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-AsyncOperationOutcome-response_payload_ttlv",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_response_payload",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-Client-execute_cancel",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.execute_cancel",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_cancel",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeCancel",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_cancel",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_cancel",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-Client-execute_poll",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.execute_poll",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_poll",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executePoll",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_poll",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_poll",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-Client-execute_process",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.execute_process",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_process",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeProcess",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_process",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_process",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit-client-Client-execute_query_async_requests",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.execute_query_async_requests",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_query_async_requests",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_query_async_requests",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_query_async_requests",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-Client-execute_cancel",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_cancel",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_cancel",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeCancel",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_cancel",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_cancel",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-Client-execute_poll",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_poll",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_poll",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executePoll",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_poll",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_poll",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-Client-execute_process",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_process",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_process",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeProcess",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_process",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_process",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-Client-execute_query_async_requests",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_query_async_requests",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_query_async_requests",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeQueryAsyncRequests",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_query_async_requests",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_query_async_requests",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_metadata_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationMetadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationMetadataV1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-cancellation_result",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::cancellation_result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-is_pending",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::is_pending",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::is_pending",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-operation",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::operation",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::operation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-result",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::result",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.metadataV1",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.metadata_v1",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::result",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-with_asynchronous_correlation_value",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.withAsynchronousCorrelationValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.with_asynchronous_correlation_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by explicit maintainer approval on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "T035:kmipkit_client-ClientOperationOutcome-with_response_payload",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::with_response_payload",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_metadata_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_response_payload",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-002",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
     }
   ],
   "publicPackages": [
@@ -170888,6 +175076,129 @@
         "module": "kmipkit_protocol",
         "name": "AttributeReference",
         "owner": "protocol"
+      }
+    },
+    {
+      "c": {
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "operation",
+            "type": "uint32_t"
+          },
+          {
+            "name": "outcome_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_cancellation_result",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cancellation_result",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_result_message",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "result_message_data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "result_message_length",
+            "type": "uint64_t"
+          }
+        ],
+        "kind": "fixed-width-value",
+        "name": "kmipkit_client_async_operation_metadata_v1_t",
+        "versioned": true,
+        "visibility": "public"
+      },
+      "id": "AsyncOperationMetadataV1",
+      "java": {
+        "name": "AsyncOperationMetadataV1",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "struct",
+      "python": {
+        "module": "kmipkit.client",
+        "name": "AsyncOperationMetadataV1"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientOperationOutcome",
+        "owner": "client"
+      }
+    },
+    {
+      "c": {
+        "handleKind": "client_async_operation_outcome",
+        "kind": "opaque-handle",
+        "name": "kmipkit_client_async_operation_outcome_t",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_client_async_operation_outcome_release"
+      },
+      "id": "ClientAsyncOperationOutcome",
+      "java": {
+        "name": "AsyncOperationOutcome",
+        "package": "org.kmipkit.extensions"
+      },
+      "kind": "opaque-handle",
+      "python": {
+        "module": "kmipkit.client",
+        "name": "AsyncOperationOutcome"
+      },
+      "requirementIds": [
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ClientOperationOutcome",
+        "owner": "client"
       }
     }
   ]

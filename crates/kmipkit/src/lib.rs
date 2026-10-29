@@ -78,6 +78,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
     Ok(matches!(
         capability_id,
         "api_level_discovery"
+            | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
             | "crypto_response_ttlv"

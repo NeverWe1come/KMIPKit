@@ -3,6 +3,7 @@
 pub(crate) const PUBLIC_API_FORMAT_VERSION: u32 = 2;
 pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "api_level_discovery",
+    "client_asynchronous_operations",
     "client_batch_model",
     "client_execution",
     "crypto_response_ttlv",
@@ -3452,5 +3453,60 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-7c2542b808570932f658",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetAttributeListResponse::to_ttlv_payload",
+    ),
+    (
+        "T035:kmipkit_client-Client-execute_cancel",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_cancel",
+    ),
+    (
+        "T035:kmipkit_client-Client-execute_poll",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_poll",
+    ),
+    (
+        "T035:kmipkit_client-Client-execute_process",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_process",
+    ),
+    (
+        "T035:kmipkit_client-Client-execute_query_async_requests",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_query_async_requests",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-cancellation_result",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::cancellation_result",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-is_pending",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::is_pending",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-operation",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::operation",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-result",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::result",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-with_asynchronous_correlation_value",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+    ),
+    (
+        "T035:kmipkit_client-ClientOperationOutcome-with_response_payload",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::with_response_payload",
     ),
 ];

@@ -72,6 +72,8 @@ typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_conte
 typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
 typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
 typedef struct kmipkit_attribute_reference_v1_t kmipkit_attribute_reference_v1_t;
+typedef struct kmipkit_client_async_operation_metadata_v1_t kmipkit_client_async_operation_metadata_v1_t;
+typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -157,6 +159,22 @@ struct kmipkit_attribute_reference_v1_t {
     uint64_t attribute_name_length;
 };
 
+struct kmipkit_client_async_operation_metadata_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t operation;
+    uint32_t outcome_kind;
+    uint32_t result_status;
+    uint32_t has_result_reason;
+    uint32_t result_reason;
+    uint32_t has_cancellation_result;
+    uint32_t cancellation_result;
+    uint32_t has_result_message;
+    uint32_t reserved;
+    const uint8_t * result_message_data;
+    uint64_t result_message_length;
+};
+
 struct kmipkit_byte_span_v1_t {
     const uint8_t * data;
     uint64_t length;
@@ -238,6 +256,7 @@ void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
 void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
 void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
 void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
+void kmipkit_client_async_operation_outcome_release(kmipkit_client_async_operation_outcome_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
@@ -1182,6 +1201,37 @@ int32_t kmipkit_client_batch_item_set_attribute(const kmipkit_unique_identifier_
  */
 /* KMIPKIT-0016-FR-001, KMIPKIT-0016-FR-002, KMIPKIT-0016-FR-009, KMIPKIT-0016-FR-010, KMIPKIT-0016-FR-011, KMIPKIT-0016-FR-012, KMIPKIT-0016-FR-013, KMIPKIT-0016-FR-015, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_set_attribute(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Exposes a borrowed span over the exact opaque asynchronous correlation bytes when present; it remains valid while the outcome handle is alive.
+ */
+/* KMIPKIT-0009-FR-002, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-009, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_async_operation_outcome_correlation_value(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_byte_span_v1_t * out_value);
+/* Copies common KMIP result metadata into the caller-provided versioned output record. The Result Message pointer borrows from the outcome handle.
+ */
+/* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_async_operation_outcome_metadata_v1(kmipkit_client_async_operation_outcome_t * outcome, kmipkit_client_async_operation_metadata_v1_t * out_metadata);
+/* Copies a successful generic Response Payload as a caller-owned TTLV structure.
+ */
+/* KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_async_operation_outcome_response_payload_ttlv(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_payload);
+/* Executes exactly one KMIP 2.1 Cancel request in a single explicit exchange; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_cancel(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_codec_limits_t * limits, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Poll request in a single explicit exchange; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_poll(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_codec_limits_t * limits, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Process request in a single explicit exchange; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_process(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Query Asynchronous Requests request in a single explicit exchange; it never retries or automatically follows up.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_query_async_requests(kmipkit_client_t * client, uint8_t has_correlation_values, const kmipkit_byte_span_v1_t * correlation_values, uint64_t correlation_value_count, uint8_t has_operations, const uint32_t * operations, uint64_t operation_count, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, kmipkit_client_async_operation_outcome_t ** out_outcome);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
