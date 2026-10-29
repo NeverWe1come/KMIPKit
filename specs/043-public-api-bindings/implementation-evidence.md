@@ -6397,3 +6397,15 @@ This repairs only the approval provenance used by the API manifest and its gener
 The correction reconciles documentation with the approved KMIPKIT-0016 owner
 and T037 mapping evidence; it does not assert complete KMIP conformance or
 close the broader T073, T071, or T075 release gates.
+
+## T042 owner readiness matrix contract (2026-10-29)
+
+The operation dependency matrix now records the exact manifest `apiState` for each of the 21 operations covered by T035 and T037-T041. The reconciliation removes stale incomplete/in-progress claims for the verified Set Attribute, Ping, and Query mappings. The four T035 asynchronous operations explicitly retain their parity evidence while remaining `declared`; their mapping evidence is not formal KMIP conformance. A separate assertion keeps T036 profile validation blocked while KMIPKIT-0010 remains Draft.
+
+T042 remains open. This checkpoint verifies the owner/readiness matrix only; it does not close the T036 approval dependency, the remaining task-specific work, reviewer gates, or full operation conformance.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `a7bb6bb06` | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v` | Expected failure: operation rows lacked explicit manifest API states and the matrix contained stale readiness wording; the T036 Draft/blocking assertion passed. |
+| Green | `d3cc1b5d0` | Updated the 21 matrix rows against `specification/api/public-api.json` and the approved owner evidence. The first Green run exposed four T035 rows that did not state parity evidence; these were corrected before the final run. | The matrix now matches all 21 manifest states, and declared asynchronous mappings retain explicit parity evidence without being called conformant. |
+| Refactor | this evidence update | `uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_operation_readiness tools.api_manifest.tests.test_t076_client_mapping -q`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass: 107 tests, all 12 generated outputs current, and no whitespace errors. T042 remains open; exact-head CI remains pending. |
