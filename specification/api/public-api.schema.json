@@ -2216,6 +2216,7 @@
         "declarationState": {
           "enum": [
             "blocked",
+            "authorized_wip",
             "declared",
             "verified"
           ]
@@ -2317,6 +2318,9 @@
         "approvalSource": {
           "$ref": "#/$defs/approvalSource"
         },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
         "languageMappings": {
           "type": "object",
           "propertyNames": {
@@ -2382,6 +2386,28 @@
                     "approvalSource"
                   ]
                 }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "languageMappings"
+            ],
+            "not": {
+              "anyOf": [
+                {"required": ["approvalSource"]},
+                {"required": ["condition"]}
               ]
             }
           }
