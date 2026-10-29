@@ -170,9 +170,15 @@ class WorkflowContractTests(unittest.TestCase):
 
         release_job = self.require_job(contents, "release-summary")
         self.assertIn("environment: release-evidence", release_job)
+        self.assertRegex(release_job, r"(?ms)^    permissions:\n      actions: read\n      contents: read$")
         self.assertIn("permission-administration: read", release_job)
         self.assertIn("branches/release%2F1.0.0/protection", release_job)
         self.assertIn("PROFILE_EVIDENCE_MANIFEST", release_job)
+        self.assertIn("PROFILE_EVIDENCE_GITHUB_TOKEN: ${{ github.token }}", release_job)
+        self.assertIn(
+            "PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN: ${{ steps.branch-protection-token.outputs.token }}",
+            release_job,
+        )
         self.assertIn("--readiness", release_job)
 
     def test_release_summary_waits_for_exact_evidence_jobs(self) -> None:

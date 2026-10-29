@@ -1563,6 +1563,62 @@ mod unrelated {
                 "allow_deletions": {"enabled": False},
             },
         )
+        raw_branch_policy = {
+            "required_pull_request_reviews": {
+                "required_approving_review_count": 1,
+                "dismiss_stale_reviews": True,
+                "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
+            },
+            "enforce_admins": {"enabled": True},
+            "allow_force_pushes": {"enabled": False},
+            "allow_deletions": {"enabled": False},
+        }
+        api_responses = {
+            f"https://api.github.com/repos/NeverWe1come/KMIPKit/actions/runs/{context['run_id']}": {
+                "id": int(context["run_id"]),
+                "repository": {"full_name": context["repository"]},
+                "event": "push",
+                "head_branch": "release/1.0.0",
+                "head_sha": head,
+                "run_attempt": 1,
+                "path": ".github/workflows/ci.yml",
+                "status": "in_progress",
+            },
+            f"https://api.github.com/repos/NeverWe1come/KMIPKit/actions/runs/{context['run_id']}/jobs?per_page=100": {
+                "total_count": 7,
+                "jobs": [
+                    {"name": "Core / ubuntu-latest / Rust 1.94", "status": "completed", "conclusion": "success"},
+                    {"name": "Script contracts / ubuntu-latest", "status": "completed", "conclusion": "success"},
+                    {"name": "Normative inventory / immutable sources and coverage", "status": "completed", "conclusion": "success"},
+                    {"name": "Coverage / ubuntu", "status": "completed", "conclusion": "success"},
+                    {"name": "Coverage gate / selected scopes", "status": "completed", "conclusion": "success"},
+                    {"name": "Dependency policy / active release schedule", "status": "completed", "conclusion": "success"},
+                    {"name": "Profile evidence / protected release aggregate", "status": "in_progress", "conclusion": None},
+                ],
+            },
+            "https://api.github.com/repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection": raw_branch_policy,
+        }
+
+        class FakeResponse:
+            def __init__(self, body: bytes) -> None:
+                self.body = body
+
+            def __enter__(self) -> FakeResponse:
+                return self
+
+            def __exit__(self, *_args: object) -> None:
+                return None
+
+            def read(self, _limit: int = -1) -> bytes:
+                return self.body
+
+        def open_github_api(request: object, **_kwargs: object) -> FakeResponse:
+            url = request.full_url
+            return FakeResponse(json.dumps(api_responses[url]).encode("utf-8"))
+
+        class FakeOpener:
+            def open(self, request: object, **kwargs: object) -> FakeResponse:
+                return open_github_api(request, **kwargs)
 
         with tempfile.TemporaryDirectory() as directory:
             summary_path = Path(directory) / "github-summary.md"
@@ -1578,26 +1634,51 @@ mod unrelated {
                 "GITHUB_RUN_ID": context["run_id"],
                 "GITHUB_RUN_ATTEMPT": context["run_attempt"],
                 "PROFILE_EVIDENCE_MANIFEST": json.dumps(manifest),
+                "PROFILE_EVIDENCE_GITHUB_TOKEN": "actions-read-token",
+                "PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN": "administration-read-token",
             }
-            with patch.dict(os.environ, environment, clear=False):
-                exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+            with patch("urllib.request.build_opener", return_value=FakeOpener()) as api_client:
+                with patch.dict(os.environ, environment, clear=False):
+                    exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
 
-            github_summary = summary_path.read_text(encoding="utf-8")
+                github_summary = summary_path.read_text(encoding="utf-8")
+                self.assertEqual(3, api_client.call_count)
 
-            local_summary_path = Path(directory) / "local-summary.md"
-            environment["GITHUB_STEP_SUMMARY"] = str(local_summary_path)
-            environment["GITHUB_ACTIONS"] = "false"
-            with patch.dict(os.environ, environment, clear=False):
-                local_exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+                mismatched_summary_path = Path(directory) / "mismatched-summary.md"
+                environment["GITHUB_STEP_SUMMARY"] = str(mismatched_summary_path)
+                api_responses[
+                    f"https://api.github.com/repos/NeverWe1come/KMIPKit/actions/runs/{context['run_id']}"
+                ]["head_sha"] = "b" * 40
+                with patch.dict(os.environ, environment, clear=False):
+                    mismatched_exit_code = report_module.main(
+                        ["--readiness", "--repo-root", str(ROOT)]
+                    )
+                mismatched_summary = mismatched_summary_path.read_text(encoding="utf-8")
+                self.assertEqual(4, api_client.call_count)
+
+                local_summary_path = Path(directory) / "local-summary.md"
+                environment["GITHUB_STEP_SUMMARY"] = str(local_summary_path)
+                environment["GITHUB_ACTIONS"] = "false"
+                environment["PROFILE_EVIDENCE_GITHUB_TOKEN"] = ""
+                environment["PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN"] = ""
+                with patch.dict(os.environ, environment, clear=False):
+                    local_exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+                self.assertEqual(4, api_client.call_count)
 
             local_summary = local_summary_path.read_text(encoding="utf-8")
 
         self.assertEqual(0, exit_code)
+        self.assertEqual(0, mismatched_exit_code)
         self.assertEqual(0, local_exit_code)
         self.assertIn("Current profile readiness", github_summary)
         self.assertNotIn("current verification manifest is invalid or does not match this run", github_summary)
         self.assertIn("Public claim: no", github_summary)
         self.assertNotIn("123456789", github_summary)
+        self.assertIn(
+            "current protected-release-push verification manifest is unavailable",
+            mismatched_summary,
+        )
         self.assertIn("current protected-release-push verification manifest is unavailable", local_summary)
         self.assertIn("Public claim: no", local_summary)
         self.assertNotIn("123456789", local_summary)
