@@ -59,6 +59,9 @@ _TYPED_RULE_MAPPING_ENTRY = re.compile(
     \}\s*''',
     re.DOTALL | re.VERBOSE,
 )
+_TYPED_RULE_MAPPING_CONSTRUCTOR = re.compile(
+    r"\s*typed_rule_mapping\s*\((?P<arguments>.*)\)\s*", re.DOTALL
+)
 _RULE_TEST_EVIDENCE_ENTRY = re.compile(
     r'''\s*RuleTestEvidence\s*\{\s*
     test_id:\s*"(?P<test_id>[A-Za-z0-9_./:-]+)",\s*
@@ -66,11 +69,25 @@ _RULE_TEST_EVIDENCE_ENTRY = re.compile(
     \}\s*''',
     re.DOTALL | re.VERBOSE,
 )
+_RULE_TEST_EVIDENCE_CONSTRUCTOR = re.compile(
+    r'''\s*rule_test_evidence\s*\(\s*
+    "(?P<test_id>[A-Za-z0-9_./:-]+)"\s*,\s*
+    RuleTestKind::(?P<kind>[A-Za-z][A-Za-z0-9_]*)\s*,?\s*
+    \)\s*''',
+    re.DOTALL | re.VERBOSE,
+)
 _RULE_CONSTRAINT_ENTRY = re.compile(
     r'''\s*RuleConstraint\s*\{\s*
     key:\s*"(?P<key>[A-Za-z][A-Za-z0-9_-]*)",\s*
     value:\s*"(?P<value>[A-Za-z][A-Za-z0-9_-]*)",?\s*
     \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_CONSTRAINT_CONSTRUCTOR = re.compile(
+    r'''\s*rule_constraint\s*\(\s*
+    "(?P<key>[A-Za-z][A-Za-z0-9_-]*)"\s*,\s*
+    "(?P<value>[A-Za-z][A-Za-z0-9_-]*)"\s*,?\s*
+    \)\s*''',
     re.DOTALL | re.VERBOSE,
 )
 _VERIFICATION_CATEGORIES = {
@@ -470,6 +487,76 @@ def _typed_rule_registry_body(text: str) -> str:
     raise ValueError("unsupported typed profile rule mapping")
 
 
+def _rust_array_contents(argument: str) -> str:
+    match = re.fullmatch(r"\s*&\[(.*)\]\s*", argument, re.DOTALL)
+    if match is None:
+        raise ValueError("unsupported typed profile rule mapping")
+    return match.group(1)
+
+
+def _parse_typed_rule_mapping_constructor(
+    entry: str,
+) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
+    """Read the static const-constructor grammar used by profile.rs."""
+    constructor = _TYPED_RULE_MAPPING_CONSTRUCTOR.fullmatch(entry)
+    if constructor is None:
+        raise ValueError("unsupported typed profile rule mapping")
+    arguments = _split_rust_registry_entries(constructor.group("arguments"))
+    if len(arguments) != 7:
+        raise ValueError("unsupported typed profile rule mapping")
+
+    requirement = re.fullmatch(
+        r'\s*"(KMIPKIT-REQ-[A-Z0-9.-]+)"\s*', arguments[0]
+    )
+    clause = re.fullmatch(
+        r'\s*"(KMIPKIT-CLAUSE-[A-Z0-9.-]*|)"\s*', arguments[1]
+    )
+    source_gap = re.fullmatch(
+        r'\s*(?:Some\s*\(\s*"(KMIPKIT-SOURCE-GAP-[A-Z0-9.-]+)"\s*\)|None)\s*',
+        arguments[2],
+    )
+    category = re.fullmatch(
+        r"\s*GeneratedVerificationCategory::([A-Za-z][A-Za-z0-9_]*)\s*",
+        arguments[3],
+    )
+    evaluator = re.fullmatch(
+        r"\s*(None|Some\s*\(\s*[A-Za-z_][A-Za-z0-9_]*\s*,?\s*\))\s*",
+        arguments[4],
+    )
+    if any(match is None for match in (requirement, clause, source_gap, category, evaluator)):
+        raise ValueError("unsupported typed profile rule mapping")
+
+    evidence: list[dict[str, str]] = []
+    for evidence_entry in _split_rust_registry_entries(_rust_array_contents(arguments[5])):
+        evidence_match = _RULE_TEST_EVIDENCE_CONSTRUCTOR.fullmatch(evidence_entry)
+        if evidence_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence_fields = evidence_match.groupdict()
+        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence.append(evidence_fields)
+
+    constraints: list[dict[str, str]] = []
+    for constraint_entry in _split_rust_registry_entries(_rust_array_contents(arguments[6])):
+        constraint_match = _RULE_CONSTRAINT_CONSTRUCTOR.fullmatch(constraint_entry)
+        if constraint_match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraint = constraint_match.groupdict()
+        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraints.append(constraint)
+
+    source_gap_id = source_gap.group(1)
+    fields = {
+        "requirement_id": requirement.group(1),
+        "source_clause_id": clause.group(1),
+        "source_gap_id": source_gap_id,
+        "category": category.group(1),
+        "evaluator": evaluator.group(1),
+    }
+    return fields, evidence, constraints
+
+
 def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     body = _typed_rule_registry_body(text)
     if not body.strip():
@@ -480,8 +567,11 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     for entry in _split_rust_registry_entries(body):
         match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
         if match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        fields = match.groupdict()
+            fields, evidence, constraints = _parse_typed_rule_mapping_constructor(entry)
+        else:
+            fields = match.groupdict()
+            evidence = []
+            constraints = []
         requirement_id = fields["requirement_id"]
         category = fields["category"]
         source_clause_id = fields["source_clause_id"] or None
@@ -498,25 +588,24 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
         ):
             raise ValueError("unsupported typed profile rule mapping")
 
-        evidence: list[dict[str, str]] = []
-        for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
-            evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
-            if evidence_match is None:
-                raise ValueError("unsupported typed profile rule mapping")
-            evidence_fields = evidence_match.groupdict()
-            if evidence_fields["kind"] not in _RULE_TEST_KINDS:
-                raise ValueError("unsupported typed profile rule mapping")
-            evidence.append(evidence_fields)
+        if match is not None:
+            for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
+                evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
+                if evidence_match is None:
+                    raise ValueError("unsupported typed profile rule mapping")
+                evidence_fields = evidence_match.groupdict()
+                if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+                    raise ValueError("unsupported typed profile rule mapping")
+                evidence.append(evidence_fields)
 
-        constraints: list[dict[str, str]] = []
-        for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
-            constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
-            if constraint_match is None:
-                raise ValueError("unsupported typed profile rule mapping")
-            constraint = constraint_match.groupdict()
-            if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
-                raise ValueError("unsupported typed profile rule mapping")
-            constraints.append(constraint)
+            for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
+                constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
+                if constraint_match is None:
+                    raise ValueError("unsupported typed profile rule mapping")
+                constraint = constraint_match.groupdict()
+                if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+                    raise ValueError("unsupported typed profile rule mapping")
+                constraints.append(constraint)
 
         transport_only = (
             evaluator == "None"
