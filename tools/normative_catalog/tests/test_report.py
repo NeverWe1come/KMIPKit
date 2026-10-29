@@ -1581,7 +1581,7 @@ mod unrelated {
                 "head_branch": "release/1.0.0",
                 "head_sha": head,
                 "run_attempt": 1,
-                "path": ".github/workflows/ci.yml",
+                "path": ".github/workflows/ci.yml@refs/heads/release/1.0.0",
                 "status": "in_progress",
             },
             f"https://api.github.com/repos/NeverWe1come/KMIPKit/actions/runs/{context['run_id']}/jobs?per_page=100": {
@@ -1592,7 +1592,7 @@ mod unrelated {
                     {"name": "Normative inventory / immutable sources and coverage", "status": "completed", "conclusion": "success"},
                     {"name": "Coverage / ubuntu", "status": "completed", "conclusion": "success"},
                     {"name": "Coverage gate / selected scopes", "status": "completed", "conclusion": "success"},
-                    {"name": "Dependency policy / active release schedule", "status": "completed", "conclusion": "success"},
+                    {"name": "Dependency policy / pull request", "status": "completed", "conclusion": "success"},
                     {"name": "Profile evidence / protected release aggregate", "status": "in_progress", "conclusion": None},
                 ],
             },
