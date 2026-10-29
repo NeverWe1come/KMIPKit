@@ -1515,7 +1515,7 @@ class CatalogValidationTests(unittest.TestCase):
             "Template must not be treated as an assigned Object Type value",
         )
 
-    def test_async_query_response_caption_conflict_is_an_open_discrepancy(self) -> None:
+    def test_async_query_response_caption_conflict_has_an_accepted_context_decision(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(
             (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039"),
@@ -1525,8 +1525,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNotNone(discrepancy)
         assert discrepancy is not None
         self.assertEqual(discrepancy["normative_status"], "source_defect")
-        self.assertEqual(discrepancy["state"], "open")
-        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+        self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-015")
         self.assertEqual(
             discrepancy["source_refs"],
             [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.41"}],
@@ -1541,6 +1541,18 @@ class CatalogValidationTests(unittest.TestCase):
         )
         response_tables = [row for row in operation["payload_tables"] if row["role"] == "response"]
         self.assertEqual(response_tables, [{"role": "response", "table_number": 286, "caption": "PKCS#11 Response Payload"}])
+        decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-015")
+        self.assertEqual(decision["status"], "accepted")
+        self.assertEqual(decision["discrepancy_ids"], ["KMIPKIT-DISC-039"])
+        self.assertEqual(
+            decision["source_refs"],
+            [
+                {"source_id": "KMIPKIT-SRC-spec", "section": "6.1.41"},
+                {"source_id": "KMIPKIT-SRC-spec", "section": "7.2"},
+            ],
+        )
+        self.assertIn("optional, repeatable", decision["interpretation"])
+        self.assertIn("OASIS Standard and its CS02 publication", decision["approval_evidence"])
 
     def test_reprovision_error_caption_conflict_is_an_open_discrepancy(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
