@@ -2278,6 +2278,43 @@ mod unrelated {
         self.assertIn("Opaque Data Type", requirement_row)
         self.assertIn("6927-6945", requirement_row)
 
+    def test_typed_rule_mapping_parser_reads_compact_defaulted_macro_rows(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        entry = '''simple_typed_rule_mapping!(
+            "KMIPKIT-REQ-SPEC-TEST-001",
+            "KMIPKIT-CLAUSE-SPEC-TEST-001",
+            GeneratedVerificationCategory::OptionalCapability,
+            [("crates/kmipkit-protocol/tests/support/profile_unit.rs::test_optional_capability", RuleTestKind::OptionalCapabilityUsable)],
+            [("client_profile_capability", "caller_asserted")],
+        )'''
+
+        fields, evidence, constraints = report_module._parse_typed_rule_mapping_entry(entry)
+
+        self.assertEqual(
+            fields,
+            {
+                "requirement_id": "KMIPKIT-REQ-SPEC-TEST-001",
+                "source_clause_id": "KMIPKIT-CLAUSE-SPEC-TEST-001",
+                "source_gap_id": None,
+                "category": "OptionalCapability",
+                "evaluator": "None",
+            },
+        )
+        self.assertEqual(
+            evidence,
+            [
+                {
+                    "test_id": "crates/kmipkit-protocol/tests/support/profile_unit.rs::test_optional_capability",
+                    "kind": "OptionalCapabilityUsable",
+                }
+            ],
+        )
+        self.assertEqual(
+            constraints,
+            [{"key": "client_profile_capability", "value": "caller_asserted"}],
+        )
+
     def test_full_profile_report_keeps_evidence_incomplete_with_runtime_ready_baseline_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
