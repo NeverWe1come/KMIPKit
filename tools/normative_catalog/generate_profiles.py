@@ -577,6 +577,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub has_accepted_deviation: bool,",
         "}",
         "",
+        "// This generated constructor mirrors the public fields to keep rows compact.",
+        "#[allow(clippy::too_many_arguments)]",
         "const fn generated_client_requirement(",
         "    requirement_id: &'static str,",
         "    source_keyword: Option<&'static str>,",
