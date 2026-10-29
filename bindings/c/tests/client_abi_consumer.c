@@ -3043,6 +3043,7 @@ static int execute_public_tls_request(
     uint64_t fixture_item_count = 0;
     uint64_t fixture_pending_count = 0;
     uint64_t fixture_version_count = 0;
+    uint64_t fixture_failure_message_index = 0;
     const uint8_t *fixture_failure_message = NULL;
     uint64_t fixture_failure_message_length = 0;
     kmipkit_protocol_version_v1_t fixture_versions[FIXTURE_VERSION_CAPACITY] = {{0}};
@@ -3075,14 +3076,16 @@ static int execute_public_tls_request(
             !parse_fixture_decimal(argv[FIXTURE_VERSION_COUNT_ARG_INDEX], &fixture_version_count) ||
             fixture_item_count != UINT64_C(3) ||
             fixture_pending_count > fixture_item_count ||
-            fixture_version_count > FIXTURE_VERSION_CAPACITY ||
-            (uint64_t)argc != FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2) +
-                    UINT64_C(1) ||
-            argv[FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)] == NULL) {
+            fixture_version_count > FIXTURE_VERSION_CAPACITY) {
             return 3;
         }
-        fixture_failure_message = (const uint8_t *)
-            argv[FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)];
+        fixture_failure_message_index =
+            FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2);
+        if ((uint64_t)argc != fixture_failure_message_index + UINT64_C(1) ||
+            argv[fixture_failure_message_index] == NULL) {
+            return 3;
+        }
+        fixture_failure_message = (const uint8_t *)argv[fixture_failure_message_index];
         fixture_failure_message_length = (uint64_t)strlen((const char *)fixture_failure_message);
         for (uint64_t index = 0; index < fixture_version_count; ++index) {
             uint64_t major = 0;
