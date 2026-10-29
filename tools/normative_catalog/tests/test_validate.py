@@ -1552,7 +1552,8 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertIn("optional, repeatable", decision["interpretation"])
-        self.assertIn("OASIS Standard and its CS02 publication", decision["approval_evidence"])
+        self.assertIn("official OASIS Standard", decision["approval_evidence"])
+        self.assertIn("2019 Query Asynch proposal history", decision["approval_evidence"])
 
     def test_reprovision_error_caption_conflict_is_an_open_discrepancy(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
