@@ -957,6 +957,24 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             with self.assertRaisesRegex(ManifestError, "authorization evidence"):
                 generate._validate_operation_readiness([operation], {}, root)
 
+    def test_authorized_wip_declarations_keep_mappings_separate_from_approval(self) -> None:
+        manifest = _contract_manifest()
+        authorization = {
+            "kind": "direct-human-instruction",
+            "path": "specs/009-asynchronous-operations/spec.md",
+            "status": "Draft",
+            "evidence": "Draft. Direct human instruction for this implementation task authorizes autonomous work without further approval requests.",
+        }
+        declarations = _ready_declarations()
+        for declaration in declarations:
+            declaration["declarationState"] = "authorized_wip"
+            declaration["candidateSpecId"] = "KMIPKIT-0009"
+            declaration["implementationAuthorization"] = authorization
+            declaration.pop("approvalSource")
+        manifest["publicDeclarations"] = declarations
+
+        self.assertEqual(self.errors(manifest), [])
+
     def test_verified_operation_requires_resolvable_parity_evidence(self) -> None:
         manifest = _contract_manifest()
         operation = _discover_versions_operation(manifest)
