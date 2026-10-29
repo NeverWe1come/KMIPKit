@@ -8286,3 +8286,11 @@ the repository is organization-owned (or its approved requirements are changed
 to match GitHub's personal-repository API behavior) and the restricted
 read-only GitHub App credentials are configured. No protected-release push
 was made, and no profile readiness or conformance claim is asserted.
+
+The maintainer has deferred this eligible protected-push evidence until after
+several releases and collaborator onboarding. The deferral applies only to the
+release/profile-claim gate and does not waive the evidence contract or authorize
+a conformance claim. Keep Baseline `claim_state` at `evidence_incomplete` and
+keep the evaluator fail-closed. T026 is not a blocker for independent
+implementation work; restore the release review requirement and complete the
+App-backed protected-push evidence before qualifying a release.
