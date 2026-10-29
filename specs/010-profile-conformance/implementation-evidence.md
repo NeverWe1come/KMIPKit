@@ -8304,4 +8304,23 @@ The branch-protection adapter and CI manifest validator now require this explici
 
 Focused verification: `python -m unittest scripts.tests.test_branch_protection scripts.tests.test_ci_summary` passed (35 tests). The user-requested Red test was observed failing before implementation in commit `aac79227b`; Green is `343a59490`. These commits are unsigned because the configured SSH signing key could not be unlocked in this session.
 
-T026 is still incomplete: the restricted `release-evidence` environment has no `PROFILE_EVIDENCE_APP_CLIENT_ID` variable or `PROFILE_EVIDENCE_APP_PRIVATE_KEY` secret, so the short-lived Administration:read App token and eligible protected-release-push evidence cannot be produced. No secret was read or written, no release push was made, and Baseline remains `evidence_incomplete` with no conformance claim.
+Historical status before App credential setup: the restricted `release-evidence` environment had no `PROFILE_EVIDENCE_APP_CLIENT_ID` variable or `PROFILE_EVIDENCE_APP_PRIVATE_KEY` secret, so the short-lived Administration:read App token and eligible protected-release-push evidence could not be produced. This status is superseded by the setup recorded below. No release push was made, and Baseline remains `evidence_incomplete` with no conformance claim.
+
+## T026 GitHub App credential setup update (2026-10-29)
+
+Created the private GitHub App `KMIPKit profile evidence verifier` under
+`@NeverWe1come` and installed it only for `NeverWe1come/KMIPKit`. Its repository
+permissions are read-only Administration and GitHub's required read-only
+Metadata permission; webhooks are disabled. Added `PROFILE_EVIDENCE_APP_CLIENT_ID`
+to the restricted `release-evidence` environment and stored the downloaded
+private key as `PROFILE_EVIDENCE_APP_PRIVATE_KEY`. Read-only GitHub CLI checks
+confirmed both names are present without retrieving either value. The temporary
+downloaded PEM was removed after storing the Actions secret. The App currently
+has two private-key pairs because the first key download was not available to
+the setup process; only the later downloaded key is configured in Actions.
+
+The App credential prerequisite is now configured. No eligible protected push
+to `release/1.0.0` has been made, so the workflow has not yet demonstrated a
+short-lived App installation token and live branch-protection query in its
+required same-run evidence. T026 remains open until that protected-push run
+passes; Baseline remains `evidence_incomplete` and no conformance claim is made.
