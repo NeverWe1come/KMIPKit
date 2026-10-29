@@ -518,6 +518,36 @@ def _rust_bracket_contents(argument: str) -> str:
     return match.group(1)
 
 
+def _parse_rule_test_evidence_entries(
+    entries: list[str], pattern: re.Pattern[str]
+) -> list[dict[str, str]]:
+    evidence: list[dict[str, str]] = []
+    for entry in entries:
+        match = pattern.fullmatch(entry)
+        if match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        fields = match.groupdict()
+        if fields["kind"] not in _RULE_TEST_KINDS:
+            raise ValueError("unsupported typed profile rule mapping")
+        evidence.append(fields)
+    return evidence
+
+
+def _parse_rule_constraint_entries(
+    entries: list[str], pattern: re.Pattern[str]
+) -> list[dict[str, str]]:
+    constraints: list[dict[str, str]] = []
+    for entry in entries:
+        match = pattern.fullmatch(entry)
+        if match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraint = match.groupdict()
+        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+            raise ValueError("unsupported typed profile rule mapping")
+        constraints.append(constraint)
+    return constraints
+
+
 def _parse_typed_rule_mapping_constructor(
     entry: str,
 ) -> tuple[dict[str, Any], list[dict[str, str]], list[dict[str, str]]]:
@@ -550,25 +580,14 @@ def _parse_typed_rule_mapping_constructor(
     if any(match is None for match in (requirement, clause, source_gap, category, evaluator)):
         raise ValueError("unsupported typed profile rule mapping")
 
-    evidence: list[dict[str, str]] = []
-    for evidence_entry in _split_rust_registry_entries(_rust_array_contents(arguments[5])):
-        evidence_match = _RULE_TEST_EVIDENCE_CONSTRUCTOR.fullmatch(evidence_entry)
-        if evidence_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence_fields = evidence_match.groupdict()
-        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence.append(evidence_fields)
-
-    constraints: list[dict[str, str]] = []
-    for constraint_entry in _split_rust_registry_entries(_rust_array_contents(arguments[6])):
-        constraint_match = _RULE_CONSTRAINT_CONSTRUCTOR.fullmatch(constraint_entry)
-        if constraint_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraint = constraint_match.groupdict()
-        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraints.append(constraint)
+    evidence = _parse_rule_test_evidence_entries(
+        _split_rust_registry_entries(_rust_array_contents(arguments[5])),
+        _RULE_TEST_EVIDENCE_CONSTRUCTOR,
+    )
+    constraints = _parse_rule_constraint_entries(
+        _split_rust_registry_entries(_rust_array_contents(arguments[6])),
+        _RULE_CONSTRAINT_CONSTRUCTOR,
+    )
 
     source_gap_id = source_gap.group(1)
     fields = {
@@ -600,25 +619,14 @@ def _parse_simple_typed_rule_mapping_macro(
     if any(match is None for match in (requirement, clause, category)):
         raise ValueError("unsupported typed profile rule mapping")
 
-    evidence: list[dict[str, str]] = []
-    for evidence_entry in _split_rust_registry_entries(_rust_bracket_contents(arguments[3])):
-        evidence_match = _RULE_TEST_EVIDENCE_TUPLE.fullmatch(evidence_entry)
-        if evidence_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence_fields = evidence_match.groupdict()
-        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence.append(evidence_fields)
-
-    constraints: list[dict[str, str]] = []
-    for constraint_entry in _split_rust_registry_entries(_rust_bracket_contents(arguments[4])):
-        constraint_match = _RULE_CONSTRAINT_TUPLE.fullmatch(constraint_entry)
-        if constraint_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraint = constraint_match.groupdict()
-        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraints.append(constraint)
+    evidence = _parse_rule_test_evidence_entries(
+        _split_rust_registry_entries(_rust_bracket_contents(arguments[3])),
+        _RULE_TEST_EVIDENCE_TUPLE,
+    )
+    constraints = _parse_rule_constraint_entries(
+        _split_rust_registry_entries(_rust_bracket_contents(arguments[4])),
+        _RULE_CONSTRAINT_TUPLE,
+    )
 
     fields = {
         "requirement_id": requirement.group(1),
@@ -641,25 +649,14 @@ def _parse_typed_rule_mapping_entry(
         return _parse_typed_rule_mapping_constructor(entry)
 
     fields = match.groupdict()
-    evidence: list[dict[str, str]] = []
-    for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
-        evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
-        if evidence_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence_fields = evidence_match.groupdict()
-        if evidence_fields["kind"] not in _RULE_TEST_KINDS:
-            raise ValueError("unsupported typed profile rule mapping")
-        evidence.append(evidence_fields)
-
-    constraints: list[dict[str, str]] = []
-    for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
-        constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
-        if constraint_match is None:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraint = constraint_match.groupdict()
-        if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
-            raise ValueError("unsupported typed profile rule mapping")
-        constraints.append(constraint)
+    evidence = _parse_rule_test_evidence_entries(
+        _split_rust_registry_entries(fields["test_evidence"]),
+        _RULE_TEST_EVIDENCE_ENTRY,
+    )
+    constraints = _parse_rule_constraint_entries(
+        _split_rust_registry_entries(fields["constraints"]),
+        _RULE_CONSTRAINT_ENTRY,
+    )
     return fields, evidence, constraints
 
 
