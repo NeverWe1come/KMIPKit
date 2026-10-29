@@ -394,7 +394,7 @@ fn typed_client_rejects_invalid_response_without_exposing_response_bytes() {
     let listener = LoopbackTcpListener::bind().expect("loopback peer binds");
     let port = listener.local_addr().port();
     let malformed_response = structure(
-        0x0042_0078,
+        0x0042_007B,
         [ttlv_item(0x0042_0069, 0x07, RESPONSE_SENTINEL)],
     );
     let peer = spawn_peer(

@@ -69,7 +69,7 @@ impl SignatureVerifyRequest {
         self
     }
 
-    /// Supplies single-part Signature Data (§7.38).
+    /// Supplies Signature Data for a single-part or multipart request (§7.38).
     #[must_use]
     pub fn with_signature_data(mut self, value: SecretBytes) -> Self {
         self.signature_data = Some(value);

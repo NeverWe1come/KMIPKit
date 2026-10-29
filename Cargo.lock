@@ -332,6 +332,7 @@ dependencies = [
 name = "kmipkit-client"
 version = "1.0.0"
 dependencies = [
+ "aws-lc-rs",
  "kmipkit-protocol",
  "kmipkit-test-support",
  "kmipkit-transport",
@@ -339,6 +340,7 @@ dependencies = [
  "quickcheck",
  "rustls",
  "serde",
+ "serde_json",
  "static_assertions",
  "syn 2.0.119",
  "tokio",

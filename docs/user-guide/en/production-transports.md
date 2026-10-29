@@ -176,6 +176,23 @@ rejection is not by itself evidence of a client protocol defect. Consult the
 and [client execution guide](client-execution.md) for the detailed API and
 delivery contracts.
 
+## Local Cosmian integration tests
+
+The repository includes an opt-in Docker Compose deployment of Cosmian KMS
+5.28.0 and ignored live tests that use the typed Rust client over mutually
+authenticated TLS. Follow the [local Cosmian test guide](../../../tests/integration/cosmian/README.md)
+for setup, full-suite and family commands, the exhaustive per-case matrix, and
+current interoperability results. The reconciled matrix records 3,410
+interoperability successes; the latest complete full-suite run had 9 failing
+test functions. Encrypt records 287/300 interoperable cases after correcting
+three invalid AES-ECB test inputs. Two AES/RSA requests return Operation Not
+Supported, and two pure-classical `ConfigurableKEM` cases fail at Create Key Pair,
+so Encrypt is not sent for those cases. Decrypt records 222/234 after correcting
+three AES-ECB fixture lengths and the `CoverCrypt` result framing. The results include 24 Create Key Pair source-discrepancy probes with successful
+typed responses and validated key identifiers. Those profiles remain outside KMIP
+2.1 conformance claims. A targeted follow-up measured 15 cipher findings. Failures
+remain individually visible in the matrix and the [detailed Task 6 report](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation).
+
 ## A local, executable request example
 
 Building a typed batch does not contact a server. This example is run as a

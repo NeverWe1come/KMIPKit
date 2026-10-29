@@ -14,6 +14,8 @@ kmipkit-ttlv.workspace = true
 zeroize.workspace = true
 
 [dev-dependencies]
+serde_json.workspace = true
+aws-lc-rs.workspace = true
 static_assertions = { version = "=1.1.0", default-features = false }
 serde = "=1.0.228"
 quickcheck = { version = "=1.1.0", default-features = false }

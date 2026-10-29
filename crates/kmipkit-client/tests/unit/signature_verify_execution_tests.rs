@@ -25,7 +25,7 @@ use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequ
 
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
 const SUCCESS: u32 = 0;
-const VALIDITY_INDICATOR: u32 = 0x0042_0128;
+const VALIDITY_INDICATOR: u32 = 0x0042_009B; // OASIS KMIP v2.1 §11.56, Table 487.
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const BATCH_ITEM: u32 = 0x0042_000F;
