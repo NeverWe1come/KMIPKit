@@ -25,6 +25,9 @@ The server exposes raw KMIP binary TTLV over TLS on `127.0.0.1:5696`. Compose
 generates mTLS certificates in ignored `.local/cosmian-kms/certs/` before the
 server starts. Only the test CA and client identity are read by KMIPKit; the
 Cosmian container receives its server identity and the public client CA.
+The generator refuses to clean a non-empty certificate directory unless it
+contains KMIPKit's ownership marker; use a new empty directory for custom
+`KMIPKIT_COSMIAN_CERT_DIR` paths.
 
 ## Run the live test
 

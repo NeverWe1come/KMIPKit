@@ -214,3 +214,24 @@ Cosmian test binary (122 passed, 110 ignored live tests), and client Clippy with
 The expected AWS-LC build warnings on Windows did not fail the build. The updated PR head still
 requires hosted CodeQL and ordinary CI confirmation. This evidence does not change the measured
 interoperability outcomes or establish a KMIP conformance claim.
+
+## PKI output ownership hardening (2026-10-29)
+
+The independent review found a low-risk local data-loss path when an operator
+pointed `KMIPKIT_COSMIAN_CERT_DIR` at an unrelated directory containing the
+generator's `ca`, `server`, `client`, or `validation` subdirectories. The PKI
+generator now writes only into an empty output directory or one carrying its
+own marker, and it rejects an unmarked non-empty directory before cleanup.
+This is local safety hardening; it does not change the KMIP test results.
+
+| Phase / check | Evidence | Result |
+| --- | --- | --- |
+| Red | DCO commit `f8b366739` | The new output-ownership contract failed because the generator had neither an explicit output path nor an ownership check. |
+| Green | DCO commit `a669252b4` | Generator validates the marker/empty-directory state before touching known PKI subdirectories; output paths are quoted and the chain certificate argument no longer uses word splitting. |
+| Shell regression | `bash -n tests/integration/cosmian/generate-pki.sh`; run under WSL with a temporary unowned output directory containing `ca/keep.txt` | PASS: the script refuses cleanup and preserves the sentinel contents. |
+| Script contracts | `py -3 -B -m unittest discover --failfast -s scripts/tests -p 'test_*.py'` | PASS: 285 tests, 27 platform-specific skips. Windows skips the POSIX runtime case; the same runtime case passed in WSL. |
+| Refactor / documentation | Current change in `scripts/tests/test_cosmian_compose.py`, the integration README, this report, and the quickstart | Adds a runtime regression on POSIX and documents the empty-or-marked directory requirement. |
+
+The current PR head still needs a fresh hosted CodeQL and CI run after this
+follow-up, plus independent review of the cleanup guard. T047 remains open
+until those checks complete.

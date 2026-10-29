@@ -1,6 +1,10 @@
 """Contract tests for the local Cosmian integration deployment."""
 
+import os
 import re
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -39,6 +43,32 @@ class CosmianComposeTests(unittest.TestCase):
         self.assertGreaterEqual(ownership_guard, 0, "the generator needs an ownership guard")
         self.assertGreaterEqual(cleanup, 0, "the generator must clean only its known PKI paths")
         self.assertLess(ownership_guard, cleanup, "unowned output must be rejected before cleanup")
+
+    @unittest.skipUnless(os.name == "posix" and shutil.which("sh"), "requires a POSIX shell")
+    def test_pki_generator_preserves_nonempty_unowned_output(self) -> None:
+        shell = shutil.which("sh")
+        self.assertIsNotNone(shell)
+
+        with tempfile.TemporaryDirectory(prefix="kmipkit-cosmian-pki-") as temporary:
+            output_dir = Path(temporary) / "certs"
+            existing_file = output_dir / "ca" / "keep.txt"
+            existing_file.parent.mkdir(parents=True)
+            existing_file.write_text("preserve me\n", encoding="utf-8")
+            environment = os.environ.copy()
+            environment["KMIPKIT_PKI_OUTPUT_DIR"] = str(output_dir)
+
+            result = subprocess.run(
+                [shell, str(PKI_GENERATOR)],
+                cwd=REPOSITORY_ROOT,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Refusing to clean an unowned PKI output directory", result.stderr)
+            self.assertEqual(existing_file.read_text(encoding="utf-8"), "preserve me\n")
 
 
 if __name__ == "__main__":

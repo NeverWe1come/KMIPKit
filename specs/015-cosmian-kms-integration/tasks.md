@@ -127,4 +127,9 @@ The approved scope expands the earlier selected integration to every applicable 
   regression, the full Cosmian test binary (122 passed, 110 live tests ignored), and client Clippy
   passed locally. The source review found no production secret exposure or nonce reuse under the
   same case key; hosted CodeQL must confirm the diagnostic and nonce alerts are gone on the updated
-  PR head. Details are in `task-6-report.md`.
+  PR head. A separate local-cleanup review found that an unexpected certificate output path could
+  contain user files under the generator's known subdirectories. Red `f8b366739` added an ownership
+  guard contract that failed before the fix; Green `a669252b4` refuses non-empty unmarked output
+  before cleanup. The shell regression preserved a sentinel file under WSL, and the script-contract
+  suite passed 285 tests (27 platform-specific skips). Refactor and hosted CodeQL re-run are pending.
+  Details are in `task-6-report.md`.
