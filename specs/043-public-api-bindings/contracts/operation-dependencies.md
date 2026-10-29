@@ -7,8 +7,8 @@ The owner states and API readiness below were reconciled against the checked-in 
 | OASIS section | Operation | Linked owner specification | Current status / API gate |
 |---|---|---|---|
 | §6.1.1 | Activate | KMIPKIT-0018 | Approved for implementation by merged [Spec] PR #65 into `release/1.0.0` on 2026-10-09; checked-in owner status remains stale (`Draft`); T039 maps four languages; no conformance claim |
-| §6.1.2 | Add Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.3 | Adjust Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
+| §6.1.2 | Add Attribute | KMIPKIT-0016 | Approved owner; approval recorded by specification PR #58; T037 maps all four languages and records parity evidence; no complete OASIS conformance claim |
+| §6.1.3 | Adjust Attribute | KMIPKIT-0016 | Approved owner; approval recorded by specification PR #58; T037 maps all four languages and records parity evidence; no complete OASIS conformance claim |
 | §6.1.4 | Archive | KMIPKIT-0018 | Approved for implementation by merged [Spec] PR #65 into `release/1.0.0` on 2026-10-09; checked-in owner status remains stale (`Draft`); T039 maps four languages; no conformance claim |
 | §6.1.5 | Cancel | KMIPKIT-0009 | Owner approved for implementation 2026-10-29; T035 maps all four languages and records the API row as `declared`; reviewer gates and complete conformance remain separate |
 | §6.1.6 | Certify | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; four-language typed and generic TTLV mapping is implemented and locally tested; T043 remains open pending current-head cross-platform CI and coverage; no complete OASIS conformance claim is implied |
@@ -18,7 +18,7 @@ The owner states and API readiness below were reconciled against the checked-in 
 | §6.1.10 | Create Split Key | KMIPKIT-0014 | Accepted owner; four-language request/response mapping and shared fixture added by T032; ordered response identifiers and local maximum-response behavior remain covered; no complete official conformance claim |
 | §6.1.11 | Decrypt | KMIPKIT-0019 | Approved owner; autonomous implementation approval is recorded in the owner specification under the maintainer's standing instruction; T040 maps and verifies all four language facades for Tables 196–198; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain bounded and tracked |
 | §6.1.12 | Delegated Login | KMIPKIT-0038 | Approved owner; T045 records four-language request/response mapping and parity evidence on this feature branch; release integration and full operation conformance remain separate |
-| §6.1.13 | Delete Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
+| §6.1.13 | Delete Attribute | KMIPKIT-0016 | Approved owner; approval recorded by specification PR #58; T037 maps all four languages and records parity evidence; no complete OASIS conformance claim |
 | §6.1.14 | Derive Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; four-language API mapping and parity evidence verified in CI run `39063120154` on `7fef6d24`; full operation conformance remains a separate requirement |
 | §6.1.15 | Destroy | KMIPKIT-0018 | Approved for implementation by merged [Spec] PR #65 into `release/1.0.0` on 2026-10-09; checked-in owner status remains stale (`Draft`); T039 maps four languages; no conformance claim |
 | §6.1.16 | Discover Versions | KMIPKIT-0007 | Approved/accepted owner; T031 records four-language response access and parity evidence on this feature branch; release integration and full profile conformance remain separate |
@@ -26,7 +26,7 @@ The owner states and API readiness below were reconciled against the checked-in 
 | §6.1.18 | Export | KMIPKIT-0037 | Approved owner; T047 four-language mapping and parity evidence are verified in PR #104; current-head CI run `39083730360` passed, including selected-scope coverage. Release-branch integration awaits human merge; no complete OASIS conformance claim is implied |
 | §6.1.19 | Get | KMIPKIT-0017 | Approved owner; T038 records a verified four-language mapping and parity evidence; task review remains open and no complete OASIS conformance claim is made |
 | §6.1.20 | Get Attributes | KMIPKIT-0016 | Approved owner; KMIPKIT-0016 approval recorded by specification PR #58; four-language API mapping verified in T037, while complete T071 shared parity remains separate |
-| §6.1.21 | Get Attribute List | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
+| §6.1.21 | Get Attribute List | KMIPKIT-0016 | Approved owner; approval recorded by specification PR #58; T037 maps all four languages and records parity evidence; no complete OASIS conformance claim |
 | §6.1.22 | Get Constraints | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T048 verifies the four-language empty request and required Constraints response mapping against Tables 229–231, including generic response TTLV and common result/delivery handling |
 | §6.1.23 | Get Usage Allocation | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T049 verifies the four-language typed request and result mapping against Tables 232–234 with common status and delivery handling |
 | §6.1.24 | Hash | KMIPKIT-0021 | Approved/accepted owner; manifest API state: `declared`; four-language request and response mappings are recorded, and parity verification remains incomplete |
