@@ -245,6 +245,45 @@ class CoverageReportTests(unittest.TestCase):
                     '\n#[cfg(test)]\n#[path = "../tests/support/profile_unit.rs"]\nmod tests;\n'
                 )
 
+    def test_typed_rule_registry_reader_parses_const_mapping_constructors(self) -> None:
+        from tools.normative_catalog.report import _parse_typed_rule_registry
+
+        source = '''
+const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    typed_rule_mapping(
+        "KMIPKIT-REQ-PROF-3.1-001",
+        "KMIPKIT-CLAUSE-PROF-3.1-001",
+        None,
+        GeneratedVerificationCategory::RequiredBehavior,
+        None,
+        &[rule_test_evidence(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::requires_tls",
+            RuleTestKind::PositiveBehavior,
+        )],
+        &[rule_constraint("transport_security", "tls")],
+    ),
+];
+'''
+
+        self.assertEqual(
+            _parse_typed_rule_registry(source),
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-PROF-3.1-001",
+                    "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1-001",
+                    "source_gap_id": None,
+                    "verification_category": "RequiredBehavior",
+                    "evaluator_present": False,
+                    "transport_only": True,
+                    "configuration_only": True,
+                    "test_kind": "PositiveBehavior",
+                    "test_id": (
+                        "crates/kmipkit-protocol/tests/support/profile_unit.rs::requires_tls"
+                    ),
+                }
+            ],
+        )
+
     def test_typed_rule_registry_reader_parses_tls_and_tls13_mappings(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
