@@ -895,12 +895,18 @@ fn run_generated_public_client_abi_consumer(
         .find(|case| case["id"] == "discover-versions.supported-versions.v1")
         .expect("the Discover Versions fixture case exists");
     let creation_failure_case = creation_failure_case_override;
-    let failure_message = CString::new(
+    let server_result_message = CString::new(
+        creation_failure_case["input"]["resultMessage"]
+            .as_str()
+            .expect("fixture server result message is text"),
+    )
+    .expect("fixture server result message contains no NUL byte");
+    let expected_result_message = CString::new(
         creation_failure_case["expectedOutput"]["resultMessage"]
             .as_str()
-            .expect("fixture result message is text"),
+            .expect("fixture expected result message is text"),
     )
-    .expect("fixture result message contains no NUL byte");
+    .expect("fixture expected result message contains no NUL byte");
     let discover_expected = &discover_versions_case["expectedOutput"];
     let fixture_versions = discover_expected["supportedVersions"]
         .as_array()
@@ -1012,7 +1018,7 @@ fn run_generated_public_client_abi_consumer(
         server_config,
         Arc::clone(&exchange_count),
         fixture_versions.clone(),
-        failure_message.as_bytes().to_vec(),
+        server_result_message.as_bytes().to_vec(),
     );
 
     let executable = CString::new("kmipkit_public_client_consumer")
@@ -1048,7 +1054,7 @@ fn run_generated_public_client_abi_consumer(
             .iter()
             .map(|version| version.as_ptr().cast_mut()),
     );
-    arguments.push(failure_message.as_ptr().cast_mut());
+    arguments.push(expected_result_message.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot and the successful handle is
