@@ -8563,4 +8563,14 @@ The duplicate task number was corrected: T043 remains the completed live branch-
 
 Red: DCO-signed commit 61dd30ee2 changed the workflow contract tests to require the single remaining exception and failed against the old two-branch workflow. Green: DCO-signed commit 010bfc538 removed the KMIPKIT-0010 branch from normative-generator coverage, Python coverage, and the selected-scope/aggregate coverage gate; the three focused workflow contract tests passed. The Refactor keeps branch conditions and the T057 evidence explicit.
 
+Local verification on the Refactor worktree:
+
+- `python -B -m unittest scripts.tests.test_workflow -v` — PASS, 52 tests.
+- `python -B tools/normative_catalog/generate_attribute_types.py --repo-root . --check` — PASS, generated output is current.
+- `uv run --with coverage==7.10.6 python -m coverage run --data-file='C:\Users\ramp1953\AppData\Local\Temp\kmipkit010-t057-coverage.dat' --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types` — PASS, 8 tests.
+- `uv run --with coverage==7.10.6 python -m coverage report --data-file='C:\Users\ramp1953\AppData\Local\Temp\kmipkit010-t057-coverage.dat' --include=tools/normative_catalog/generate_attribute_types.py --fail-under=95` — PASS, 100% line coverage (117 statements, 0 missed).
+- `git diff --check` — PASS.
+
+The selected-scope and Rust workspace aggregate coverage thresholds have not yet been verified on the restored-gate head; exact-head hosted CI must pass them before T057 closes.
+
 T057 remains open until exact-head CI passes the normative-generator 95% line threshold, selected scope thresholds, and Rust workspace aggregate gate. The protected-release aggregate remains a separate post-integration release gate under T026; Baseline remains evidence_incomplete and no profile claim is made.
