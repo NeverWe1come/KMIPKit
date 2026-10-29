@@ -404,7 +404,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             generate._validate_release_package_versions(manifest, ROOT)
 
-    def test_release_gate_rejects_rust_python_and_java_metadata_identity_drift(self) -> None:
+    def test_release_gate_rejects_rust_c_python_and_java_metadata_identity_drift(self) -> None:
         metadata_paths = (
             "Cargo.toml",
             "crates/kmipkit-ttlv/Cargo.toml",
@@ -413,6 +413,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "crates/kmipkit-client/Cargo.toml",
             "crates/kmipkit/Cargo.toml",
             "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/c/package.toml",
             "bindings/python/pyproject.toml",
             "bindings/java/build.gradle.kts",
             "bindings/java/pom.xml",
@@ -422,6 +423,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "crates/kmipkit-ttlv/Cargo.toml",
                 'name = "kmipkit-ttlv"',
                 'name = "kmipkit-ttlv-unexpected"',
+            ),
+            (
+                "bindings/c/package.toml",
+                'name = "kmipkit-c"',
+                'name = "kmipkit-c-unexpected"',
             ),
             (
                 "bindings/python/pyproject.toml",

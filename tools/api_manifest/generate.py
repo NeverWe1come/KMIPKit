@@ -1449,6 +1449,26 @@ def _validate_release_package_versions(
                 packages_by_id, package_id, crate_package.get("name")
             )
 
+    c_distribution = read_toml("bindings/c/package.toml").get("package")
+    c_manifest_package = packages_by_id.get("c-kmipkit")
+    if not isinstance(c_distribution, dict) or not isinstance(c_manifest_package, dict):
+        raise ManifestError("C distribution package metadata is malformed")
+    c_targets = c_distribution.get("supported_targets")
+    if (
+        c_distribution.get("version_source") != "releaseLine"
+        or c_distribution.get("artifact_family")
+        != c_manifest_package.get("artifactFamily")
+        or not isinstance(c_targets, list)
+        or not c_targets
+        or any(not isinstance(target, str) or not target.strip() for target in c_targets)
+        or len(set(c_targets)) != len(c_targets)
+        or c_targets != c_manifest_package.get("supportedTargets")
+    ):
+        raise ManifestError("C distribution package metadata is inconsistent")
+    _require_release_package_identity(
+        packages_by_id, "c-kmipkit", c_distribution.get("name")
+    )
+
     python = read_toml("bindings/python/pyproject.toml")
     python_project = python.get("project")
     if not isinstance(python_project, dict):
