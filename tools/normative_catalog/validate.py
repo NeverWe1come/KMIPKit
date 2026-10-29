@@ -2120,7 +2120,7 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
             normalized_claim = claim.casefold() if isinstance(claim, str) else ""
             if (
                 disposition.get("status") != "resolved_by_project_interpretation"
-                or disposition.get("decision_id") != "KMIPKIT-DEC-015"
+                or disposition.get("decision_id") != "KMIPKIT-DEC-034"
                 or disposition.get("conflict_source_gap_id") != "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"
                 or "operation-table data=yes controls single-part" not in normalized_claim
                 or "neither indicator is true" not in normalized_claim

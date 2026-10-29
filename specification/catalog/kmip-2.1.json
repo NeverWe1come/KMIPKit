@@ -16307,7 +16307,7 @@
       ],
       "disposition": "source_discrepancy",
       "requirement_ids": [],
-      "exclusion_rationale": "The source identifies Data in a client-to-server request context and uses lowercase “required”. Approved decision KMIPKIT-DEC-015 reads the operation tables as controlling single-part requests, including framed true/true requests, and reads paragraph 009 as the conditional multipart rule: Data is required when neither indicator is true and may be omitted when either is true. The catalog’s case-insensitive REQUIRED token is a lexical hit, not a formal keyword. No standalone paragraph-009 requirement ID is assigned.",
+      "exclusion_rationale": "The source identifies Data in a client-to-server request context and uses lowercase “required”. Approved decision KMIPKIT-DEC-034 reads the operation tables as controlling single-part requests, including framed true/true requests, and reads paragraph 009 as the conditional multipart rule: Data is required when neither indicator is true and may be omitted when either is true. The catalog’s case-insensitive REQUIRED token is a lexical hit, not a formal keyword. No standalone paragraph-009 requirement ID is assigned.",
       "role": "client",
       "direction": "client_to_server",
       "scope_state": "client_1_0",
@@ -137368,9 +137368,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "KMIPKIT-DEC-015 records the project reading: operation tables govern single-part Data requiredness, including framed true/true single-part requests; Sign retains its Digested Data alternative. For multi-part requests, table Data=No is not universal permission or universal requiredness: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No paragraph-009 requirement ID or external conformance claim is created.",
+      "downstream_impact": "KMIPKIT-DEC-034 records the project reading: operation tables govern single-part Data requiredness, including framed true/true single-part requests; Sign retains its Digested Data alternative. For multi-part requests, table Data=No is not universal permission or universal requiredness: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No paragraph-009 requirement ID or external conformance claim is created.",
       "state": "resolved_by_approved_decision",
-      "decision_id": "KMIPKIT-DEC-015",
+      "decision_id": "KMIPKIT-DEC-034",
       "erratum_source_refs": []
     },
     {
@@ -138080,7 +138080,7 @@
       "status": "accepted"
     },
     {
-      "decision_id": "KMIPKIT-DEC-015",
+      "decision_id": "KMIPKIT-DEC-034",
       "source_refs": [
         {
           "source_id": "KMIPKIT-SRC-spec",

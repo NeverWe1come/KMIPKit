@@ -596,7 +596,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual([], discrepancy["affected_requirement_ids"])
         self.assertEqual("normative_conflict", discrepancy["normative_status"])
         self.assertEqual("resolved_by_approved_decision", discrepancy["state"])
-        self.assertEqual("KMIPKIT-DEC-015", discrepancy["decision_id"])
+        self.assertEqual("KMIPKIT-DEC-034", discrepancy["decision_id"])
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == discrepancy["decision_id"])
         self.assertEqual(decision["status"], "accepted")
         self.assertIn("Tables 196, 214, 235, 259, and 334", decision["interpretation"])
@@ -648,7 +648,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(data_clause["scope_state"], "client_1_0")
         self.assertIn("client-to-server request context", data_clause["exclusion_rationale"].lower())
         self.assertIn("lowercase", data_clause["exclusion_rationale"].lower())
-        self.assertIn("decision kmipkit-dec-015", data_clause["exclusion_rationale"].lower())
+        self.assertIn("decision kmipkit-dec-034", data_clause["exclusion_rationale"].lower())
 
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
         catalog = _load_json(CATALOG_PATH)

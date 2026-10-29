@@ -87865,7 +87865,7 @@
           "source_element_id": "KMIPKIT-ELEM-TAG-4200C2",
           "source_requirement_ids": [],
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
-          "source_note": "Table 334 requires Data for single-part Sign unless Digested Data is supplied and says it is not required for multipart Sign. Under KMIPKIT-DEC-015, the operation table controls single-part requests, including framed Init=true and Final=true. For multipart, table Data=No means it is not universally required; paragraph 009 requires Data when neither indicator is true and permits omission when either is true. This project interpretation creates no standalone paragraph-009 requirement ID."
+          "source_note": "Table 334 requires Data for single-part Sign unless Digested Data is supplied and says it is not required for multipart Sign. Under KMIPKIT-DEC-034, the operation table controls single-part requests, including framed Init=true and Final=true. For multipart, table Data=No means it is not universally required; paragraph 009 requires Data when neither indicator is true and permits omission when either is true. This project interpretation creates no standalone paragraph-009 requirement ID."
         },
         {
           "row_label": "Digested Data",
@@ -94183,12 +94183,12 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "The pinned Specification v2.1 §6.1 procedure at HTML lines 22485-22488 describes the single-part client request indicators and Correlation Value. Classify this as client_1_0 procedure context for a single-part cryptographic operation, without a standalone requirement ID. KMIPKIT-DEC-015 resolves the Data-rule tension with the operation-table single-part rule; this procedure mapping does not create a separate paragraph-009 requirement ID or make a profile-conformance claim.",
+      "review_note": "The pinned Specification v2.1 §6.1 procedure at HTML lines 22485-22488 describes the single-part client request indicators and Correlation Value. Classify this as client_1_0 procedure context for a single-part cryptographic operation, without a standalone requirement ID. KMIPKIT-DEC-034 resolves the Data-rule tension with the operation-table single-part rule; this procedure mapping does not create a separate paragraph-009 requirement ID or make a profile-conformance claim.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-019",
         "related_requirement_ids": [],
-        "review_note": "The single-part indicator/correlation instruction remains client procedure context without a standalone requirement ID. Existing protocol tests verify single-part requiredness and omission of multipart framing fields across the cryptographic request builders. KMIPKIT-DEC-015 resolves the Data interaction using the operation-table single-part rule; no profile-conformance claim is made.",
+        "review_note": "The single-part indicator/correlation instruction remains client procedure context without a standalone requirement ID. Existing protocol tests verify single-part requiredness and omission of multipart framing fields across the cryptographic request builders. KMIPKIT-DEC-034 resolves the Data interaction using the operation-table single-part rule; no profile-conformance claim is made.",
         "related_source_table_contract_ids": [],
         "verification_refs": [
           "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
@@ -94993,11 +94993,11 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_table_precedence",
-      "review_note": "The source keyword inventory remains empty because required is lowercase. KMIPKIT-DEC-015 is the recommended reading: the operation table controls single-part requests, including framed true/true requests; paragraph 009 supplies the conditional multipart rule. No standalone paragraph-009 requirement ID is assigned.",
+      "review_note": "The source keyword inventory remains empty because required is lowercase. KMIPKIT-DEC-034 is the recommended reading: the operation table controls single-part requests, including framed true/true requests; paragraph 009 supplies the conditional multipart rule. No standalone paragraph-009 requirement ID is assigned.",
       "source_resolution": {
         "kind": "operation_table_precedence",
         "context_id": "KMIPKIT-CONTEXT-SPEC-6.1-009",
-        "decision_id": "KMIPKIT-DEC-015",
+        "decision_id": "KMIPKIT-DEC-034",
         "related_requirement_ids": [],
         "review_note": "Tables 196, 214, 235, 259, and 334 control single-part requiredness, including framed true/true requests; Sign retains Table 334 Digested Data as its alternative. In multipart requests table Data=No is not universal: paragraph 009 requires Data when both indicators are absent or false and permits omission when either is true. This project interpretation creates no standalone paragraph-009 requirement ID."
       }
@@ -97504,13 +97504,13 @@
       "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be hashed .",
       "source_keywords": [],
       "source_force": "conditional_required_table_body_value",
-      "audited_statement": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
+      "audited_statement": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
       "actor": "client",
       "direction": "client→server Hash request",
       "condition": "Single-part requests require Data per the operation table, including framed Init=true and Final=true. For multipart requests, the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true.",
       "scope_disposition": "client_1_0",
       "status": "mapped_to_approved_feature_contract",
-      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-HASH and FR-002; KMIPKIT-DEC-015 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
+      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-HASH and FR-002; KMIPKIT-DEC-034 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
       "contract_kind": "operation_request_table_field",
       "table_number": 235,
       "requiredness": "Yes for single-part. No for multi-part.",
@@ -97526,10 +97526,10 @@
       ],
       "evidence_disposition": {
         "status": "resolved_by_project_interpretation",
-        "decision_id": "KMIPKIT-DEC-015",
+        "decision_id": "KMIPKIT-DEC-034",
         "conflict_source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         "conflicting_source": "KMIP Specification v2.1 §6.1 Table 235 marks Data Yes for single-part and No for multi-part; §6.1 lines 22498–22499 say Data is always required except when Init Indicator or Final Indicator is true.",
-        "claim": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
+        "claim": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
       }
     },
     {
@@ -98313,13 +98313,13 @@
       "source_excerpt": "Data Yes for single-part. No for multi-part. The data to be MACed .",
       "source_keywords": [],
       "source_force": "conditional_required_table_body_value",
-      "audited_statement": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
+      "audited_statement": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
       "actor": "client",
       "direction": "client→server MAC request",
       "condition": "Single-part requests require Data per the operation table, including framed Init=true and Final=true. For multipart requests, the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true.",
       "scope_disposition": "client_1_0",
       "status": "mapped_to_approved_feature_contract",
-      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-MAC and FR-004; KMIPKIT-DEC-015 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
+      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-MAC and FR-004; KMIPKIT-DEC-034 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
       "contract_kind": "operation_request_table_field",
       "table_number": 259,
       "requiredness": "Yes for single-part. No for multi-part.",
@@ -98335,10 +98335,10 @@
       ],
       "evidence_disposition": {
         "status": "resolved_by_project_interpretation",
-        "decision_id": "KMIPKIT-DEC-015",
+        "decision_id": "KMIPKIT-DEC-034",
         "conflict_source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         "conflicting_source": "KMIP Specification v2.1 §6.1 Table 259 marks Data Yes for single-part and No for multi-part; §6.1 lines 22498–22499 say Data is always required except when Init Indicator or Final Indicator is true.",
-        "claim": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
+        "claim": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
       }
     },
     {
@@ -99137,14 +99137,14 @@
       ],
       "evidence_disposition": {
         "status": "resolved_by_project_interpretation",
-        "decision_id": "KMIPKIT-DEC-015",
+        "decision_id": "KMIPKIT-DEC-034",
         "conflict_source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         "conflicting_source": "KMIP Specification v2.1 §6.1 Table 334 says Data is not required for multi-part; §6.1 paragraph 009 says Data is always required except when Init Indicator or Final Indicator is true.",
-        "claim": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
+        "claim": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created."
       },
       "status": "mapped_to_approved_feature_contract",
-      "audited_statement": "Project interpretation per KMIPKIT-DEC-015: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
-      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-SIGN and FR-004; KMIPKIT-DEC-015 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
+      "audited_statement": "Project interpretation per KMIPKIT-DEC-034: operation-table Data=Yes controls single-part requests, including framed Init=true and Final=true; for Sign, Data may be omitted only when Digested Data is supplied. For multipart requests the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No standalone paragraph-009 requirement ID is created.",
+      "review_note": "Source table contract remains mapped through KMIPKIT-ELEM-OP-C2S-SIGN and FR-004; KMIPKIT-DEC-034 resolves the §6.1 source tension with the documented single-part/multipart matrix. The row creates no standalone paragraph-009 requirement ID.",
       "contract_kind": "operation_request_table_field"
     },
     {

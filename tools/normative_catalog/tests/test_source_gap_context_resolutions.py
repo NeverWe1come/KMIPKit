@@ -688,7 +688,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         if not isinstance(resolution, dict):
             return
         self.assertEqual(resolution["kind"], "operation_table_precedence")
-        self.assertEqual(resolution["decision_id"], "KMIPKIT-DEC-015")
+        self.assertEqual(resolution["decision_id"], "KMIPKIT-DEC-034")
         self.assertEqual(data_rule["scope_disposition"], "client_1_0")
         self.assertEqual(data_rule["status"], "reviewed_table_precedence")
         self.assertIsNone(data_rule["candidate_requirement_id"])
@@ -708,7 +708,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             with self.subTest(gap_id=gap_id):
                 disposition = table_contracts[gap_id]["evidence_disposition"]
                 self.assertEqual(disposition["status"], "resolved_by_project_interpretation")
-                self.assertEqual(disposition["decision_id"], "KMIPKIT-DEC-015")
+                self.assertEqual(disposition["decision_id"], "KMIPKIT-DEC-034")
                 self.assertIn("no standalone paragraph-009 requirement id", disposition["claim"].casefold())
 
         sign_row = table_contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"]
