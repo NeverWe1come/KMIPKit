@@ -1,116 +1,138 @@
 #!/bin/sh
 set -eu
 umask 077
+output_dir="${KMIPKIT_PKI_OUTPUT_DIR:-/output}"
+pki_marker="$output_dir/.kmipkit-cosmian-pki"
+pki_marker_contents="KMIPKit Cosmian integration PKI v1"
 
-mkdir -p /output/ca /output/server /output/client /output/validation
+mkdir -p "$output_dir"
 
-if [ -s /output/ca/ca.crt ] \
-    && [ -s /output/server/server.crt ] \
-    && [ -s /output/server/server.key ] \
-    && [ -s /output/client/client.crt ] \
-    && [ -s /output/client/client.key ] \
-    && [ -s /output/validation/intermediate.crt ] \
-    && [ -s /output/validation/leaf.crt ] \
-    && [ -s /output/validation/private-key-password-no-chain.p12 ] \
-    && [ -s /output/validation/private-key-password-chain.p12 ] \
-    && [ -s /output/validation/private-key-empty-password-no-chain.p12 ] \
-    && [ -s /output/validation/private-key-empty-password-chain.p12 ] \
-    && [ -s /output/validation/rsa-2048-csr-pkcs10.der ] \
-    && [ -s /output/validation/rsa-2048-csr-pem.pem ] \
-    && [ -s /output/validation/ec-P256-csr-pkcs10.der ] \
-    && [ -s /output/validation/ed25519-csr-pkcs10.der ] \
-    && [ -s /output/validation/cryptographic-fixture-capabilities.txt ] \
-    && [ -s /output/validation/fixture-set-v3 ]; then
+if [ -s "$output_dir/ca/ca.crt" ] \
+    && [ -s "$output_dir/server/server.crt" ] \
+    && [ -s "$output_dir/server/server.key" ] \
+    && [ -s "$output_dir/client/client.crt" ] \
+    && [ -s "$output_dir/client/client.key" ] \
+    && [ -s "$output_dir/validation/intermediate.crt" ] \
+    && [ -s "$output_dir/validation/leaf.crt" ] \
+    && [ -s "$output_dir/validation/private-key-password-no-chain.p12" ] \
+    && [ -s "$output_dir/validation/private-key-password-chain.p12" ] \
+    && [ -s "$output_dir/validation/private-key-empty-password-no-chain.p12" ] \
+    && [ -s "$output_dir/validation/private-key-empty-password-chain.p12" ] \
+    && [ -s "$output_dir/validation/rsa-2048-csr-pkcs10.der" ] \
+    && [ -s "$output_dir/validation/rsa-2048-csr-pem.pem" ] \
+    && [ -s "$output_dir/validation/ec-P256-csr-pkcs10.der" ] \
+    && [ -s "$output_dir/validation/ed25519-csr-pkcs10.der" ] \
+    && [ -s "$output_dir/validation/cryptographic-fixture-capabilities.txt" ] \
+    && [ -s "$output_dir/validation/fixture-set-v3" ]; then
     exit 0
 fi
 
+if [ -f "$pki_marker" ]; then
+    if [ "$(cat "$pki_marker")" != "$pki_marker_contents" ]; then
+        printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
+        exit 1
+    fi
+elif [ -e "$pki_marker" ] || [ -L "$pki_marker" ]; then
+    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
+    exit 1
+elif ! output_entry="$(find "$output_dir" -mindepth 1 -maxdepth 1 -print -quit)"; then
+    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
+    exit 1
+elif [ -n "$output_entry" ]; then
+    printf '%s\n' "Refusing to clean an unowned PKI output directory" >&2
+    exit 1
+else
+    printf '%s\n' "$pki_marker_contents" > "$pki_marker"
+fi
+
+mkdir -p "$output_dir/ca" "$output_dir/server" "$output_dir/client" "$output_dir/validation"
 apk add --no-cache openssl >/dev/null
 
-rm -f /output/ca/* /output/server/* /output/client/* /output/validation/*
+rm -f "$output_dir/ca/"* "$output_dir/server/"* "$output_dir/client/"* "$output_dir/validation/"*
 
 openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 30 \
-    -keyout /output/ca/ca.key \
-    -out /output/ca/ca.crt \
+    -keyout "$output_dir/ca/ca.key" \
+    -out "$output_dir/ca/ca.crt" \
     -subj "/CN=KMIPKit local integration CA"
 
 openssl req -new -newkey rsa:2048 -sha256 -nodes \
-    -keyout /output/server/server.key \
-    -out /output/server/server.csr \
+    -keyout "$output_dir/server/server.key" \
+    -out "$output_dir/server/server.csr" \
     -subj "/CN=localhost"
 openssl x509 -req -sha256 -days 30 \
-    -in /output/server/server.csr \
-    -CA /output/ca/ca.crt \
-    -CAkey /output/ca/ca.key \
-    -CAserial /output/ca/ca.srl \
+    -in "$output_dir/server/server.csr" \
+    -CA "$output_dir/ca/ca.crt" \
+    -CAkey "$output_dir/ca/ca.key" \
+    -CAserial "$output_dir/ca/ca.srl" \
     -CAcreateserial \
     -extfile /scripts/server.ext \
-    -out /output/server/server.crt
-cp /output/ca/ca.crt /output/server/clients-ca.crt
-rm -f /output/server/server.csr
+    -out "$output_dir/server/server.crt"
+cp "$output_dir/ca/ca.crt" "$output_dir/server/clients-ca.crt"
+rm -f "$output_dir/server/server.csr"
 
 openssl req -new -newkey rsa:2048 -sha256 -nodes \
-    -keyout /output/validation/intermediate.key \
-    -out /output/validation/intermediate.csr \
+    -keyout "$output_dir/validation/intermediate.key" \
+    -out "$output_dir/validation/intermediate.csr" \
     -subj "/CN=KMIPKit validation intermediate"
 openssl x509 -req -sha256 -days 30 \
-    -in /output/validation/intermediate.csr \
-    -CA /output/ca/ca.crt \
-    -CAkey /output/ca/ca.key \
-    -CAserial /output/ca/ca.srl \
+    -in "$output_dir/validation/intermediate.csr" \
+    -CA "$output_dir/ca/ca.crt" \
+    -CAkey "$output_dir/ca/ca.key" \
+    -CAserial "$output_dir/ca/ca.srl" \
     -extfile /scripts/intermediate.ext \
-    -out /output/validation/intermediate.crt
-rm -f /output/validation/intermediate.csr
+    -out "$output_dir/validation/intermediate.crt"
+rm -f "$output_dir/validation/intermediate.csr"
 
 openssl req -new -newkey rsa:2048 -sha256 -nodes \
-    -keyout /output/validation/leaf.key \
-    -out /output/validation/leaf.csr \
+    -keyout "$output_dir/validation/leaf.key" \
+    -out "$output_dir/validation/leaf.csr" \
     -subj "/CN=KMIPKit validation leaf"
 openssl x509 -req -sha256 -days 30 \
-    -in /output/validation/leaf.csr \
-    -CA /output/validation/intermediate.crt \
-    -CAkey /output/validation/intermediate.key \
+    -in "$output_dir/validation/leaf.csr" \
+    -CA "$output_dir/validation/intermediate.crt" \
+    -CAkey "$output_dir/validation/intermediate.key" \
     -CAcreateserial \
     -extfile /scripts/validation-leaf.ext \
-    -out /output/validation/leaf.crt
-rm -f /output/validation/leaf.csr
+    -out "$output_dir/validation/leaf.crt"
+rm -f "$output_dir/validation/leaf.csr"
 
 openssl req -new -newkey rsa:2048 -sha256 -nodes \
-    -keyout /output/client/client.key \
-    -out /output/client/client.csr \
+    -keyout "$output_dir/client/client.key" \
+    -out "$output_dir/client/client.csr" \
     -subj "/CN=kmipkit-integration-client"
 openssl x509 -req -sha256 -days 30 \
-    -in /output/client/client.csr \
-    -CA /output/ca/ca.crt \
-    -CAkey /output/ca/ca.key \
-    -CAserial /output/ca/ca.srl \
+    -in "$output_dir/client/client.csr" \
+    -CA "$output_dir/ca/ca.crt" \
+    -CAkey "$output_dir/ca/ca.key" \
+    -CAserial "$output_dir/ca/ca.srl" \
     -extfile /scripts/client.ext \
-    -out /output/client/client.crt
-cp /output/ca/ca.crt /output/client/ca.crt
-rm -f /output/client/client.csr
+    -out "$output_dir/client/client.crt"
+cp "$output_dir/ca/ca.crt" "$output_dir/client/ca.crt"
+rm -f "$output_dir/client/client.csr"
 
 # PrivateKey/PKCS#12 Import fixtures. These contain a test-only private key;
 # the password variants are linked through a case-owned SecretData object.
 openssl pkcs12 -export \
-    -inkey /output/validation/leaf.key \
-    -in /output/validation/leaf.crt \
-    -out /output/validation/private-key-password-no-chain.p12 \
+    -inkey "$output_dir/validation/leaf.key" \
+    -in "$output_dir/validation/leaf.crt" \
+    -out "$output_dir/validation/private-key-password-no-chain.p12" \
     -passout pass:kmipkit-test-password
 openssl pkcs12 -export \
-    -inkey /output/validation/leaf.key \
-    -in /output/validation/leaf.crt \
-    -certfile /output/validation/intermediate.crt \
-    -out /output/validation/private-key-password-chain.p12 \
+    -inkey "$output_dir/validation/leaf.key" \
+    -in "$output_dir/validation/leaf.crt" \
+    -certfile "$output_dir/validation/intermediate.crt" \
+    -out "$output_dir/validation/private-key-password-chain.p12" \
     -passout pass:kmipkit-test-password
 openssl pkcs12 -export \
-    -inkey /output/validation/leaf.key \
-    -in /output/validation/leaf.crt \
-    -out /output/validation/private-key-empty-password-no-chain.p12 \
+    -inkey "$output_dir/validation/leaf.key" \
+    -in "$output_dir/validation/leaf.crt" \
+    -out "$output_dir/validation/private-key-empty-password-no-chain.p12" \
     -passout pass:
 openssl pkcs12 -export \
-    -inkey /output/validation/leaf.key \
-    -in /output/validation/leaf.crt \
-    -certfile /output/validation/intermediate.crt \
-    -out /output/validation/private-key-empty-password-chain.p12 \
+    -inkey "$output_dir/validation/leaf.key" \
+    -in "$output_dir/validation/leaf.crt" \
+    -certfile "$output_dir/validation/intermediate.crt" \
+    -out "$output_dir/validation/private-key-empty-password-chain.p12" \
     -passout pass:
 
 # DER and PEM fixture inputs cover each transfer row's declared algorithm and
@@ -120,9 +142,9 @@ generate_key_fixture() {
     name=$1
     algorithm=$2
     parameter=$3
-    key=/output/validation/$name.key
-    csr=/output/validation/$name.csr
-    cert=/output/validation/$name.crt
+    key="$output_dir/validation/$name.key"
+    csr="$output_dir/validation/$name.csr"
+    cert="$output_dir/validation/$name.crt"
 
     case "$algorithm" in
         RSA)
@@ -136,20 +158,20 @@ generate_key_fixture() {
             ;;
         X25519|X448)
             openssl genpkey -algorithm "$algorithm" -out "$key"
-            public_key=/output/validation/$name-public-key.pem
+            public_key="$output_dir/validation/$name-public-key.pem"
             openssl pkey -in "$key" -pubout -out "$public_key"
             openssl x509 -new -force_pubkey "$public_key" \
                 -subj "/CN=KMIPKit $name fixture" -days 30 \
-                -CA /output/validation/intermediate.crt \
-                -CAkey /output/validation/intermediate.key \
-                -CAserial /output/validation/ca.srl -CAcreateserial \
+                -CA "$output_dir/validation/intermediate.crt" \
+                -CAkey "$output_dir/validation/intermediate.key" \
+                -CAserial "$output_dir/validation/ca.srl" -CAcreateserial \
                 -extfile /scripts/validation-xdh.ext -out "$cert"
             rm -f "$public_key"
             ;;
         DSA)
             openssl genpkey -genparam -algorithm DSA -pkeyopt "dsa_paramgen_bits:$parameter" \
-                -out /output/validation/dsa-$parameter.params
-            openssl genpkey -paramfile /output/validation/dsa-$parameter.params -out "$key"
+                -out "$output_dir/validation/dsa-$parameter.params"
+            openssl genpkey -paramfile "$output_dir/validation/dsa-$parameter.params" -out "$key"
             ;;
         *)
             return 1
@@ -160,47 +182,47 @@ generate_key_fixture() {
         X25519|X448) ;;
         *)
             openssl req -new -key "$key" -out "$csr" -subj "/CN=KMIPKit $name fixture"
-            cp "$csr" "/output/validation/$name-csr-pem.pem"
-            openssl req -in "$csr" -outform DER -out "/output/validation/$name-csr-pkcs10.der"
+            cp "$csr" "$output_dir/validation/$name-csr-pem.pem"
+            openssl req -in "$csr" -outform DER -out "$output_dir/validation/$name-csr-pkcs10.der"
             openssl x509 -req -sha256 -days 30 -in "$csr" \
-                -CA /output/validation/intermediate.crt \
-                -CAkey /output/validation/intermediate.key \
+                -CA "$output_dir/validation/intermediate.crt" \
+                -CAkey "$output_dir/validation/intermediate.key" \
                 -CAcreateserial -extfile /scripts/validation-leaf.ext -out "$cert"
             rm -f "$csr"
             ;;
     esac
 
-    openssl pkey -in "$key" -outform DER -out /output/validation/$name-private-pkcs8.der
-    openssl pkey -in "$key" -pubout -outform DER -out /output/validation/$name-public-spki.der
-    openssl x509 -in "$cert" -outform DER -out /output/validation/$name-certificate.der
-    openssl pkey -in "$key" -pubout -out /output/validation/$name-public-spki.pem
+    openssl pkey -in "$key" -outform DER -out "$output_dir/validation/$name-private-pkcs8.der"
+    openssl pkey -in "$key" -pubout -outform DER -out "$output_dir/validation/$name-public-spki.der"
+    openssl x509 -in "$cert" -outform DER -out "$output_dir/validation/$name-certificate.der"
+    openssl pkey -in "$key" -pubout -out "$output_dir/validation/$name-public-spki.pem"
     if [ "$algorithm" = RSA ]; then
-        openssl rsa -in "$key" -traditional -outform DER -out /output/validation/$name-private-pkcs1.der
-        openssl rsa -in "$key" -traditional -out /output/validation/$name-private-pkcs1.pem
+        openssl rsa -in "$key" -traditional -outform DER -out "$output_dir/validation/$name-private-pkcs1.der"
+        openssl rsa -in "$key" -traditional -out "$output_dir/validation/$name-private-pkcs1.pem"
         openssl rsa -in "$key" -RSAPublicKey_out -outform DER \
-            -out /output/validation/$name-public-pkcs1.der
-        openssl rsa -in "$key" -RSAPublicKey_out -out /output/validation/$name-public-pkcs1.pem
+            -out "$output_dir/validation/$name-public-pkcs1.der"
+        openssl rsa -in "$key" -RSAPublicKey_out -out "$output_dir/validation/$name-public-pkcs1.pem"
     elif [ "$algorithm" = EC ]; then
-        openssl ec -in "$key" -outform DER -out /output/validation/$name-private-ec.der
-        openssl ec -in "$key" -out /output/validation/$name-private-ec.pem
+        openssl ec -in "$key" -outform DER -out "$output_dir/validation/$name-private-ec.der"
+        openssl ec -in "$key" -out "$output_dir/validation/$name-private-ec.pem"
     fi
 
     case "$algorithm" in
         RSA|EC|ED25519|ED448|X25519|X448)
             for variant in password-no-chain password-chain empty-password-no-chain empty-password-chain; do
                 case "$variant" in
-                    password-no-chain) password=kmipkit-test-password; chain_args= ;;
-                    password-chain) password=kmipkit-test-password; chain_args="-certfile /output/validation/intermediate.crt" ;;
-                    empty-password-no-chain) password=; chain_args= ;;
-                    empty-password-chain) password=; chain_args="-certfile /output/validation/intermediate.crt" ;;
+                    password-no-chain) password=kmipkit-test-password; include_chain=no ;;
+                    password-chain) password=kmipkit-test-password; include_chain=yes ;;
+                    empty-password-no-chain) password=; include_chain=no ;;
+                    empty-password-chain) password=; include_chain=yes ;;
                 esac
-                # chain_args contains only the fixed certificate path above.
-                if [ -n "$chain_args" ]; then
-                    openssl pkcs12 -export -inkey "$key" -in "$cert" $chain_args \
-                        -out /output/validation/$name-$variant.p12 -passout "pass:$password"
+                if [ "$include_chain" = yes ]; then
+                    openssl pkcs12 -export -inkey "$key" -in "$cert" \
+                        -certfile "$output_dir/validation/intermediate.crt" \
+                        -out "$output_dir/validation/$name-$variant.p12" -passout "pass:$password"
                 else
                     openssl pkcs12 -export -inkey "$key" -in "$cert" \
-                        -out /output/validation/$name-$variant.p12 -passout "pass:$password"
+                        -out "$output_dir/validation/$name-$variant.p12" -passout "pass:$password"
                 fi
             done
             ;;
@@ -213,17 +235,17 @@ generate_key_fixture() {
 generate_post_quantum_csr_fixture() {
     fixture_name=$1
     openssl_algorithm=$2
-    key=/output/validation/$fixture_name-private.key
-    csr=/output/validation/$fixture_name.csr
+    key="$output_dir/validation/$fixture_name-private.key"
+    csr="$output_dir/validation/$fixture_name.csr"
     if openssl genpkey -algorithm "$openssl_algorithm" -out "$key" >/dev/null 2>&1 \
         && openssl req -new -key "$key" -out "$csr" \
             -subj "/CN=KMIPKit $fixture_name fixture" >/dev/null 2>&1; then
-        cp "$csr" "/output/validation/$fixture_name-csr-pem.pem"
+        cp "$csr" "$output_dir/validation/$fixture_name-csr-pem.pem"
         openssl req -in "$csr" -outform DER \
-            -out "/output/validation/$fixture_name-csr-pkcs10.der" >/dev/null 2>&1
-        printf '%s=available\n' "$fixture_name" >> /output/validation/cryptographic-fixture-capabilities.txt
+            -out "$output_dir/validation/$fixture_name-csr-pkcs10.der" >/dev/null 2>&1
+        printf '%s=available\n' "$fixture_name" >> "$output_dir/validation/cryptographic-fixture-capabilities.txt"
     else
-        printf '%s=unavailable\n' "$fixture_name" >> /output/validation/cryptographic-fixture-capabilities.txt
+        printf '%s=unavailable\n' "$fixture_name" >> "$output_dir/validation/cryptographic-fixture-capabilities.txt"
     fi
     rm -f "$key" "$csr"
 }
@@ -267,4 +289,4 @@ for algorithm in \
     SLH-DSA-SHAKE-256f SLH-DSA-SHAKE-256s; do
     generate_post_quantum_csr_fixture "${algorithm}" "$algorithm"
 done
-touch /output/validation/fixture-set-v3
+touch "$output_dir/validation/fixture-set-v3"
