@@ -3110,6 +3110,21 @@ mod inventory_tests {
     }
 
     #[test]
+    fn fixture_material_path_rejects_curve_path_traversal() {
+        let row = serde_json::json!({
+            "algorithm": "ECDSA",
+            "parameters": {"curve": "/../../client/client"},
+            "fixture": {"encoding": "PEM"},
+            "key_format": "PKCS#8"
+        });
+
+        assert!(
+            fixture_material_path(&row, FixtureMaterial::PrivateKey).is_err(),
+            "manifest curve values must not escape the validation fixture directory"
+        );
+    }
+
+    #[test]
     fn opaque_post_quantum_transfer_rows_are_not_skipped() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
         let probes = configurable_kem_probe_case_ids().collect::<BTreeSet<_>>();
