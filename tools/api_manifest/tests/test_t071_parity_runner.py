@@ -31,6 +31,7 @@ CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 CREATE_SPLIT_KEY_CASE = "creation.split-key.request-response.v1"
 CREATE_FAILURE_MESSAGE_CASE = "creation.result-message-on-failure.v1"
 CODEC_LIMITS_CASE = "codec-limits.defaults-and-ranges.v1"
+USAGE_ALLOCATION_CASE = "usage-allocation.guard-accounting.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -677,6 +678,47 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
         )
 
+    def test_usage_allocation_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                USAGE_ALLOCATION_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], USAGE_ALLOCATION_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            consumers["rust"]["test"],
+            "fixture_usage_allocation_guard_matches_shared_accounting_contract",
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.ClientFacadeTlsIntegrationTest."
+            "usageAllocationContextGuardsJavaProtectionExecutionLocally",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_usage_allocation_guard_native_integration.py::"
+            "test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport",
+        )
+
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (
             DISCOVER_VERSIONS_CASE,
@@ -691,6 +733,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             CREATE_SPLIT_KEY_CASE,
             CREATE_FAILURE_MESSAGE_CASE,
             CODEC_LIMITS_CASE,
+            USAGE_ALLOCATION_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
