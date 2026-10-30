@@ -54,9 +54,10 @@ fn message_structure(items: impl IntoIterator<Item = Item>) -> Structure {
 
 #[test]
 fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
-    assert!(SHARED_PARITY_FIXTURE.contains(
-        "\"id\": \"typed-message.ordered-open-values-and-lifetime.v1\""
-    ));
+    assert!(
+        SHARED_PARITY_FIXTURE
+            .contains("\"id\": \"typed-message.ordered-open-values-and-lifetime.v1\"")
+    );
 }
 
 fn assert_structure_tags(
@@ -140,6 +141,32 @@ fn valid_request_message_tree() -> Structure {
     message_structure([
         message_item(REQUEST_HEADER_TAG, Value::structure(header)),
         message_item(BATCH_ITEM_TAG, Value::structure(batch)),
+    ])
+}
+
+fn request_message_with_two_items_and_omitted_defaults() -> Structure {
+    let version = message_structure([
+        message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        message_item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    let header = message_structure([
+        message_item(PROTOCOL_VERSION_TAG, Value::structure(version)),
+        message_item(BATCH_COUNT_TAG, Value::integer(2)),
+    ]);
+    let first = message_structure([
+        message_item(OPERATION_TAG, Value::enumeration(0xF123_4567)),
+        message_item(0x0042_0093, Value::byte_string(vec![0x00, 0xFF, 0x80])),
+        message_item(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+    ]);
+    let second = message_structure([
+        message_item(OPERATION_TAG, Value::enumeration(0x0000_000A)),
+        message_item(0x0042_0093, Value::byte_string(vec![0x02, 0x03, 0x04])),
+        message_item(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+    ]);
+    message_structure([
+        message_item(REQUEST_HEADER_TAG, Value::structure(header)),
+        message_item(BATCH_ITEM_TAG, Value::structure(first)),
+        message_item(BATCH_ITEM_TAG, Value::structure(second)),
     ])
 }
 
@@ -313,6 +340,75 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
     kmipkit_request_header_view_release(header);
     kmipkit_request_message_release(message);
     kmipkit_ttlv_structure_release(original_ttlv);
+}
+
+#[test]
+fn request_header_c_abi_exposes_effective_kmip_defaults_without_materializing_fields() {
+    let structure = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(request_message_with_two_items_and_omitted_defaults()),
+    )
+    .expect("the generic TTLV input handle is allocated");
+    let mut message = ptr::null_mut();
+    let mut validation_error = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_request_message_from_ttlv(structure, &raw mut message, &raw mut validation_error,),
+        SUCCESS
+    );
+    assert!(validation_error.is_null());
+    let mut header = ptr::null_mut();
+    assert_eq!(
+        kmipkit_request_message_header(message, &raw mut header),
+        SUCCESS
+    );
+
+    let mut asynchronous_indicator = u32::MAX;
+    assert_eq!(
+        kmipkit_request_header_view_effective_asynchronous_indicator(
+            header,
+            &raw mut asynchronous_indicator,
+        ),
+        SUCCESS
+    );
+    assert_eq!(asynchronous_indicator, 3);
+
+    let mut attestation_capable = u8::MAX;
+    assert_eq!(
+        kmipkit_request_header_view_effective_attestation_capable_indicator(
+            header,
+            &raw mut attestation_capable,
+        ),
+        SUCCESS
+    );
+    assert_eq!(attestation_capable, 0);
+
+    let mut batch_error_continuation = u32::MAX;
+    assert_eq!(
+        kmipkit_request_header_view_effective_batch_error_continuation_option(
+            header,
+            &raw mut batch_error_continuation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(batch_error_continuation, 2);
+
+    let mut batch_order = u8::MAX;
+    assert_eq!(
+        kmipkit_request_header_view_effective_batch_order_option(header, &raw mut batch_order,),
+        SUCCESS
+    );
+    assert_eq!(batch_order, 1);
+
+    let mut header_ttlv: *mut crate::kmipkit_ttlv_structure_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_request_header_view_ttlv(header, &raw mut header_ttlv),
+        SUCCESS
+    );
+    let _header_tree = assert_structure_tags(header_ttlv, &[PROTOCOL_VERSION_TAG, BATCH_COUNT_TAG]);
+    kmipkit_ttlv_structure_release(header_ttlv);
+    kmipkit_request_header_view_release(header);
+    kmipkit_request_message_release(message);
 }
 
 #[test]
