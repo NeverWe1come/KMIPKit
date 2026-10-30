@@ -17,23 +17,44 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
-DISCOVER_VERSIONS_TESTS = {
-    "rust": (
-        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
-        "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
-    ),
-    "c": (
-        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-        "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
-    ),
-    "java": (
-        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
-        "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
-    ),
-    "python": (
-        "bindings/python/tests/test_client.py",
-        "test_discover_versions_response_mapping_matches_shared_fixture",
-    ),
+MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
+CASE_TESTS = {
+    DISCOVER_VERSIONS_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+            "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
+        ),
+        "python": (
+            "bindings/python/tests/test_client.py",
+            "test_discover_versions_response_mapping_matches_shared_fixture",
+        ),
+    },
+    MIXED_BATCH_OUTCOMES_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+            "execute_lifecycle_tests::ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
+        ),
+        "python": (
+            "bindings/python/tests/test_client.py",
+            "test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once",
+        ),
+    },
 }
 
 
@@ -42,7 +63,7 @@ class ParityRunnerError(ValueError):
 
 
 def _fixture_case(case_id: str) -> dict[str, Any]:
-    if case_id != DISCOVER_VERSIONS_CASE:
+    if case_id not in CASE_TESTS:
         raise ParityRunnerError(f"unsupported T071 parity case: {case_id}")
 
     try:
@@ -59,8 +80,12 @@ def _fixture_case(case_id: str) -> dict[str, Any]:
     raise ParityRunnerError(f"shared parity fixture does not contain {case_id}")
 
 
-def _consumer_command(language: str, consumer: dict[str, Any]) -> dict[str, Any]:
-    expected_path, expected_test = DISCOVER_VERSIONS_TESTS[language]
+def _consumer_command(
+    language: str,
+    consumer: dict[str, Any],
+    expected_path: str,
+    expected_test: str,
+) -> dict[str, Any]:
     test_file = expected_path
     test_name = expected_test
     working_directory = "."
@@ -123,6 +148,7 @@ def _consumer_command(language: str, consumer: dict[str, Any]) -> dict[str, Any]
         if consumer.get("testFile") != expected_path or consumer.get("test") != expected_test:
             raise ParityRunnerError(f"{language} fixture consumer does not match its reviewed test")
         if language == "rust":
+            test_name = expected_test.rsplit("::", maxsplit=1)[-1]
             command = ["cargo", "test", "-p", "kmipkit-client", "--lib", test_name]
         else:
             command = [
@@ -147,7 +173,8 @@ def _consumer_command(language: str, consumer: dict[str, Any]) -> dict[str, Any]
 def build_plan(case_id: str) -> dict[str, Any]:
     case = _fixture_case(case_id)
     consumers = case.get("consumerTests")
-    if not isinstance(consumers, dict) or set(consumers) != set(DISCOVER_VERSIONS_TESTS):
+    case_tests = CASE_TESTS[case_id]
+    if not isinstance(consumers, dict) or set(consumers) != set(case_tests):
         raise ParityRunnerError("fixture must declare one consumer for each supported language")
 
     planned_consumers = []
@@ -155,7 +182,10 @@ def build_plan(case_id: str) -> dict[str, Any]:
         consumer = consumers[language]
         if not isinstance(consumer, dict) or consumer.get("status") != "available":
             raise ParityRunnerError(f"{language} fixture consumer is not available")
-        planned_consumers.append(_consumer_command(language, consumer))
+        expected_path, expected_test = case_tests[language]
+        planned_consumers.append(
+            _consumer_command(language, consumer, expected_path, expected_test)
+        )
 
     return {"caseId": case_id, "consumers": planned_consumers}
 
