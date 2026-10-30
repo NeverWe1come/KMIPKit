@@ -23,6 +23,7 @@ REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 API_LEVELS_CASE = "api-levels.shared.v1"
 OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
+EXTENSION_RECOGNITION_CASE = "extensions.recognition-and-generic-preservation.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -31,6 +32,10 @@ PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
         "test_failure_and_default_diagnostics_redact_secret_fixture_values",
+    ): "ExtensionRegistryTests",
+    (
+        "bindings/python/tests/test_extension_registry.py",
+        "test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved",
     ): "ExtensionRegistryTests",
 }
 CASE_TESTS = {
@@ -140,6 +145,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_shared_parity_fixtures.py",
             "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle",
+        ),
+    },
+    EXTENSION_RECOGNITION_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/unit/extension_registry_tests.rs",
+            "every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+            "org.kmipkit.ExtensionRegistryTest#everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders",
+        ),
+        "python": (
+            "bindings/python/tests/test_extension_registry.py",
+            "test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved",
         ),
     },
 }

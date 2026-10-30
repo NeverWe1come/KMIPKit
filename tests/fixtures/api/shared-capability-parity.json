@@ -573,7 +573,19 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/extension_registry.c",
-          "test": "test_inbound_inspection_and_generic_preservation"
+          "test": "test_inbound_inspection_and_generic_preservation",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process",
+              "assertions": [
+                "recognized-and-unknown-cases",
+                "both-registry-orders",
+                "generic-payload-preserved"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
