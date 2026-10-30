@@ -149,7 +149,8 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
     let HandleValue::Structure(original_tree) = &original_ttlv_handle.value else {
         panic!("the message TTLV accessor returns a Structure");
     };
-    let root_items = original_tree.view().children();
+    let original_view = original_tree.view();
+    let root_items = original_view.children();
     assert_eq!(
         root_items
             .iter()
@@ -158,10 +159,12 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
         [REQUEST_HEADER_TAG, BATCH_ITEM_TAG]
     );
     let raw_operation = root_items[1].with_value(|batch| match batch {
-        ValueView::Structure(batch) => batch.children()[0].with_value(|operation| match operation {
-            ValueView::Enumeration(raw) => Some(*raw),
-            _ => None,
-        }),
+        ValueView::Structure(batch) => {
+            batch.children()[0].with_value(|operation| match operation {
+                ValueView::Enumeration(raw) => Some(*raw),
+                _ => None,
+            })
+        }
         _ => None,
     });
     assert_eq!(raw_operation, Some(0xF123_4567));

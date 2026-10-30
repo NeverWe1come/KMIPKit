@@ -6708,6 +6708,27 @@ pub extern "C" fn kmipkit_request_message_from_ttlv(
     })
 }
 
+/// Returns an owned copy of the validated message's original ordered TTLV tree.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_ttlv(
+    message: *mut kmipkit_request_message_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let message = read_handle!(message, RequestMessage);
+        let HandleValue::RequestMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(message.with_ttlv(|tree| clone_structure_view(&tree)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        SUCCESS
+    })
+}
+
 /// Returns a retained typed view of the validated Request Header.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_message_header(
