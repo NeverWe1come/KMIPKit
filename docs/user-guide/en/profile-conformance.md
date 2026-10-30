@@ -1,10 +1,9 @@
 # KMIP 2.1 client profile evidence
 
 This guide explains how to read KMIPKit's client profile evidence and use its
-explicit profile-validation entry point. Baseline Client runtime selection is
-available for its 294 mapped requirements, including caller-state rules for
-KMIP Specification v2.1 §§4.38 and 4.59. This enables typed rule validation;
-it does not establish official conformance evidence or server acceptance.
+explicit profile-validation entry point. Baseline Client runtime selection
+remains unavailable while evidence is incomplete. The per-exchange API rejects
+Baseline before transport; no profile-support or conformance claim is made.
 
 ## Explicit per-exchange selection
 
@@ -190,7 +189,7 @@ evidence state, linked tests, and fixture availability as separate facts:
   to establish. It does not turn the profile into a runtime option.
 - **Runtime validation** requires a complete typed mapping and an
   executable, keyword-appropriate test for every applicable requirement.
-  Baseline Client currently meets this runtime gate; its official evidence
+  Baseline Client currently fails this runtime gate while its official evidence
   status remains incomplete.
 - **Evidence state** reflects the catalog's recorded evidence. A local report
   cannot upgrade it, and stale `evidence_complete` data is treated as

@@ -2,10 +2,9 @@
 
 Esta guía explica cómo leer la evidencia de los perfiles cliente de KMIPKit y
 usar su punto de entrada explícito de validación. La selección runtime de
-Baseline Client está disponible para sus 294 requisitos mapeados, incluidas las
-reglas que dependen del estado del llamador en KMIP Specification v2.1 §§4.38
-y 4.59. Esto habilita la validación de reglas tipadas, pero no demuestra la
-evidencia oficial de conformidad ni la aceptación del servidor.
+Baseline Client no está disponible mientras su evidencia siga incompleta. La
+API por intercambio rechaza Baseline antes del transporte; no se afirma soporte
+ni conformidad del perfil.
 
 ## Selección explícita por intercambio
 
@@ -94,10 +93,9 @@ aportar un estado fiable.
 KMIP Specification v2.1 §14.1 exige que un cliente cumpla uno o más perfiles
 cliente. KMIPKit registra Baseline Client como objetivo inicial de 1.0 para el
 trabajo de evidencia. Esa selección es una decisión de planificación. La
-validación runtime está disponible para los 294 requisitos mapeados de Baseline
-Client. Esto habilita comprobaciones locales de reglas, pero no demuestra el
-soporte del perfil ni satisface por sí solo el requisito de conformidad del
-estándar.
+selección runtime de Baseline Client no está disponible mientras la evidencia
+siga incompleta. La API por intercambio rechaza esa selección antes de iniciar
+el transporte; no se afirma soporte ni conformidad del perfil.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales vinculados a Baseline y Shared Knowledge Link están fijados.
@@ -200,8 +198,8 @@ catálogo, las pruebas enlazadas y la disponibilidad de fixtures:
   pretende establecer. No lo convierte en una opción de tiempo de ejecución.
 - **Validación en tiempo de ejecución** requiere una regla tipada completa y
   una prueba ejecutable y adecuada a la categoría de cada requisito aplicable.
-  Baseline Client ya cumple este control runtime; su estado de evidencia
-  oficial sigue incompleto.
+  Baseline Client no cumple actualmente este control mientras su evidencia
+  oficial siga incompleta.
 - **Estado de evidencia** refleja la evidencia registrada en el catálogo. Un
   informe local no puede mejorarlo; los datos obsoletos `evidence_complete`
   se tratan como incompletos.
