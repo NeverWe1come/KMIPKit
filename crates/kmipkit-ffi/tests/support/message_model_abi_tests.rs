@@ -178,11 +178,7 @@ fn validation_error_exposes_optional_numeric_indexes_without_payload() {
     let mut validation_error = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_request_message_from_ttlv(
-            structure,
-            &raw mut message,
-            &raw mut validation_error,
-        ),
+        kmipkit_request_message_from_ttlv(structure, &raw mut message, &raw mut validation_error,),
         ERROR_PROTOCOL
     );
     assert!(message.is_null());
@@ -215,4 +211,18 @@ fn validation_error_exposes_optional_numeric_indexes_without_payload() {
     assert_eq!(field_index, 0);
 
     kmipkit_message_validation_error_release(validation_error);
+}
+
+#[test]
+fn ffi_output_region_validator_rejects_overlapping_slots() {
+    let mut output = 0_u64;
+    let shared = (&raw mut output).cast::<u8>().cast_const();
+
+    assert_eq!(
+        validate_output_regions(&[
+            (shared, std::mem::size_of::<u64>()),
+            (shared, std::mem::size_of::<u32>()),
+        ]),
+        Err(ERROR_INVALID_INPUT)
+    );
 }
