@@ -2716,6 +2716,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::Certify",
     ),
     (
+        "rust-observed-4d05f9d9fc8377cd7a6f",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Check",
+    ),
+    (
         "rust-observed-a60dee53f11a9b109b34",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Export",
@@ -2831,6 +2836,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::delegated_login",
     ),
     (
+        "rust-observed-12029d442c5430d1f445",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::get_usage_allocation",
+    ),
+    (
         "rust-observed-1ff86025ebef596ee4e8",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::login",
@@ -2839,6 +2849,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-e01bf02e5dfad7c0aed5",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::logout",
+    ),
+    (
+        "rust-observed-1966bfc9acb5c4e64ccb",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::obtain_lease",
     ),
     (
         "rust-observed-113a4d9a85f7c8e5b5f1",
