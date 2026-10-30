@@ -50,7 +50,7 @@ _VENDOR_EXTENSION = 0x0042_009C
 
 
 class MessageValidationError(errors.KmipKitError):
-    """A redacted structural message error with stable numeric metadata."""
+    """A redacted message error containing only a stable kind and optional indexes."""
 
     category = "message_validation"
 
@@ -348,11 +348,13 @@ class RequestMessage(_MessageHandle):
 
     @property
     def batch_item_count(self) -> int:
+        """Return the number of validated batch items in source order."""
         return _scalar(
             "uint64_t", lib.kmipkit_request_message_batch_item_count, self._pointer()
         )
 
     def header(self) -> RequestHeaderView:
+        """Return an owned, closeable view of the validated Request Header."""
         handle = _out_handle(
             "kmipkit_request_header_view_t",
             lib.kmipkit_request_message_header,
@@ -361,6 +363,7 @@ class RequestMessage(_MessageHandle):
         return _wrap_handle(RequestHeaderView, handle, owner=self)
 
     def batch_item_at(self, index: int) -> RequestBatchItemView:
+        """Return an owned view of the indexed request batch item."""
         index = _checked_index(index)
         handle = _out_handle(
             "kmipkit_request_batch_item_view_t",
@@ -395,11 +398,13 @@ class ResponseMessage(_MessageHandle):
 
     @property
     def batch_item_count(self) -> int:
+        """Return the number of validated batch items in source order."""
         return _scalar(
             "uint64_t", lib.kmipkit_response_message_batch_item_count, self._pointer()
         )
 
     def header(self) -> ResponseHeaderView:
+        """Return an owned, closeable view of the validated Response Header."""
         handle = _out_handle(
             "kmipkit_response_header_view_t",
             lib.kmipkit_response_message_header,
@@ -408,6 +413,7 @@ class ResponseMessage(_MessageHandle):
         return _wrap_handle(ResponseHeaderView, handle, owner=self)
 
     def batch_item_at(self, index: int) -> ResponseBatchItemView:
+        """Return an owned view of the indexed response batch item."""
         index = _checked_index(index)
         handle = _out_handle(
             "kmipkit_response_batch_item_view_t",
@@ -439,6 +445,7 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def protocol_version(self) -> ProtocolVersion:
+        """Return the raw signed protocol version pair."""
         version = ffi.new("kmipkit_protocol_version_v1_t *")
         _status(
             _call(
@@ -452,21 +459,25 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def batch_count(self) -> int:
+        """Return the validated positive Batch Count."""
         return _scalar(
             "int32_t", lib.kmipkit_request_header_view_batch_count, self._pointer()
         )
 
     def to_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the complete header in source order."""
         return _copy_ttlv(lib.kmipkit_request_header_view_ttlv, self)
 
     @property
     def maximum_response_size(self) -> int | None:
+        """Return the optional Maximum Response Size integer."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv, self, _MAXIMUM_RESPONSE_SIZE, int
         )
 
     @property
     def client_correlation_value(self) -> str | None:
+        """Return the optional Client Correlation Value."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
@@ -476,6 +487,7 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def asynchronous_indicator(self) -> int | None:
+        """Return the optional raw Asynchronous Indicator Enumeration."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
@@ -485,11 +497,13 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def effective_asynchronous_indicator(self) -> int:
+        """Return the raw indicator or its OASIS default, Prohibited (`3`)."""
         value = self.asynchronous_indicator
         return 3 if value is None else int(value)
 
     @property
     def attestation_capable_indicator(self) -> bool | None:
+        """Return the optional Attestation Capable Indicator."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
@@ -499,11 +513,13 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def effective_attestation_capable_indicator(self) -> bool:
+        """Return the indicator or its OASIS default, `False`."""
         value = self.attestation_capable_indicator
         return False if value is None else bool(value)
 
     @property
     def attestation_types(self) -> tuple[int, ...]:
+        """Return raw Attestation Type Enumeration values in source order."""
         return tuple(
             int(value)
             for value in _typed_field_values(
@@ -513,6 +529,7 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def authentication(self) -> ttlv.TtlvStructureView | None:
+        """Return the optional Authentication Structure as a closeable TTLV view."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
@@ -522,6 +539,7 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def batch_error_continuation_option(self) -> int | None:
+        """Return the optional raw Batch Error Continuation Enumeration."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
@@ -531,22 +549,26 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def effective_batch_error_continuation_option(self) -> int:
+        """Return the option or its OASIS default, Stop (`2`)."""
         value = self.batch_error_continuation_option
         return 2 if value is None else int(value)
 
     @property
     def batch_order_option(self) -> bool | None:
+        """Return the optional Batch Order Option value."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv, self, _BATCH_ORDER_OPTION, bool
         )
 
     @property
     def effective_batch_order_option(self) -> bool:
+        """Return the option or its OASIS default, `True`."""
         value = self.batch_order_option
         return True if value is None else bool(value)
 
     @property
     def time_stamp(self) -> int | None:
+        """Return the optional Request Header Date-Time value unchanged."""
         return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv, self, _TIME_STAMP, int
         )
@@ -559,6 +581,7 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def protocol_version(self) -> ProtocolVersion:
+        """Return the raw signed protocol version pair."""
         version = ffi.new("kmipkit_protocol_version_v1_t *")
         _status(
             _call(
@@ -572,21 +595,25 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def time_stamp(self) -> int:
+        """Return the required response Date-Time value unchanged."""
         return _scalar(
             "int64_t", lib.kmipkit_response_header_view_time_stamp, self._pointer()
         )
 
     @property
     def batch_count(self) -> int:
+        """Return the validated positive Batch Count."""
         return _scalar(
             "int32_t", lib.kmipkit_response_header_view_batch_count, self._pointer()
         )
 
     def to_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the complete header in source order."""
         return _copy_ttlv(lib.kmipkit_response_header_view_ttlv, self)
 
     @property
     def nonce(self) -> ttlv.TtlvStructureView | None:
+        """Return the optional Nonce Structure as a closeable TTLV view."""
         return _typed_field_value(
             lib.kmipkit_response_header_view_ttlv,
             self,
@@ -596,6 +623,7 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def server_hashed_password(self) -> bytes | None:
+        """Return an immutable caller-owned copy that Python cannot erase deterministically."""
         return _typed_field_value(
             lib.kmipkit_response_header_view_ttlv,
             self,
@@ -605,6 +633,7 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def attestation_types(self) -> tuple[int, ...]:
+        """Return raw Attestation Type Enumeration values in source order."""
         return tuple(
             int(value)
             for value in _typed_field_values(
@@ -614,6 +643,7 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def client_correlation_value(self) -> str | None:
+        """Return the optional Client Correlation Value."""
         return _typed_field_value(
             lib.kmipkit_response_header_view_ttlv,
             self,
@@ -623,6 +653,7 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def server_correlation_value(self) -> str | None:
+        """Return the optional Server Correlation Value."""
         return _typed_field_value(
             lib.kmipkit_response_header_view_ttlv,
             self,
@@ -638,18 +669,21 @@ class RequestBatchItemView(_MessageHandle):
 
     @property
     def operation(self) -> int | None:
+        """Return the optional raw Operation Enumeration."""
         return _optional_scalar_pair(
             lib.kmipkit_request_batch_item_view_operation, self, "uint32_t"
         )
 
     @property
     def ephemeral(self) -> bool | None:
+        """Return the optional Ephemeral Boolean."""
         return _typed_field_value(
             lib.kmipkit_request_batch_item_view_ttlv, self, _EPHEMERAL, bool
         )
 
     @property
     def unique_batch_item_id(self) -> bytes | None:
+        """Return a caller-owned copy of the optional per-item identifier."""
         return _typed_field_value(
             lib.kmipkit_request_batch_item_view_ttlv,
             self,
@@ -659,6 +693,7 @@ class RequestBatchItemView(_MessageHandle):
 
     @property
     def request_payload(self) -> ttlv.TtlvStructureView | None:
+        """Return the Request Payload as a closeable generic TTLV view."""
         return _typed_field_value(
             lib.kmipkit_request_batch_item_view_ttlv,
             self,
@@ -667,15 +702,18 @@ class RequestBatchItemView(_MessageHandle):
         )
 
     def to_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the complete batch item in source order."""
         return _copy_ttlv(lib.kmipkit_request_batch_item_view_ttlv, self)
 
     @property
     def extension_count(self) -> int:
+        """Return the number of Message Extensions in this item."""
         return _scalar(
             "uint64_t", lib.kmipkit_request_batch_item_extension_count, self._pointer()
         )
 
     def extension_at(self, index: int) -> MessageExtensionView:
+        """Return an owned view of the indexed Message Extension."""
         index = _checked_index(index)
         handle = _out_handle(
             "kmipkit_message_extension_view_t",
@@ -693,12 +731,14 @@ class ResponseBatchItemView(_MessageHandle):
 
     @property
     def operation(self) -> int | None:
+        """Return the optional raw Operation Enumeration."""
         return _optional_scalar_pair(
             lib.kmipkit_response_batch_item_view_operation, self, "uint32_t"
         )
 
     @property
     def unique_batch_item_id(self) -> bytes | None:
+        """Return a caller-owned copy of the optional echoed per-item identifier."""
         return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv,
             self,
@@ -708,24 +748,28 @@ class ResponseBatchItemView(_MessageHandle):
 
     @property
     def result_status(self) -> int | None:
+        """Return the optional raw Result Status Enumeration."""
         return _optional_scalar_pair(
             lib.kmipkit_response_batch_item_view_result_status, self, "uint32_t"
         )
 
     @property
     def result_reason(self) -> int | None:
+        """Return the optional raw Result Reason Enumeration."""
         return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_REASON, int
         )
 
     @property
     def result_message(self) -> str | None:
+        """Return the optional Result Message text."""
         return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_MESSAGE, str
         )
 
     @property
     def asynchronous_correlation_value(self) -> bytes | None:
+        """Return a caller-owned copy of the optional asynchronous correlation bytes."""
         return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv,
             self,
@@ -735,6 +779,7 @@ class ResponseBatchItemView(_MessageHandle):
 
     @property
     def response_payload(self) -> ttlv.TtlvStructureView | None:
+        """Return the Response Payload as a closeable generic TTLV view."""
         return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv,
             self,
@@ -743,15 +788,18 @@ class ResponseBatchItemView(_MessageHandle):
         )
 
     def to_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the complete batch item in source order."""
         return _copy_ttlv(lib.kmipkit_response_batch_item_view_ttlv, self)
 
     @property
     def extension_count(self) -> int:
+        """Return the number of Message Extensions in this item."""
         return _scalar(
             "uint64_t", lib.kmipkit_response_batch_item_extension_count, self._pointer()
         )
 
     def extension_at(self, index: int) -> MessageExtensionView:
+        """Return an owned view of the indexed Message Extension."""
         index = _checked_index(index)
         handle = _out_handle(
             "kmipkit_message_extension_view_t",
@@ -768,22 +816,26 @@ class MessageExtensionView(_MessageHandle):
     _release_name = "kmipkit_message_extension_view_release"
 
     def to_ttlv(self) -> ttlv.Structure:
+        """Return an owned copy of the complete extension in source order."""
         return _copy_ttlv(lib.kmipkit_message_extension_view_ttlv, self)
 
     @property
     def vendor_identification(self) -> str | None:
+        """Return the Vendor Identification text."""
         return _typed_field_value(
             lib.kmipkit_message_extension_view_ttlv, self, _VENDOR_IDENTIFICATION, str
         )
 
     @property
     def criticality_indicator(self) -> bool | None:
+        """Return the Criticality Indicator Boolean."""
         return _typed_field_value(
             lib.kmipkit_message_extension_view_ttlv, self, _CRITICALITY_INDICATOR, bool
         )
 
     @property
     def vendor_extension(self) -> ttlv.TtlvStructureView | None:
+        """Return the opaque Vendor Extension as a closeable TTLV view."""
         return _typed_field_value(
             lib.kmipkit_message_extension_view_ttlv,
             self,

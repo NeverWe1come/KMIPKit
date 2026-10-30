@@ -6807,7 +6807,7 @@ T103 is complete. `ProtocolVersion` in Python now rejects booleans and non-integ
 | Message-model standard-trait inventory | `0a6cc5e1f`, `c592bf4d8` | `58899fdb3` | `58899fdb3` | Each of 92 standard-trait paths has an exact exclusion with an approved owner and reason. Direct typed message APIs remain open convergence work. |
 | Manifest and export reconciliation | `c592bf4d8` | `58899fdb3` | `58899fdb3` | `test_manifest_v2` passed 80/80; generator verified 12 files; Rust audit matched 9,680/9,680 declarations and 774 exclusions with zero missing, unobserved, kind, condition, or issue counts. |
 
-T090 remains incomplete: the audit found 74 direct typed request/response message, header, batch-item, extension-view, and validation-error declarations without equivalent C, Java, and Python APIs. They are assigned to T104–T107 in the convergence tasks; the typed model work must preserve unknown/raw values, ordered fields, safe lifetimes, payload-free errors, and four-language behavior before T090 can close.
+T090 remains incomplete: the audit found 74 direct typed request/response message, header, batch-item, extension-view, and validation-error declarations without equivalent C, Java, and Python APIs. T105/T106 now provide the Java and Python views. T104 public C mapping and T107 cross-language fixtures remain open; all work must preserve unknown/raw values, ordered fields, safe lifetimes, and payload-free errors before T090 can close.
 
 ### T104 typed C message model (in progress, 2026-10-30)
 
@@ -6821,4 +6821,39 @@ The implementation adds Rust-backed opaque C handles for validated request and r
 | Red/Green — compiled C consumer | `1eb1bf391` / `a5a6c804d` | `cargo test --locked --offline --all-features -p kmipkit-ffi --lib message_model_abi_tests` | Pass: 7 tests, including compilation and execution of `bindings/c/tests/message_model_abi_consumer.c`. |
 | Refactor/evidence | `ff9c06d84`, this documentation commit | `cargo clippy --locked --offline --all-features --no-deps -p kmipkit-ffi --all-targets -- -D warnings`; `python -B tools/api_manifest/generate.py --check`; `python -B -m unittest discover -s tools/api_manifest/tests -p test_manifest_v2.py -v`; same command with `test_binding_exports.py`; `git diff --check` | Pass: Clippy; 80 manifest tests; 46 binding-export tests; all 12 generated outputs current; clean diff. Windows emitted existing AWS-LC compiler-feature/NASM probe warnings, but the requested Rust commands succeeded. |
 
-This is a partial implementation, not T104 completion. The C symbols are recorded as blocked in the source manifest and are not exposed as ready public declarations until the Java and Python wrappers and four-language parity work in T105–T107 are complete. T104–T107 and T090 remain open; this evidence makes no conformance or profile-support claim.
+This is a partial implementation, not T104 completion. The C symbols are recorded as blocked in the source manifest and are not exposed as ready public declarations until T107 shared parity evidence is complete. T104 and T107 remain open; this evidence makes no conformance or profile-support claim.
+
+### T105 Java and JNI typed message views (2026-10-30)
+
+The Java 17 API now wraps validated request/response messages and their headers, batch items, and extensions with `AutoCloseable` ownership. Typed getters preserve raw Enumeration values, expose optional and effective request-header defaults, return ordered generic TTLV copies, and keep message parsing separate from execution. Server Hashed Password is copied for the caller and the temporary native/JNI copy is cleared. Validation exceptions contain only the stable numeric kind and optional indexes.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — initial message model | `a2fb3ded6` | `gradlew.bat test --tests org.kmipkit.message.MessageModelTest` | Expected failure: the typed request/response message model was missing. |
+| Green/Refactor — initial wrappers | `5d1a7f19b` / `987a0ca54` | Focused and full Gradle test suites | Pass: JNI wrappers, owner-retaining views, and initial message tests. |
+| Red — complete typed field parity | `f1e94da5d` | `gradlew.bat test --tests org.kmipkit.message.MessageModelTest` | Expected failure at `compileTestJava`: 22 expected accessor symbols were missing. |
+| Green — full typed fields | `273a32255` | Focused and full Gradle test suites | Pass: headers, batch-item fields, extension fields, raw values, and byte/structure accessors are available. |
+| Refactor/evidence | `f10c655ac` | `gradlew.bat test --tests org.kmipkit.message.MessageModelTest`; `gradlew.bat test` | Pass: full suite after the cleanup; Java native integration included. |
+
+### T106 Python and CFFI typed message views (2026-10-30)
+
+Python 3.12 now exposes context-managed request/response handles, owner-retaining header/batch/extension views, complete ordered TTLV copies, typed fields and defaults, raw enum values, and payload-free validation errors. The implementation consumes the generic input structure consistently with the C ABI contract and releases native handles deterministically. Field accessors verify their TTLV materialization type before returning their annotated value.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — typed message contract | `17e2af717` | Focused Python typed-message tests | Expected failure: `kmipkit.messages` and its typed message wrappers were absent. |
+| Red — raw Server Hashed Password | `dae33e909` | `pytest ...::test_response_header_preserves_server_hashed_password_bytes` | Expected failure: the validated ByteString was not exposed as bytes. |
+| Green — typed CFFI wrappers | `332678392` | Full Python binding tests | Pass: message types, field accessors, defaults, views, ownership, and redaction; raw password bytes remain available. |
+| Refactor/evidence | `451a14139`, `392c2e37a` | Ruff format/check; Pyright on `messages.py`; full Python tests | Pass: Ruff and Pyright clean; 830 tests and 100 subtests pass. The Windows full-suite run used a copied native DLL so the wheel-build test could rebuild the original DLL without the pytest process holding it open. |
+
+### T104 blocked-export inventory and FFI boundary correction (2026-10-30)
+
+The first hosted run after the release-base update, `41092247236`, failed the FFI metadata test on every Rust platform. Its exact cause was a stale hard-coded blocked-symbol inventory (the T104 message ABI added 38 intentionally blocked declarations) and four helper-backed exported functions whose C entrypoints did not begin inside `ffi_entrypoint`. The latter were `kmipkit_request_batch_item_extension_at`, `kmipkit_response_batch_item_extension_at`, `kmipkit_message_validation_error_structure_index`, and `kmipkit_message_validation_error_field_index`.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — reconcile blocked C symbol set | `278923561` | `cargo test --locked --offline --all-features -p kmipkit-ffi --lib every_exported_c_function_starts_inside_the_shared_panic_boundary` | Expected failure moved past the exact 39-symbol blocked set check and identified that the four helper-backed exports still lacked a direct panic boundary. |
+| Green — put boundary at each exported entrypoint | `6bd887835` | Same metadata test; full FFI library suite | Pass: every Rust C export enters the shared panic boundary first; all 314 FFI tests pass. |
+| Refactor/evidence | `605b41ee1` | `cargo fmt --all --check`; `cargo clippy --locked --offline --all-features --no-deps -p kmipkit-ffi --all-targets -- -D warnings`; `cargo test --locked --offline --all-features -p kmipkit-ffi --lib`; `git diff --check` | Pass: Clippy, formatting, diff check, and 314 FFI tests. Hosted CI must be rerun on the updated PR head. |
+
+T105 and T106 are implemented, but T104/T107 remain open until the shared Rust/C/Java/Python fixture inventory and consumer assertions cover the same message cases, documentation and API traceability are updated, and the C manifest declarations can be reviewed for promotion. These results make no claim of OASIS message conformance, profile support, interoperability, or certification.
