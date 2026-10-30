@@ -1480,7 +1480,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
         self.assertEqual("kmipkit::ClientRequest::Check", declaration["exportName"])
-        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("verified", declaration["declarationState"])
         self.assertEqual("KMIPKIT-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
@@ -1520,7 +1520,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
         self.assertEqual("kmipkit::ClientRequest::obtain_lease", declaration["exportName"])
-        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("verified", declaration["declarationState"])
         self.assertEqual(
             "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", declaration["capabilityId"]
         )
@@ -1564,7 +1564,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(
             "kmipkit::ClientRequest::get_usage_allocation", declaration["exportName"]
         )
-        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("verified", declaration["declarationState"])
         self.assertEqual(
             "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", declaration["capabilityId"]
         )
@@ -1631,7 +1631,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(export=export_name):
                 declaration = declarations[declaration_id]
                 self.assertEqual(export_name, declaration["exportName"])
-                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("verified", declaration["declarationState"])
                 self.assertEqual(operation_id, declaration["capabilityId"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(
