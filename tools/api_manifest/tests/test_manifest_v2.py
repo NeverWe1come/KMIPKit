@@ -1370,6 +1370,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 exclusion["approvalSource"]["path"],
                 "specs/005-ttlv-wire-codec/spec.md",
             )
+            self.assertEqual(
+                exclusion["approvalSource"]["evidence"],
+                "**Created**: 2026-10-04",
+            )
+
+    def test_ttlv_decoder_python_error_properties_are_inventoried_as_fields(self) -> None:
+        expected = {
+            "kmipkit.errors.TtlvDecodeError.kind",
+            "kmipkit.errors.TtlvDecodeError.byte_offset",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"] in expected
+        }
+        self.assertEqual(set(declarations), expected)
+        self.assertTrue(all(row["kind"] == "field" for row in declarations.values()))
 
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
