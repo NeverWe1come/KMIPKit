@@ -966,6 +966,7 @@ def _validate_public_declarations(
             capability,
             package_id,
             package_languages,
+            declarations,
         )
         state = declaration.get("declarationState")
         if state == "authorized_wip":
@@ -1017,6 +1018,7 @@ def _validate_declaration_parity_scope(
     capability: dict[str, Any] | None,
     package_id: Any,
     package_languages: dict[Any, Any],
+    declarations: list[dict[str, Any]],
 ) -> Any:
     parity_scope = declaration.get("parityScope")
     if capability is not None and parity_scope != capability.get("parityScope"):
@@ -1032,10 +1034,58 @@ def _validate_declaration_parity_scope(
             and declaration.get("approvalSource") == capability.get("acceptedEvidence")
         )
         if not accepted_transport_exception:
+            accepted_transport_exception = _is_accepted_transport_root_alias(
+                declaration,
+                capability_id,
+                capability,
+                package_id,
+                package_languages,
+                declarations,
+            )
+        if not accepted_transport_exception:
             raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
     elif parity_scope != "four-language":
         raise ManifestError("public declaration has an unsupported parity scope")
     return parity_scope
+
+
+def _is_accepted_transport_root_alias(
+    declaration: dict[str, Any],
+    capability_id: Any,
+    capability: dict[str, Any] | None,
+    package_id: Any,
+    package_languages: dict[Any, Any],
+    declarations: list[dict[str, Any]],
+) -> bool:
+    """Accept a direct top-level reexport of an accepted Rust-only transport declaration."""
+    export_name = declaration.get("exportName")
+    mappings = declaration.get("languageMappings", {})
+    rust_mapping = mappings.get("rust", {}) if isinstance(mappings, dict) else {}
+    if (
+        package_id != "rust-kmipkit"
+        or package_languages.get(package_id) != "rust"
+        or capability_id != "rust_transport_exchange"
+        or capability is None
+        or capability.get("ownerAdrId") != "ADR-0014"
+        or capability.get("capabilityState") not in {"declared", "verified"}
+        or declaration.get("approvalSource") != capability.get("acceptedEvidence")
+        or not isinstance(export_name, str)
+        or not export_name.startswith("kmipkit::")
+        or rust_mapping != {"packageId": "rust-kmipkit", "name": export_name}
+    ):
+        return False
+
+    canonical_name = "kmipkit_transport::" + export_name.removeprefix("kmipkit::")
+    return any(
+        canonical.get("packageId") == "rust-kmipkit-transport"
+        and canonical.get("exportName") == canonical_name
+        and canonical.get("capabilityId") == capability_id
+        and canonical.get("parityScope") == "rust-only-adr"
+        and canonical.get("declarationState") in {"declared", "verified"}
+        and canonical.get("approvalSource") == capability.get("acceptedEvidence")
+        and canonical.get("requirementIds") == declaration.get("requirementIds")
+        for canonical in declarations
+    )
 
 
 def _validate_public_declaration_approval(

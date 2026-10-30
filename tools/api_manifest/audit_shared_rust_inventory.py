@@ -62,6 +62,23 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportError::new",
     "kmipkit_transport::TransportError::delivery_state",
     "kmipkit_transport::TransportError::cause_category",
+    "kmipkit::RequestDeliveryState",
+    "kmipkit::RequestDeliveryState::NotSent",
+    "kmipkit::RequestDeliveryState::PossiblySent",
+    "kmipkit::RequestDeliveryState::ResponseStarted",
+    "kmipkit::RequestDeliveryState::not_sent",
+    "kmipkit::RequestDeliveryState::response_bytes_received",
+    "kmipkit::RequestDeliveryState::write_started",
+    "kmipkit::TransportCauseCategory",
+    "kmipkit::TransportCauseCategory::Http",
+    "kmipkit::TransportCauseCategory::Io",
+    "kmipkit::TransportCauseCategory::Other",
+    "kmipkit::TransportCauseCategory::Timeout",
+    "kmipkit::TransportCauseCategory::Tls",
+    "kmipkit::TransportError",
+    "kmipkit::TransportError::cause_category",
+    "kmipkit::TransportError::delivery_state",
+    "kmipkit::TransportError::new",
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-30.json")
