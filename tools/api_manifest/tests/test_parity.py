@@ -514,6 +514,8 @@ class PublicApiParityTests(unittest.TestCase):
             declaration["exportName"]
             for declaration in manifest["publicDeclarations"]
             if declaration["declarationId"].startswith("T104:")
+            and declaration["packageId"] == "c-kmipkit"
+            and declaration["kind"] == "c-symbol"
         }
         signature_symbols = {
             declaration["exportName"]
@@ -530,6 +532,18 @@ class PublicApiParityTests(unittest.TestCase):
             "every non-release T104 C export must have a declaration-level signature",
         )
         self.assertTrue(release_symbols <= t104_symbols)
+        declared_c_types = {
+            declaration["exportName"]
+            for declaration in manifest["publicDeclarations"]
+            if declaration.get("packageId") == "c-kmipkit"
+            and declaration.get("kind") == "type"
+            and declaration.get("capabilityId") == "typed_message_model"
+            and declaration.get("declarationState") == "declared"
+        }
+        self.assertTrue(
+            {manifest_types[type_id]["c"]["name"] for type_id in expected_types} <= declared_c_types,
+            "every typed message handle must be inventoried as a ready C type",
+        )
 
         capability = next(
             (
@@ -557,6 +571,30 @@ class PublicApiParityTests(unittest.TestCase):
                     mapped_declarations,
                     "capability mapping must exactly match its public declarations",
                 )
+
+    def test_t104_c_consumer_uses_only_generated_public_message_declarations(self) -> None:
+        consumer = (ROOT / "bindings/c/tests/message_model_abi_consumer.c").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn(
+            "int32_t kmipkit_request_message_from_ttlv(",
+            consumer,
+            "the C consumer must compile T104 calls from the generated public header",
+        )
+        self.assertNotIn("struct kmipkit_request_message_t;", consumer)
+        public_header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        for public_type in (
+            "kmipkit_request_message_t",
+            "kmipkit_request_header_view_t",
+            "kmipkit_request_batch_item_view_t",
+            "kmipkit_response_message_t",
+            "kmipkit_response_header_view_t",
+            "kmipkit_response_batch_item_view_t",
+            "kmipkit_message_extension_view_t",
+            "kmipkit_message_validation_error_t",
+        ):
+            with self.subTest(public_type=public_type):
+                self.assertIn(f"typedef struct {public_type} {public_type};", public_header)
 
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
