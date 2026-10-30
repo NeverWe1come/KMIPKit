@@ -49,7 +49,16 @@ class PolicyControlsEncodingReferencesTests(unittest.TestCase):
         tasks = (FEATURE / "tasks.md").read_text(encoding="utf-8")
         traceability = (FEATURE / "traceability.md").read_text(encoding="utf-8")
         self.assertTrue("Tables 232–234, exact Long Integer count" in tasks)
-        self.assertTrue("Required Long Integer in typed request" in traceability)
+        requirement_row = next(
+            (
+                " ".join(line.split())
+                for line in traceability.splitlines()
+                if "`KMIPKIT-REQ-SPEC-6.1.23-002-001`" in line
+            ),
+            "",
+        )
+        self.assertIn("Long Integer", requirement_row)
+        self.assertIn("typed request", requirement_row.casefold())
 
 
 if __name__ == "__main__":

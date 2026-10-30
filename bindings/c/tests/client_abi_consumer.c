@@ -5134,6 +5134,7 @@ int kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
     int argc, char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
+    static const uint8_t key_identifier_text[] = "mac-key";
     kmipkit_transport_input_v1_t client_certificates[2] = {{0}};
     kmipkit_transport_input_v1_t trust_certificates[1] = {{0}};
     kmipkit_transport_config_v1_t transport_input = {0};
@@ -5148,6 +5149,7 @@ int kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_ttlv_structure_t *error_response = 0;
     kmipkit_ttlv_value_t *mac_data = 0;
+    kmipkit_unique_identifier_v1_t key_identifier = {0};
     char *port_end = 0;
     unsigned long port = 0;
     int result = 1;
@@ -5160,6 +5162,11 @@ int kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
     if (port_end == argv[5] || *port_end != '\0' || port == 0 || port > 65535UL) {
         return 3;
     }
+    key_identifier.struct_size = (uint32_t)sizeof(key_identifier);
+    key_identifier.abi_version = 1;
+    key_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    key_identifier.text_data = key_identifier_text;
+    key_identifier.text_length = (uint64_t)(sizeof(key_identifier_text) - 1);
     client_certificates[0].source_kind = 2;
     client_certificates[0].encoding = 2;
     client_certificates[0].data.data = (const uint8_t *)argv[1];
@@ -5209,7 +5216,7 @@ int kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
     if (kmipkit_client_batch_create(&batch) != 0 ||
         kmipkit_ttlv_value_byte_string(
             limits, request_data, (uint64_t)sizeof(request_data), &mac_data) != 0 ||
-        kmipkit_client_batch_item_mac(0, 0, mac_data, 0, 0, 0, &item) != 0 ||
+        kmipkit_client_batch_item_mac(&key_identifier, 0, mac_data, 0, 0, 0, &item) != 0 ||
         kmipkit_client_batch_item_with_unique_batch_item_id(
             item, (const uint8_t *)"item-0", UINT64_C(6), &identified_item) != 0) {
         goto cleanup;
