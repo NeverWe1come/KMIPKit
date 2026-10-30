@@ -3,12 +3,16 @@ use crate::kmipkit_protocol_version_v1_t;
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
 const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const OPERATION_TAG: u32 = 0x0042_005C;
+const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const RESULT_STATUS_TAG: u32 = 0x0042_007F;
+const ASYNC_CORRELATION_VALUE_TAG: u32 = 0x0042_0006;
 
 fn message_tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -72,6 +76,30 @@ fn request_message_missing_multi_item_id() -> Structure {
         message_item(REQUEST_HEADER_TAG, Value::structure(header)),
         message_item(BATCH_ITEM_TAG, Value::structure(first_batch)),
         message_item(BATCH_ITEM_TAG, Value::structure(second_batch)),
+    ])
+}
+
+fn valid_pending_response_message_tree() -> Structure {
+    let version = message_structure([
+        message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        message_item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    let header = message_structure([
+        message_item(PROTOCOL_VERSION_TAG, Value::structure(version)),
+        message_item(TIME_STAMP_TAG, Value::date_time(5678)),
+        message_item(BATCH_COUNT_TAG, Value::integer(1)),
+    ]);
+    let batch = message_structure([
+        message_item(OPERATION_TAG, Value::enumeration(0xF123_4567)),
+        message_item(RESULT_STATUS_TAG, Value::enumeration(2)),
+        message_item(
+            ASYNC_CORRELATION_VALUE_TAG,
+            Value::byte_string(vec![0x00, 0xFF, 0x80]),
+        ),
+    ]);
+    message_structure([
+        message_item(RESPONSE_HEADER_TAG, Value::structure(header)),
+        message_item(BATCH_ITEM_TAG, Value::structure(batch)),
     ])
 }
 
@@ -275,4 +303,74 @@ fn request_message_constructor_rejects_aliased_output_slots_before_consuming_inp
     assert!(output.is_null());
     assert!(reference_handle(structure, Kind::Structure).is_ok());
     kmipkit_ttlv_structure_release(structure);
+}
+
+#[test]
+fn response_message_handle_exposes_typed_header_and_raw_result_status() {
+    let structure = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(valid_pending_response_message_tree()),
+    )
+    .expect("the generic TTLV input handle is allocated");
+    let mut message: *mut crate::kmipkit_response_message_t = ptr::null_mut();
+    let mut validation_error = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_response_message_from_ttlv(
+            structure,
+            &raw mut message,
+            &raw mut validation_error,
+        ),
+        SUCCESS
+    );
+    assert!(!message.is_null());
+    assert!(validation_error.is_null());
+
+    let mut header: *mut crate::kmipkit_response_header_view_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_response_message_header(message, &raw mut header),
+        SUCCESS
+    );
+    let mut version = kmipkit_protocol_version_v1_t { major: 0, minor: 0 };
+    assert_eq!(
+        kmipkit_response_header_view_protocol_version(header, &raw mut version),
+        SUCCESS
+    );
+    assert_eq!(version, kmipkit_protocol_version_v1_t { major: 2, minor: 1 });
+
+    let mut time_stamp = 0_i64;
+    assert_eq!(
+        kmipkit_response_header_view_time_stamp(header, &raw mut time_stamp),
+        SUCCESS
+    );
+    assert_eq!(time_stamp, 5678);
+
+    let mut item_count = 0_u64;
+    assert_eq!(
+        kmipkit_response_message_batch_item_count(message, &raw mut item_count),
+        SUCCESS
+    );
+    assert_eq!(item_count, 1);
+
+    let mut batch_item: *mut crate::kmipkit_response_batch_item_view_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_response_message_batch_item_at(message, 0, &raw mut batch_item),
+        SUCCESS
+    );
+    let mut has_status = u8::MAX;
+    let mut raw_status = 0_u32;
+    assert_eq!(
+        kmipkit_response_batch_item_view_result_status(
+            batch_item,
+            &raw mut has_status,
+            &raw mut raw_status,
+        ),
+        SUCCESS
+    );
+    assert_eq!(has_status, 1);
+    assert_eq!(raw_status, 2);
+
+    kmipkit_response_batch_item_release(batch_item);
+    kmipkit_response_header_view_release(header);
+    kmipkit_response_message_release(message);
 }
