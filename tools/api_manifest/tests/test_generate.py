@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -562,12 +563,13 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         declaration.pop("cValue")
         declaration.pop("cValueType")
         manifest["publicDeclarations"].append(declaration)
+        generate._validate_schema(manifest, json.loads(SCHEMA.read_text(encoding="utf-8")))
 
         header = generate.render_c_header(manifest)
 
         self.assertIn(
             "int32_t kmipkit_test_public_declaration(uint32_t value, uint32_t * out_value);",
-            header,
+            header.splitlines(),
         )
 
     def test_blocked_c_symbol_signature_is_not_emitted(self) -> None:
@@ -598,6 +600,10 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
         with self.assertRaises(generate.ManifestError):
             generate._validate_references(manifest)
+        self.assertNotIn(
+            "kmipkit_test_blocked_declaration(",
+            generate.render_internal_c_header(manifest),
+        )
 
     def test_declared_c_macro_value_must_fit_its_fixed_width_type(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -1723,6 +1729,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             "bindings/python/pyproject.toml",
             "bindings/java/build.gradle.kts",
             "bindings/java/pom.xml",
+            "bindings/c/package.toml",
         )
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1746,14 +1753,23 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 "rust-kmipkit-transport": "kmipkit-transport",
                 "rust-kmipkit-client": "kmipkit-client",
                 "rust-kmipkit": "kmipkit",
-                # The strict gate intentionally has no C distribution name source.
-                "c-kmipkit": "fixture-c-family",
+                # The strict gate resolves the repository-owned C distribution identity.
+                "c-kmipkit": "kmipkit-c",
                 "java-kmipkit": "org.kmipkit:kmipkit-java",
                 "python-kmipkit": "kmipkit",
             }
             for package in manifest["publicPackages"]:
                 package["versionSource"] = "releaseLine"
                 package["packageName"] = package_names[package["id"]]
+            c_distribution = tomllib.loads(
+                (ROOT / "bindings" / "c" / "package.toml").read_text(encoding="utf-8")
+            )["package"]
+            c_manifest_package = next(
+                package for package in manifest["publicPackages"]
+                if package["id"] == "c-kmipkit"
+            )
+            c_manifest_package["artifactFamily"] = c_distribution["artifact_family"]
+            c_manifest_package["supportedTargets"] = c_distribution["supported_targets"]
 
             error_declarations: list[dict[str, object]] = []
             error_exports: dict[str, dict[str, str]] = {}

@@ -1686,6 +1686,11 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         raise ManifestError(
                             "error category does not resolve to its canonical language export"
                         )
+    c_handle_names = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "opaque-handle"
+    }
     excluded_c_functions = [
         exclusion["cFunction"]
         for exclusion in manifest.get("approvedExclusions", [])
@@ -1698,7 +1703,38 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     ]
-    all_symbols = [*c_symbols, *release_symbols]
+    declaration_signatures = [
+        declaration
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("cSignature") is not None
+    ]
+    declaration_symbols: list[str] = []
+    for declaration in declaration_signatures:
+        if (
+            declaration.get("packageId") != "c-kmipkit"
+            or declaration.get("kind") != "c-symbol"
+            or declaration.get("declarationState") not in {"declared", "verified"}
+            or re.fullmatch(r"kmipkit_[a-z0-9_]+", declaration.get("exportName", "")) is None
+        ):
+            raise ManifestError("C signature must belong to a ready C ABI symbol declaration")
+        signature = declaration["cSignature"]
+        if not set(signature["errorCategories"]) <= error_ids:
+            raise ManifestError("C signature references an unknown error category")
+        parameters = signature["parameters"]
+        parameter_names = [parameter["name"] for parameter in parameters]
+        if len(parameter_names) != len(set(parameter_names)):
+            raise ManifestError("C signature parameter names must be unique")
+        for parameter in parameters:
+            if parameter["kind"] == "handle":
+                handle_name = parameter["type"].split()[0].rstrip("*").strip()
+                if handle_name not in c_handle_names:
+                    raise ManifestError("C signature references an unknown opaque handle")
+            elif parameter["kind"] == "output" and parameter.get("ownership") == "library-owned":
+                handle_name = parameter["type"].split("*")[0].strip()
+                if handle_name not in c_handle_names:
+                    raise ManifestError("C signature output references an unknown opaque handle")
+        declaration_symbols.append(declaration["exportName"])
+    all_symbols = [*c_symbols, *release_symbols, *declaration_symbols]
     if len(set(c_symbols)) != len(c_symbols) or len(set(all_symbols)) != len(all_symbols):
         raise ManifestError("manifest contains duplicate C function symbols")
 
@@ -1723,11 +1759,6 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         if limit["errorCategory"] not in error_ids:
             raise ManifestError("limit references an unknown error category")
 
-    c_handle_names = {
-        record["c"]["name"]: record
-        for record in manifest["types"]
-        if record["c"]["kind"] == "opaque-handle"
-    }
     c_type_names = {record["c"]["name"] for record in manifest["types"]}
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
@@ -2565,6 +2596,35 @@ def render_c_header(
             ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
+    for declaration in manifest.get("publicDeclarations", []):
+        signature = declaration.get("cSignature")
+        if (
+            signature is None
+            or declaration.get("packageId") != "c-kmipkit"
+            or declaration.get("kind") != "c-symbol"
+            or declaration.get("declarationState") not in {"declared", "verified"}
+            or (
+                ready_c_exports is not None
+                and declaration["exportName"] not in ready_c_exports
+            )
+        ):
+            continue
+        documentation = signature.get("documentation", [])
+        if documentation:
+            lines.append("/* " + documentation[0])
+            lines.extend(" * " + line for line in documentation[1:])
+            lines.append(" */")
+        lines.append("/* " + ", ".join(declaration["requirementIds"]) + " */")
+        lines.append(
+            _c_declaration(
+                {
+                    "c": {
+                        **signature,
+                        "symbol": declaration["exportName"],
+                    }
+                }
+            )
+        )
     for exclusion in manifest.get("approvedExclusions", []):
         c_function = exclusion.get("cFunction")
         if c_function is None or (
