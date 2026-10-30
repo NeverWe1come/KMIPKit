@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 import shutil
@@ -1052,6 +1053,106 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 exclusion["approvalSource"]["path"],
                 "specs/010-profile-conformance/spec.md",
             )
+
+    def test_core_error_owner_exports_are_mapped_or_exactly_excluded(self) -> None:
+        unresolved = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration.get("candidateSpecId") == "KMIPKIT-0003"
+        ]
+        self.assertEqual(
+            len(unresolved),
+            0,
+            "KMIPKIT-0003 exports must be mapped or specifically excluded: "
+            f"{[row['exportName'] for row in unresolved[:5]]}",
+        )
+
+        expected_mappings = {
+            ("rust-kmipkit-protocol", "kmipkit_protocol::KmipOperationResult"): (
+                "kmipkit_client_batch_item_response_t",
+                "org.kmipkit.extensions.ClientBatchItemResult",
+                "kmipkit.client.BatchItemResult",
+            ),
+            ("rust-kmipkit", "kmipkit::KmipOperationResult"): (
+                "kmipkit_client_batch_item_response_t",
+                "org.kmipkit.extensions.ClientBatchItemResult",
+                "kmipkit.client.BatchItemResult",
+            ),
+            ("rust-kmipkit", "kmipkit::KmipOperationResult::status"): (
+                "kmipkit_client_batch_item_response_t",
+                "org.kmipkit.extensions.ClientBatchItemResult",
+                "kmipkit.client.BatchItemResult",
+            ),
+            ("rust-kmipkit", "kmipkit::KmipOperationResult::reason"): (
+                "kmipkit_client_batch_item_response_t",
+                "org.kmipkit.extensions.ClientBatchItemResult",
+                "kmipkit.client.BatchItemResult",
+            ),
+            ("rust-kmipkit", "kmipkit::KmipOperationResult::message"): (
+                "kmipkit_client_batch_item_metadata_v2_t.result_message_data",
+                "org.kmipkit.extensions.ClientBatchItemMetadataV2.resultMessage",
+                "kmipkit.client.BatchItemMetadataV2.result_message",
+            ),
+        }
+        declarations = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
+        for key, targets in expected_mappings.items():
+            declaration = declarations[key]
+            self.assertEqual(declaration["declarationState"], "declared")
+            self.assertEqual(declaration["capabilityId"], "client_execution")
+            self.assertIn("KMIPKIT-0003-FR-", " ".join(declaration["requirementIds"]))
+            self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+            self.assertEqual(
+                [declaration["languageMappings"][language]["name"]
+                 for language in ("c", "java", "python")],
+                list(targets),
+            )
+
+        exclusions = self._approved_exclusions_by_key()
+        owner_exclusions = [
+            exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["approvalSource"]["path"] == "specs/003-core-types-errors/spec.md"
+        ]
+        owner_keys = sorted(
+            f"{exclusion['packageId']}\0{exclusion['exportName']}"
+            for exclusion in owner_exclusions
+        )
+        self.assertEqual(len(owner_keys), 434)
+        self.assertEqual(
+            hashlib.sha256(("\n".join(owner_keys) + "\n").encode()).hexdigest(),
+            "4e572d2b7fb5676d5d371d31cdbb7cdb360420b324686f3ca37712b93b648542",
+        )
+        for exclusion in owner_exclusions:
+            self.assertRegex(exclusion["evidence"], r"KMIPKIT-0003-FR-00[1-8]")
+            self.assertEqual(exclusion["approvalSource"]["status"], "Approved")
+
+        model_error_exclusions = [
+            exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "rust-kmipkit-ttlv"
+            and exclusion["approvalSource"]["path"] == "specs/004-generic-ttlv-model/spec.md"
+            and (
+                exclusion["exportName"] == "kmipkit_ttlv::ModelError"
+                or exclusion["exportName"].startswith(
+                    "<kmipkit_ttlv::ModelError as "
+                )
+            )
+        ]
+        model_error_keys = sorted(
+            f"{exclusion['packageId']}\0{exclusion['exportName']}"
+            for exclusion in model_error_exclusions
+        )
+        self.assertEqual(len(model_error_keys), 27)
+        self.assertEqual(
+            hashlib.sha256(("\n".join(model_error_keys) + "\n").encode()).hexdigest(),
+            "9b01ba331f49b2cfd4cbf754963746e674a29a5402128b524c1bc21cc5f55269",
+        )
+        for exclusion in model_error_exclusions:
+            self.assertIn("KMIPKIT-0004-FR-013", exclusion["evidence"])
+            self.assertEqual(exclusion["approvalSource"]["status"], "Approved")
 
     def test_generic_ttlv_owner_has_no_unresolved_public_declarations(self) -> None:
         expected_mappings = {
