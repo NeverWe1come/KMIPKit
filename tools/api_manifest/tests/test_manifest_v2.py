@@ -1046,6 +1046,129 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/010-profile-conformance/spec.md",
             )
 
+    def test_generic_ttlv_owner_has_no_unresolved_public_declarations(self) -> None:
+        expected_mappings = {
+            "kmipkit_ttlv::Value::item_type": (
+                "kmipkit_ttlv_value_view_type",
+                "org.kmipkit.ttlv.TtlvValueView.itemType",
+                "kmipkit.ttlv.ttlv_value_view_type",
+            ),
+            "kmipkit_ttlv::ValueView::Structure": (
+                "kmipkit_ttlv_value_view_structure",
+                "org.kmipkit.ttlv.TtlvValueView.structure",
+                "kmipkit.ttlv.ttlv_value_view_structure",
+            ),
+            "kmipkit_ttlv::ValueView::Integer": (
+                "kmipkit_ttlv_value_view_integer",
+                "org.kmipkit.ttlv.TtlvValueView.integer",
+                "kmipkit.ttlv.ttlv_value_view_integer",
+            ),
+            "kmipkit_ttlv::ValueView::LongInteger": (
+                "kmipkit_ttlv_value_view_long_integer",
+                "org.kmipkit.ttlv.TtlvValueView.longInteger",
+                "kmipkit.ttlv.ttlv_value_view_long_integer",
+            ),
+            "kmipkit_ttlv::ValueView::Enumeration": (
+                "kmipkit_ttlv_value_view_enumeration",
+                "org.kmipkit.ttlv.TtlvValueView.enumeration",
+                "kmipkit.ttlv.ttlv_value_view_enumeration",
+            ),
+            "kmipkit_ttlv::ValueView::Boolean": (
+                "kmipkit_ttlv_value_view_boolean",
+                "org.kmipkit.ttlv.TtlvValueView.booleanValue",
+                "kmipkit.ttlv.ttlv_value_view_boolean",
+            ),
+            "kmipkit_ttlv::ValueView::DateTime": (
+                "kmipkit_ttlv_value_view_date_time",
+                "org.kmipkit.ttlv.TtlvValueView.dateTime",
+                "kmipkit.ttlv.ttlv_value_view_date_time",
+            ),
+            "kmipkit_ttlv::ValueView::Interval": (
+                "kmipkit_ttlv_value_view_interval",
+                "org.kmipkit.ttlv.TtlvValueView.interval",
+                "kmipkit.ttlv.ttlv_value_view_interval",
+            ),
+            "kmipkit_ttlv::ValueView::DateTimeExtended": (
+                "kmipkit_ttlv_value_view_date_time_extended",
+                "org.kmipkit.ttlv.TtlvValueView.dateTimeExtended",
+                "kmipkit.ttlv.ttlv_value_view_date_time_extended",
+            ),
+        }
+        expected_exclusions = {
+            "kmipkit.ttlv",
+            "kmipkit_ttlv::codec",
+            "kmipkit_ttlv::ModelError::RawTagOutOfRange",
+            "kmipkit_ttlv::ModelError::TagNotAllocated",
+            "kmipkit_ttlv::ModelError::StructureDepthExceeded",
+            "kmipkit_ttlv::StructureView::try_clone",
+            "kmipkit_ttlv::ValueView::BigInteger",
+            "kmipkit_ttlv::ValueView::ByteString",
+            "kmipkit_ttlv::ValueView::TextString",
+            "kmipkit_ttlv::try_clone_value",
+            "kmipkit_ttlv::Item::try_clone",
+            "kmipkit_ttlv::ValueView::BigInteger::0",
+            "kmipkit_ttlv::ValueView::ByteString::0",
+            "kmipkit_ttlv::ValueView::TextString::0",
+        }
+        expected_keys = {
+            ("rust-kmipkit-ttlv", export_name)
+            for export_name in (*expected_mappings, *expected_exclusions - {"kmipkit.ttlv"})
+        }
+        expected_keys.add(("python-kmipkit", "kmipkit.ttlv"))
+        declarations = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+        }
+        exclusions = {
+            (exclusion["packageId"], exclusion["exportName"]): exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+        }
+        unresolved = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration.get("candidateSpecId") == "KMIPKIT-0004"
+        ]
+        self.assertFalse(
+            unresolved,
+            "KMIPKIT-0004 public exports must be mapped or specifically excluded: "
+            f"{[row['exportName'] for row in unresolved]}",
+        )
+        self.assertEqual(
+            {
+                key for key, row in declarations.items()
+                if row["packageId"] == "rust-kmipkit-ttlv"
+                and row["exportName"] in expected_mappings
+            } | {
+                key for key in exclusions if key[1] in expected_exclusions
+            },
+            expected_keys,
+        )
+        for export_name, targets in expected_mappings.items():
+            declaration = declarations[("rust-kmipkit-ttlv", export_name)]
+            self.assertEqual(declaration["declarationState"], "declared")
+            self.assertEqual(declaration["capabilityId"], "generic_ttlv_model")
+            self.assertEqual(
+                declaration["requirementIds"],
+                ["KMIPKIT-0004-FR-001", "KMIPKIT-0004-FR-008", "KMIPKIT-0004-FR-012"],
+            )
+            self.assertEqual(
+                [declaration["languageMappings"][language]["name"]
+                 for language in ("c", "java", "python")],
+                list(targets),
+            )
+        for key in expected_keys - {
+            ("rust-kmipkit-ttlv", name) for name in expected_mappings
+        }:
+            exclusion = exclusions[key]
+            self.assertTrue(exclusion["reason"])
+            self.assertTrue(exclusion["evidence"])
+            self.assertEqual(
+                exclusion["approvalSource"]["path"],
+                "specs/005-ttlv-wire-codec/spec.md"
+                if key == ("rust-kmipkit-ttlv", "kmipkit_ttlv::codec")
+                else "specs/004-generic-ttlv-model/spec.md",
+            )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
@@ -1409,8 +1532,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9520)
-        self.assertEqual(len(exclusions), 24)
+        self.assertEqual(len(declarations), 10335)
+        self.assertEqual(len(exclusions), 119)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1689,7 +1812,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 23)
+        self.assertEqual(len(rust_exclusions), 24)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -1704,6 +1827,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             {
                 "docs/adr/0003-layered-cargo-workspace.md",
                 "specs/029-opaque-object-context/spec.md",
+                "specs/010-profile-conformance/spec.md",
             },
         )
 
@@ -1867,7 +1991,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 789)
+        self.assertEqual(len(declarations), 821)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -2209,7 +2333,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 768)
+        self.assertEqual(len(declarations), 800)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
