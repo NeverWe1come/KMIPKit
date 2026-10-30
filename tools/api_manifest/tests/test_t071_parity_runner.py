@@ -27,6 +27,7 @@ API_LEVELS_CASE = "api-levels.shared.v1"
 OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
 EXTENSION_RECOGNITION_CASE = "extensions.recognition-and-generic-preservation.v1"
 CREATE_REQUEST_CASE = "creation.create.request-response.v1"
+CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -481,6 +482,56 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_creation_create_matches_shared_fixture",
         )
 
+    def test_create_key_pair_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                CREATE_KEY_PAIR_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], CREATE_KEY_PAIR_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            consumers["rust"]["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-client",
+                "--test",
+                "creation_parity_tests",
+                "create_key_pair_request_and_result_match_shared_creation_fixture",
+                "--",
+                "--exact",
+            ],
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "generated_public_client_abi_consumer_compiles_and_runs",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.SharedCapabilityParityFixtureTest.creationKeyPairMatchesSharedFixture",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_shared_parity_fixtures.py::"
+            "test_creation_key_pair_matches_shared_fixture",
+        )
+
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (
             DISCOVER_VERSIONS_CASE,
@@ -491,6 +542,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             OPEN_TTLV_VALUES_CASE,
             EXTENSION_RECOGNITION_CASE,
             CREATE_REQUEST_CASE,
+            CREATE_KEY_PAIR_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
