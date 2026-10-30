@@ -115,6 +115,22 @@ fn baseline_selection_succeeds_when_category_test_evidence_is_complete() {
 }
 
 #[test]
+fn baseline_selection_is_unavailable_while_catalog_evidence_is_incomplete() {
+    let target = CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE)
+        .expect("Baseline Client exists in generated metadata");
+    assert_eq!(target.claim_state, "evidence_incomplete");
+
+    let error = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect_err("runtime selection fails closed while Baseline evidence is incomplete");
+
+    assert_eq!(error.code(), ProfileValidationErrorCode::ProfileUnavailable);
+    assert_eq!(error.profile_id(), Some(BASELINE));
+}
+
+#[test]
 fn profile_readiness_separates_runtime_availability_from_conformance_evidence() {
     let readiness = kmipkit_protocol::ProfileReadiness::evaluate(BASELINE, &[])
         .expect("Baseline Client is present in generated profile metadata");
