@@ -2312,6 +2312,64 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         client_execution["mappings"][language],
                     )
 
+    def test_t091_root_client_reexports_map_to_the_same_verified_operations(self) -> None:
+        methods = (
+            ("certify", "KMIPKIT-ELEM-OP-C2S-CERTIFY"),
+            ("check", "KMIPKIT-ELEM-OP-C2S-CHECK"),
+            ("derive_key", "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"),
+            ("export", "KMIPKIT-ELEM-OP-C2S-EXPORT"),
+            ("join_split_key", "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"),
+            ("obtain_lease", "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"),
+            ("recertify", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"),
+            ("register", "KMIPKIT-ELEM-OP-C2S-REGISTER"),
+            ("rekey_key_pair", "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"),
+            ("rekey", "KMIPKIT-ELEM-OP-C2S-RE-KEY"),
+            ("revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE"),
+        )
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for method, operation_id in methods:
+            operation = operations[operation_id]
+            with self.subTest(method=method):
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                for suffix in ("", "_with_options"):
+                    client_name = f"kmipkit_client::Client::{method}{suffix}"
+                    facade_name = f"kmipkit::Client::{method}{suffix}"
+                    client = declarations[("rust-kmipkit-client", client_name)]
+                    facade = declarations[("rust-kmipkit", facade_name)]
+                    expected_mappings = dict(client["languageMappings"])
+                    expected_mappings["rust"] = {
+                        "packageId": "rust-kmipkit",
+                        "name": facade_name,
+                    }
+
+                    self.assertEqual("verified", client["declarationState"])
+                    self.assertEqual("verified", facade["declarationState"])
+                    self.assertEqual(operation_id, facade["capabilityId"])
+                    self.assertNotIn("candidateSpecId", facade)
+                    self.assertEqual(client["requirementIds"], facade["requirementIds"])
+                    self.assertEqual(client["approvalSource"], facade["approvalSource"])
+                    self.assertEqual(client["parityEvidenceIds"], facade["parityEvidenceIds"])
+                    self.assertEqual(expected_mappings, facade["languageMappings"])
+                    self.assertIn(facade["declarationId"], operation["declarations"]["rust"])
+                    for language in ("c", "java", "python"):
+                        self.assertIn(
+                            facade["languageMappings"][language]["name"],
+                            client_execution["mappings"][language],
+                        )
+
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
         declaration = next(
