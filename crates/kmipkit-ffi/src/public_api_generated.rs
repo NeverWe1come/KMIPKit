@@ -4467,6 +4467,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientOperationOutcome::with_response_payload",
     ),
     (
+        "rust-observed-d17f70b77b8d1185c6cc",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_with_profiles",
+    ),
+    (
+        "rust-observed-38e787efaca8c1217f83",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_with_profiles_and_context",
+    ),
+    (
+        "rust-observed-121da9a2d8b1b63834af",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_with_profiles_and_context_and_options",
+    ),
+    (
+        "rust-observed-ce404bc5abe2e04672d6",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_with_profiles_and_options",
+    ),
+    (
         "rust-observed-5c1c125ccaf674b90b8e",
         "rust-kmipkit-client",
         "kmipkit_client::Client::execute_with_profiles",
