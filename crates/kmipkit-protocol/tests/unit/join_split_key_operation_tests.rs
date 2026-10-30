@@ -140,7 +140,7 @@ fn request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire
         reference("split-b", 3),
         reference("split-a", 1),
     ])
-    .with_secret_data_type(0xF123_4568)
+    .with_secret_data_type(0x8123_4568)
     .with_attributes(
         AttributeSet::try_new([item(0x0042_0028, Value::enumeration(3))])
             .expect("fixture attribute is valid"),
@@ -185,9 +185,80 @@ fn request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire
     );
     assert!(
         fields[4].with_value(
-            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0xF123_4568)
+            |value| matches!(value, ValueView::Enumeration(raw) if *raw == 0x8123_4568)
         )
     );
+}
+
+#[test]
+fn request_rejects_repeated_singletons_and_unknown_dsa_context_but_allows_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let references = || vec![reference("split-a", 2), reference("split-b", 2)];
+    let repeated_comment = crate::AttributeSet::try_new([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ])
+    .expect("Comment accepts valid Text String instances before typed encoding");
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(7), references())
+            .with_attributes(repeated_comment)
+            .into_ttlv_payload()
+            .is_err()
+    );
+
+    let repeated_dsa = || {
+        crate::AttributeSet::try_new([
+            item(0x0042_00AE, Value::enumeration(1)),
+            item(0x0042_00AE, Value::enumeration(2)),
+        ])
+        .expect("Digital Signature Algorithm values have Enumeration encoding")
+    };
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(7), references())
+            .with_attributes(repeated_dsa())
+            .into_ttlv_payload()
+            .is_err()
+    );
+    assert!(
+        JoinSplitKeyRequest::new(ObjectType::from_raw(9), references())
+            .with_attributes(repeated_dsa())
+            .into_ttlv_payload()
+            .is_ok()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_when_object_type_is_not_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+    let request = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![reference("split-a", 2), reference("split-b", 2)],
+    )
+    .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_allows_repeated_dsa_for_explicit_pgp_key_object_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.27 Table 244.
+    let attributes = crate::AttributeSet::try_new([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ])
+    .expect("Digital Signature Algorithm values have Enumeration encoding");
+    let request = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(9),
+        vec![reference("split-a", 2), reference("split-b", 2)],
+    )
+    .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_ok());
 }
 
 #[test]
@@ -204,16 +275,16 @@ fn public_request_views_preserve_local_thresholds_and_optional_fields() {
     let attributes = AttributeSet::try_new([item(0x0042_0028, Value::enumeration(3))])
         .expect("fixture attribute is valid");
     let request = JoinSplitKeyRequest::new(
-        ObjectType::from_raw(8),
+        ObjectType::from_raw(7),
         vec![first, reference("split-b", 2)],
     )
-    .with_secret_data_type(0xF123_4568)
+    .with_secret_data_type(0x8123_4568)
     .with_attributes(attributes)
     .with_protection_storage_masks(structure([item(0x0042_015E, Value::integer(2))]));
-    assert_eq!(request.object_type(), ObjectType::from_raw(8));
+    assert_eq!(request.object_type(), ObjectType::from_raw(7));
     assert_eq!(request.references().len(), 2);
     assert_eq!(request.references()[1].split_key_threshold(), Some(2));
-    assert_eq!(request.secret_data_type(), Some(0xF123_4568));
+    assert_eq!(request.secret_data_type(), Some(0x8123_4568));
     assert_eq!(request.attributes().map(AttributeSet::len), Some(1));
     assert!(request.protection_storage_masks().is_some());
     let payload = request

@@ -145,6 +145,11 @@ Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
 hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se
 omite, el modelo informa SHA-256 como algoritmo efectivo (valor bruto `6`) y
 conserva el campo como ausente en el árbol TTLV. KMIPKit no calcula el hash.
+KMIP Specification v2.1 §9.11 exige que esta marca de tiempo aumente de forma
+monótona. El modelo actual conserva el valor proporcionado, pero no guarda
+marcas anteriores ni impone esa secuencia. KMIPKIT-0008 OD-003 deja sin resolver
+quién debe aplicar la regla, su ámbito de comparación y el comportamiento del
+reloj; KMIPKit no afirma que este requisito esté satisfecho.
 
 Una Credential tipada Device debe incluir al menos uno de estos campos:
 Device Serial Number, Network Identifier, Machine Identifier o Media
@@ -182,6 +187,13 @@ partir del reloj ni de un temporizador de cuenta atrás. Las peticiones
 iniciadas por el cliente omiten Server Correlation Value. Si se proporciona
 Client Correlation Value, es metadato independiente y nunca identifica un
 elemento del lote.
+
+KMIP Specification v2.1 §9.20 también permite que un cliente sin reloj en
+tiempo real, pero con temporizador de cuenta atrás, calcule segundos relativos
+restando atributos Date de una marca de tiempo. KMIPKit expone la marca de
+tiempo obligatoria de la respuesta del servidor y valores Date-Time TTLV
+genéricos; la aplicación es responsable del temporizador y la resta. Esto no
+genera una marca de tiempo para una petición saliente.
 
 Cada elemento de una petición de varios elementos tiene un Unique Batch Item
 ID. El cliente asocia cada respuesta con su petición mediante ese ID, aunque

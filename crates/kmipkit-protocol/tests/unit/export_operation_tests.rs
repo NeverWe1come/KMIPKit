@@ -101,18 +101,22 @@ fn exported_key() -> Item {
 
 #[test]
 fn request_preserves_all_explicit_optional_choices_and_omits_absent_fields() {
-    let empty = ExportRequest::new()
+    let empty_request = ExportRequest::new();
+    assert_eq!(empty_request.unique_identifier(), None);
+    let empty = empty_request
         .into_ttlv_payload()
         .expect("Table 217 permits omitted selectors");
     assert!(empty.view().children().is_empty());
 
     let specification = structure([item(UNKNOWN_VENDOR_TAG, Value::enumeration(0xF123_4568))]);
+    let identifier = UniqueIdentifier::TextString("export-key".to_owned());
     let request = ExportRequest::new()
-        .with_unique_identifier(UniqueIdentifier::TextString("export-key".to_owned()))
+        .with_unique_identifier(identifier.clone())
         .with_key_format_type(KeyFormatType::from_raw(0xF123_4569))
         .with_key_wrap_type(KeyWrapType::from_raw(0xF123_456A))
         .with_key_compression_type(KeyCompressionType::from_raw(0xF123_456B))
         .with_key_wrapping_specification(specification);
+    assert_eq!(request.unique_identifier(), Some(&identifier));
     assert_eq!(format!("{request:?}"), "ExportRequest([REDACTED])");
     let payload = request
         .into_ttlv_payload()

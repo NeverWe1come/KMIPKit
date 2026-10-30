@@ -227,6 +227,13 @@ const REQUEST_BATCH_FIELDS: &[FieldSpec] = &[
     field(REQUEST_PAYLOAD, ItemType::Structure),
     repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
 ];
+const REQUEST_BATCH_FIELDS_WITH_ID: &[FieldSpec] = &[
+    field(OPERATION, ItemType::Enumeration),
+    field(EPHEMERAL, ItemType::Boolean),
+    field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
+    field(REQUEST_PAYLOAD, ItemType::Structure),
+    repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
+];
 const RESPONSE_BATCH_FIELDS: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
     field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
@@ -279,9 +286,11 @@ pub(super) fn validate_request_message(
                         None,
                     ));
                 }
-                let batch_count = header.map_or(0, |(_, value)| value.batch_count);
+                let multi_item_request = header
+                    .as_ref()
+                    .is_some_and(|(_, validated_header)| validated_header.batch_count > 1);
                 let item_id = with_structure(child, index, None, |view| {
-                    validate_request_batch_item(&view, index, batch_count)
+                    validate_request_batch_item(&view, index, multi_item_request)
                 })?;
                 if let Some(item_id) = item_id
                     && !request_ids.insert(item_id)
@@ -517,12 +526,21 @@ fn validate_protocol_version(
 fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
-    batch_count: i32,
+    require_unique_batch_item_id: bool,
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
+    let required_fields = if require_unique_batch_item_id {
+        &[OPERATION, UNIQUE_BATCH_ITEM_ID, REQUEST_PAYLOAD][..]
+    } else {
+        &[OPERATION, REQUEST_PAYLOAD][..]
+    };
     validate_fields(
         view.children(),
-        REQUEST_BATCH_FIELDS,
-        &[OPERATION, REQUEST_PAYLOAD],
+        if require_unique_batch_item_id {
+            REQUEST_BATCH_FIELDS_WITH_ID
+        } else {
+            REQUEST_BATCH_FIELDS
+        },
+        required_fields,
         Some(top_index),
     )?;
     let id = view
@@ -530,13 +548,6 @@ fn validate_request_batch_item(
         .iter()
         .find(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
         .and_then(byte_string_value);
-    if batch_count > 1 && id.is_none() {
-        return Err(error(
-            MessageValidationErrorKind::MissingRequiredField,
-            Some(top_index),
-            None,
-        ));
-    }
     for (index, child) in view.children().iter().enumerate() {
         if child.tag().raw() == MESSAGE_EXTENSION {
             with_structure(child, top_index, Some(index), |view| {
@@ -670,6 +681,25 @@ fn validate_message_extension(view: &StructureView<'_>) -> Result<(), MessageVal
         })
         .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
     if !vendor_is_valid {
+        return Err(error(
+            MessageValidationErrorKind::InvalidFieldValue,
+            None,
+            None,
+        ));
+    }
+    // §9.13 requires vendor-specific contents; §11.56 allocates extension tags in 0x54xxxx.
+    let vendor_extension_is_populated = required_child(view.children(), VENDOR_EXTENSION, 0)?
+        .with_value(|value| match value {
+            ValueView::Structure(structure) => Some(
+                structure
+                    .children()
+                    .iter()
+                    .any(|child| (0x0054_0000..=0x0054_FFFF).contains(&child.tag().raw())),
+            ),
+            _ => None,
+        })
+        .ok_or_else(|| error(MessageValidationErrorKind::WrongItemType, None, None))?;
+    if !vendor_extension_is_populated {
         return Err(error(
             MessageValidationErrorKind::InvalidFieldValue,
             None,

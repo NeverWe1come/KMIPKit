@@ -27,6 +27,7 @@ const ATTRIBUTES_TAG: u32 = 0x0042_0125;
 const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
 const LINK_TAG: u32 = 0x0042_004A;
@@ -302,6 +303,31 @@ fn request_emits_supplied_optional_fields_in_table_247_order() {
             ),
         ]
     );
+}
+
+#[test]
+fn locate_encodes_key_value_present_boolean_as_a_search_criterion() {
+    // OASIS KMIP v2.1 §4.28 permits Key Value Present in Locate; §6.1.28,
+    // Table 247, carries the criterion inside the request Attributes Structure.
+    let criteria = AttributeSet::try_new([item(KEY_VALUE_PRESENT_TAG, Value::boolean(true))])
+        .expect("Key Value Present is a Boolean Locate criterion");
+    let payload = payload(LocateRequest::new(criteria));
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), ATTRIBUTES_TAG);
+    assert_eq!(fields[0].item_type(), ItemType::Structure);
+    fields[0].with_value(|value| match value {
+        ValueView::Structure(attributes) => {
+            let items = attributes.children();
+            assert_eq!(items.len(), 1);
+            assert_eq!(items[0].tag().raw(), KEY_VALUE_PRESENT_TAG);
+            assert_eq!(items[0].item_type(), ItemType::Boolean);
+            assert!(items[0].with_value(|value| matches!(value, ValueView::Boolean(true))));
+        }
+        _ => panic!("Locate Attributes remains a Structure"),
+    });
 }
 
 #[test]

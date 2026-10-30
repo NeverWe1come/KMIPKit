@@ -1,6 +1,7 @@
 //! Lossless typed grouping for the direct KMIP Object Attribute items used by
 //! operation attribute structures.
 
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 
@@ -12,6 +13,14 @@ const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+const KEY_VALUE_TAG: u32 = 0x0042_0045;
+const ATTRIBUTES_STRUCTURE_TAG: u32 = 0x0042_0125;
+const CERTIFICATE_TYPE_X509: u32 = 1;
+const OBJECT_TYPE_PGP_KEY: u32 = 9;
+const OBJECT_TYPE_CERTIFICATE: u32 = 1;
 
 /// A client-initiated KMIP operation that can mutate an object attribute.
 #[non_exhaustive]
@@ -108,6 +117,20 @@ pub(crate) fn copy_text_string(value: &ValueView<'_>) -> Option<String> {
 /// this type does not infer attribute names or synthesize tags. A Table 150
 /// Vendor Attribute remains a distinct structure and is checked for its
 /// required fields and source order.
+///
+/// For the standard Name attribute, callers are responsible for choosing a
+/// Name Value that is unique within the target key management server and for
+/// following any server-specific naming rules communicated through a mechanism
+/// not specified by KMIP v2.1.
+/// `KMIPKit` preserves the supplied Name and cannot detect collisions with
+/// existing or concurrent server objects; global uniqueness is not required
+/// by KMIP v2.1 §4.32.
+///
+/// When an attribute permits multiple instances, callers SHOULD supply
+/// different values for those instances as recommended by KMIP v2.1 §4.
+/// `KMIPKit` preserves the caller's values and order without deduplicating or
+/// rewriting them; choosing distinct values remains the caller's
+/// responsibility.
 pub struct AttributeSet {
     items: Vec<Item>,
 }
@@ -245,6 +268,10 @@ pub enum AttributeSetError {
     DuplicateAttributeValue,
     /// A recognized attribute's TTLV type is outside the catalog encoding.
     AttributeTtlvTypeMismatch,
+    /// A direct attribute set contains multiple instances of a source-defined single-instance attribute.
+    DuplicateSingleInstanceAttribute,
+    /// A conditional source multiplicity rule cannot be decided from the available object context.
+    UndeterminedAttributeCardinality,
     /// The required Vendor Attribute members violate §4.60 Table 150 order,
     /// applying the field order rule in §8 and the Structure encoding rule in §10.1.2.
     VendorAttributeFieldOrder,
@@ -269,6 +296,12 @@ impl Display for AttributeSetError {
             Self::DuplicateAttributeValue => "Attribute Value is repeated",
             Self::AttributeTtlvTypeMismatch => {
                 "attribute TTLV type does not match its catalog encoding"
+            }
+            Self::DuplicateSingleInstanceAttribute => {
+                "attribute set repeats a source-defined single-instance attribute"
+            }
+            Self::UndeterminedAttributeCardinality => {
+                "conditional attribute multiplicity cannot be decided from available context"
             }
             Self::VendorAttributeFieldOrder => {
                 "Vendor Attribute fields do not follow Table 150 order"
@@ -335,6 +368,24 @@ impl AttributeSet {
         Ok(())
     }
 
+    /// Checks source-defined attribute multiplicity when interpreting an
+    /// operation's direct object attribute set.
+    ///
+    /// The generic `AttributeSet` remains lossless. Typed object operations and
+    /// Get Attributes responses call this check; Locate predicates and
+    /// arbitrary TTLV collections do not. Conditional multiplicity is only
+    /// decidable with the relevant object context.
+    pub(crate) fn validate_single_instance_cardinality(&self) -> Result<(), AttributeSetError> {
+        validate_single_instance_attribute_items(&self.items, None, false)
+    }
+
+    pub(crate) fn validate_single_instance_cardinality_for_object_type(
+        &self,
+        object_type: u32,
+    ) -> Result<(), AttributeSetError> {
+        validate_single_instance_attribute_items(&self.items, Some(object_type), false)
+    }
+
     /// Returns the direct items in wire order.
     #[must_use]
     pub fn as_items(&self) -> &[Item] {
@@ -360,6 +411,120 @@ impl AttributeSet {
     }
 }
 
+pub(crate) fn validate_single_instance_attribute_items(
+    items: &[Item],
+    object_type: Option<u32>,
+    reject_undetermined: bool,
+) -> Result<(), AttributeSetError> {
+    let certificate_type = enumeration_value(items, CERTIFICATE_TYPE_TAG);
+    let object_type = object_type.or_else(|| enumeration_value(items, OBJECT_TYPE_TAG));
+    let mut seen = HashSet::with_capacity(items.len());
+
+    for item in items {
+        let raw_tag = item.tag().raw();
+        if !seen.insert(raw_tag) {
+            let Some(policy) = crate::attribute_policy::ATTRIBUTE_POLICIES
+                .iter()
+                .find(|policy| policy.tag == raw_tag)
+            else {
+                continue;
+            };
+
+            let is_single_instance = match policy.multiplicity() {
+                crate::attribute_policy::AttributeMultiplicity::Single => Some(true),
+                crate::attribute_policy::AttributeMultiplicity::Multiple => Some(false),
+                crate::attribute_policy::AttributeMultiplicity::PgpKeyOrX509Certificate => {
+                    match (object_type, certificate_type) {
+                        (Some(OBJECT_TYPE_PGP_KEY), None) => Some(false),
+                        (Some(OBJECT_TYPE_CERTIFICATE), Some(CERTIFICATE_TYPE_X509)) => Some(true),
+                        _ => None,
+                    }
+                }
+            };
+            match is_single_instance {
+                Some(true) => return Err(AttributeSetError::DuplicateSingleInstanceAttribute),
+                None if reject_undetermined => {
+                    return Err(AttributeSetError::UndeterminedAttributeCardinality);
+                }
+                Some(false) | None => {}
+            }
+        }
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_key_value_attribute_cardinality(
+    object: &Item,
+    object_type: Option<u32>,
+    reject_undetermined: bool,
+) -> Result<(), AttributeSetError> {
+    object.with_value(|value| {
+        let ValueView::Structure(object_fields) = value else {
+            return Ok(());
+        };
+        let Some(key_block) = unique_structure_field(object_fields.children(), KEY_BLOCK_TAG)?
+        else {
+            return Ok(());
+        };
+        key_block.with_value(|value| {
+            let ValueView::Structure(key_block_fields) = value else {
+                return Err(AttributeSetError::UndeterminedAttributeCardinality);
+            };
+            let Some(key_value) =
+                unique_structure_field(key_block_fields.children(), KEY_VALUE_TAG)?
+            else {
+                return Ok(());
+            };
+            key_value.with_value(|value| {
+                let ValueView::Structure(key_value_fields) = value else {
+                    return Ok(());
+                };
+                let Some(attributes) =
+                    unique_structure_field(key_value_fields.children(), ATTRIBUTES_STRUCTURE_TAG)?
+                else {
+                    return Ok(());
+                };
+                attributes.with_value(|value| {
+                    let ValueView::Structure(attributes) = value else {
+                        return Err(AttributeSetError::UndeterminedAttributeCardinality);
+                    };
+                    validate_single_instance_attribute_items(
+                        attributes.children(),
+                        object_type,
+                        reject_undetermined,
+                    )
+                })
+            })
+        })
+    })
+}
+
+fn unique_structure_field(
+    fields: &[Item],
+    raw_tag: u32,
+) -> Result<Option<&Item>, AttributeSetError> {
+    let mut matches = fields.iter().filter(|field| field.tag().raw() == raw_tag);
+    match (matches.next(), matches.next()) {
+        (Some(field), None) => Ok(Some(field)),
+        (None, None) => Ok(None),
+        _ => Err(AttributeSetError::UndeterminedAttributeCardinality),
+    }
+}
+
+fn enumeration_value(items: &[Item], tag: u32) -> Option<u32> {
+    let mut values = items
+        .iter()
+        .filter(|item| item.tag().raw() == tag)
+        .map(|item| {
+            item.with_value(|value| match value {
+                ValueView::Enumeration(value) => Some(*value),
+                _ => None,
+            })
+        });
+    let value = values.next()??;
+    values.next().is_none().then_some(value)
+}
+
 fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
     if crate::attribute_types_generated::expected_types(item.tag().raw())
         .is_some_and(|expected| !expected.contains(&item.item_type()))
@@ -376,7 +541,9 @@ impl Default for AttributeSet {
     }
 }
 
-fn validate_vendor_attribute(structure: &StructureView<'_>) -> Result<(), AttributeSetError> {
+pub(crate) fn validate_vendor_attribute(
+    structure: &StructureView<'_>,
+) -> Result<(), AttributeSetError> {
     let mut vendor_identification = false;
     let mut attribute_name = false;
     let mut attribute_value = false;

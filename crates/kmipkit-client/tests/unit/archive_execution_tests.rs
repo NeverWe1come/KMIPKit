@@ -197,11 +197,15 @@ fn enumeration_value(item: &Item) -> Option<u32> {
     })
 }
 
+fn explicit_request_identifier() -> UniqueIdentifier {
+    UniqueIdentifier::TextString("archive-test-object".to_owned())
+}
+
 #[test]
 fn archive_success_returns_server_result_without_claiming_archival_completion() {
     for (request_identifier, response_identifier) in [
         (Some("requested-object"), "server-returned-object"),
-        (None, "server-returned-placeholder-object"),
+        (Some("another-requested-object"), "server-returned-object"),
     ] {
         let response = response_bytes(
             SUCCESS,
@@ -278,7 +282,10 @@ fn archive_failure_preserves_common_result_and_does_not_retry() {
     });
 
     let response = client
-        .archive(ArchiveRequest::new(None), &CodecLimits::defaults())
+        .archive(
+            ArchiveRequest::new(Some(explicit_request_identifier())),
+            &CodecLimits::defaults(),
+        )
         .expect("a valid server Failure remains an Archive result");
     let outcome = response.outcome();
     let typed = outcome
@@ -324,7 +331,10 @@ fn malformed_archive_success_is_a_redacted_protocol_error_after_one_exchange() {
         });
 
         let error = client
-            .archive(ArchiveRequest::new(None), &CodecLimits::defaults())
+            .archive(
+                ArchiveRequest::new(Some(explicit_request_identifier())),
+                &CodecLimits::defaults(),
+            )
             .expect_err("a successful Archive response needs one Unique Identifier");
 
         assert_eq!(error.category(), ClientErrorCategory::Protocol);
@@ -358,7 +368,8 @@ fn archive_pending_preserves_exact_correlation_without_poll_or_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let typed_request = ClientRequest::Archive(ArchiveRequest::new(None));
+    let typed_request =
+        ClientRequest::Archive(ArchiveRequest::new(Some(explicit_request_identifier())));
     let batch = ClientBatch::new(
         ClientBatchItem::new(typed_request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
     )

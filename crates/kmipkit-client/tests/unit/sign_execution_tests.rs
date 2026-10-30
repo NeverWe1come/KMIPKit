@@ -1,6 +1,6 @@
 //! Source-derived Sign client contracts from OASIS KMIP v2.1 §6.1.55,
 //! Tables 334–336. These tests are not official Test Case executions.
-//! Traceability: FR-001, FR-003, FR-004, FR-009–FR-013, FR-015, and
+//! Traceability: FR-001, FR-003–FR-005, FR-009–FR-013, FR-015, and
 //! `KMIPKIT-ELEM-OP-C2S-SIGN`.
 
 use std::cell::RefCell;
@@ -8,12 +8,13 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{SecretBytes, SignRequest};
+use kmipkit_protocol::{OperationData, SecretBytes, SignRequest, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
 use kmipkit_ttlv::Value;
-use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::ValueView;
+use kmipkit_ttlv::codec::{CodecLimits, decode};
 use zeroize::Zeroizing;
 
 use crate::execute_test_support::{
@@ -26,7 +27,14 @@ const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 const GENERAL_FAILURE: u32 = 0x0000_0100;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
-const SIGNATURE_DATA: u32 = 0x0042_00C7;
+const DATA: u32 = 0x0042_00C2;
+const DIGESTED_DATA: u32 = 0x0042_0107;
+const SIGNATURE_DATA: u32 = 0x0042_00C3;
+const CORRELATION_VALUE: u32 = 0x0042_00D6;
+const INIT_INDICATOR: u32 = 0x0042_00D7;
+const FINAL_INDICATOR: u32 = 0x0042_00D8;
+const OPERATION: u32 = 0x0042_005C;
+const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const GENERIC_RESPONSE_TAG: u32 = 0x0042_00D6;
 const GENERIC_RESPONSE_BYTES: &[u8] = b"sign-client-generic-ttlv";
 const RESPONSE_HEADER: u32 = 0x0042_007A;
@@ -87,9 +95,11 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 
 fn request() -> ClientRequest {
     ClientRequest::sign(
-        SignRequest::new().with_data(kmipkit_protocol::OperationData::ByteString(
-            SecretBytes::new(b"input-to-sign".to_vec()),
-        )),
+        SignRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
+            .with_data(kmipkit_protocol::OperationData::ByteString(
+                SecretBytes::new(b"input-to-sign".to_vec()),
+            )),
     )
 }
 
@@ -108,6 +118,79 @@ fn response(status: u32, reason: Option<u32>) -> Vec<u8> {
         ])
     });
     asynchronous_response_bytes(SIGN_OPERATION, status, reason, None, payload)
+}
+
+fn multipart_response() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("signing-key".to_owned()),
+    )]);
+    asynchronous_response_bytes(SIGN_OPERATION, SUCCESS, None, None, Some(payload))
+}
+
+#[derive(Debug, Eq, PartialEq)]
+enum CapturedSignField {
+    Text(String),
+    Bytes(Vec<u8>),
+    Boolean(bool),
+    Other,
+}
+
+fn request_payload_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, CapturedSignField)>) {
+    let message = decode(bytes).expect("the captured Sign request is valid TTLV");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the KMIP request message is a Structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == BATCH_ITEM)
+            .expect("the Sign request contains a Batch Item");
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("the Batch Item is a Structure");
+            };
+            let operation = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == OPERATION)
+                .and_then(|field| {
+                    field.with_value(|value| match value {
+                        ValueView::Enumeration(value) => Some(*value),
+                        _ => None,
+                    })
+                });
+            let request_payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("the Sign Batch Item contains a Request Payload");
+            let fields = request_payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("the Request Payload is a Structure");
+                };
+                payload
+                    .children()
+                    .iter()
+                    .map(|field| {
+                        let snapshot = field.with_value(|value| match value {
+                            ValueView::TextString(value) => {
+                                CapturedSignField::Text(value.to_owned())
+                            }
+                            ValueView::ByteString(value) => {
+                                CapturedSignField::Bytes(value.to_vec())
+                            }
+                            ValueView::Boolean(value) => CapturedSignField::Boolean(*value),
+                            _ => CapturedSignField::Other,
+                        });
+                        (field.tag().raw(), snapshot)
+                    })
+                    .collect()
+            });
+            (operation, fields)
+        })
+    })
 }
 
 fn batch_response_bytes() -> Vec<u8> {
@@ -185,6 +268,74 @@ fn explicit_sign_executes_once_and_exposes_server_output() {
         "an explicit Sign makes one exchange"
     );
     assert_eq!(state.borrow().requests.len(), 1);
+}
+
+#[test]
+fn request_table_fields_reach_the_fake_transport_unchanged() {
+    let data = [0x00, 0x80, 0xFF];
+    let digest = [0x01, 0x81, 0xFE];
+    let (mut single_part_client, single_part_state) = client(response(SUCCESS, None));
+    single_part_client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::sign(
+                SignRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
+                    .with_data(OperationData::ByteString(SecretBytes::new(data.to_vec())))
+                    .with_digested_data(SecretBytes::new(digest.to_vec())),
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect("single-part Sign input fields form a valid client request");
+    let captured_single_part = single_part_state.borrow();
+    let (single_part_operation, single_part_fields) =
+        request_payload_fields(captured_single_part.requests[0].as_slice());
+    assert_eq!(single_part_operation, Some(SIGN_OPERATION));
+    assert_eq!(
+        single_part_fields,
+        [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignField::Text("signing-key".to_owned()),
+            ),
+            (DATA, CapturedSignField::Bytes(data.to_vec())),
+            (DIGESTED_DATA, CapturedSignField::Bytes(digest.to_vec())),
+        ]
+    );
+    drop(captured_single_part);
+
+    let correlation = [0x02, 0x82, 0xFD];
+    let (mut multipart_client, multipart_state) = client(multipart_response());
+    multipart_client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::sign(
+                SignRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
+                    .with_correlation_value(SecretBytes::new(correlation.to_vec()))
+                    .with_init_indicator(false)
+                    .with_final_indicator(true),
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect("multipart framing fields form a valid client request");
+    let captured_multipart = multipart_state.borrow();
+    let (multipart_operation, multipart_fields) =
+        request_payload_fields(captured_multipart.requests[0].as_slice());
+    assert_eq!(multipart_operation, Some(SIGN_OPERATION));
+    assert_eq!(
+        multipart_fields,
+        [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignField::Text("signing-key".to_owned()),
+            ),
+            (
+                CORRELATION_VALUE,
+                CapturedSignField::Bytes(correlation.to_vec()),
+            ),
+            (INIT_INDICATOR, CapturedSignField::Boolean(false)),
+            (FINAL_INDICATOR, CapturedSignField::Boolean(true)),
+        ]
+    );
 }
 
 #[test]

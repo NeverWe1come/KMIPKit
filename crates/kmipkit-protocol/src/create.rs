@@ -60,8 +60,10 @@ impl fmt::Debug for UniqueIdentifier {
 ///
 /// Object Type remains a raw-value wrapper so future Object Type values are
 /// preserved. Attributes are always represented by the required outer
-/// Structure, including when the direct attribute set is empty. Optional
-/// Protection Storage Masks are retained as a generic ordered Structure.
+/// Structure, including when the direct attribute set is empty. The encoder
+/// rejects repeated source-defined single-instance attributes while retaining
+/// allowed repeated and unknown values. Optional Protection Storage Masks are
+/// retained as a generic ordered Structure.
 pub struct CreateRequest {
     object_type: ObjectType,
     attributes: AttributeSet,
@@ -112,9 +114,20 @@ impl CreateRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error if an internally defined tag or
-    /// nested generic Structure violates the TTLV model constraints.
+    /// Returns a sanitized protocol error if attributes repeat a source-defined
+    /// singleton or an internally defined tag or nested generic Structure
+    /// violates the TTLV model constraints.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        self.attributes
+            .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
+            .map_err(|error| {
+                ProtocolError::new(
+                    ProtocolErrorKind::InvalidValue,
+                    ProtocolCauseCategory::InvalidValue,
+                    error,
+                )
+            })?;
+
         let mut attributes = Structure::new();
         for attribute in self.attributes.into_items() {
             attributes.try_push(attribute).map_err(model_error)?;

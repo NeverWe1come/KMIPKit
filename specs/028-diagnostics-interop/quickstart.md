@@ -40,7 +40,10 @@ manifest/adapters/parity remain gated by KMIPKIT-0043 (T044).
 Run the focused commands above after every operation refactor. Current
 source-derived suites contain 8 Interop protocol tests, 7 Log protocol tests,
 16 Validate protocol tests, 9 Interop client tests, 9 Log client tests and
-11 Validate client tests. All six Validate requirement IDs have named tests.
+11 Validate client tests. Five actor-attributed Validate client requirements
+have named tests; the §6.1.57-006 test verifies only that an omitted Validity
+Date remains absent in request serialization. It does not verify assumed-date
+evaluation.
 Actual full-gate results and commit IDs are in `implementation-evidence.md`.
 No direct official fixture or two-server passing evidence is available for
 these operations, so those release claims remain open.

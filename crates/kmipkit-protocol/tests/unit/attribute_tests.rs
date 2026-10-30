@@ -127,6 +127,44 @@ fn attribute_set_preserves_unknown_standard_and_vendor_item_tags() {
 }
 
 #[test]
+fn name_attribute_is_preserved_as_caller_supplied_text() {
+    // KMIP Specification v2.1 §4.32 and Table 93 define the Name structure,
+    // required Name Value (Text String), required Name Type (Enumeration),
+    // and their source order.
+    const NAME_ATTRIBUTE_TAG: u32 = 0x0042_0053;
+    const NAME_TYPE_TAG: u32 = 0x0042_0054;
+    const NAME_VALUE_TAG: u32 = 0x0042_0055;
+    let caller_name = "kmipkit-client-owned-name";
+    let attributes = AttributeSet::try_new([item(
+        NAME_ATTRIBUTE_TAG,
+        Value::structure(structure([
+            item(NAME_VALUE_TAG, Value::text_string(caller_name.to_owned())),
+            item(NAME_TYPE_TAG, Value::enumeration(1)),
+        ])),
+    )])
+    .expect("a client-assigned Name remains a typed Structure attribute");
+
+    assert_eq!(attributes.len(), 1);
+    assert_eq!(attributes.as_items()[0].tag().raw(), NAME_ATTRIBUTE_TAG);
+    assert!(attributes.as_items()[0].with_value(|value| {
+        let ValueView::Structure(name) = value else {
+            return false;
+        };
+        let children = name.children();
+        children.len() == 2
+            && children[0].tag().raw() == NAME_VALUE_TAG
+            && children[0].with_value(|value| {
+                matches!(
+                    value,
+                    ValueView::TextString(value) if value == caller_name
+                )
+            })
+            && children[1].tag().raw() == NAME_TYPE_TAG
+            && children[1].item_type() == ItemType::Enumeration
+    }));
+}
+
+#[test]
 fn recognized_attributes_reject_types_outside_the_catalog_encoding() {
     let wrong_types = [
         (0x0042_0028, Value::integer(7)), // Cryptographic Algorithm: Enumeration

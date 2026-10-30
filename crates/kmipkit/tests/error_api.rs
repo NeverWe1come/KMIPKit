@@ -1,7 +1,10 @@
 use kmipkit::{
-    ClientError, ClientErrorCategory, KmipOperationResult, RequestDeliveryState, ResultMessage,
+    ClientError, ClientErrorCategory, KmipOperationResult, ProfileValidationErrorCode,
+    ProfileValidationResult, ProfileValidationSelection, RequestDeliveryState, ResultMessage,
     ResultReason, ResultStatus, TransportCauseCategory, TransportError,
 };
+
+fn accepts_profile_result_type(_: Option<ProfileValidationResult>) {}
 
 #[test]
 fn facade_exposes_lossless_server_result_without_local_delivery_state() {
@@ -43,4 +46,27 @@ fn facade_exposes_transport_delivery_mapping() {
         error.delivery_state(),
         Some(RequestDeliveryState::ResponseStarted)
     );
+}
+
+#[test]
+fn facade_exports_profile_validation_result_and_omits_raw_body_for_profile_errors() {
+    accepts_profile_result_type(None);
+    let profile_error = ProfileValidationSelection::new([
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+    ])
+    .validate()
+    .expect_err("duplicate profile selection is rejected");
+    assert_eq!(
+        profile_error.code(),
+        ProfileValidationErrorCode::DuplicateProfile
+    );
+    let error =
+        ClientError::profile_validation(profile_error, RequestDeliveryState::ResponseStarted);
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert!(error.response_ttlv().is_none());
 }

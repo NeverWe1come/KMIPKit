@@ -6,6 +6,10 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "KMIP protocol models and validation for KMIPKit"
+
+[features]
+test-support = []
+
 [dependencies]
 kmipkit-ttlv.workspace = true
 zeroize.workspace = true

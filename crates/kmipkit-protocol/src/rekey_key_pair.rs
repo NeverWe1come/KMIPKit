@@ -22,6 +22,8 @@ const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
 const COMMON_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0163;
 const PRIVATE_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0164;
 const PUBLIC_PROTECTION_STORAGE_MASKS: u32 = 0x0042_0165;
+const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
+const PRIVATE_KEY_OBJECT_TYPE: u32 = 4;
 
 /// A typed Re-key Key Pair request from §6.1.47, Table 310.
 ///
@@ -123,9 +125,23 @@ impl RekeyKeyPairRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error if a generic TTLV model constraint
+    /// Returns a sanitized protocol error if source-defined Attribute
+    /// cardinality rules are violated or a generic TTLV model constraint
     /// prevents representing the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        validate_attribute_group(
+            self.common_attributes.as_ref(),
+            Some(PRIVATE_KEY_OBJECT_TYPE),
+        )?;
+        validate_attribute_group(
+            self.private_key_attributes.as_ref(),
+            Some(PRIVATE_KEY_OBJECT_TYPE),
+        )?;
+        validate_attribute_group(
+            self.public_key_attributes.as_ref(),
+            Some(PUBLIC_KEY_OBJECT_TYPE),
+        )?;
+
         let mut payload = Structure::new();
         if let Some(identifier) = self.private_key_unique_identifier {
             push(
@@ -380,6 +396,21 @@ fn push_attribute_group(
         group.try_push(attribute).map_err(model_error)?;
     }
     push(payload, raw_tag, Value::structure(group))
+}
+
+fn validate_attribute_group(
+    attributes: Option<&AttributeSet>,
+    object_type: Option<u32>,
+) -> Result<(), ProtocolError> {
+    if let Some(attributes) = attributes {
+        crate::attribute::validate_single_instance_attribute_items(
+            attributes.as_items(),
+            object_type,
+            true,
+        )
+        .map_err(|_| common::request_error())?;
+    }
+    Ok(())
 }
 
 fn push_structure_group(

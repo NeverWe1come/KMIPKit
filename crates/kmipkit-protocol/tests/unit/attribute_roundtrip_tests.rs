@@ -29,6 +29,7 @@ const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const COMMENT: u32 = 0x0042_00FD;
+const NIST_KEY_TYPE: u32 = 0x0042_013A;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const EXTENSION_TAG: u32 = 0x0054_1234;
@@ -230,12 +231,13 @@ fn modify_attribute_preserves_current_and_new_items_with_allocated_tags() {
 #[test]
 fn get_attributes_response_preserves_repeated_instances_in_wire_order() {
     // OASIS KMIP v2.1 §6.1.20, Table 224 carries the Attributes Structure;
-    // §§5.1–5.4, Tables 157–160 define its direct attribute Items. Repeated
-    // values remain distinct and keep their response order in the typed model.
+    // §4.34 Table 98 permits repeated NIST Key Type instances. §§5.1–5.4,
+    // Tables 157–160 define their direct attribute Items. Repeated values
+    // remain distinct and keep their response order in the typed model.
     let message = get_attributes_response_message(successful_get_attributes_payload([
-        item(COMMENT, Value::text_string("first".to_owned())),
+        item(NIST_KEY_TYPE, Value::enumeration(1)),
         item(EXTENSION_TAG, Value::byte_string(vec![0xA1, 0xB2])),
-        item(COMMENT, Value::text_string("second".to_owned())),
+        item(NIST_KEY_TYPE, Value::enumeration(2)),
     ]));
     let response = GetAttributesResponse::try_from_response_item(response_item(&message))
         .expect("successful Table 224 response contains its identifier and attributes");
@@ -251,9 +253,9 @@ fn get_attributes_response_preserves_repeated_instances_in_wire_order() {
             .map(|attribute| (attribute.tag().raw(), capture(attribute)))
             .collect::<Vec<_>>(),
         [
-            (COMMENT, CapturedValue::TextString("first".to_owned())),
+            (NIST_KEY_TYPE, CapturedValue::Enumeration(1)),
             (EXTENSION_TAG, CapturedValue::ByteString(vec![0xA1, 0xB2])),
-            (COMMENT, CapturedValue::TextString("second".to_owned())),
+            (NIST_KEY_TYPE, CapturedValue::Enumeration(2)),
         ]
     );
 }

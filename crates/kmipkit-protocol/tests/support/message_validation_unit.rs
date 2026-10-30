@@ -76,7 +76,13 @@ mod tests {
                     Value::text_string("Vendor".to_owned()),
                 ),
                 item(CRITICALITY_INDICATOR, Value::boolean(false)),
-                item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+                item(
+                    VENDOR_EXTENSION,
+                    Value::structure(structure([item(
+                        0x0054_0001,
+                        Value::text_string("opaque vendor value".to_owned()),
+                    )])),
+                ),
             ])),
         )
     }
@@ -382,10 +388,10 @@ mod tests {
     }
 
     #[test]
-    fn request_batch_validation_covers_required_fields_ids_and_extensions() {
+    fn request_batch_validation_covers_required_fields_optional_ids_and_extensions() {
         let valid = request_batch();
         assert_eq!(
-            validate_request_batch_item(&valid.view(), 1, 1).expect("batch valid"),
+            validate_request_batch_item(&valid.view(), 1, false).expect("batch valid"),
             Some(vec![1])
         );
         let identified = structure([
@@ -395,26 +401,33 @@ mod tests {
             message_extension(),
         ]);
         assert_eq!(
-            validate_request_batch_item(&identified.view(), 1, 2).expect("identified batch valid"),
+            validate_request_batch_item(&identified.view(), 1, true)
+                .expect("identified batch valid"),
             Some(vec![3, 4])
         );
         let missing_operation =
             structure([item(REQUEST_PAYLOAD, Value::structure(Structure::new()))]);
         assert_kind(
-            validate_request_batch_item(&missing_operation.view(), 1, 1),
+            validate_request_batch_item(&missing_operation.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_payload = structure([item(OPERATION, Value::enumeration(1))]);
         assert_kind(
-            validate_request_batch_item(&missing_payload.view(), 1, 1),
+            validate_request_batch_item(&missing_payload.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_id = structure([
             item(OPERATION, Value::enumeration(1)),
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
+        // KMIP Specification v2.1 §8.3 Table 396 permits omission only when Batch Count is one.
+        assert_eq!(
+            validate_request_batch_item(&missing_id.view(), 1, false)
+                .expect("a request batch item may omit its optional ID"),
+            None
+        );
         assert_kind(
-            validate_request_batch_item(&missing_id.view(), 1, 2),
+            validate_request_batch_item(&missing_id.view(), 1, true),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let wrong_id = structure([
@@ -423,7 +436,7 @@ mod tests {
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_request_batch_item(&wrong_id.view(), 1, 1),
+            validate_request_batch_item(&wrong_id.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
 
@@ -433,7 +446,7 @@ mod tests {
             item(MESSAGE_EXTENSION, Value::integer(2)),
         ]);
         assert_kind(
-            validate_request_batch_item(&malformed_extension.view(), 1, 1),
+            validate_request_batch_item(&malformed_extension.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
     }
@@ -523,8 +536,27 @@ mod tests {
     }
 
     #[test]
+    // One matrix covers the extension structure's ordering, required fields, and value types.
+    #[allow(clippy::too_many_lines)]
     fn message_extension_validation_checks_required_fields_order_and_values() {
+        // KMIP Specification v2.1 §§9.13 and 11.56 require vendor-specific extension data.
         let valid = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(
+                VENDOR_EXTENSION,
+                Value::structure(structure([item(
+                    0x0054_0001,
+                    Value::text_string("opaque vendor value".to_owned()),
+                )])),
+            ),
+        ]);
+        assert!(validate_message_extension(&valid.view()).is_ok());
+
+        let empty_vendor_extension = structure([
             item(
                 VENDOR_IDENTIFICATION,
                 Value::text_string("Vendor_1".to_owned()),
@@ -532,7 +564,29 @@ mod tests {
             item(CRITICALITY_INDICATOR, Value::boolean(false)),
             item(VENDOR_EXTENSION, Value::structure(Structure::new())),
         ]);
-        assert!(validate_message_extension(&valid.view()).is_ok());
+        assert_kind(
+            validate_message_extension(&empty_vendor_extension.view()),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        let standard_tag_in_vendor_extension = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(
+                VENDOR_EXTENSION,
+                Value::structure(structure([item(
+                    OPERATION,
+                    Value::enumeration(1),
+                )])),
+            ),
+        ]);
+        assert_kind(
+            validate_message_extension(&standard_tag_in_vendor_extension.view()),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
 
         let missing_vendor = structure([
             item(CRITICALITY_INDICATOR, Value::boolean(false)),
@@ -583,6 +637,22 @@ mod tests {
         assert_kind(
             validate_message_extension(&invalid_characters.view()),
             MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        let wrong_extension_type = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(
+                VENDOR_EXTENSION,
+                Value::text_string("extension data must be a structure".to_owned()),
+            ),
+        ]);
+        assert_kind(
+            validate_message_extension(&wrong_extension_type.view()),
+            MessageValidationErrorKind::WrongItemType,
         );
     }
 

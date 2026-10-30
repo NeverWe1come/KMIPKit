@@ -113,6 +113,48 @@ fn request_can_omit_identifier_to_use_the_batch_id_placeholder() {
 }
 
 #[test]
+fn request_rejects_repeated_singleton_and_dsa_when_object_context_is_not_pgp() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.46 Table 305.
+    let repeated_comment = structure([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    assert!(
+        RekeyRequest::new()
+            .with_attributes(repeated_comment)
+            .into_ttlv_payload()
+            .is_err()
+    );
+
+    let repeated_dsa = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    assert!(
+        RekeyRequest::new()
+            .with_attributes(repeated_dsa)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
+fn request_rejects_repeated_dsa_for_symmetric_key_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.46 Table 305.
+    let attributes = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+
+    assert!(
+        RekeyRequest::new()
+            .with_attributes(attributes)
+            .into_ttlv_payload()
+            .is_err()
+    );
+}
+
+#[test]
 fn successful_response_returns_replacement_identifier_and_preserves_unknown_fields() {
     let payload = structure([
         identifier_item("replacement-key"),

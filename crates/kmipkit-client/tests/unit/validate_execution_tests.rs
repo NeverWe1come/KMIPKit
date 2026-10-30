@@ -292,14 +292,19 @@ fn malformed_local_certificate_is_not_sent_and_redacted() {
 }
 
 #[test]
-fn omitted_chain_and_date_are_forwarded_without_local_policy() {
+fn one_chain_member_and_omitted_date_are_forwarded_without_policy() {
     let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
     let (mut client, transport, captured) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
     });
     let result = client
-        .validate(ValidateRequest::new(), &CodecLimits::defaults())
+        .validate(
+            ValidateRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+                "managed-certificate".to_owned(),
+            )),
+            &CodecLimits::defaults(),
+        )
         .unwrap();
     assert_eq!(
         result
@@ -314,9 +319,24 @@ fn omitted_chain_and_date_are_forwarded_without_local_policy() {
     );
     assert_eq!(
         request_shape(captured.borrow().as_deref().unwrap()),
-        Some((VALIDATE, 0))
+        Some((VALIDATE, 1))
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn validate_without_chain_member_is_not_sent() {
+    let response = asynchronous_response_bytes(VALIDATE, 0, None, None, Some(success_payload()));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .validate(ValidateRequest::new(), &CodecLimits::defaults())
+        .unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
 
 #[test]

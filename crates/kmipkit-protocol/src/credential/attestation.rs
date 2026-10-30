@@ -54,9 +54,13 @@ impl AttestationCredential {
     /// or noncanonically ordered known members, including malformed Nonce
     /// fields.
     pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
-        validation::validate_fields(&tree.view(), ATTESTATION_RULES, ATTESTATION_EVIDENCE_GROUP)?;
-        validate_nonce(&tree)?;
+        Self::validate_view(&tree.view())?;
         Ok(Self { tree })
+    }
+
+    pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
+        validation::validate_fields(view, ATTESTATION_RULES, ATTESTATION_EVIDENCE_GROUP)?;
+        validate_nonce_view(view)
     }
 
     pub(super) fn field_count(&self) -> usize {
@@ -75,8 +79,8 @@ impl AttestationCredential {
     }
 }
 
-fn validate_nonce(tree: &Structure) -> Result<(), CredentialValidationError> {
-    for field in tree.view().children() {
+fn validate_nonce_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
+    for field in view.children() {
         if field.tag().raw() != NONCE {
             continue;
         }

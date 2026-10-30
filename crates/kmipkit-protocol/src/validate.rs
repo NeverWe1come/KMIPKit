@@ -26,9 +26,10 @@ const VALIDITY_INDICATOR: u32 = 0x0042_009b;
 
 /// One certificate chain with ordered lists from section 6.1.57, Table 340.
 ///
-/// Certificate and identifier lists together form one chain; there is no
-/// second-chain field. Fields use Table 340 order as required by section 10.1.2. The server controls chain validation, trust anchors
-/// and policy. Empty input is forwarded without imposing a local minimum.
+/// The request must contain at least one Certificate or Unique Identifier
+/// across the two lists. Either list may be empty, and either may repeat. There
+/// is no second-chain field. Fields use Table 340 order as required by section
+/// 10.1.2. The server controls chain validation, trust anchors, and policy.
 pub struct ValidateRequest {
     certificates: Vec<Structure>,
     identifiers: Vec<UniqueIdentifier>,
@@ -37,7 +38,10 @@ pub struct ValidateRequest {
 }
 
 impl ValidateRequest {
-    /// Creates a request with the chain and evaluation date omitted.
+    /// Creates a request builder with no chain members or evaluation date.
+    ///
+    /// Add at least one Certificate or Unique Identifier before encoding the
+    /// request; an optional Validity Date does not count as a chain member.
     #[must_use]
     pub const fn new() -> Self {
         Self {
@@ -99,8 +103,13 @@ impl ValidateRequest {
     /// # Errors
     ///
     /// Returns a sanitized error for malformed Table 2 Certificate fields or
-    /// an unrepresentable TTLV structure. It does not evaluate certificates.
+    /// an unrepresentable TTLV structure, or when both chain-member lists are
+    /// empty. It does not evaluate certificates.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        if self.certificates.is_empty() && self.identifiers.is_empty() {
+            return Err(cryptographic_operation::request_error());
+        }
+
         let mut payload = Structure::new();
         for certificate in self.certificates {
             validate_certificate_shape(&certificate)?;

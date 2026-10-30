@@ -219,11 +219,18 @@ impl DeriveKeyRequest {
     /// required fields and the Derive Key ID Placeholder prohibition.
     ///
     /// # Errors
-    /// Returns a payload-free protocol error for missing required identifiers,
-    /// an ID Placeholder identifier, missing required output attributes, or
-    /// invalid TTLV structure.
+    /// Returns a payload-free protocol error for source-defined Attribute
+    /// cardinality violations, missing required identifiers, an ID Placeholder
+    /// identifier, missing required output attributes, or invalid TTLV
+    /// structure.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.unique_identifiers.is_empty()
+        if crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .is_err()
+            || self.unique_identifiers.is_empty()
             || self.unique_identifiers.iter().any(is_id_placeholder)
             || !has_required_output_attributes(self.object_type, &self.attributes)
             || !self

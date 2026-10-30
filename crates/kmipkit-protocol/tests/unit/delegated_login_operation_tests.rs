@@ -22,6 +22,9 @@ const TICKET_VALUE: u32 = 0x0042_014B;
 const LEASE_TIME: u32 = 0x0042_0049;
 const REQUEST_COUNT: u32 = 0x0042_014C;
 const USAGE_LIMITS: u32 = 0x0042_0095;
+const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
+const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
 const RIGHTS: u32 = 0x0042_014D;
 const RIGHT: u32 = 0x0042_014E;
 const VENDOR_EXTENSION: u32 = 0x0054_1234;
@@ -44,7 +47,18 @@ fn item_tags(payload: &Structure) -> Vec<u32> {
 }
 
 fn valid_rights() -> Structure {
-    structure([item(RIGHT, Value::structure(Structure::new()))])
+    // KMIP Specification v2.1 §7.35 Table 387 does not require a Right member.
+    Structure::new()
+}
+
+fn valid_usage_limits() -> Structure {
+    // KMIP Specification v2.1 §7.40 Table 392 requires all three members;
+    // §11.60 Table 491 assigns Byte the Usage Limits Unit value 1.
+    structure([
+        item(USAGE_LIMITS_TOTAL, Value::long_integer(10)),
+        item(USAGE_LIMITS_COUNT, Value::long_integer(2)),
+        item(USAGE_LIMITS_UNIT, Value::enumeration(1)),
+    ])
 }
 
 fn structure_at_depth(depth: usize) -> Structure {
@@ -92,7 +106,7 @@ fn request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms()
     let interval = DelegatedLoginRequest::new(valid_rights())
         .with_lease_time_interval(60)
         .with_request_count(4)
-        .with_usage_limits(structure([item(0x0042_00C2, Value::integer(7))]))
+        .with_usage_limits(valid_usage_limits())
         .into_ttlv_payload()
         .expect("valid Table 199 values encode");
     let date_time = DelegatedLoginRequest::new(valid_rights())

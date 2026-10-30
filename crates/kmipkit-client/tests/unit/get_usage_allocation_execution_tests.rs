@@ -107,6 +107,11 @@ fn request_batch(request: GetUsageAllocationRequest) -> ClientBatch {
     )))
 }
 
+fn request_with_identifier(count: i64) -> GetUsageAllocationRequest {
+    GetUsageAllocationRequest::new(count)
+        .with_unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
+}
+
 fn completed(outcome: &ClientBatchOutcome) -> &GetUsageAllocationResponse {
     assert_eq!(outcome.operation(), ClientOperation::GetUsageAllocation);
     let ClientBatchOutcome::GetUsageAllocation(response) = outcome else {
@@ -172,13 +177,18 @@ fn assert_request(wire: &[u8], expected_identifier: Option<&str>, expected_count
 }
 
 #[test]
-fn table_232_one_exchange_encodes_optional_id_and_long_integer_count() {
-    for (identifier, request) in [
-        (None, GetUsageAllocationRequest::new(0x0102_0304_0506_0708)),
+fn table_232_one_exchange_encodes_identifier_and_long_integer_count() {
+    for (identifier, request, expected_count) in [
+        (
+            Some(OBJECT_ID),
+            request_with_identifier(0x0102_0304_0506_0708),
+            0x0102_0304_0506_0708,
+        ),
         (
             Some(OBJECT_ID),
             GetUsageAllocationRequest::new(29)
                 .with_unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+            29,
         ),
     ] {
         let (mut client, fake, captured) = client_for(ExchangeScript::Success {
@@ -196,11 +206,7 @@ fn table_232_one_exchange_encodes_optional_id_and_long_integer_count() {
                 .expect("request was captured")
                 .as_slice(),
             identifier,
-            if identifier.is_some() {
-                29
-            } else {
-                0x0102_0304_0506_0708
-            },
+            expected_count,
         );
         assert_eq!(
             completed(result.get(0).expect("one result").outcome()).unique_identifier(),
@@ -220,7 +226,7 @@ fn table_234_failures_and_unknown_reasons_remain_typed_results_without_retry() {
         });
         let result = client
             .execute(
-                request_batch(GetUsageAllocationRequest::new(1)),
+                request_batch(request_with_identifier(1)),
                 &CodecLimits::defaults(),
             )
             .expect("Table 234 Failure remains a typed result");
@@ -244,7 +250,7 @@ fn malformed_success_missing_identifier_is_response_started_without_retry() {
     });
     let error = client
         .execute(
-            request_batch(GetUsageAllocationRequest::new(1)),
+            request_batch(request_with_identifier(1)),
             &CodecLimits::defaults(),
         )
         .expect_err("Table 233 success requires Unique Identifier");
@@ -272,7 +278,7 @@ fn pending_keeps_exact_correlation_and_does_not_poll() {
         .execute(
             ClientBatch::new(
                 ClientBatchItem::new(ClientRequest::get_usage_allocation(
-                    GetUsageAllocationRequest::new(1),
+                    request_with_identifier(1),
                 ))
                 .with_unique_batch_item_id(BATCH_ID.to_vec()),
             )
@@ -309,7 +315,7 @@ fn get_usage_allocation_outcome_exposes_typed_views_and_safe_diagnostics() {
     });
     let response = client
         .execute(
-            request_batch(GetUsageAllocationRequest::new(1)),
+            request_batch(request_with_identifier(1)),
             &CodecLimits::defaults(),
         )
         .expect("Get Usage Allocation succeeds");
@@ -343,10 +349,7 @@ fn local_limit_is_not_sent_and_partial_write_is_possibly_sent_without_retry() {
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
     let impossible = CodecLimits::new(0, 64, 100_000).expect("zero byte limit is supported");
     let error = client
-        .execute(
-            request_batch(GetUsageAllocationRequest::new(1)),
-            &impossible,
-        )
+        .execute(request_batch(request_with_identifier(1)), &impossible)
         .expect_err("request cannot fit in a zero byte limit");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(fake.borrow().exchange_count(), 0);
@@ -355,7 +358,7 @@ fn local_limit_is_not_sent_and_partial_write_is_possibly_sent_without_retry() {
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
     let error = client
         .execute(
-            request_batch(GetUsageAllocationRequest::new(1)),
+            request_batch(request_with_identifier(1)),
             &CodecLimits::defaults(),
         )
         .expect_err("partial write keeps ambiguous delivery");

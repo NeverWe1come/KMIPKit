@@ -72,7 +72,13 @@ fn extension(vendor: &str, critical: bool) -> Value {
     Value::structure(structure([
         item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
         item(CRITICALITY_INDICATOR, Value::boolean(critical)),
-        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+        item(
+            VENDOR_EXTENSION,
+            Value::structure(structure([item(
+                0x0054_0001,
+                Value::text_string("opaque vendor value".to_owned()),
+            )])),
+        ),
     ]))
 }
 
@@ -250,7 +256,7 @@ fn request_batch_and_extension_accessors_preserve_order_and_values() {
     assert_eq!(extension.with_ttlv(|value| value.children().len()), Some(3));
     assert_eq!(
         extension.with_vendor_extension(|value| value.children().len()),
-        Some(0)
+        Some(1)
     );
 
     assert_eq!(second.operation(), Some(8));
@@ -311,7 +317,7 @@ fn response_batch_and_extension_accessors_preserve_all_result_shapes() {
     assert_eq!(extension.with_ttlv(|value| value.children().len()), Some(3));
     assert_eq!(
         extension.with_vendor_extension(|value| value.children().len()),
-        Some(0)
+        Some(1)
     );
 
     assert_eq!(pending.operation(), Some(9));

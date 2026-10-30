@@ -15,7 +15,7 @@ These are acceptance scenarios for the implementation. Credential and Authentica
 2. Reject missing Username, OTP, Timestamp, Hashed Password, Attestation Type, or Nonce where required.
 3. Represent and preserve every Table 412 Device field and validate individual field types. Reject a typed Device with none of the four identifier members named in §9.11; Password or Device Identifier alone cannot satisfy the uniqueness SHALL. Test those two optional fields alongside an identifier member. Field presence does not impose non-empty text. Document that the caller must supply a value or combination that is actually unique; the source does not specify comparison scope, and KMIPKit does not verify uniqueness from client-local data. Generic TTLV may retain an unvalidated tree.
 4. Test omitted, explicit SHA-256, other known, and unknown Hashing Algorithm values. Omitted algorithm has effective SHA-256 semantics while retaining absence.
-5. Require and preserve caller-provided Timestamp and hashed bytes, and expose effective SHA-256 when the optional algorithm is omitted. Do not calculate hashes or implement/claim monotonicity checking or tests until OD-003 review settles owner, comparison scope, and clock behavior.
+5. Preserve caller-provided Timestamp and hashed bytes, expose effective SHA-256 when the optional algorithm is omitted, and use `HashedPasswordTimestampSequence` with caller-owned per-Username state. Supply the current time at hash-production time; equal or earlier values fail. KMIPKit does not calculate hashes or read an implicit clock.
 6. Preserve Nonce ID/Value bytes, including embedded zero bytes; never generate or modify them.
 7. Attestation requires Measurement or Assertion; test neither, each individually, and both.
 

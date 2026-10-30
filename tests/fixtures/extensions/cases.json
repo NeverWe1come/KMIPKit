@@ -274,7 +274,8 @@
           "children": [
             {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
             {"tag": "0x420004", "type": "LongInteger", "value": 42},
-            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"}
+            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"},
+            {"tag": "0x540005", "type": "TextString", "value": "vendor-payload-sentinel"}
           ]
         }
       },
@@ -288,7 +289,8 @@
           "children": [
             {"tag": "0x420001", "type": "TextString", "value": "alpha-v1"},
             {"tag": "0x420004", "type": "LongInteger", "value": 42},
-            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"}
+            {"tag": "0x420005", "type": "TextString", "value": "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A"},
+            {"tag": "0x540005", "type": "TextString", "value": "vendor-payload-sentinel"}
           ]
         },
         "diagnostics": {"redacted": true, "containsPayloadValues": false},

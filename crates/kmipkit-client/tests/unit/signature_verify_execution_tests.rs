@@ -10,12 +10,12 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{SecretBytes, SignatureVerifyRequest};
+use kmipkit_protocol::{OperationData, SecretBytes, SignatureVerifyRequest, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
-use kmipkit_ttlv::Value;
-use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::{Value, ValueView};
 use zeroize::Zeroizing;
 
 use crate::execute_test_support::{
@@ -25,8 +25,16 @@ use crate::{Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequ
 
 const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
 const SUCCESS: u32 = 0;
+const OPERATION: u32 = 0x0042_005C;
+const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const VALIDITY_INDICATOR: u32 = 0x0042_0128;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const DATA: u32 = 0x0042_00C2;
+const DIGESTED_DATA: u32 = 0x0042_0107;
+const SIGNATURE_DATA: u32 = 0x0042_00C3;
+const CORRELATION_VALUE: u32 = 0x0042_00D6;
+const INIT_INDICATOR: u32 = 0x0042_00D7;
+const FINAL_INDICATOR: u32 = 0x0042_00D8;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const BATCH_ITEM: u32 = 0x0042_000F;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
@@ -91,6 +99,7 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 fn request() -> ClientRequest {
     ClientRequest::signature_verify(
         SignatureVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
             .with_signature_data(SecretBytes::new(b"opaque-signature".to_vec())),
     )
 }
@@ -116,6 +125,20 @@ fn response(indicator: u32) -> Vec<u8> {
     )
 }
 
+fn multipart_response() -> Vec<u8> {
+    let payload = test_structure([test_item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("verification-key".to_owned()),
+    )]);
+    asynchronous_response_bytes(
+        SIGNATURE_VERIFY_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(payload),
+    )
+}
+
 fn response_with_payload(payload: kmipkit_ttlv::Structure) -> Vec<u8> {
     asynchronous_response_bytes(
         SIGNATURE_VERIFY_OPERATION,
@@ -124,6 +147,73 @@ fn response_with_payload(payload: kmipkit_ttlv::Structure) -> Vec<u8> {
         None,
         Some(payload),
     )
+}
+
+#[derive(Debug, Eq, PartialEq)]
+enum CapturedSignatureVerifyField {
+    Text(String),
+    Bytes(Vec<u8>),
+    Boolean(bool),
+    Other,
+}
+
+fn request_payload_fields(bytes: &[u8]) -> (Option<u32>, Vec<(u32, CapturedSignatureVerifyField)>) {
+    let message = decode(bytes).expect("the captured Signature Verify request is valid TTLV");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("the KMIP request message is a Structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == BATCH_ITEM)
+            .expect("the Signature Verify request contains a Batch Item");
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                panic!("the Batch Item is a Structure");
+            };
+            let operation = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == OPERATION)
+                .and_then(|field| {
+                    field.with_value(|value| match value {
+                        ValueView::Enumeration(value) => Some(*value),
+                        _ => None,
+                    })
+                });
+            let request_payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .expect("the Signature Verify Batch Item contains a Request Payload");
+            let fields = request_payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("the Request Payload is a Structure");
+                };
+                payload
+                    .children()
+                    .iter()
+                    .map(|field| {
+                        let snapshot = field.with_value(|value| match value {
+                            ValueView::TextString(value) => {
+                                CapturedSignatureVerifyField::Text(value.to_owned())
+                            }
+                            ValueView::ByteString(value) => {
+                                CapturedSignatureVerifyField::Bytes(value.to_vec())
+                            }
+                            ValueView::Boolean(value) => {
+                                CapturedSignatureVerifyField::Boolean(*value)
+                            }
+                            _ => CapturedSignatureVerifyField::Other,
+                        });
+                        (field.tag().raw(), snapshot)
+                    })
+                    .collect()
+            });
+            (operation, fields)
+        })
+    })
 }
 
 fn contains_response_sentinel(tree: &kmipkit_ttlv::StructureView<'_>) -> bool {
@@ -136,6 +226,100 @@ fn contains_response_sentinel(tree: &kmipkit_ttlv::StructureView<'_>) -> bool {
             _ => false,
         })
     })
+}
+
+#[test]
+fn request_table_337_single_part_fields_reach_the_fake_transport_unchanged() {
+    let data = [0x02, 0x82, 0xFD];
+    let digest = [0x01, 0x81, 0xFE];
+    let signature = [0x00, 0x80, 0xFF];
+    let (mut client, state) = client(response(1));
+    client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::signature_verify(
+                SignatureVerifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString(
+                        "verification-key".to_owned(),
+                    ))
+                    .with_data(OperationData::ByteString(SecretBytes::new(data.to_vec())))
+                    .with_digested_data(SecretBytes::new(digest.to_vec()))
+                    .with_signature_data(SecretBytes::new(signature.to_vec()))
+                    .with_init_indicator(true)
+                    .with_final_indicator(true),
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect("single-part Table 337 fields form a valid Signature Verify request");
+
+    let captured = state.borrow();
+    assert_eq!(captured.calls, 1);
+    assert_eq!(captured.requests.len(), 1);
+    let (operation, fields) = request_payload_fields(captured.requests[0].as_slice());
+    assert_eq!(operation, Some(SIGNATURE_VERIFY_OPERATION));
+    assert_eq!(
+        fields,
+        [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignatureVerifyField::Text("verification-key".to_owned()),
+            ),
+            (DATA, CapturedSignatureVerifyField::Bytes(data.to_vec())),
+            (
+                DIGESTED_DATA,
+                CapturedSignatureVerifyField::Bytes(digest.to_vec()),
+            ),
+            (
+                SIGNATURE_DATA,
+                CapturedSignatureVerifyField::Bytes(signature.to_vec()),
+            ),
+            (INIT_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
+            (FINAL_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
+        ]
+    );
+}
+
+#[test]
+fn request_table_337_multipart_fields_reach_the_fake_transport_unchanged() {
+    let correlation = [0x02, 0x82, 0xFD];
+    let (mut client, state) = client(multipart_response());
+    client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::signature_verify(
+                SignatureVerifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString(
+                        "verification-key".to_owned(),
+                    ))
+                    .with_correlation_value(SecretBytes::new(correlation.to_vec()))
+                    .with_init_indicator(true)
+                    .with_final_indicator(false),
+            ))),
+            &CodecLimits::defaults(),
+        )
+        .expect("multipart Table 337 fields form a valid Signature Verify request");
+
+    let captured = state.borrow();
+    assert_eq!(captured.calls, 1);
+    assert_eq!(captured.requests.len(), 1);
+    let (operation, fields) = request_payload_fields(captured.requests[0].as_slice());
+    assert_eq!(operation, Some(SIGNATURE_VERIFY_OPERATION));
+    assert_eq!(
+        fields,
+        [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignatureVerifyField::Text("verification-key".to_owned()),
+            ),
+            (
+                CORRELATION_VALUE,
+                CapturedSignatureVerifyField::Bytes(correlation.to_vec()),
+            ),
+            (INIT_INDICATOR, CapturedSignatureVerifyField::Boolean(true),),
+            (
+                FINAL_INDICATOR,
+                CapturedSignatureVerifyField::Boolean(false),
+            ),
+        ]
+    );
 }
 
 #[test]
@@ -208,6 +392,7 @@ fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
     ]);
     let (mut client, _) = client(response_with_payload(payload));
     let request = SignatureVerifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
         .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
         .with_init_indicator(false)
         .with_final_indicator(false);
@@ -378,6 +563,7 @@ fn reordered_batch_responses_keep_each_requests_multipart_indicator_context() {
     let (mut client, state) = client(reordered_batch_response_bytes());
     let multipart = ClientRequest::signature_verify(
         SignatureVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
             .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
             .with_init_indicator(false)
             .with_final_indicator(false),

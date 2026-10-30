@@ -9,7 +9,10 @@
 //! KMIPKIT-REQ-SPEC-9.11-006; KMIPKIT-0008-FR-001, FR-002, FR-004–FR-006,
 //! FR-009; SC-001, SC-002.
 
-use kmipkit_protocol::{Authentication, CredentialType, CredentialValue, Nonce, RequestMessage};
+use kmipkit_protocol::{
+    Authentication, CredentialType, CredentialValue, HashedPasswordTimestampSequence, Nonce,
+    RequestMessage,
+};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -204,6 +207,8 @@ fn authentication_roundtrip_preserves_unknown_fields_and_credential_order() {
     assert_authentication_tree_preserves_unknown_fields_and_order(&roundtrip);
 }
 
+// KMIP Specification v2.1 §9.11 limits this evidence to Credential representation;
+// it does not establish profile-specific Authentication or server satisfaction.
 #[test]
 fn authentication_does_not_claim_server_satisfaction() {
     let authentication = structure([
@@ -549,6 +554,8 @@ fn hashed_password_requires_username_timestamp_and_hash_bytes_with_table_types()
     }
 }
 
+// KMIP Specification v2.1 §9.11 (paragraph before Table 415) defaults an omitted
+// Hashing Algorithm to SHA-256.
 #[test]
 fn hashed_password_omission_exposes_sha256_default_without_materializing_field() {
     let timestamp = 0x1122_3344_5566_7788;
@@ -590,6 +597,8 @@ fn hashed_password_omission_exposes_sha256_default_without_materializing_field()
     assert_eq!(roundtrip_hash, Some(secret_bytes));
 }
 
+// KMIP Specification v2.1 §9.11/Table 415 defines Hashing Algorithm as an
+// Enumeration; KMIPKit preserves unknown values per its forward-compatibility policy.
 #[test]
 fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
     let timestamp = -0x0102_0304_0506_0708;
@@ -643,6 +652,52 @@ fn hashed_password_preserves_explicit_and_unknown_algorithm_values() {
             Some(secret_bytes.clone())
         );
     }
+}
+
+// OASIS KMIP Specification v2.1 §9.11 requires Hashed Password Timestamps
+// to increase monotonically. The project policy uses one caller-owned
+// sequence per logical client and Username, with strict increase.
+#[test]
+fn hashed_password_timestamp_sequence_accepts_strictly_increasing_values() {
+    let mut sequence = HashedPasswordTimestampSequence::new(None);
+
+    assert!(sequence.record(1_800_000_000).is_ok());
+    assert!(sequence.record(1_800_000_001).is_ok());
+    assert_eq!(sequence.last_timestamp(), Some(1_800_000_001));
+}
+
+// Equality and rollback are rejected without exposing values or advancing
+// the caller-owned state.
+#[test]
+fn hashed_password_timestamp_sequence_rejects_equal_or_earlier_values() {
+    let mut sequence = HashedPasswordTimestampSequence::new(Some(1_800_000_001));
+
+    for timestamp in [1_800_000_001, 1_800_000_000] {
+        let error = sequence
+            .record(timestamp)
+            .expect_err("timestamp must strictly increase");
+        assert!(!error.to_string().contains(&timestamp.to_string()));
+        assert_eq!(sequence.last_timestamp(), Some(1_800_000_001));
+    }
+}
+
+#[test]
+fn hashed_password_timestamp_sequences_are_independent() {
+    let mut first_user = HashedPasswordTimestampSequence::new(None);
+    let mut second_user = HashedPasswordTimestampSequence::new(None);
+
+    assert!(first_user.record(1_800_000_000).is_ok());
+    assert!(second_user.record(1_800_000_000).is_ok());
+}
+
+#[test]
+fn hashed_password_timestamp_sequence_debug_redacts_the_recorded_value() {
+    let timestamp = 1_800_000_001_i64;
+    let sequence = HashedPasswordTimestampSequence::new(Some(timestamp));
+    let debug = format!("{sequence:?}");
+
+    assert!(debug.contains("has_previous_timestamp: true"));
+    assert!(!debug.contains(&timestamp.to_string()));
 }
 
 #[test]

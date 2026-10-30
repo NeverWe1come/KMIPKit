@@ -16,7 +16,8 @@ use std::collections::VecDeque;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    DecryptRequest, EncryptRequest, OperationData, SecretBytes, UniqueIdentifier,
+    DecryptRequest, EncryptRequest, HashRequest, MacRequest, MacVerifyRequest, OperationData,
+    SecretBytes, SignRequest, SignatureVerifyRequest, UniqueIdentifier,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -32,6 +33,11 @@ use crate::{
 
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 const DECRYPT_OPERATION: u32 = 0x0000_0020;
+const HASH_OPERATION: u32 = 0x0000_0027;
+const MAC_OPERATION: u32 = 0x0000_0023;
+const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
+const SIGN_OPERATION: u32 = 0x0000_0021;
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
 const SUCCESS: u32 = 0;
 const OPERATION_PENDING: u32 = 2;
 const PENDING_ASYNC_CORRELATION: &[u8] = &[0x00, 0xFF, 0x81, 0x10, 0x7F];
@@ -90,7 +96,9 @@ struct CapturedField {
     boolean: Option<bool>,
 }
 
-fn client_with_responses(responses: [Vec<u8>; 3]) -> (Client, SharedTransportState) {
+fn client_with_responses(
+    responses: impl IntoIterator<Item = Vec<u8>>,
+) -> (Client, SharedTransportState) {
     let state = Rc::new(RefCell::new(QueuedTransportState {
         responses: responses.into_iter().map(Zeroizing::new).collect(),
         requests: Vec::new(),
@@ -162,10 +170,84 @@ fn response_correlation(response: &ClientBatchResponse, operation: u32) -> Zeroi
             .expect("the result is a typed Decrypt response")
             .correlation_value()
             .expect("the initial Decrypt response supplies Correlation Value"),
-        _ => unreachable!("only Encrypt and Decrypt use this test helper"),
+        HASH_OPERATION => item
+            .outcome()
+            .response()
+            .hash()
+            .expect("the result is a typed Hash response")
+            .correlation_value()
+            .expect("the initial Hash response supplies Correlation Value"),
+        MAC_OPERATION => item
+            .outcome()
+            .response()
+            .mac()
+            .expect("the result is a typed MAC response")
+            .correlation_value()
+            .expect("the initial MAC response supplies Correlation Value"),
+        MAC_VERIFY_OPERATION => item
+            .outcome()
+            .response()
+            .mac_verify()
+            .expect("the result is a typed MAC Verify response")
+            .correlation_value()
+            .expect("the initial MAC Verify response supplies Correlation Value"),
+        SIGN_OPERATION => item
+            .outcome()
+            .response()
+            .sign()
+            .expect("the result is a typed Sign response")
+            .correlation_value()
+            .expect("the initial Sign response supplies Correlation Value"),
+        SIGNATURE_VERIFY_OPERATION => item
+            .outcome()
+            .response()
+            .signature_verify()
+            .expect("the result is a typed Signature Verify response")
+            .correlation_value()
+            .expect("the initial Signature Verify response supplies Correlation Value"),
+        _ => unreachable!("the operation has no multipart response accessor"),
     };
     // Keep the response-byte copy zeroizing until ownership moves into SecretBytes.
     Zeroizing::new(value.with_bytes(<[u8]>::to_vec))
+}
+
+fn assert_server_correlation_reused(
+    operation: u32,
+    initial_request: ClientRequest,
+    continuation_request: impl FnOnce(SecretBytes) -> ClientRequest,
+) {
+    let (mut client, state) = client_with_responses([
+        success_response(operation, Some(SERVER_CORRELATION)),
+        success_response(operation, None),
+    ]);
+    let initial_response = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(initial_request)),
+            &CodecLimits::defaults(),
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "initial multipart operation {operation:#010x} failed with {:?}",
+                error.cause_category()
+            )
+        });
+    let correlation = response_correlation(&initial_response, operation);
+    assert_eq!(correlation.as_slice(), SERVER_CORRELATION);
+
+    let continuation = continuation_request(SecretBytes::new(correlation.to_vec()));
+    let _continuation_response = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(continuation)),
+            &CodecLimits::defaults(),
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "continuation multipart operation {operation:#010x} failed with {:?}",
+                error.cause_category()
+            )
+        });
+    assert_request_count(&state, 2);
+    assert_payload_byte_string(&state, 1, CORRELATION_VALUE, SERVER_CORRELATION);
 }
 
 fn payload_fields(state: &SharedTransportState, request_index: usize) -> Vec<CapturedField> {
@@ -499,6 +581,146 @@ fn decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initia
     assert_payload_boolean(&state, 2, FINAL_INDICATOR, true);
     assert_payload_field_absent(&state, 2, AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA);
     assert_payload_field_absent(&state, 2, AUTHENTICATED_ENCRYPTION_TAG);
+}
+
+#[test]
+fn every_typed_multipart_operation_reuses_server_correlation_in_follow_up() {
+    assert_hash_server_correlation_reused();
+    assert_mac_server_correlation_reused();
+    assert_mac_verify_server_correlation_reused();
+    assert_encrypt_server_correlation_reused();
+    assert_decrypt_server_correlation_reused();
+    assert_sign_server_correlation_reused();
+    assert_signature_verify_server_correlation_reused();
+}
+
+fn assert_hash_server_correlation_reused() {
+    let parameters = || test_structure([test_item(0x0042_0038, Value::enumeration(6))]);
+    assert_server_correlation_reused(
+        HASH_OPERATION,
+        ClientRequest::Hash(HashRequest::new(parameters()).with_init_indicator(true)),
+        |value| {
+            ClientRequest::Hash(
+                HashRequest::new(parameters())
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_mac_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        MAC_OPERATION,
+        ClientRequest::Mac(
+            MacRequest::new()
+                .with_unique_identifier(identifier())
+                .with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::Mac(
+                MacRequest::new()
+                    .with_unique_identifier(identifier())
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_mac_verify_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        MAC_VERIFY_OPERATION,
+        ClientRequest::MacVerify(
+            MacVerifyRequest::new()
+                .with_unique_identifier(identifier())
+                .with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::MacVerify(
+                MacVerifyRequest::new()
+                    .with_unique_identifier(identifier())
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_encrypt_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        ENCRYPT_OPERATION,
+        ClientRequest::Encrypt(
+            EncryptRequest::new(Some(identifier()), None).with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::Encrypt(
+                EncryptRequest::new(Some(identifier()), None)
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_decrypt_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        DECRYPT_OPERATION,
+        ClientRequest::Decrypt(
+            DecryptRequest::new(Some(identifier()), None).with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::Decrypt(
+                DecryptRequest::new(Some(identifier()), None)
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_sign_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        SIGN_OPERATION,
+        ClientRequest::Sign(
+            SignRequest::new()
+                .with_unique_identifier(identifier())
+                .with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::Sign(
+                SignRequest::new()
+                    .with_unique_identifier(identifier())
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
+}
+
+fn assert_signature_verify_server_correlation_reused() {
+    let identifier = || UniqueIdentifier::TextString("multipart-object".to_owned());
+    assert_server_correlation_reused(
+        SIGNATURE_VERIFY_OPERATION,
+        ClientRequest::SignatureVerify(
+            SignatureVerifyRequest::new()
+                .with_unique_identifier(identifier())
+                .with_init_indicator(true),
+        ),
+        |value| {
+            ClientRequest::SignatureVerify(
+                SignatureVerifyRequest::new()
+                    .with_unique_identifier(identifier())
+                    .with_correlation_value(value)
+                    .with_final_indicator(true),
+            )
+        },
+    );
 }
 
 #[test]

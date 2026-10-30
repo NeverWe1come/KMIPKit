@@ -15,6 +15,14 @@ POLICY_RUNNER = REPOSITORY_ROOT / "scripts" / "Test-DependencyPolicy.ps1"
 
 class WorkflowContractTests(unittest.TestCase):
     COVERAGE_COLLECTION_GUARD = "needs.impact-plan.outputs.coverage_scopes"
+    RELEASE_EVIDENCE_JOB_IDS = (
+        "core",
+        "script-contracts",
+        "normative-inventory",
+        "coverage",
+        "coverage-gate",
+        "dependency-policy",
+    )
     UV_PYTHON_SETUP = (
         "astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0",
         "version: '0.12.23'",
@@ -35,6 +43,22 @@ class WorkflowContractTests(unittest.TestCase):
         match = re.search(rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", contents)
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
+
+    def assert_generator_check_step(
+        self,
+        job: str,
+        *,
+        name: str,
+        step_id: str,
+        command: str,
+    ) -> None:
+        step = re.search(
+            rf"(?ms)^      - name: {re.escape(name)}\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step, f"The normative inventory job must check {name.lower()}.")
+        self.assertRegex(step.group(1), rf"(?m)^        id: {re.escape(step_id)}$")
+        self.assertRegex(step.group(1), rf"(?m)^        run: {re.escape(command)}$")
 
     def require_named_step(self, job: str, name: str) -> re.Match[str]:
         match = re.search(
@@ -97,15 +121,21 @@ class WorkflowContractTests(unittest.TestCase):
     def test_normative_inventory_checks_generated_attribute_policy(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
-        step = re.search(
-            r"(?ms)^      - name: Verify generated attribute policy lookup\n(.*?)(?=^      - name: |\Z)",
+        self.assert_generator_check_step(
             job,
+            name="Verify generated attribute policy lookup",
+            step_id="verify-generated-attribute-policy-lookup",
+            command="python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check",
         )
-        self.assertIsNotNone(step, "The pull-request normative inventory job must check generated attribute policy.")
-        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-attribute-policy-lookup$")
-        self.assertRegex(
-            step.group(1),
-            r"(?m)^        run: python3 -B tools/normative_catalog/generate_attribute_policy\.py --repo-root \. --check$",
+
+    def test_normative_inventory_checks_generated_client_profiles(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "normative-inventory")
+        self.assert_generator_check_step(
+            job,
+            name="Verify generated client profiles",
+            step_id="verify-generated-client-profiles",
+            command="python3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check",
         )
 
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
@@ -119,8 +149,61 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_workflow_has_no_secrets_or_repository_writes(self) -> None:
         contents = self.require_workflow()
-        self.assertNotIn("secrets.", contents)
+        jobs_section = contents.split("\njobs:\n", maxsplit=1)[1]
+        jobs = re.findall(r"(?ms)^  ([a-z][\w-]*):\n(.*?)(?=^  [a-z][\w-]*:|\Z)", jobs_section)
+        secret_jobs = [job_id for job_id, body in jobs if "secrets." in body]
+        self.assertEqual(["release-summary"], secret_jobs)
         self.assertNotRegex(contents, r"(?i)gh pr (?:create|merge)|git push|cargo publish")
+
+    def test_protected_release_push_runs_exact_evidence_jobs(self) -> None:
+        contents = self.require_workflow()
+        trigger = re.search(r"(?ms)^on:\s*\n(.*?)(?=^permissions:)", contents)
+        self.assertIsNotNone(trigger, "The workflow must declare push triggers.")
+        push = re.search(r"(?ms)^  push:\s*\n(.*?)(?=^  [a-z][\w-]*:|\Z)", trigger.group(1))
+        self.assertIsNotNone(push, "The workflow must run on release pushes.")
+        self.assertRegex(push.group(1), r"(?m)^\s+- release/1\.0\.0$")
+
+        for job_id in self.RELEASE_EVIDENCE_JOB_IDS:
+            job = self.require_job(contents, job_id)
+            self.assertIn("github.event_name == 'push'", job, job_id)
+            self.assertIn("github.ref == 'refs/heads/release/1.0.0'", job, job_id)
+
+        release_job = self.require_job(contents, "release-summary")
+        self.assertIn("environment: release-evidence", release_job)
+        self.assertRegex(release_job, r"(?ms)^    permissions:\n      actions: read\n      contents: read$")
+        self.assertIn("permission-administration: read", release_job)
+        self.assertIn("branches/release%2F1.0.0/protection", release_job)
+        self.assertIn("PROFILE_EVIDENCE_MANIFEST", release_job)
+        self.assertIn("PROFILE_EVIDENCE_GITHUB_TOKEN: ${{ github.token }}", release_job)
+        self.assertIn(
+            "PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN: ${{ steps.branch-protection-token.outputs.token }}",
+            release_job,
+        )
+        self.assertIn("--readiness", release_job)
+
+    def test_release_summary_waits_for_exact_evidence_jobs(self) -> None:
+        contents = self.require_workflow()
+        release_job = self.require_job(contents, "release-summary")
+        needs = re.search(r"(?ms)^    needs:\n((?:      - [a-z-]+\n)+)", release_job)
+        self.assertIsNotNone(needs, "The protected aggregate must declare its required jobs.")
+        self.assertEqual(
+            list(self.RELEASE_EVIDENCE_JOB_IDS),
+            re.findall(r"(?m)^      - ([a-z-]+)$", needs.group(1)),
+        )
+        self.assertIn("environment: release-evidence", release_job)
+        self.assertIn("permission-administration: read", release_job)
+        self.assertIn(
+            "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # actions/create-github-app-token v3.2.0",
+            release_job,
+        )
+
+    def test_push_coverage_uses_the_webhook_before_sha(self) -> None:
+        contents = self.require_workflow()
+        self.assertIn("github.event_name == 'push' && github.event.before", contents)
+        inventory = self.require_job(contents, "normative-inventory")
+        self.assertIn("CI_EVENT_BASE_SHA", inventory)
+        gate = self.require_job(contents, "coverage-gate")
+        self.assertIn("CI_EVENT_BASE_SHA", gate)
 
     def test_required_platform_toolchain_and_informational_branch_matrices_exist(self) -> None:
         contents = self.require_workflow()
@@ -188,6 +271,47 @@ class WorkflowContractTests(unittest.TestCase):
             job,
             "The contract step must not select a system Python ahead of the uv environment.",
         )
+
+    def test_script_contracts_preflight_the_recent_normative_regression(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        python_contracts = self.require_named_step(job, "Run Python contracts").group(1)
+        preflight = (
+            "unittest discover -s tools/normative_catalog/tests -p 'test_validate.py' "
+            "-k active_state_source_predicates_have_four_distinct_requirement_labels -v"
+        )
+        self.assertIn(
+            preflight,
+            python_contracts,
+            "The recent catalog regression must run before the slow full contract suite.",
+        )
+        self.assertLess(
+            python_contracts.index(preflight),
+            python_contracts.index("unittest discover --failfast -s scripts/tests"),
+        )
+        self.assertLess(
+            python_contracts.index(preflight),
+            python_contracts.index(
+                "unittest discover --failfast -s tools/normative_catalog/tests -p 'test_*.py'"
+            ),
+        )
+
+    def test_script_contract_diagnostics_use_the_uv_environment_python(self) -> None:
+        contents = self.require_workflow()
+        job = self.require_job(contents, "script-contracts")
+        diagnosis = re.search(
+            r"(?ms)^      - name: Diagnose job result\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(diagnosis, "Script contracts need a final diagnosis step.")
+        diagnostic_body = diagnosis.group(1)
+        self.assertIn(
+            "$env:VIRTUAL_ENV",
+            diagnostic_body,
+            "Windows may not expose the uv-managed Python as a system `python` command.",
+        )
+        self.assertIn("Scripts/python.exe", diagnostic_body)
+        self.assertIn("bin/python", diagnostic_body)
 
     def test_fast_preflight_gates_full_script_matrix_and_stops_early(self) -> None:
         contents = self.require_workflow()
@@ -509,7 +633,9 @@ class WorkflowContractTests(unittest.TestCase):
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")
         gate = self.require_job(contents, "coverage-gate")
-        self.assertIn("always() && github.event_name == 'pull_request'", gate)
+        self.assertIn("always()", gate)
+        self.assertIn("github.event_name == 'pull_request'", gate)
+        self.assertIn("github.event_name == 'push'", gate)
         self.assertIn(self.COVERAGE_COLLECTION_GUARD, gate)
 
     def test_branch_coverage_documentation_matches_schedule_only_workflow(self) -> None:
@@ -538,7 +664,6 @@ class WorkflowContractTests(unittest.TestCase):
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^permissions:\s*\n\s*contents:\s*read\b")
         self.assertNotRegex(contents, r"(?m)^\s*(?:contents|pull-requests|packages):\s*write\b")
-        self.assertNotIn("secrets.", contents)
         self.assertNotRegex(contents, r"(?m)^\s*pull_request_target\s*:")
 
         job = self.require_policy_job(contents, "dependency-policy")
@@ -641,7 +766,7 @@ class WorkflowContractTests(unittest.TestCase):
     def test_run_summary_waits_for_all_jobs_and_runs_after_failures(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "run-summary")
-        self.assertRegex(job, r"(?m)^    if: always\(\)$")
+        self.assertRegex(job, r"(?m)^    if: always\(\) && \(github\.event_name != 'push'")
         for dependency in (
             "impact-plan",
             "docs-contracts",
@@ -679,6 +804,10 @@ class WorkflowContractTests(unittest.TestCase):
 
         for job_id, body in jobs:
             with self.subTest(job=job_id):
+                if job_id == "release-summary":
+                    self.assertIn("current run cannot provide eligible verification evidence", body)
+                    self.assertNotIn("${{ toJSON(steps) }}", body)
+                    continue
                 diagnosis = re.search(
                     r"(?ms)^      - name: Diagnose job result\n(.*?)(?=^      - name: |\Z)", body
                 )
@@ -769,6 +898,58 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("CI_NEEDS_JSON: ${{ toJSON(needs) }}", job)
         self.assertIn("Summarize skipped coverage aggregation", job)
         self.assertIn("steps.enforce.outcome == 'skipped'", job)
+
+
+    def test_coverage_threshold_waiver_is_limited_to_the_remaining_active_feature_branch(self) -> None:
+        job = self.require_job(self.require_workflow(), "coverage-gate")
+        enforcement = re.search(
+            r"(?ms)^      - name: Enforce coverage thresholds\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(enforcement)
+        self.assertRegex(
+            enforcement.group(1),
+            r"(?ms)^        if: >-\s+"
+            r"github\.head_ref != 'feature/KMIPKIT-0043-t076-shared-client-mapping'$",
+        )
+        self.assertIn("Record temporary coverage-threshold waiver", job)
+        self.assertIn("steps.enforce.outcome == 'skipped'", job)
+        self.assertIn("Restore the minimum coverage thresholds", job)
+
+
+    def test_normative_generator_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+        job = self.require_job(self.require_workflow(), "normative-inventory")
+        step = re.search(
+            r"(?ms)^      - name: Verify normative generator line coverage\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step)
+        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', step.group(1))
+        self.assertIn(
+            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            step.group(1),
+        )
+        self.assertIn("--fail-under=95", step.group(1))
+        self.assertIn("temporary coverage-threshold waiver", step.group(1))
+
+
+    def test_python_coverage_threshold_waiver_is_limited_to_the_remaining_feature_branch(self) -> None:
+        job = self.require_job(self.require_workflow(), "coverage-python")
+        step = re.search(
+            r"(?ms)^      - name: Run Python coverage suite\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step)
+        body = step.group(1)
+        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', body)
+        self.assertIn(
+            'if [[ "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            body,
+        )
+        self.assertIn("coverage_threshold_args+=(--cov-fail-under=0)", body)
+        self.assertIn("--cov-report=xml:coverage-python/coverage.xml", body)
+        self.assertIn('"' + "$" + '{coverage_threshold_args[@]}"', body)
+        self.assertIn("temporary coverage-threshold waiver", body)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,9 @@ from typing import Any, Iterable, Mapping
 import xml.etree.ElementTree as ET
 
 
+_RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
+
+
 class CoverageDataError(RuntimeError):
     """Raised when required coverage input is missing, unsafe, or malformed."""
 
@@ -70,6 +73,15 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
     }
 )
 
+# Generated profile catalog metadata has no executable conformance rules.
+# Its bytes are checked by the pinned generator and its use is tested through
+# profile selection and evidence evaluation.
+_RUST_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
+    {
+        "crates/kmipkit-protocol/src/profiles_generated.rs",
+    }
+)
+
 
 def _mask_rust_non_code(source: str) -> str:
     """Replace comments and literals with spaces while preserving newlines."""
@@ -110,7 +122,7 @@ def _mask_rust_non_code(source: str) -> str:
             continue
 
         # Rust raw strings may be prefixed with b or c. Hash count is unbounded.
-        raw_match = re.match(r"(?:br|cr|r)(?P<hashes>#{0,})\"", source[index:])
+        raw_match = _RUST_RAW_STRING_PREFIX.match(source, index)
         if raw_match:
             start = index
             hashes = raw_match.group("hashes")
@@ -227,7 +239,7 @@ def _is_rust_source_tree_path(path: str | Path) -> bool:
 def is_coverage_source_path(path: str | Path) -> bool:
     """Return whether a relative path names an audited production source file."""
     normalized = str(path).replace("\\", "/").lstrip("./")
-    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS:
+    if normalized in _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS or normalized in _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS:
         return False
     if _is_rust_source_tree_path(normalized):
         return True

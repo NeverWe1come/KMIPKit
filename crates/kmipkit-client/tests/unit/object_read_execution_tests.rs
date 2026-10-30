@@ -68,6 +68,12 @@ const ARCHIVED_LOCATE_BATCH_ID: &[u8] = b"archived-locate-frame";
 const ARCHIVED_RECOVER_BATCH_ID: &[u8] = b"archived-recover-frame";
 const ARCHIVED_GET_BATCH_ID: &[u8] = b"archived-get-frame";
 
+fn get_with_explicit_identifier() -> GetRequest {
+    GetRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "client-requested-object-id".to_owned(),
+    ))
+}
+
 #[derive(Debug, Eq, PartialEq)]
 enum WireValue {
     Structure(Vec<(u32, WireValue)>),
@@ -294,7 +300,7 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
         response,
         request_write_chunks: vec![3, 7],
     });
-    let request = ClientRequest::get(GetRequest::new());
+    let request = ClientRequest::get(get_with_explicit_identifier());
     assert_eq!(format!("{request:?}"), "Get([REDACTED])");
 
     let response = client
@@ -313,8 +319,8 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
                 .expect("the request reached the fake transport"),
             0,
         ),
-        Some((GET_OPERATION, false)),
-        "an omitted request identifier remains omitted on the wire"
+        Some((GET_OPERATION, true)),
+        "a standalone Get identifies its object explicitly"
     );
     let outcome = response.get(0).expect("one result is returned").outcome();
     assert_eq!(outcome.operation(), ClientOperation::Get);
@@ -365,7 +371,9 @@ fn get_failure_preserves_result_status_reason_and_message_without_retry() {
 
     let response = client
         .execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))),
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+                get_with_explicit_identifier(),
+            ))),
             &CodecLimits::defaults(),
         )
         .expect("the operation failure remains a typed Get result");
@@ -413,8 +421,10 @@ fn get_pending_preserves_correlation_and_typed_result_without_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new())))
-        .with_asynchronous_indicator(2);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+        get_with_explicit_identifier(),
+    )))
+    .with_asynchronous_indicator(2);
 
     let response = client
         .execute(batch, &CodecLimits::defaults())
@@ -468,7 +478,9 @@ fn get_transport_failures_preserve_delivery_state_without_retry() {
         let (mut client, fake, _) = client_for(script);
         let error = client
             .execute(
-                ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))),
+                ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+                    get_with_explicit_identifier(),
+                ))),
                 &CodecLimits::defaults(),
             )
             .expect_err("the scripted transport failure is returned to the caller");
@@ -544,13 +556,14 @@ fn get_without_identifier_follows_create_and_keeps_the_batch_order() {
 
 #[test]
 fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
+    // KMIP v2.1 §6.1.28 leaves ID Placeholder empty for multi-match Locate; a single result permits the later Get.
     let attributes = AttributeSet::try_new([
         test_item(ACTIVATION_DATE, Value::date_time(100)),
         test_item(ACTIVATION_DATE, Value::date_time(200)),
     ])
     .expect("the two Activation Date values form an ordered date-range criterion");
     let locate = LocateRequest::new(attributes)
-        .with_maximum_items(9)
+        .with_maximum_items(1)
         .with_offset_items(0)
         .with_storage_status_mask(StorageStatusMask::from_raw(3))
         .with_object_group_member(ObjectGroupMember::from_raw(1));
@@ -560,12 +573,12 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         (
             LOCATE_OPERATION,
             LOCATE_BATCH_ID.to_vec(),
-            successful_locate_payload(&["server-id-z", "server-id-a", "server-id-z"]),
+            successful_locate_payload(&["server-id-z"]),
         ),
         (
             GET_OPERATION,
             LOCATE_GET_BATCH_ID.to_vec(),
-            successful_get_payload("server-resolved-placeholder-id"),
+            successful_get_payload("server-id-z"),
         ),
     ]);
     let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
@@ -613,11 +626,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
             .locate_response()
             .expect("the Locate result remains typed")
             .unique_identifiers(),
-        &[
-            UniqueIdentifier::TextString("server-id-z".to_owned()),
-            UniqueIdentifier::TextString("server-id-a".to_owned()),
-            UniqueIdentifier::TextString("server-id-z".to_owned()),
-        ],
+        &[UniqueIdentifier::TextString("server-id-z".to_owned()),],
         "Locate identifiers preserve server order and repetitions"
     );
     assert_eq!(
@@ -632,11 +641,8 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
     assert!(outcome_display.contains("LocateCompleted"));
     assert!(outcome_display.contains("status 0"));
     assert!(!response_debug.contains("server-id-z"));
-    assert!(!response_debug.contains("server-id-a"));
     assert!(!outcome_debug.contains("server-id-z"));
-    assert!(!outcome_debug.contains("server-id-a"));
     assert!(!outcome_display.contains("server-id-z"));
-    assert!(!outcome_display.contains("server-id-a"));
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
@@ -904,7 +910,7 @@ fn assert_locate_request_preserves_criteria(request: &RequestItemSnapshot) {
     assert_eq!(request.unique_batch_item_id, LOCATE_BATCH_ID);
     assert_eq!(
         wire_field(&request.payload, MAXIMUM_ITEMS),
-        Some(&WireValue::Integer(9)),
+        Some(&WireValue::Integer(1)),
         "Maximum Items reaches the server unchanged"
     );
     assert_eq!(

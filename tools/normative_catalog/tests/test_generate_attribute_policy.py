@@ -195,6 +195,43 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         self.assertIn("#[rustfmt::skip]\npub(super) const ATTRIBUTE_POLICIES", rendered)
         self.assertIn("#[rustfmt::skip]\npub(super) const VENDOR_ATTRIBUTE_POLICY", rendered)
 
+    def test_renders_source_backed_attribute_multiplicity_without_repeating_it_per_record(self) -> None:
+        rendered = self._render()
+        multiplicity_method = rendered.split("impl AttributePolicy", 1)[1].split(
+            "pub(super) struct VendorAttributePolicy", 1
+        )[0]
+        expected = {
+            "Comment": "Single",
+            "Name": "Multiple",
+            "Digital Signature Algorithm": "PgpKeyOrX509Certificate",
+        }
+
+        for name, multiplicity in expected.items():
+            with self.subTest(attribute=name):
+                attribute = next(item for item in self._standard_attributes() if item["name"] == name)
+                tag = _tag_value_by_id(self.catalog, attribute["parent_element_ids"][0])
+                record = _attribute_policy_record(self, rendered, tag)
+                self.assertNotIn("multiplicity:", record)
+                if multiplicity == "Single":
+                    self.assertIn("_ => AttributeMultiplicity::Single", rendered)
+                    self.assertNotIn(
+                        f"0x{int(tag, 16) >> 16:02X}_{(int(tag, 16) >> 8) & 0xFF:02X}_{int(tag, 16) & 0xFF:02X}",
+                        multiplicity_method,
+                    )
+                else:
+                    self.assertRegex(
+                        rendered,
+                        re.compile(
+                            re.escape(
+                                f"0x{int(tag, 16) >> 16:02X}_{(int(tag, 16) >> 8) & 0xFF:02X}_{int(tag, 16) & 0xFF:02X}"
+                            )
+                            + r"[^\n]*AttributeMultiplicity::"
+                            + re.escape(multiplicity)
+                        ),
+                    )
+
+        self.assertIn("pub(super) const fn multiplicity(self)", rendered)
+
     def _standard_attributes(self) -> list[dict[str, Any]]:
         return [
             item

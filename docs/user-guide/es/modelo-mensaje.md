@@ -13,6 +13,13 @@ Transfiere su propiedad a `RequestMessage::try_from_ttlv` o
 lote o las extensiones no tienen la forma requerida, el constructor devuelve
 una categoría de error segura y su posición numérica.
 
+Cada Message Extension debe incluir un Vendor Extension con al menos un campo
+cuyo tag pertenezca al rango de extensiones KMIP `0x540000..=0x54FFFF`
+(§§9.13 y 11.56). El modelo conserva el subárbol sin interpretar los valores
+específicos del fabricante. La aplicación debe elegir un Vendor Identification
+que identifique de forma única al fabricante; KMIPKit valida la forma del texto,
+pero no puede comprobar su unicidad en un registro externo de fabricantes.
+
 Las peticiones y respuestas ofrecen vistas tipadas de los campos comunes de
 cabecera y de cada elemento del lote. Sus accesores permiten consultar la
 versión, el número de elementos, las opciones sin normalizar, las marcas de

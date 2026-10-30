@@ -121,6 +121,42 @@ fn request_fields(bytes: &[u8], batch_index: usize) -> (Option<u32>, Vec<u32>, u
     })
 }
 
+fn request_unique_identifier(bytes: &[u8], batch_index: usize) -> Option<String> {
+    let message = decode(bytes).expect("the captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return None;
+        };
+        let batch = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(batch_index)?;
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                return None;
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)?;
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return None;
+                };
+                let identifier = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == UNIQUE_IDENTIFIER)?;
+                identifier.with_value(|value| match value {
+                    ValueView::TextString(value) => Some(value.to_owned()),
+                    _ => None,
+                })
+            })
+        })
+    })
+}
+
 fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
     view.children().iter().any(|field| {
         field.tag().raw() == raw_tag
@@ -203,6 +239,42 @@ fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
 }
 
 #[test]
+fn recertify_sends_explicit_unique_identifier_without_certificate_request_fields() {
+    let request = RecertifyRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "existing-certificate".to_owned(),
+    ));
+    let response = asynchronous_response_bytes(
+        RECERTIFY_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(response_payload("replacement-certificate")),
+    );
+    let (mut client, _fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let _ = client
+        .recertify(request, &CodecLimits::defaults())
+        .expect("the response fixture completes the client exchange");
+
+    let captured = captured.borrow();
+    let captured = captured
+        .as_deref()
+        .expect("the fake transport captured the Re-certify request");
+    assert_eq!(
+        request_fields(captured, 0),
+        (Some(RECERTIFY_OPERATION), vec![UNIQUE_IDENTIFIER], 0),
+        "the request contains the explicit Unique Identifier and omits the Certificate Request fields"
+    );
+    assert_eq!(
+        request_unique_identifier(captured, 0),
+        Some("existing-certificate".to_owned())
+    );
+}
+
+#[test]
 fn recertify_failure_preserves_table_302_result_without_retry() {
     let response = asynchronous_response_bytes(
         RECERTIFY_OPERATION,
@@ -273,7 +345,7 @@ fn recertify_pending_preserves_correlation_without_implicit_poll() {
 }
 
 #[test]
-fn recertify_can_consume_a_preceding_successful_create_placeholder() {
+fn recertify_with_request_material_can_consume_a_preceding_create_placeholder() {
     let response = operation_batch_response_bytes([
         (
             CREATE_OPERATION,
@@ -302,22 +374,33 @@ fn recertify_can_consume_a_preceding_successful_create_placeholder() {
             AttributeSet::new(),
         )))
         .with_unique_batch_item_id(b"create-item".to_vec()),
-        ClientBatchItem::new(ClientRequest::Recertify(RecertifyRequest::new()))
-            .with_unique_batch_item_id(b"recertify-item".to_vec()),
+        ClientBatchItem::new(ClientRequest::Recertify(
+            // §6.1.45 permits an omitted Unique Identifier with request
+            // material; §8.1 resolves it through the ordered batch placeholder.
+            RecertifyRequest::new()
+                .with_certificate_request_type(1)
+                .with_certificate_request_value(SecretBytes::new(
+                    CERTIFICATE_REQUEST_BYTES.to_vec(),
+                )),
+        ))
+        .with_unique_batch_item_id(b"recertify-item".to_vec()),
     ])
     .with_batch_order_option(true)
     .with_batch_error_continuation_option(1);
 
     client
         .execute(batch, &CodecLimits::defaults())
-        .expect("Re-certify can use the preceding Create response ID Placeholder");
+        .expect("Re-certify request material can use the preceding Create ID Placeholder");
 
     let request = captured.borrow();
     let request = request
         .as_deref()
         .expect("the ordered Create and Re-certify batch reaches the fake transport");
     assert_eq!(request_fields(request, 1).0, Some(RECERTIFY_OPERATION));
-    assert_eq!(request_fields(request, 1).1, Vec::<u32>::new());
+    assert_eq!(
+        request_fields(request, 1).1,
+        vec![CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

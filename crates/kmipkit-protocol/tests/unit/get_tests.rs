@@ -26,6 +26,7 @@ const KEY_WRAP_TYPE_TAG: u32 = 0x0042_00F8;
 const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
 const KEY_WRAPPING_SPECIFICATION_TAG: u32 = 0x0042_0047;
 const ENCRYPTION_KEY_INFORMATION_TAG: u32 = 0x0042_0036;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const WRAPPING_METHOD_TAG: u32 = 0x0042_009E;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
@@ -493,6 +494,91 @@ fn request_encodes_a_valid_wrapped_get_specification() {
 
         valid_method && valid_key_information
     }));
+}
+
+#[test]
+fn get_preserves_repeated_attribute_names_in_valid_wrapping_specification() {
+    // OASIS KMIP v2.1 §7.18, Table 370, permits repeated direct Attribute Name
+    // Text Strings; §6.1.19, Table 220, carries the structure in Get.
+    let encryption_key_information = structure([unique_identifier_item(Value::text_string(
+        "wrapping-key-id".to_owned(),
+    ))]);
+    let wrapping_specification = structure([
+        item(WRAPPING_METHOD_TAG, Value::enumeration(1)),
+        item(
+            ENCRYPTION_KEY_INFORMATION_TAG,
+            Value::structure(encryption_key_information),
+        ),
+        item(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Algorithm".to_owned()),
+        ),
+        item(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string("Cryptographic Length".to_owned()),
+        ),
+    ]);
+
+    let payload = GetRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("object-123".to_owned()))
+        .with_key_wrapping_specification(wrapping_specification)
+        .to_ttlv_payload()
+        .expect("the valid Key Wrapping Specification is representable in Get");
+    let view = payload.view();
+    let fields = view.children();
+
+    assert_eq!(
+        field_signature(&payload),
+        [
+            (UNIQUE_IDENTIFIER_TAG, ItemType::TextString),
+            (KEY_WRAPPING_SPECIFICATION_TAG, ItemType::Structure),
+        ]
+    );
+    assert!(fields[0].with_value(|value| matches!(value, ValueView::TextString("object-123"))));
+    fields[1].with_value(|value| match value {
+        ValueView::Structure(specification) => {
+            let items = specification.children();
+            assert_eq!(items.len(), 4);
+            assert_eq!(
+                items
+                    .iter()
+                    .map(|item| item.tag().raw())
+                    .collect::<Vec<_>>(),
+                [
+                    WRAPPING_METHOD_TAG,
+                    ENCRYPTION_KEY_INFORMATION_TAG,
+                    ATTRIBUTE_NAME_TAG,
+                    ATTRIBUTE_NAME_TAG,
+                ]
+            );
+            assert_eq!(items[0].item_type(), ItemType::Enumeration);
+            assert!(items[0].with_value(|value| matches!(value, ValueView::Enumeration(1))));
+            assert_eq!(items[1].item_type(), ItemType::Structure);
+            items[1].with_value(|value| match value {
+                ValueView::Structure(key_information) => {
+                    let key_fields = key_information.children();
+                    assert_eq!(key_fields.len(), 1);
+                    assert_eq!(key_fields[0].tag().raw(), UNIQUE_IDENTIFIER_TAG);
+                    assert!(key_fields[0].with_value(|value| matches!(
+                        value,
+                        ValueView::TextString("wrapping-key-id")
+                    )));
+                }
+                _ => panic!("Encryption Key Information remains a Structure"),
+            });
+            for (item, expected) in items[2..]
+                .iter()
+                .zip(["Cryptographic Algorithm", "Cryptographic Length"])
+            {
+                assert_eq!(item.item_type(), ItemType::TextString);
+                assert!(item.with_value(|value| matches!(
+                    value,
+                    ValueView::TextString(actual) if actual == expected
+                )));
+            }
+        }
+        _ => panic!("Key Wrapping Specification remains a Structure"),
+    });
 }
 
 #[test]

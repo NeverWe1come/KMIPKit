@@ -204461,9 +204461,9 @@
       "section": "6.1.5",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "blockedReason": "The owner specification is approved, but the operation remains blocked pending four-language parity evidence.",
       "ownerDependency": {
-        "state": "candidate",
+        "state": "approved",
         "specId": "KMIPKIT-0009"
       }
     },
@@ -204857,9 +204857,9 @@
       "section": "6.1.38",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "blockedReason": "The owner specification is approved, but the operation remains blocked pending four-language parity evidence.",
       "ownerDependency": {
-        "state": "candidate",
+        "state": "approved",
         "specId": "KMIPKIT-0009"
       }
     },
@@ -204869,9 +204869,9 @@
       "section": "6.1.39",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "blockedReason": "The owner specification is approved, but the operation remains blocked pending four-language parity evidence.",
       "ownerDependency": {
-        "state": "candidate",
+        "state": "approved",
         "specId": "KMIPKIT-0009"
       }
     },
@@ -204893,9 +204893,9 @@
       "section": "6.1.41",
       "scope": "client_1_0",
       "apiState": "blocked",
-      "blockedReason": "The linked owner specification is not formally approved; the operation remains blocked.",
+      "blockedReason": "The owner specification is approved, but the operation remains blocked pending four-language parity evidence.",
       "ownerDependency": {
-        "state": "candidate",
+        "state": "approved",
         "specId": "KMIPKIT-0009"
       }
     },

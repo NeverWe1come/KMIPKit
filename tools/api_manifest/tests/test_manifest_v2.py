@@ -14,6 +14,7 @@ from jsonschema import Draft202012Validator
 from tools.api_manifest import generate
 from tools.api_manifest.generate import (
     ManifestError,
+    _validate_operation_dependencies,
     _validate_operation_inventory,
     _validate_references,
     _validate_v2_readiness,
@@ -407,6 +408,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_operation_inventory_matches_the_normative_catalog(self) -> None:
         _validate_operation_inventory(self.checked_in_manifest, self.catalog)
+
+    def test_async_operation_owners_match_the_approved_release_spec(self) -> None:
+        asynchronous_operations = [
+            operation
+            for operation in self.checked_in_manifest["operations"]
+            if operation.get("ownerDependency", {}).get("specId") == "KMIPKIT-0009"
+        ]
+        self.assertEqual(
+            [operation["name"] for operation in asynchronous_operations],
+            ["Cancel", "Poll", "Process", "Query Asynchronous Requests"],
+        )
+        _validate_operation_dependencies(self.checked_in_manifest["operations"], ROOT)
 
     def test_checked_in_manifest_resolves_all_public_declaration_mappings(self) -> None:
         _validate_v2_readiness(self.checked_in_manifest, ROOT)

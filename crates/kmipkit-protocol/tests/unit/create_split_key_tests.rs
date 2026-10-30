@@ -238,6 +238,86 @@ fn request_always_encodes_required_empty_attributes_without_synthesizing_choices
 }
 
 #[test]
+fn request_rejects_repeated_singletons_and_unknown_dsa_context_but_allows_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.10 Table 193.
+    let repeated_comment = attributes([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    assert!(
+        CreateSplitKeyRequest::new(
+            ObjectType::from_raw(7),
+            3,
+            2,
+            SplitKeyMethod::from_raw(1),
+            repeated_comment,
+        )
+        .into_ttlv_payload()
+        .is_err()
+    );
+
+    let repeated_dsa = || {
+        attributes([
+            item(0x0042_00AE, Value::enumeration(1)),
+            item(0x0042_00AE, Value::enumeration(2)),
+        ])
+    };
+    let unresolved = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::from_raw(1),
+        repeated_dsa(),
+    );
+    assert!(unresolved.into_ttlv_payload().is_err());
+
+    let explicit_pgp_key = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(9),
+        3,
+        2,
+        SplitKeyMethod::from_raw(1),
+        repeated_dsa(),
+    );
+    assert!(explicit_pgp_key.into_ttlv_payload().is_ok());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_when_object_type_is_not_explicit_pgp_key() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.10 Table 193.
+    let attributes = attributes([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::from_raw(1),
+        attributes,
+    );
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_allows_repeated_dsa_for_explicit_pgp_key_object_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.10 Table 193.
+    let attributes = attributes([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(9),
+        3,
+        2,
+        SplitKeyMethod::from_raw(1),
+        attributes,
+    );
+
+    assert!(request.into_ttlv_payload().is_ok());
+}
+
+#[test]
 fn request_preserves_text_and_integer_input_identifier_forms() {
     for (identifier, expected_type) in [
         (

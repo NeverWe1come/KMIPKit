@@ -62,6 +62,9 @@ mod ping;
 mod pkcs11;
 mod poll;
 mod process;
+mod profile;
+/// Generated source and evidence metadata for catalogued client profiles.
+pub mod profiles_generated;
 mod query;
 mod query_async_requests;
 mod recertify;
@@ -108,8 +111,9 @@ pub use create_split_key::{
 pub use credential::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,
     CredentialValidationErrorKind, CredentialValue, CredentialView, DeviceCredential,
-    HashedPasswordCredential, Nonce, OneTimePasswordCredential, OpaqueTtlv, SecretBytes,
-    SecretText, TicketCredential, UsernameAndPasswordCredential,
+    HashedPasswordCredential, HashedPasswordTimestampSequence,
+    HashedPasswordTimestampSequenceError, Nonce, OneTimePasswordCredential, OpaqueTtlv,
+    SecretBytes, SecretText, TicketCredential, UsernameAndPasswordCredential,
 };
 pub use cryptographic_operation::{
     CryptographicAlgorithm, CryptographicOperationError, CryptographicOperationErrorKind,
@@ -164,6 +168,11 @@ pub use ping::{PingError, PingRequest, PingResponse};
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
+pub use profile::{
+    ProfileEvidenceReadiness, ProfileEvidenceRecord, ProfileObjectState, ProfileReadiness,
+    ProfileReadinessBlocker, ProfileTransport, ProfileValidationContext, ProfileValidationError,
+    ProfileValidationErrorCode, ProfileValidationResult, ProfileValidationSelection,
+};
 pub use query::{QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField};
 pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};

@@ -25,14 +25,17 @@ selected. The scheduled workflow is unchanged. Selective execution does not
 change the thresholds below; every selected report remains required, and a
 missing or malformed selected report fails the gate.
 
-Full pull-request CI also runs a visible Linux fast-preflight with focused
-classifier and normative-catalog tests. It starts before the Script Contracts
-matrix; failure appears in the final Summary and prevents that matrix from
-starting. The full matrix and all other required checks still run after a
-successful preflight. Python `unittest` discovery in Script Contracts stops at
-the first failed test, and the matrix cancels its remaining operating-system
-jobs after a failure. This shortens the failure signal without changing the
-checks required for a passing full-CI run.
+Full pull-request CI starts with a visible Linux fast-preflight containing
+focused classifier and normative-catalog tests. Failure appears in the final
+Summary and prevents the Script Contracts matrix from starting. After a
+successful preflight, each cross-platform Script Contracts job also runs the
+most recently failing normative-catalog regression before its full Python
+contract suites. This gives that known failure an early signal while the full
+matrix and catalog suite on Linux, Windows, and macOS remain authoritative.
+Python `unittest` discovery stops at the first failed test, and the matrix
+cancels its remaining operating-system jobs after a failure. These preflights
+shorten the failure signal without changing the checks required for a passing
+full-CI run.
 
 ## Static analysis services
 
@@ -302,8 +305,13 @@ executable lines. The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
-requires LLVM/Clang 20.1.8. The two Python CFFI wrappers above are the only
-generated-source exclusions in the current configuration.
+requires LLVM/Clang 20.1.8. Rust raw coverage also excludes the generated
+`crates/kmipkit-protocol/src/profiles_generated.rs` metadata file: its header
+states that it contains no executable conformance rules. CI checks its bytes
+with `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`,
+and profile selection and readiness tests exercise its metadata consumers.
+The two Python CFFI wrappers above remain the only generated-source exclusions
+within the Python adapter package; Java metadata exclusions are listed above.
 
 The aggregate job requires these inputs at the report root:
 

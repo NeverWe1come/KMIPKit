@@ -52,6 +52,12 @@ impl GetAttributesRequest {
         })
     }
 
+    /// Returns the optional object identifier selected by this request.
+    #[must_use]
+    pub fn unique_identifier(&self) -> Option<&str> {
+        self.unique_identifier.as_deref()
+    }
+
     /// Builds the ordered Request Payload Structure defined in Table 223.
     ///
     /// # Errors
@@ -84,7 +90,9 @@ impl GetAttributesRequest {
 /// The typed result of one Get Attributes response batch item.
 ///
 /// Successful responses contain the required Unique Identifier and the ordered
-/// direct attribute Items in Table 224's Attributes Structure. Other KMIP
+/// direct attribute Items in Table 224's Attributes Structure. Repetitions are
+/// preserved where the source permits them, and known single-instance
+/// violations are rejected. Other KMIP
 /// statuses retain the common result and have no typed response payload.
 pub struct GetAttributesResponse {
     result: KmipOperationResult,
@@ -276,7 +284,12 @@ fn parse_attributes(structure: &StructureView<'_>) -> Result<AttributeSet, GetAt
         items.push(item);
     }
 
-    AttributeSet::try_new(items).map_err(GetAttributesError::InvalidAttributeSet)
+    let attributes =
+        AttributeSet::try_new(items).map_err(GetAttributesError::InvalidAttributeSet)?;
+    attributes
+        .validate_single_instance_cardinality()
+        .map_err(GetAttributesError::InvalidAttributeSet)?;
+    Ok(attributes)
 }
 
 fn clone_value(value: ValueView<'_>) -> Result<Value, GetAttributesError> {

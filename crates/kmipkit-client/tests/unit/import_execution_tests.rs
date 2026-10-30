@@ -25,8 +25,11 @@ const OPERATION_FAILED: u32 = 1;
 const SERVER_REJECTED_OBJECT: u32 = 0xF123_4567;
 
 fn attributes() -> AttributeSet {
-    AttributeSet::try_new([test_item(0x0042_0028, Value::enumeration(3))])
-        .expect("caller attributes are valid")
+    AttributeSet::try_new([
+        test_item(0x0042_0028, Value::enumeration(3)),
+        test_item(0x0042_002A, Value::integer(256)),
+    ])
+    .expect("caller attributes are valid")
 }
 
 fn object() -> Item {
@@ -40,12 +43,13 @@ fn object() -> Item {
             )])),
         ),
     ]);
-    let key_value = test_structure([test_item(
-        0x0042_0043,
-        Value::byte_string(b"synthetic-import-object".to_vec()),
-    )]);
+    // KMIP Specification v2.1 §3.1/Table 12 represents wrapped Key Value as
+    // opaque bytes; the separate Key Wrapping Data describes the wrapper.
     let key_block = test_structure([
-        test_item(0x0042_0045, Value::structure(key_value)),
+        test_item(
+            0x0042_0045,
+            Value::byte_string(b"synthetic-wrapped-import-object".to_vec()),
+        ),
         test_item(0x0042_0046, Value::structure(wrapping_data)),
     ]);
     test_item(
@@ -111,6 +115,9 @@ fn explicit_import_sends_supplied_attributes_and_object_once_and_preserves_serve
         Some(SERVER_REJECTED_OBJECT)
     );
     assert!(request_contains(&request_bytes, b"import-key"));
-    assert!(request_contains(&request_bytes, b"synthetic-import-object"));
+    assert!(request_contains(
+        &request_bytes,
+        b"synthetic-wrapped-import-object"
+    ));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

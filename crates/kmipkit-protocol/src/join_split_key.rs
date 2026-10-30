@@ -152,10 +152,20 @@ impl JoinSplitKeyRequest {
     /// check occurs.
     ///
     /// # Errors
-    /// Returns a payload-free protocol error for an empty reference list,
-    /// missing per-entry threshold context, insufficient identifier count, or
-    /// a TTLV model limit.
+    /// Returns a payload-free protocol error for source-defined Attribute
+    /// cardinality violations, an empty reference list, missing per-entry
+    /// threshold context, insufficient identifier count, or a TTLV model
+    /// limit.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        if let Some(attributes) = self.attributes.as_ref() {
+            crate::attribute::validate_single_instance_attribute_items(
+                attributes.as_items(),
+                Some(self.object_type.raw()),
+                true,
+            )
+            .map_err(|_| common::request_error())?;
+        }
+
         let maximum_threshold = validate_references(&self.references)?;
         let entry_count = self.references.len();
         if usize::try_from(maximum_threshold).map_or(true, |required| entry_count < required) {

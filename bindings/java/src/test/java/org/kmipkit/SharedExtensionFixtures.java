@@ -24,7 +24,7 @@ final class SharedExtensionFixtures {
         new Case("invalid-schema", "example.vendor", false, List.of(new Item(0x420001, 7, "alpha-v1", 0L, List.of()), new Item(0x420004, 3, "", 100L, List.of())), "unrecognized.schema_invalid", List.of("known.alpha"), false),
         new Case("multiply-matching", "example.vendor", false, List.of(new Item(0x540010, 1, "", 0L, List.of(new Item(0x540011, 7, "route-alpha", 0L, List.of()), new Item(0x540012, 7, "route-beta", 0L, List.of()), new Item(0x540013, 7, "shared", 0L, List.of()))), new Item(0x540014, 5, "", 314159L, List.of()), new Item(0x540015, 7, "preserve-this-child-order", 0L, List.of())), "unrecognized.ambiguous", List.of("ambiguous.alpha", "ambiguous.beta"), false),
         new Case("unknown-preserved", "example.vendor", false, List.of(new Item(0x540021, 5, "", 8675309L, List.of()), new Item(0x540022, 7, "unknown-extension-content", 0L, List.of())), "unrecognized.no_match", List.of(), false),
-        new Case("synthetic-secret-bearing", "example.vendor", false, List.of(new Item(0x420001, 7, "alpha-v1", 0L, List.of()), new Item(0x420004, 3, "", 42L, List.of()), new Item(0x420005, 7, "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A", 0L, List.of())), "recognized", List.of("known.alpha"), true)
+        new Case("synthetic-secret-bearing", "example.vendor", false, List.of(new Item(0x420001, 7, "alpha-v1", 0L, List.of()), new Item(0x420004, 3, "", 42L, List.of()), new Item(0x420005, 7, "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A", 0L, List.of()), new Item(0x540005, 7, "vendor-payload-sentinel", 0L, List.of())), "recognized", List.of("known.alpha"), true)
     );
     private SharedExtensionFixtures() {}
 }

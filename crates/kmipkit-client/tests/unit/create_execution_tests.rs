@@ -50,7 +50,7 @@ const RESPONSE_SENTINEL: &str = "KMIP_CREATE_RESPONSE_SENTINEL_8432";
 const PENDING_CORRELATION: &[u8] = b"CREATE_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create-fixture-v1";
-const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)

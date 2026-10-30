@@ -211,13 +211,17 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.14-007-002 | §6.1.14 | SHALL | For a symmetric key, specify both length and algorithm. |
 | KMIPKIT-REQ-SPEC-7.12-003 | §7.12 | REQUIRED | For derivation methods using a PRF, provide its PRF or mode in Cryptographic Parameters; HASH requires the hash algorithm and AES-CBC requires Block Cipher Mode. |
 | KMIPKIT-REQ-SPEC-7.12-005-001 | §7.12 | MAY | Allow Derivation Data to be supplied explicitly or by identifying a Secret Data object. |
-| KMIPKIT-REQ-SPEC-6.1.25-001 | §6.1.25 | MUST | Supply the Import attribute values rather than rely on server-generated values. |
-| KMIPKIT-REQ-SPEC-6.1.25-004 | §6.1.25 | SHALL | Set Replace Existing to true when the request intends to replace an object with the same Unique Identifier. |
 | KMIPKIT-REQ-SPEC-6.1.25-006 | §6.1.25 | MAY | A client may send the imported object and its attributes wrapped. |
 | KMIPKIT-REQ-SPEC-6.1.27-001 | §6.1.27 | SHALL | Include at least the Split Key Threshold number of Unique Identifiers in Combine. |
-| KMIPKIT-REQ-SPEC-6.1.27-002-001 | §6.1.27 | MAY | A client may specify the resulting Object Type. |
 | KMIPKIT-REQ-SPEC-6.1.27-002-002 | §6.1.27 | MAY | For a Secret Data result, a client may specify Secret Data Type. |
 | KMIPKIT-REQ-SPEC-6.1.27-005 | §6.1.27 | MAY | A client may provide repeated Unique Identifiers for Split Keys to combine. |
+
+The stable candidate `KMIPKIT-REQ-SPEC-6.1.25-001` remains in the catalog for
+traceability, but its §6.1.25 MUST is not assigned to the client because the
+pinned source review finds its actor ambiguous. The separate Import request
+row that marks Attributes Required=Yes remains a source-only field gap; it does
+not resolve the actor of the prose MUST. The unresolved candidate blocks
+client-profile readiness until its applicability is resolved.
 
 ### Key Entities
 
@@ -231,7 +235,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 ### Measurable Outcomes
 
 - **SC-001**: All 4 operations have typed request/response, an explicit client call, generic TTLV access, and Rust/C/Java/Python parity before 1.0.0.
-- **SC-002**: All Table-defined fields and error forms and all 18 catalog client requirement IDs have positive/relevant negative verification and exact source-to-test links.
+- **SC-002**: All Table-defined fields and error forms and every assigned catalog client requirement ID have positive/relevant negative verification and exact source-to-test links; unresolved actor or applicability records remain explicit readiness blockers.
 - **SC-003**: Fake-transport cases confirm one exchange and preserved Success, Failure, Pending, unknown values, malformed response behavior, and delivery state.
 - **SC-004**: Required repository coverage, formatting, lint, security, generated-artifact, and two-independent-server integration gates pass before release.
 

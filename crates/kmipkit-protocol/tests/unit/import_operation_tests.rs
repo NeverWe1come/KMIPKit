@@ -1,4 +1,5 @@
 //! Import payload and result contracts from OASIS KMIP v2.1 §6.1.25, Tables 238–240.
+//! `import_preserves_wrapped_secret_data_without_key_wrap_type` also traces §2.7/Table 8.
 //! Local vectors derive from pinned source tables and are not official Test Case executions.
 
 use crate::{
@@ -18,6 +19,8 @@ const ATTRIBUTES: u32 = 0x0042_0125;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const PGP_KEY: u32 = 0x0042_00BD;
 const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+const SECRET_DATA: u32 = 0x0042_0085;
+const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
@@ -28,6 +31,7 @@ const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const FUTURE_RESULT_REASON: u32 = 0xF123_4567;
+const WRAPPED_SECRET_DATA_SENTINEL: &[u8] = b"KMIPKIT_WRAPPED_SECRET_DATA_FIXTURE";
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -98,6 +102,40 @@ fn wrapped_pgp_key_object() -> Item {
     )
 }
 
+fn pgp_key_object_with_version(version: i32, key_bytes: &[u8]) -> Item {
+    item(
+        PGP_KEY,
+        Value::structure(structure([
+            item(PGP_KEY_VERSION, Value::integer(version)),
+            item(
+                KEY_BLOCK,
+                Value::structure(structure([
+                    item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                    item(KEY_VALUE, Value::byte_string(key_bytes.to_vec())),
+                ])),
+            ),
+        ])),
+    )
+}
+
+fn wrapped_secret_data_object() -> Item {
+    let key_block = structure([
+        item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        item(
+            KEY_VALUE,
+            Value::byte_string(WRAPPED_SECRET_DATA_SENTINEL.to_vec()),
+        ),
+        encryption_key_wrapping_data(),
+    ]);
+    item(
+        SECRET_DATA,
+        Value::structure(structure([
+            item(SECRET_DATA_TYPE, Value::enumeration(1)),
+            item(KEY_BLOCK, Value::structure(key_block)),
+        ])),
+    )
+}
+
 fn synthetic_wrapped_key_value() -> Item {
     // Synthetic ciphertext; KMIPKit transports these bytes and does not unwrap them.
     item(
@@ -163,6 +201,12 @@ fn wrapped_object_has_byte_string_key_value(object: &Item) -> bool {
     })
 }
 
+fn wrapped_object_has_key_value_bytes(object: &Item, expected: &[u8]) -> bool {
+    key_block_field_matches(object, KEY_VALUE, |field| {
+        field.with_value(|value| matches!(value, ValueView::ByteString(bytes) if bytes == expected))
+    })
+}
+
 fn response_message(
     status: u32,
     reason: Option<u32>,
@@ -208,6 +252,27 @@ fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
         .batch_items()
         .next()
         .expect("fixture has one response batch item")
+}
+
+#[test]
+fn import_rejects_repeated_single_instance_attributes() {
+    // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
+    let duplicate_comments = AttributeSet::try_new([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ])
+    .expect("the generic AttributeSet remains lossless before operation validation");
+    let request = ImportRequest::new(
+        UniqueIdentifier::TextString("object-id".to_owned()),
+        ObjectType::from_raw(2),
+        duplicate_comments,
+        key_object(),
+    );
+
+    assert!(
+        request.into_ttlv_payload().is_err(),
+        "Import must not encode duplicate Comment instances"
+    );
 }
 
 #[test]
@@ -334,6 +399,97 @@ fn wrapped_pgp_key_accepts_key_wrap_type() {
         field.tag().raw() == KEY_WRAP_TYPE
             && field.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
     }));
+}
+
+#[test]
+fn import_preserves_pgp_key_versions_and_opaque_key_bytes() {
+    // KMIP Specification v2.1 §2.4/Table 5 requires an Integer version and a Key Block.
+    // These synthetic values exercise byte preservation without parsing PGP material.
+    for (version, key_bytes) in [
+        (3, b"synthetic-pgp-public-key-only".as_slice()),
+        (4, b"synthetic-pgp-public-and-private-key".as_slice()),
+    ] {
+        let request = ImportRequest::new(
+            UniqueIdentifier::TextString(format!("pgp-version-{version}")),
+            ObjectType::from_raw(9),
+            AttributeSet::try_new([]).expect("empty PGP attributes are valid"),
+            pgp_key_object_with_version(version, key_bytes),
+        );
+        let payload = request
+            .into_ttlv_payload()
+            .expect("Import preserves a caller-supplied PGP Key Object");
+        let payload_view = payload.view();
+        let object = payload_view
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == PGP_KEY)
+            .expect("Import payload retains its PGP Key object");
+        assert!(object.with_value(|value| match value {
+            ValueView::Structure(fields) => fields.children().iter().any(|field| {
+                field.tag().raw() == PGP_KEY_VERSION
+                    && field.with_value(
+                        |value| matches!(value, ValueView::Integer(actual) if *actual == version),
+                    )
+            }),
+            _ => false,
+        }));
+        assert!(wrapped_object_has_key_value_bytes(object, key_bytes));
+    }
+}
+
+#[test]
+fn import_preserves_wrapped_secret_data_without_key_wrap_type() {
+    // OASIS KMIP v2.1 §2.7 says Secret Data Key Value MAY be wrapped; Table 8
+    // requires Secret Data Type and Key Block. §3.1/Table 12 encodes wrapped
+    // Key Value as a byte string, and the preceding §3.1 prose requires Key
+    // Wrapping Data when it is wrapped. §6.1.25/Table 238 limits Key Wrap Type
+    // to a wrapped key object, so this Secret Data request omits that field.
+    let request = ImportRequest::new(
+        UniqueIdentifier::TextString("wrapped-secret-data".to_owned()),
+        ObjectType::from_raw(7),
+        AttributeSet::new(),
+        wrapped_secret_data_object(),
+    );
+
+    let payload = request
+        .into_ttlv_payload()
+        .expect("wrapped Secret Data object is preserved by Import");
+    let payload_view = payload.view();
+    let payload_fields = payload_view.children();
+    assert_eq!(
+        payload_fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        vec![UNIQUE_IDENTIFIER, OBJECT_TYPE, ATTRIBUTES, SECRET_DATA]
+    );
+    assert!(
+        !payload_fields
+            .iter()
+            .any(|field| field.tag().raw() == KEY_WRAP_TYPE)
+    );
+    assert!(key_block_field_matches(
+        &payload_fields[3],
+        KEY_FORMAT_TYPE,
+        |field| field.with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
+    ));
+    assert!(wrapped_object_has_byte_string_key_value(&payload_fields[3]));
+    assert!(wrapped_object_has_key_value_bytes(
+        &payload_fields[3],
+        WRAPPED_SECRET_DATA_SENTINEL
+    ));
+    assert!(wrapped_object_has_encryption_key_information(
+        &payload_fields[3]
+    ));
+    let secret_data_type_is_preserved = payload_fields[3].with_value(|value| match value {
+        ValueView::Structure(fields) => fields.children().iter().any(|field| {
+            field.tag().raw() == SECRET_DATA_TYPE
+                && field
+                    .with_value(|value| matches!(value, ValueView::Enumeration(raw) if *raw == 1))
+        }),
+        _ => false,
+    });
+    assert!(secret_data_type_is_preserved);
 }
 
 #[test]

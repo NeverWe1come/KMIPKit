@@ -95,16 +95,14 @@ fn request_supports_certificate_request_certificate_or_no_parameters() {
 }
 
 #[test]
-fn request_rejects_mutually_supplied_certificate_request_and_certificate() {
-    let result = ReProvisionRequest::new()
+fn request_preserves_both_optional_certificate_fields() {
+    let payload = ReProvisionRequest::new()
         .with_certificate_request(certificate_material("csr-marker"))
         .with_certificate(certificate_material("certificate-marker"))
-        .into_ttlv_payload();
+        .into_ttlv_payload()
+        .expect("§6.1.48 and Table 313 do not prohibit both optional fields");
 
-    assert!(
-        result.is_err(),
-        "§6.1.48 defines three mutually exclusive forms"
-    );
+    assert_eq!(field_tags(&payload), [CERTIFICATE_REQUEST, CERTIFICATE]);
 }
 
 #[test]

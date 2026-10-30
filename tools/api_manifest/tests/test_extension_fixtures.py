@@ -399,6 +399,11 @@ class ExtensionFixtureCorpusTests(unittest.TestCase):
                 attached_fixture["expected"]["typedValueAvailable"],
                 "outbound attachment must reference a validated typed value",
             )
+            payload_children = attached_fixture["extension"]["payload"]["children"]
+            self.assertTrue(
+                any(str(child.get("tag", "")).startswith("0x54") for child in payload_children),
+                "outbound Vendor Extension payload must contain an extension-allocated tag",
+            )
         self.assertTrue(expected["diagnostics"]["redacted"], "secret-bearing case must require redacted diagnostics")
         self.assertFalse(
             expected["diagnostics"]["containsPayloadValues"],

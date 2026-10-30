@@ -14,6 +14,8 @@ use std::time::{Duration, Instant};
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
 
+// Serialize tests that open loopback sockets. Hosted Windows coverage hit
+// WinSock 10013 while another listener test was active.
 fn lock_network_fixture() -> MutexGuard<'static, ()> {
     match NETWORK_FIXTURE_LOCK.lock() {
         Ok(guard) => guard,
@@ -119,9 +121,10 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
 
 #[test]
 fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || {
+        |address| {
             attempts += 1;
             if attempts == 1 {
                 Err(io::Error::new(
@@ -129,7 +132,7 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
                     "simulated Windows excluded TCP port",
                 ))
             } else {
-                TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+                TcpListener::bind(address)
             }
         },
         UdpSocket::bind,
@@ -148,11 +151,39 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 }
 
 #[test]
-fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
-    let mut attempts = 0;
+fn uses_udp_ephemeral_port_when_tcp_ephemeral_ports_are_excluded() {
+    let _guard = lock_network_fixture();
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
         |address| {
+            if address.port() == 0 {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated TCP excluded ephemeral-port range",
+                ))
+            } else {
+                TcpListener::bind(address)
+            }
+        },
+        UdpSocket::bind,
+    )
+    .expect("UDP should allocate a usable port when TCP port-zero allocation is excluded");
+
+    assert_eq!(
+        udp_socket
+            .local_addr()
+            .expect("UDP socket has a local address"),
+        tcp_listener
+            .local_addr()
+            .expect("TCP listener binds the UDP-selected port")
+    );
+}
+
+#[test]
+fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
+    let _guard = lock_network_fixture();
+    let mut attempts = 0;
+    let (udp_socket, tcp_listener) =
+        super::bind_local_dns_sockets_with(TcpListener::bind, |address| {
             attempts += 1;
             if attempts == 1 {
                 Err(io::Error::new(
@@ -162,11 +193,10 @@ fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
             } else {
                 UdpSocket::bind(address)
             }
-        },
-    )
-    .expect("a reserved ephemeral UDP port should be retried");
+        })
+        .expect("a reserved ephemeral UDP port should be retried");
 
-    assert_eq!(attempts, 2);
+    assert!((2..=super::MAX_SOCKET_PAIR_BIND_ATTEMPTS).contains(&attempts));
     assert_eq!(
         udp_socket
             .local_addr()
@@ -179,41 +209,32 @@ fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
 
 #[test]
 fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
-    let mut tcp_attempts = 0;
-    let error = super::bind_local_dns_sockets_with(
-        || {
-            tcp_attempts += 1;
-            TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
-        },
-        |_address| {
-            attempts += 1;
-            Err(io::Error::new(
-                io::ErrorKind::PermissionDenied,
-                "simulated reserved UDP port",
-            ))
-        },
-    )
+    let error = super::bind_local_dns_sockets_with(TcpListener::bind, |_address| {
+        attempts += 1;
+        Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "simulated reserved UDP port",
+        ))
+    })
     .expect_err("UDP binding stops after its bounded retry limit");
 
     assert_eq!(attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
-    assert_eq!(tcp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
 }
 
 #[test]
 fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
+    let _guard = lock_network_fixture();
     let mut attempts = 0;
-    let error = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
-        |_address| {
-            attempts += 1;
-            Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "simulated invalid UDP bind request",
-            ))
-        },
-    )
+    let error = super::bind_local_dns_sockets_with(TcpListener::bind, |_address| {
+        attempts += 1;
+        Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "simulated invalid UDP bind request",
+        ))
+    })
     .expect_err("permanent UDP bind errors are returned immediately");
 
     assert_eq!(attempts, 1);
@@ -224,7 +245,7 @@ fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
 fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
@@ -243,7 +264,7 @@ fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
 fn does_not_retry_permanent_dns_fixture_tcp_bind_errors() {
     let mut attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
+        |_address| {
             attempts += 1;
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -347,6 +368,7 @@ fn accepted_tcp_stream_is_blocking_before_a_delayed_read() {
     const WRITER_DELAY: Duration = Duration::from_secs(1);
     const MINIMUM_BLOCKING_WAIT: Duration = Duration::from_millis(250);
 
+    let _guard = lock_network_fixture();
     let listener =
         TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("loopback TCP listener should bind");
     let mut writer = TcpStream::connect(listener.local_addr().expect("listener address exists"))

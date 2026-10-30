@@ -31,10 +31,10 @@
 - [x] Normative closure includes incorporated clauses and applicable subclauses, and Baseline Client's §3.1.1/§3.1.2 inherited obligations have explicit regression coverage.
 - [x] Baseline Client's whole-document `[KMIP-SPEC]` inclusion and its complete client-applicable 1.0 requirement closure are explicit, independently oracle-checked, and retain server-only/out-of-scope dispositions.
 - [x] Verification evidence is limited to a same-run push on the protected `release/1.0.0` ref and rejects pull-request, scheduled, other-event, wrong-ref, and unprotected runs.
-- [x] Each evidence run must query current branch protection and require human review, stale-review dismissal, an explicitly present empty pull-request bypass policy for users/teams/apps, admin enforcement, and disabled force pushes/deletions; missing/malformed policy, any bypass entry, missing credentials, or insufficient policy leaves readiness blocked.
+- [x] Each evidence run queries current branch protection and verifies the approved solo-maintainer PR policy (zero approvals; code-owner review disabled), stale-review dismissal, no configured bypass actors (the personal-repository API omission normalizes to empty lists), admin enforcement, and disabled force pushes/deletions. A malformed present object, any bypass entry, missing credentials, or insufficient policy blocks readiness.
 - [x] The evidence manifest names the complete required job set, including the coverage threshold gate.
 - [x] Current-run CI evidence is separated from deterministic committed reports and cannot mutate catalog state or claims.
 
 ## Notes
 
-- The specification defines the feature and its evidence gate; the 16 missing Baseline mandatory fixtures remain a separately reviewed source-acquisition prerequisite for any claim.
+- The specification defines the feature and its evidence gate. The 16 linked Baseline/Shared Knowledge Link mandatory fixtures are pinned; T036 records 10 full BL-M replays, 3 full SKLC-M replays, and 3 typed preflight blockers. Profiles §6.1 item 4 requires one or more listed cases, not every case; replay evidence remains distinct from server interoperability and an overall profile claim.

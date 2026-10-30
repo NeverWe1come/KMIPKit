@@ -65,8 +65,12 @@ fn get_and_locate_operations_keep_completed_and_pending_response_views() {
         .expect("validated raw-TLS client construction succeeds");
 
     let batch = ClientBatch::from_items([
-        ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))
-            .with_unique_batch_item_id(b"get-error".to_vec()),
+        ClientBatchItem::new(ClientRequest::Get(
+            GetRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+                "client-requested-object-id".to_owned(),
+            )),
+        ))
+        .with_unique_batch_item_id(b"get-error".to_vec()),
         ClientBatchItem::new(ClientRequest::Locate(LocateRequest::new(
             AttributeSet::new(),
         )))
