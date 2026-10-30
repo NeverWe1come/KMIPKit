@@ -305,8 +305,13 @@ executable lines. The handwritten JNI implementation in
 `bindings/java/native/kmipkit_jni.cpp` is compiled with LLVM source-based
 coverage instrumentation and measured from its own report; JaCoCo and Rust
 coverage do not count those C++ lines. The JNI collector is Linux-only and
-requires LLVM/Clang 20.1.8. The two Python CFFI wrappers above are the only
-generated-source exclusions in the current configuration.
+requires LLVM/Clang 20.1.8. Rust raw coverage also excludes the generated
+`crates/kmipkit-protocol/src/profiles_generated.rs` metadata file: its header
+states that it contains no executable conformance rules. CI checks its bytes
+with `python -B tools/normative_catalog/generate_profiles.py --repo-root . --check`,
+and profile selection and readiness tests exercise its metadata consumers.
+The two Python CFFI wrappers above remain the only generated-source exclusions
+within the Python adapter package; Java metadata exclusions are listed above.
 
 The aggregate job requires these inputs at the report root:
 

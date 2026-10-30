@@ -653,6 +653,18 @@ trait Example { fn declaration(&self); }
         )
         self.assertEqual({}, GATE.parse_added_production_lines(generated_diff))
 
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            generated_path = root / generated_metadata
+            generated_path.parent.mkdir(parents=True)
+            generated_path.write_text("pub const fn generated_metadata() -> usize { 18 }\n", encoding="utf-8")
+            validator_path = root / handwritten_validator
+            validator_path.write_text("pub fn validate_profile() {}\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+
+        self.assertEqual({handwritten_validator}, scan.eligible_files)
+
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
