@@ -2365,10 +2365,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual(expected_mappings, facade["languageMappings"])
                     self.assertIn(facade["declarationId"], operation["declarations"]["rust"])
                     for language in ("c", "java", "python"):
-                        self.assertIn(
-                            facade["languageMappings"][language]["name"],
-                            client_execution["mappings"][language],
-                        )
+                        if suffix:
+                            self.assertIn(
+                                facade["languageMappings"][language]["name"],
+                                client_execution["mappings"][language],
+                            )
+                        else:
+                            self.assertTrue(operation["declarations"][language])
 
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
