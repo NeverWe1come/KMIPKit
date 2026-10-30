@@ -6882,3 +6882,9 @@ The API manifest previously had no way to carry an exact C ABI signature for a p
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
 | Red — require opaque message types and ABI signatures | this commit | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_t104_message_model_types_and_signatures_are_in_the_generated_contract -v` | Expected failure: all eight message-model opaque types are absent from the manifest; the test now requires their release functions to come from the type records and the remaining 34 C symbols to carry exact declaration-level signatures. |
+
+### T106 root package message-module export (2026-10-30)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require root-package module availability | this commit | `uv run --project bindings/python python -m pytest bindings/python/tests/test_typed_messages.py -k message_model_module_is_available_on_the_root_package -q` | Expected failure in an isolated interpreter: `kmipkit.__all__` names `messages`, but importing `kmipkit` alone does not bind the submodule on the package. |

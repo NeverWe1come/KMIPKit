@@ -3,11 +3,28 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from collections.abc import Callable, Iterable
 from pathlib import Path
 
 import pytest
 from kmipkit import messages, ttlv
+
+
+def test_message_model_module_is_available_on_the_root_package() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import kmipkit; assert hasattr(kmipkit, 'messages')",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 _REQUEST_MESSAGE = 0x0042_0078
 _RESPONSE_MESSAGE = 0x0042_007B
