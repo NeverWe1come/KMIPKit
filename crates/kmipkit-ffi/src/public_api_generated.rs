@@ -2581,6 +2581,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::export_with_options",
     ),
     (
+        "rust-observed-d4442df58f0095b78ca5",
+        "rust-kmipkit",
+        "kmipkit::Client::get_constraints",
+    ),
+    (
         "rust-observed-9aba7b285e5393cc5c40",
         "rust-kmipkit",
         "kmipkit::Client::join_split_key",
@@ -2651,6 +2656,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::rekey_with_options",
     ),
     (
+        "rust-observed-4a8e37967c47e8b0b701",
+        "rust-kmipkit",
+        "kmipkit::Client::reprovision_with_options",
+    ),
+    (
         "rust-observed-e35e7d8903f024c7b80d",
         "rust-kmipkit",
         "kmipkit::Client::revoke",
@@ -2659,6 +2669,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-84daa91377f910ec8872",
         "rust-kmipkit",
         "kmipkit::Client::revoke_with_options",
+    ),
+    (
+        "rust-observed-2d4f88c07fe03f101102",
+        "rust-kmipkit",
+        "kmipkit::Client::rng_retrieve",
+    ),
+    (
+        "rust-observed-bff5ab538ec303cc94a9",
+        "rust-kmipkit",
+        "kmipkit::Client::rng_seed",
+    ),
+    (
+        "rust-observed-d36fa5380e679dbfeb31",
+        "rust-kmipkit",
+        "kmipkit::Client::set_constraints",
+    ),
+    (
+        "rust-observed-d76900d4d52bf9e0aad1",
+        "rust-kmipkit",
+        "kmipkit::Client::set_defaults",
     ),
     (
         "rust-observed-e2f9a959489ca4b51b2d",
@@ -2843,7 +2873,7 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
         "rust-observed-91bb9c2bc36c924e7120",
         "rust-kmipkit-client",
-        "kmipkit_client::Client::reprovision_with_options",
+        "kmipkit_client::Client::execute_with_options",
     ),
     (
         "rust-observed-90ee747dcccb18edf767",
@@ -4335,6 +4365,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-7c2542b808570932f658",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetAttributeListResponse::to_ttlv_payload",
+    ),
+    (
+        "rust-observed-01336b46a4463a0004be",
+        "rust-kmipkit",
+        "kmipkit::Client::get_attribute_list",
     ),
     (
         "T035:kmipkit_client-Client-execute_cancel",
