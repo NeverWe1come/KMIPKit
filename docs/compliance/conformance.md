@@ -62,7 +62,10 @@ Inventory records keep profile applicability, selected target, runtime
 validation availability, catalog evidence state, fixture availability, and
 public claims separate. Baseline Client is the selected 1.0 evidence target;
 its 294-requirement closure has typed mappings and category-appropriate
-negative behavior tests, so explicit runtime selection is available. Its catalog
+negative behavior tests. Those mappings do not make the profile selectable:
+runtime profile selection for Baseline remains unavailable while the catalog
+evidence state is incomplete, and per-exchange validation fails closed before
+transport. Its catalog
 `claim_state` remains `evidence_incomplete`: the 16 linked mandatory official
 XML fixtures are pinned, while T036 records 10 full Baseline Client (`BL-M`)
 replays, 3 full Shared Knowledge Link Client (`SKLC-M`) replays, and 3 typed
@@ -122,9 +125,10 @@ Baseline remains ineligible for a formal profile claim until all applicable
 requirements and evidence gates are satisfied, including current protected-
 branch verification. The three case-level replay blockers remain recorded but
 do not by themselves negate the one-or-more test requirement. Runtime
-selection being available means only that selected typed rules can be
-evaluated before and after an exchange; it does not establish server
-interoperability or close the external evidence gates.
+profile selection for Baseline remains unavailable while its evidence is
+incomplete; per-exchange validation rejects the selected target before
+network I/O. This gate does not establish server interoperability or close the
+external evidence gates.
 The registry also includes a mapping for Wrapped Secret Data under
 KMIPKIT-REQ-SPEC-2.7-001. See the
 [KMIPKIT-0010 specification](../../specs/010-profile-conformance/spec.md) for

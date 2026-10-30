@@ -135,10 +135,14 @@ class T036ProfileMappingTests(unittest.TestCase):
         self.assertFalse(baseline.get("support_claim", False))
 
     def test_incomplete_baseline_evidence_is_not_described_as_runtime_available(self) -> None:
-        conformance = CONFORMANCE_DOC_PATH.read_text(encoding="utf-8")
+        conformance = " ".join(
+            CONFORMANCE_DOC_PATH.read_text(encoding="utf-8").split()
+        )
 
         self.assertNotIn("explicit runtime selection is available", conformance)
-        self.assertIn("runtime validation is unavailable", conformance)
+        self.assertNotIn("Runtime selection being available means", conformance)
+        self.assertIn("runtime profile selection for Baseline remains unavailable", conformance)
+        self.assertIn("per-exchange validation fails closed before transport", conformance)
         self.assertIn("evidence_incomplete", conformance)
 
 
