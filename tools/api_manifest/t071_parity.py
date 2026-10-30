@@ -22,6 +22,7 @@ MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 API_LEVELS_CASE = "api-levels.shared.v1"
+OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -121,6 +122,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_shared_parity_fixtures.py",
             "test_api_level_query_matches_shared_fixture_locally",
+        ),
+    },
+    OPEN_TTLV_VALUES_CASE: {
+        "rust": (
+            "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+            "generic_ttlv_shared_fixture_preserves_open_values_and_child_order",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+            "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle",
+        ),
+        "python": (
+            "bindings/python/tests/test_shared_parity_fixtures.py",
+            "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle",
         ),
     },
 }
