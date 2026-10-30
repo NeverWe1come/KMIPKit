@@ -515,12 +515,21 @@ class PublicApiParityTests(unittest.TestCase):
             for declaration in manifest["publicDeclarations"]
             if declaration["declarationId"].startswith("T104:")
         }
-        function_symbols = {function["c"]["symbol"] for function in manifest["functions"]}
+        signature_symbols = {
+            declaration["exportName"]
+            for declaration in manifest["publicDeclarations"]
+            if declaration.get("cSignature") is not None
+        }
+        release_symbols = {
+            manifest_types[type_id]["c"]["releaseFunction"]
+            for type_id in expected_types
+        }
         self.assertEqual(
-            t104_symbols,
-            function_symbols & t104_symbols,
-            "every T104 C export must have a typed function signature for header generation",
+            t104_symbols - release_symbols,
+            signature_symbols,
+            "every non-release T104 C export must have a declaration-level signature",
         )
+        self.assertTrue(release_symbols <= t104_symbols)
 
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))

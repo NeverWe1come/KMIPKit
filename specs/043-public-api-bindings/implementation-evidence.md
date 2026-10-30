@@ -6876,3 +6876,9 @@ The API manifest previously had no way to carry an exact C ABI signature for a p
 |---|---|---|---|
 | Red — require declaration-level signatures | `85c6a02f7` | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_declared_c_symbol_signature_is_emitted_from_its_declaration tools.api_manifest.tests.test_generate.ManifestGeneratorCliTests.test_blocked_c_symbol_signature_is_not_emitted` | Expected failures: the public header omitted a declared C signature, and the manifest validator accepted a signature on a blocked export. |
 | Green — validate and render declaration signatures | this commit | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_generate -v`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass: all 72 generator tests passed (2 skipped); all 12 generated outputs are current; declaration signatures render into the public header, blocked declarations are rejected and omitted from the internal header. |
+
+### T104 public message contract (2026-10-30)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require opaque message types and ABI signatures | this commit | `.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_t104_message_model_types_and_signatures_are_in_the_generated_contract -v` | Expected failure: all eight message-model opaque types are absent from the manifest; the test now requires their release functions to come from the type records and the remaining 34 C symbols to carry exact declaration-level signatures. |
