@@ -8605,3 +8605,20 @@ Final local protocol verification after that correction:
 - `cargo test -p kmipkit-protocol --all-features --quiet` — PASS: 1,228 unit tests, every protocol integration suite, and doctests.
 - `cargo llvm-cov -p kmipkit-protocol --all-features --json --output-path <temporary report> --quiet` — PASS: coverage instrumentation ran the same package tests and wrote its JSON report. This Windows-only report is diagnostic; it does not substitute for the three-platform exact-head CI thresholds.
 - `cargo fmt --all --check` and `git diff --check` — PASS.
+
+## KMIPKIT-0010 correction to multi-item batch-ID interpretation (2026-10-30)
+
+The preceding “multi-item optional batch ID coverage” entry is superseded. It
+read §9.21's OPTIONAL field statement without applying the conditional
+requirement in §8.3 Table 396: Unique Batch Item ID is REQUIRED when Batch
+Count is greater than one. §9.21 governs correlation and requires the response
+to echo an ID when the request supplies one; it does not remove §8.3's
+multi-item requirement. An ID remains optional for a single-item request.
+
+Red: `multi_item_request_requires_a_unique_id_on_every_batch_item` was added
+to `crates/kmipkit-protocol/tests/message_validation.rs`. Before the fix,
+`cargo test -p kmipkit-protocol --all-features --test message_validation multi_item_request_requires_a_unique_id_on_every_batch_item`
+failed as expected: the parser returned a valid two-item `RequestMessage`
+instead of `MissingRequiredField` at top-level item 2. Exit code was 1. This
+reproduces the nonconforming behavior introduced by the earlier Green change;
+the single-item optional-ID test remains valid under §8.3 Table 396 and §9.21.

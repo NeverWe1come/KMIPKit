@@ -209,6 +209,7 @@ fn poll_pending_response_uses_the_section_6_1_38_no_payload_exception() {
 
 #[test]
 fn a_single_item_request_may_omit_its_unique_id() {
+    // KMIP Specification v2.1 §8.3 Table 396; §9.21.
     let message = RequestMessage::try_from_ttlv(request_optional_ids([None]))
         .expect("Table 396 makes the ID optional for a single item");
 
@@ -223,19 +224,13 @@ fn a_single_item_request_may_omit_its_unique_id() {
 }
 
 #[test]
-fn multi_item_request_may_omit_one_optional_batch_item_id() {
-    // KMIP Specification v2.1 §9.21, KMIPKIT-REQ-SPEC-9.21-001-001.
-    let message = request_optional_ids([Some(vec![0x01]), None]);
-    let message = RequestMessage::try_from_ttlv(message)
-        .expect("Unique Batch Item ID is optional on each request batch item");
+fn multi_item_request_requires_a_unique_id_on_every_batch_item() {
+    // KMIP Specification v2.1 §8.3 Table 396; §9.21.
+    let error = RequestMessage::try_from_ttlv(request_optional_ids([Some(vec![0x01]), None]))
+        .expect_err("Table 396 requires an ID on every item when Batch Count exceeds one");
 
-    let items: Vec<_> = message.batch_items().collect();
-    assert_eq!(items.len(), 2);
-    assert_eq!(
-        items[0].with_unique_batch_item_id(<[u8]>::to_vec),
-        Some(vec![0x01])
-    );
-    assert_eq!(items[1].with_unique_batch_item_id(<[u8]>::to_vec), None);
+    assert_eq!(error.kind(), MessageValidationErrorKind::MissingRequiredField);
+    assert_eq!(error.structure_index(), Some(2));
 }
 
 #[derive(Clone, Debug)]
