@@ -2873,7 +2873,7 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
     (
         "rust-observed-91bb9c2bc36c924e7120",
         "rust-kmipkit-client",
-        "kmipkit_client::Client::execute_with_options",
+        "kmipkit_client::Client::reprovision_with_options",
     ),
     (
         "rust-observed-90ee747dcccb18edf767",

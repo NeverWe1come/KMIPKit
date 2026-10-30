@@ -113254,7 +113254,7 @@
           "packageId": "python-kmipkit"
         },
         "rust": {
-          "name": "kmipkit_client::Client::execute_with_options",
+          "name": "kmipkit_client::Client::reprovision_with_options",
           "packageId": "rust-kmipkit-client"
         }
       },
