@@ -279751,7 +279751,7 @@
         "kmipkit::ClientRequest::get_usage_allocation",
         "kmipkit_client::ClientRequest::get_usage_allocation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
