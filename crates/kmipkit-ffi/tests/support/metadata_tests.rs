@@ -5,6 +5,49 @@ const ERROR_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
+// Message-model C ABI declarations remain blocked until T107 completes
+// Java/Python parity and shared consumer review.
+const BLOCKED_C_SYMBOLS: [&str; 39] = [
+    "kmipkit_message_extension_view_release",
+    "kmipkit_message_extension_view_ttlv",
+    "kmipkit_message_validation_error_field_index",
+    "kmipkit_message_validation_error_kind",
+    "kmipkit_message_validation_error_release",
+    "kmipkit_message_validation_error_structure_index",
+    "kmipkit_request_batch_item_extension_at",
+    "kmipkit_request_batch_item_extension_count",
+    "kmipkit_request_batch_item_release",
+    "kmipkit_request_batch_item_view_operation",
+    "kmipkit_request_batch_item_view_ttlv",
+    "kmipkit_request_header_view_batch_count",
+    "kmipkit_request_header_view_protocol_version",
+    "kmipkit_request_header_view_release",
+    "kmipkit_request_header_view_ttlv",
+    "kmipkit_request_message_batch_item_at",
+    "kmipkit_request_message_batch_item_count",
+    "kmipkit_request_message_from_ttlv",
+    "kmipkit_request_message_header",
+    "kmipkit_request_message_release",
+    "kmipkit_request_message_ttlv",
+    "kmipkit_response_batch_item_extension_at",
+    "kmipkit_response_batch_item_extension_count",
+    "kmipkit_response_batch_item_release",
+    "kmipkit_response_batch_item_view_operation",
+    "kmipkit_response_batch_item_view_result_status",
+    "kmipkit_response_batch_item_view_ttlv",
+    "kmipkit_response_header_view_batch_count",
+    "kmipkit_response_header_view_protocol_version",
+    "kmipkit_response_header_view_release",
+    "kmipkit_response_header_view_time_stamp",
+    "kmipkit_response_header_view_ttlv",
+    "kmipkit_response_message_batch_item_at",
+    "kmipkit_response_message_batch_item_count",
+    "kmipkit_response_message_from_ttlv",
+    "kmipkit_response_message_header",
+    "kmipkit_response_message_release",
+    "kmipkit_response_message_ttlv",
+    "kmipkit_validated_extension_value_value_at",
+];
 
 fn starts_inside_shared_panic_boundary(body: &str) -> bool {
     body.trim_start().starts_with("ffi_entrypoint(||")
@@ -355,49 +398,6 @@ fn panic_boundary_records_internal_error_for_void_exports() {
 
 #[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
-    // Message-model C ABI declarations remain blocked until T107 completes
-    // the Java/Python parity and shared consumer review.
-    const BLOCKED_C_SYMBOLS: [&str; 39] = [
-        "kmipkit_message_extension_view_release",
-        "kmipkit_message_extension_view_ttlv",
-        "kmipkit_message_validation_error_field_index",
-        "kmipkit_message_validation_error_kind",
-        "kmipkit_message_validation_error_release",
-        "kmipkit_message_validation_error_structure_index",
-        "kmipkit_request_batch_item_extension_at",
-        "kmipkit_request_batch_item_extension_count",
-        "kmipkit_request_batch_item_release",
-        "kmipkit_request_batch_item_view_operation",
-        "kmipkit_request_batch_item_view_ttlv",
-        "kmipkit_request_header_view_batch_count",
-        "kmipkit_request_header_view_protocol_version",
-        "kmipkit_request_header_view_release",
-        "kmipkit_request_header_view_ttlv",
-        "kmipkit_request_message_batch_item_at",
-        "kmipkit_request_message_batch_item_count",
-        "kmipkit_request_message_from_ttlv",
-        "kmipkit_request_message_header",
-        "kmipkit_request_message_release",
-        "kmipkit_request_message_ttlv",
-        "kmipkit_response_batch_item_extension_at",
-        "kmipkit_response_batch_item_extension_count",
-        "kmipkit_response_batch_item_release",
-        "kmipkit_response_batch_item_view_operation",
-        "kmipkit_response_batch_item_view_result_status",
-        "kmipkit_response_batch_item_view_ttlv",
-        "kmipkit_response_header_view_batch_count",
-        "kmipkit_response_header_view_protocol_version",
-        "kmipkit_response_header_view_release",
-        "kmipkit_response_header_view_time_stamp",
-        "kmipkit_response_header_view_ttlv",
-        "kmipkit_response_message_batch_item_at",
-        "kmipkit_response_message_batch_item_count",
-        "kmipkit_response_message_from_ttlv",
-        "kmipkit_response_message_header",
-        "kmipkit_response_message_release",
-        "kmipkit_response_message_ttlv",
-        "kmipkit_validated_extension_value_value_at",
-    ];
     const INTERNAL_C_SYMBOLS: [&str; 6] = [
         "kmipkit_client_batch_item_response_metadata_v1",
         "kmipkit_client_batch_item_response_release",
