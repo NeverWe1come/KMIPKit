@@ -13,7 +13,6 @@ from cffi import FFI
 
 from ._ffi import _bundled_path
 
-
 ffi = FFI()
 ffi.cdef(
     """
