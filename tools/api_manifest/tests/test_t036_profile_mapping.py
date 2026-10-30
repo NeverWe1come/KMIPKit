@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 PROFILE_CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+CONFORMANCE_DOC_PATH = ROOT / "docs" / "compliance" / "conformance.md"
 
 RUST_MAPPINGS = {
     "kmipkit_client::ProfileValidationSelection",
@@ -132,6 +133,13 @@ class T036ProfileMappingTests(unittest.TestCase):
 
         self.assertEqual("evidence_incomplete", baseline["claim_state"])
         self.assertFalse(baseline.get("support_claim", False))
+
+    def test_incomplete_baseline_evidence_is_not_described_as_runtime_available(self) -> None:
+        conformance = CONFORMANCE_DOC_PATH.read_text(encoding="utf-8")
+
+        self.assertNotIn("explicit runtime selection is available", conformance)
+        self.assertIn("runtime validation is unavailable", conformance)
+        self.assertIn("evidence_incomplete", conformance)
 
 
 if __name__ == "__main__":
