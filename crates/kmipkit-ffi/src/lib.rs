@@ -148,6 +148,22 @@ pub struct kmipkit_ttlv_structure_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_request_message_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_request_header_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_request_batch_item_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_message_validation_error_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_client_batch_item_t {
     _private: [u8; 0],
 }

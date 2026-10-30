@@ -34,16 +34,18 @@ use crate::{
     kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
-    kmipkit_extension_schema_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_options_v1_t, kmipkit_revocation_reason_t, kmipkit_revoke_request_t,
-    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_usage_allocation_context_t, kmipkit_validated_extension_value_t,
+    kmipkit_extension_schema_t, kmipkit_message_validation_error_t,
+    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
+    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
+    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
+    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -70,6 +72,7 @@ use kmipkit_protocol::{
     SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
     StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
+use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{ProfileObjectState, ProfileValidationContext, ProfileValidationSelection};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -93,11 +96,11 @@ mod get_usage_allocation_abi_tests;
 #[path = "../tests/support/interop_abi_tests.rs"]
 mod interop_abi_tests;
 #[cfg(test)]
-#[path = "../tests/support/message_model_abi_tests.rs"]
-mod message_model_abi_tests;
-#[cfg(test)]
 #[path = "../tests/support/log_abi_tests.rs"]
 mod log_abi_tests;
+#[cfg(test)]
+#[path = "../tests/support/message_model_abi_tests.rs"]
+mod message_model_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
@@ -347,6 +350,10 @@ enum Kind {
     StructureView,
     ItemView,
     ValueView,
+    RequestMessage,
+    RequestHeaderView,
+    RequestBatchItemView,
+    MessageValidationError,
     TransportConfig,
     Client,
     ClientBatch,
@@ -396,6 +403,13 @@ enum HandleValue {
     StructureView(TtlvView),
     ItemView(TtlvView),
     ValueView(TtlvView),
+    RequestMessage(Arc<RequestMessage>),
+    RequestHeaderView(Arc<RequestMessage>),
+    RequestBatchItemView {
+        message: Arc<RequestMessage>,
+        index: usize,
+    },
+    MessageValidationError(MessageValidationError),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
     ClientBatch(std::sync::Mutex<ClientBatchBuilder>),
@@ -1568,6 +1582,38 @@ pub extern "C" fn kmipkit_revoke_request_release(handle: *mut kmipkit_revoke_req
 pub extern "C" fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_structure_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Structure);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_release(handle: *mut kmipkit_request_message_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RequestMessage);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_release(handle: *mut kmipkit_request_header_view_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RequestHeaderView);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_release(
+    handle: *mut kmipkit_request_batch_item_view_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RequestBatchItemView);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_validation_error_release(
+    handle: *mut kmipkit_message_validation_error_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::MessageValidationError);
     });
 }
 
@@ -6583,6 +6629,204 @@ pub extern "C" fn kmipkit_ttlv_structure_create(
             Kind::Structure,
             HandleValue::Structure(Structure::new())
         ));
+        SUCCESS
+    })
+}
+
+/// Consumes a generic TTLV structure and validates it as a KMIP Request Message.
+///
+/// On structural validation failure, `out_validation_error` receives a payload-free error handle
+/// containing only a stable kind and optional numeric indexes. The supplied structure handle is
+/// consumed whether validation succeeds or fails.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_message: *mut *mut kmipkit_request_message_t,
+    out_validation_error: *mut *mut kmipkit_message_validation_error_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out_message = out_slot!(out_message);
+        let out_validation_error = out_slot!(out_validation_error);
+        let structure = try_ffi!(owned_payload(structure, Kind::Structure));
+        let HandleValue::Structure(structure) = structure else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        match RequestMessage::try_from_ttlv(structure) {
+            Ok(message) => {
+                *out_message = try_ffi!(try_make_handle(
+                    Kind::RequestMessage,
+                    HandleValue::RequestMessage(Arc::new(message)),
+                ));
+                SUCCESS
+            }
+            Err(error) => {
+                *out_validation_error = try_ffi!(try_make_handle(
+                    Kind::MessageValidationError,
+                    HandleValue::MessageValidationError(error),
+                ));
+                record_ffi_error(ERROR_PROTOCOL)
+            }
+        }
+    })
+}
+
+/// Returns a retained typed view of the validated Request Header.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_header(
+    message: *mut kmipkit_request_message_t,
+    out_header: *mut *mut kmipkit_request_header_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_header);
+        let message = read_handle!(message, RequestMessage);
+        let HandleValue::RequestMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::RequestHeaderView,
+            HandleValue::RequestHeaderView(Arc::clone(message)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the request's exact signed Protocol Version pair into `out_version`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_protocol_version(
+    header: *mut kmipkit_request_header_view_t,
+    out_version: *mut crate::kmipkit_protocol_version_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_version);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = message.header().protocol_version();
+        *out = crate::kmipkit_protocol_version_v1_t {
+            major: version.major(),
+            minor: version.minor(),
+        };
+        SUCCESS
+    })
+}
+
+/// Returns the validated positive Request Header Batch Count.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_batch_count(
+    header: *mut kmipkit_request_header_view_t,
+    out_count: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = message.header().batch_count();
+        SUCCESS
+    })
+}
+
+/// Returns the number of validated Request Batch Items in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_batch_item_count(
+    message: *mut kmipkit_request_message_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let message = read_handle!(message, RequestMessage);
+        let HandleValue::RequestMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out =
+            try_ffi!(u64::try_from(message.batch_items().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Returns a retained view of the indexed Request Batch Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_message_batch_item_at(
+    message: *mut kmipkit_request_message_t,
+    index: u64,
+    out_item: *mut *mut kmipkit_request_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let message_handle = read_handle!(message, RequestMessage);
+        let HandleValue::RequestMessage(message) = &message_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if index >= message.batch_items().len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::RequestBatchItemView,
+            HandleValue::RequestBatchItemView {
+                message: Arc::clone(message),
+                index,
+            },
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the raw Operation Enumeration without narrowing unknown values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_view_operation(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_present: *mut u8,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let operation_out = scalar_out!(out_operation);
+        *present = 0;
+        *operation_out = 0;
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let operation = message
+            .batch_items()
+            .nth(*index)
+            .and_then(|batch_item| batch_item.operation());
+        if let Some(operation) = operation {
+            *present = 1;
+            *operation_out = operation;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the stable numeric category of a payload-free message validation error.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_validation_error_kind(
+    error: *mut kmipkit_message_validation_error_t,
+    out_kind: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_kind);
+        let error = read_handle!(error, MessageValidationError);
+        let HandleValue::MessageValidationError(error) = error.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = match error.kind() {
+            MessageValidationErrorKind::MissingRequiredField => 1,
+            MessageValidationErrorKind::DuplicateField => 2,
+            MessageValidationErrorKind::FieldOutOfOrder => 3,
+            MessageValidationErrorKind::WrongItemType => 4,
+            MessageValidationErrorKind::InvalidBatchCount => 5,
+            MessageValidationErrorKind::BatchCountMismatch => 6,
+            MessageValidationErrorKind::InvalidSingleItemOption => 7,
+            MessageValidationErrorKind::InvalidResult => 8,
+            MessageValidationErrorKind::InvalidFieldValue => 9,
+            _ => 255,
+        };
         SUCCESS
     })
 }
