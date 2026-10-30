@@ -78,23 +78,20 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
     (Client::for_test(HashTransport(Rc::clone(&state))), state)
 }
 
-fn request() -> ClientRequest {
+fn hash_request() -> HashRequest {
     let parameters = test_structure([test_item(HASHING_ALGORITHM, Value::enumeration(6))]);
-    ClientRequest::hash(
-        HashRequest::new(parameters).with_data(OperationData::ByteString(SecretBytes::new(
-            b"input-to-hash".to_vec(),
-        ))),
-    )
+    HashRequest::new(parameters).with_data(OperationData::ByteString(SecretBytes::new(
+        b"input-to-hash".to_vec(),
+    )))
+}
+
+fn request() -> ClientRequest {
+    ClientRequest::hash(hash_request())
 }
 
 #[test]
 fn hash_request_convenience_constructor_selects_variant_and_preserves_payload() {
-    let parameters = test_structure([test_item(HASHING_ALGORITHM, Value::enumeration(6))]);
-    let request = HashRequest::new(parameters).with_data(OperationData::ByteString(
-        SecretBytes::new(b"input-to-hash".to_vec()),
-    ));
-
-    let ClientRequest::Hash(request) = ClientRequest::hash(request) else {
+    let ClientRequest::Hash(request) = ClientRequest::hash(hash_request()) else {
         panic!("the Hash convenience constructor must select the Hash request variant");
     };
     let payload = request

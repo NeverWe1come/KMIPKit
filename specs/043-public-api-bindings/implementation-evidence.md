@@ -6430,3 +6430,16 @@ Exact-head PR CI run [40972369437](https://github.com/NeverWe1come/KMIPKit/actio
 ## T029 shared C parity contract — hosted Green verification (2026-10-30)
 
 Exact-head PR CI run [40996880033](https://github.com/NeverWe1come/KMIPKit/actions/runs/40996880033) passed on `a68572533bd5ee2bdc94ca41666455c535984a47`: 35 jobs succeeded, 2 schedule-only jobs were skipped, and 0 failed. Script contracts passed on Ubuntu, Windows, and macOS, including the previously failing T029 C helper-mapping assertion; `Coverage gate / selected scopes` and `CI summary / at a glance` also completed successfully. CodeQL and zizmor passed. T085's temporary coverage waiver remains active for this branch: coverage was collected, but minimum thresholds were not enforced or claimed. T036/T042 remain blocked pending the unmerged KMIPKIT-0010 PR and its post-integration gate; T071, T075, and T085 remain open. PR #104 stays a draft.
+
+## T033 Hash request convenience mapping (2026-10-30)
+
+The Rust `ClientRequest::hash` convenience method is now mapped to the approved Hash operation's C, Java, and Python request builders. A focused Rust test confirms that the helper selects `ClientRequest::Hash` and preserves the original request Data in its TTLV payload. An independent semantic review rejected mapping the `ClientBatchOutcome::Hash` variant to foreign success-only response accessors: Rust retains typed failed Hash responses, while those accessors omit them. No response mapping was promoted by this change.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `93936477f` | `py -3 -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest.HashMacSignatureParityManifestTests.test_hash_client_request_convenience_method_has_four_language_mapping -v` | Expected failure: the observed Rust helper remained `blocked` under `public_binding_surface`, without an approved Hash owner or language mappings. |
+| Red evidence | `93936477f` | `cargo test -p kmipkit-client --lib hash_execution_tests::hash_request_convenience_constructor_selects_variant_and_preserves_payload` | Pass: the helper selected the Hash request variant and preserved the Hash payload, establishing the constructor equivalence before mapping it. |
+| Green | `c72e8398e` | `py -3 -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --write` | Pass: all 4 Hash manifest tests; 12 fixed generated outputs regenerated. |
+| Refactor | this evidence commit | `cargo test -p kmipkit-client --lib hash_execution_tests`; `py -3 -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | Pass: all 5 Hash execution tests and all 4 manifest tests; all 12 generated outputs current; formatting and diff checks passed. |
+
+This mapping remains `declared`; it does not change the Hash operation's current readiness state or claim KMIP conformance. The broader public declaration inventory and T071/T075/T085 release gates remain open.
