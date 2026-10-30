@@ -468,6 +468,8 @@ class PublicApiParityTests(unittest.TestCase):
             declaration
             for declaration in manifest["publicDeclarations"]
             if declaration["declarationId"].startswith("T104:")
+            and declaration["packageId"] == "c-kmipkit"
+            and declaration["kind"] == "c-symbol"
         ]
         self.assertEqual(len(declarations), 42)
         self.assertTrue(

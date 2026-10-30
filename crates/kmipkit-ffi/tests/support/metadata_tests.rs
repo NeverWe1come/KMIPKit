@@ -5,53 +5,8 @@ const ERROR_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
-// Message-model C ABI declarations remain blocked until T107 completes
-// Java/Python parity and shared consumer review.
-const BLOCKED_C_SYMBOLS: [&str; 43] = [
-    "kmipkit_message_extension_view_release",
-    "kmipkit_message_extension_view_ttlv",
-    "kmipkit_message_validation_error_field_index",
-    "kmipkit_message_validation_error_kind",
-    "kmipkit_message_validation_error_release",
-    "kmipkit_message_validation_error_structure_index",
-    "kmipkit_request_batch_item_extension_at",
-    "kmipkit_request_batch_item_extension_count",
-    "kmipkit_request_batch_item_release",
-    "kmipkit_request_batch_item_view_operation",
-    "kmipkit_request_batch_item_view_ttlv",
-    "kmipkit_request_header_view_batch_count",
-    "kmipkit_request_header_view_effective_asynchronous_indicator",
-    "kmipkit_request_header_view_effective_attestation_capable_indicator",
-    "kmipkit_request_header_view_effective_batch_error_continuation_option",
-    "kmipkit_request_header_view_effective_batch_order_option",
-    "kmipkit_request_header_view_protocol_version",
-    "kmipkit_request_header_view_release",
-    "kmipkit_request_header_view_ttlv",
-    "kmipkit_request_message_batch_item_at",
-    "kmipkit_request_message_batch_item_count",
-    "kmipkit_request_message_from_ttlv",
-    "kmipkit_request_message_header",
-    "kmipkit_request_message_release",
-    "kmipkit_request_message_ttlv",
-    "kmipkit_response_batch_item_extension_at",
-    "kmipkit_response_batch_item_extension_count",
-    "kmipkit_response_batch_item_release",
-    "kmipkit_response_batch_item_view_operation",
-    "kmipkit_response_batch_item_view_result_status",
-    "kmipkit_response_batch_item_view_ttlv",
-    "kmipkit_response_header_view_batch_count",
-    "kmipkit_response_header_view_protocol_version",
-    "kmipkit_response_header_view_release",
-    "kmipkit_response_header_view_time_stamp",
-    "kmipkit_response_header_view_ttlv",
-    "kmipkit_response_message_batch_item_at",
-    "kmipkit_response_message_batch_item_count",
-    "kmipkit_response_message_from_ttlv",
-    "kmipkit_response_message_header",
-    "kmipkit_response_message_release",
-    "kmipkit_response_message_ttlv",
-    "kmipkit_validated_extension_value_value_at",
-];
+// Only the unresolved extension-registry value accessor remains blocked.
+const BLOCKED_C_SYMBOLS: [&str; 1] = ["kmipkit_validated_extension_value_value_at"];
 
 fn starts_inside_shared_panic_boundary(body: &str) -> bool {
     body.trim_start().starts_with("ffi_entrypoint(||")
@@ -128,6 +83,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "production_transport",
             "server_generated_creation",
             "ttlv_wire_codec",
+            "typed_message_model",
             "usage_allocation_guard",
             "vendor_extension_registry",
         ]

@@ -97,6 +97,14 @@ typedef struct kmipkit_profile_validation_selection_v1_t kmipkit_profile_validat
 typedef struct kmipkit_profile_object_state_v1_t kmipkit_profile_object_state_v1_t;
 typedef struct kmipkit_profile_validation_context_v1_t kmipkit_profile_validation_context_v1_t;
 typedef struct kmipkit_ttlv_decode_error_v1_t kmipkit_ttlv_decode_error_v1_t;
+typedef struct kmipkit_request_message_t kmipkit_request_message_t;
+typedef struct kmipkit_request_header_view_t kmipkit_request_header_view_t;
+typedef struct kmipkit_request_batch_item_view_t kmipkit_request_batch_item_view_t;
+typedef struct kmipkit_response_message_t kmipkit_response_message_t;
+typedef struct kmipkit_response_header_view_t kmipkit_response_header_view_t;
+typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_view_t;
+typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
+typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -329,6 +337,14 @@ void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t
 void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
 void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
 void kmipkit_client_async_operation_outcome_release(kmipkit_client_async_operation_outcome_t *handle);
+void kmipkit_request_message_release(kmipkit_request_message_t *handle);
+void kmipkit_request_header_view_release(kmipkit_request_header_view_t *handle);
+void kmipkit_request_batch_item_release(kmipkit_request_batch_item_view_t *handle);
+void kmipkit_response_message_release(kmipkit_response_message_t *handle);
+void kmipkit_response_header_view_release(kmipkit_response_header_view_t *handle);
+void kmipkit_response_batch_item_release(kmipkit_response_batch_item_view_t *handle);
+void kmipkit_message_extension_view_release(kmipkit_message_extension_view_t *handle);
+void kmipkit_message_validation_error_release(kmipkit_message_validation_error_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1333,6 +1349,74 @@ int32_t kmipkit_ttlv_decode(const uint8_t * data, uint64_t length, kmipkit_ttlv_
 int32_t kmipkit_ttlv_decode_with_limits(const uint8_t * data, uint64_t length, kmipkit_codec_limits_t * limits, kmipkit_ttlv_decode_error_v1_t * error, kmipkit_ttlv_item_t ** out_item);
 /* KMIPKIT-0004-FR-010, KMIPKIT-0005-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_ttlv_item_view_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_view_t ** out_view);
+/* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_message_validation_error_field_index(kmipkit_message_validation_error_t * error, uint8_t * out_present, uint64_t * out_index);
+/* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_message_validation_error_kind(kmipkit_message_validation_error_t * error, uint32_t * out_kind);
+/* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_message_validation_error_structure_index(kmipkit_message_validation_error_t * error, uint8_t * out_present, uint64_t * out_index);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_batch_item_extension_at(kmipkit_request_batch_item_view_t * item, uint64_t extension_index, kmipkit_message_extension_view_t ** out_extension);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_batch_item_extension_count(kmipkit_request_batch_item_view_t * item, uint64_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_batch_item_view_operation(kmipkit_request_batch_item_view_t * item, uint8_t * out_present, uint32_t * out_operation);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_batch_item_view_ttlv(kmipkit_request_batch_item_view_t * item, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_batch_count(kmipkit_request_header_view_t * header, int32_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_effective_asynchronous_indicator(kmipkit_request_header_view_t * header, uint32_t * out_indicator);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_effective_attestation_capable_indicator(kmipkit_request_header_view_t * header, uint8_t * out_indicator);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_effective_batch_error_continuation_option(kmipkit_request_header_view_t * header, uint32_t * out_option);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_effective_batch_order_option(kmipkit_request_header_view_t * header, uint8_t * out_option);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_protocol_version(kmipkit_request_header_view_t * header, kmipkit_protocol_version_v1_t * out_version);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0006-FR-011, KMIPKIT-0006-FR-012, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_header_view_ttlv(kmipkit_request_header_view_t * header, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_message_batch_item_at(kmipkit_request_message_t * message, uint64_t index, kmipkit_request_batch_item_view_t ** out_item);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_message_batch_item_count(kmipkit_request_message_t * message, uint64_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_message_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_request_message_t ** out_message, kmipkit_message_validation_error_t ** out_validation_error);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_message_header(kmipkit_request_message_t * message, kmipkit_request_header_view_t ** out_header);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-006, KMIPKIT-0006-FR-007, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-009, KMIPKIT-0006-FR-010, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_request_message_ttlv(kmipkit_request_message_t * message, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_batch_item_extension_at(kmipkit_response_batch_item_view_t * item, uint64_t extension_index, kmipkit_message_extension_view_t ** out_extension);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_batch_item_extension_count(kmipkit_response_batch_item_view_t * item, uint64_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_batch_item_view_operation(kmipkit_response_batch_item_view_t * item, uint8_t * out_present, uint32_t * out_operation);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_batch_item_view_result_status(kmipkit_response_batch_item_view_t * item, uint8_t * out_present, uint32_t * out_status);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_batch_item_view_ttlv(kmipkit_response_batch_item_view_t * item, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_header_view_batch_count(kmipkit_response_header_view_t * header, int32_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_header_view_protocol_version(kmipkit_response_header_view_t * header, kmipkit_protocol_version_v1_t * out_version);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_header_view_time_stamp(kmipkit_response_header_view_t * header, int64_t * out_time_stamp);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-002, KMIPKIT-0006-FR-013, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_header_view_ttlv(kmipkit_response_header_view_t * header, kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_message_batch_item_at(kmipkit_response_message_t * message, uint64_t index, kmipkit_response_batch_item_view_t ** out_item);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_message_batch_item_count(kmipkit_response_message_t * message, uint64_t * out_count);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_message_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_response_message_t ** out_message, kmipkit_message_validation_error_t ** out_validation_error);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_message_header(kmipkit_response_message_t * message, kmipkit_response_header_view_t ** out_header);
+/* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_response_message_ttlv(kmipkit_response_message_t * message, kmipkit_ttlv_structure_t ** out_structure);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
