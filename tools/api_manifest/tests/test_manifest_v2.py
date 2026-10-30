@@ -1466,6 +1466,94 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{len(unresolved)} remain, including {unresolved[:10]}",
         )
 
+    def test_t091_transport_exchange_error_contract_maps_rust_only_under_adr_0014(self) -> None:
+        expected_exports = {
+            "kmipkit_transport::RequestDeliveryState",
+            "kmipkit_transport::RequestDeliveryState::NotSent",
+            "kmipkit_transport::RequestDeliveryState::PossiblySent",
+            "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+            "kmipkit_transport::RequestDeliveryState::not_sent",
+            "kmipkit_transport::RequestDeliveryState::write_started",
+            "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+            "kmipkit_transport::TransportCauseCategory",
+            "kmipkit_transport::TransportCauseCategory::Io",
+            "kmipkit_transport::TransportCauseCategory::Tls",
+            "kmipkit_transport::TransportCauseCategory::Http",
+            "kmipkit_transport::TransportCauseCategory::Timeout",
+            "kmipkit_transport::TransportCauseCategory::Other",
+            "kmipkit_transport::TransportError",
+            "kmipkit_transport::TransportError::new",
+            "kmipkit_transport::TransportError::delivery_state",
+            "kmipkit_transport::TransportError::cause_category",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        evidence = {
+            "crates/kmipkit-transport/tests/public_contract.rs",
+            "crates/kmipkit-transport/tests/delivery_state.rs",
+            "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs",
+            "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        }
+
+        for export_name in sorted(expected_exports):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertEqual("rust-only-adr", declaration["parityScope"])
+                self.assertEqual("rust_transport_exchange", declaration["capabilityId"])
+                self.assertTrue(
+                    {"KMIPKIT-0007-FR-005", "KMIPKIT-0043-FR-020", "KMIPKIT-0043-FR-021"}
+                    <= set(declaration["requirementIds"])
+                )
+                self.assertEqual(
+                    {
+                        "kind": "accepted-adr",
+                        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+                        "status": "Accepted",
+                    },
+                    {
+                        key: declaration["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertEqual(
+                    {
+                        "rust": {
+                            "packageId": "rust-kmipkit-transport",
+                            "name": export_name,
+                        }
+                    },
+                    declaration["languageMappings"],
+                )
+                self.assertTrue(evidence <= set(declaration["parityEvidenceIds"]))
+
+    def test_t091_transport_standard_trait_exports_have_exact_adr_exclusions(self) -> None:
+        exclusions = [
+            row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "rust-kmipkit-transport"
+            and row["exportName"].startswith("<kmipkit_transport::")
+        ]
+        self.assertEqual(71, len(exclusions))
+        for exclusion in exclusions:
+            with self.subTest(export=exclusion["exportName"]):
+                self.assertTrue(exclusion["reason"])
+                self.assertEqual(
+                    {
+                        "kind": "accepted-adr",
+                        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+                        "status": "Accepted",
+                    },
+                    {
+                        key: exclusion["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertIn("KMIPKIT-0007-FR-005", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
         declaration = next(
