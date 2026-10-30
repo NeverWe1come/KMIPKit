@@ -198,6 +198,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if declaration["packageId"] == package_id
         ]
 
+    def _approved_exclusions_by_key(self) -> dict[tuple[str, str], dict[str, object]]:
+        return {
+            (exclusion["packageId"], exclusion["exportName"]): exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+        }
+
     def test_checked_in_manifest_is_the_complete_v2_contract(self) -> None:
         manifest = self.checked_in_manifest
         self.assertEqual(manifest["formatVersion"], 2)
@@ -967,12 +973,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
-        ttlv_namespace = next(
-            exclusion
-            for exclusion in self.checked_in_manifest["approvedExclusions"]
-            if exclusion["packageId"] == "python-kmipkit"
-            and exclusion["exportName"] == "kmipkit.ttlv"
-        )
+        ttlv_namespace = self._approved_exclusions_by_key()[
+            ("python-kmipkit", "kmipkit.ttlv")
+        ]
         self.assertIn("namespace boundary", ttlv_namespace["reason"])
         self.assertEqual(
             ttlv_namespace["approvalSource"]["path"],
@@ -1016,10 +1019,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         self.assertEqual(len(observed_trait_exports), 92)
 
-        exclusions = {
-            (record["packageId"], record["exportName"]): record
-            for record in self.checked_in_manifest["approvedExclusions"]
-        }
+        exclusions = self._approved_exclusions_by_key()
         missing = sorted(observed_trait_exports - exclusions.keys())
         self.assertFalse(missing, f"missing exact TTLV trait exclusions: {missing[:5]}")
         for key in sorted(observed_trait_exports):
@@ -1042,10 +1042,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit_protocol::ProfileValidationSelection::for_test",
             ),
         }
-        exclusions = {
-            (record["packageId"], record["exportName"]): record
-            for record in self.checked_in_manifest["approvedExclusions"]
-        }
+        exclusions = self._approved_exclusions_by_key()
         missing = sorted(expected - exclusions.keys())
         self.assertFalse(missing, f"missing test-support-only exclusions: {missing}")
         for key in sorted(expected):
@@ -1129,10 +1126,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
-        exclusions = {
-            (exclusion["packageId"], exclusion["exportName"]): exclusion
-            for exclusion in self.checked_in_manifest["approvedExclusions"]
-        }
+        exclusions = self._approved_exclusions_by_key()
         unresolved = [
             declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
