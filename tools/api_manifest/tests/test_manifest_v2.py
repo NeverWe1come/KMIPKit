@@ -1379,6 +1379,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "KMIPKIT-0043-FR-010",
             "KMIPKIT-0043-FR-021",
         ]
+        client_execution = next(
+            capability
+            for capability in self.checked_in_manifest["capabilities"]
+            if capability["capabilityId"] == "client_execution"
+        )
+        self.assertTrue(
+            set(expected).issubset(set(client_execution["mappings"]["rust"])),
+            "the owning capability inventory must list each newly mapped Rust export",
+        )
 
         for rust_name, (c_name, java_name, python_name) in expected.items():
             with self.subTest(export=rust_name):
