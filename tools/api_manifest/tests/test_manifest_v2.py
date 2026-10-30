@@ -1389,6 +1389,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(set(declarations), expected)
         self.assertTrue(all(row["kind"] == "field" for row in declarations.values()))
 
+    def test_ttlv_codec_java_static_facade_is_exactly_excluded(self) -> None:
+        name = "org.kmipkit.ttlv.TtlvCodec"
+        exclusion = next(
+            (
+                row
+                for row in self.checked_in_manifest["approvedExclusions"]
+                if row["packageId"] == "java-kmipkit" and row["exportName"] == name
+            ),
+            None,
+        )
+        self.assertIsNotNone(exclusion)
+        self.assertTrue(exclusion["reason"])
+        self.assertTrue(exclusion["evidence"])
+        self.assertEqual(
+            exclusion["approvalSource"]["path"],
+            "specs/005-ttlv-wire-codec/spec.md",
+        )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
