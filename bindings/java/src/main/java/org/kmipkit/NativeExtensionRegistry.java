@@ -53,6 +53,13 @@ public final class NativeExtensionRegistry {
     public static final int REVOCATION_REASON = 35;
     public static final int REVOKE_REQUEST = 36;
     public static final int CLIENT_ASYNC_OPERATION_OUTCOME = 37;
+    public static final int REQUEST_MESSAGE = 38;
+    public static final int REQUEST_HEADER_VIEW = 39;
+    public static final int REQUEST_BATCH_ITEM_VIEW = 40;
+    public static final int MESSAGE_EXTENSION_VIEW = 41;
+    public static final int RESPONSE_MESSAGE = 42;
+    public static final int RESPONSE_HEADER_VIEW = 43;
+    public static final int RESPONSE_BATCH_ITEM_VIEW = 44;
 
     private static volatile boolean loaded;
 
@@ -441,5 +448,32 @@ public final class NativeExtensionRegistry {
     public static native long ttlvValueViewByteLength(long valueView);
     public static native short ttlvValueViewByteAt(long valueView, long index);
     public static native long ttlvStructureViewItemCount(long structureView);
+    public static native long[] requestMessageFromTtlv(long structure);
+    public static native long requestMessageTtlv(long message);
+    public static native long requestMessageHeader(long message);
+    public static native long requestHeaderViewTtlv(long header);
+    public static native int[] requestHeaderViewProtocolVersion(long header);
+    public static native int requestHeaderViewBatchCount(long header);
+    public static native long requestMessageBatchItemCount(long message);
+    public static native long requestMessageBatchItemAt(long message, long index);
+    public static native long requestBatchItemViewTtlv(long item);
+    public static native long[] requestBatchItemViewOperation(long item);
+    public static native long requestBatchItemExtensionCount(long item);
+    public static native long requestBatchItemExtensionAt(long item, long extensionIndex);
+    public static native long[] responseMessageFromTtlv(long structure);
+    public static native long responseMessageTtlv(long message);
+    public static native long responseMessageHeader(long message);
+    public static native long responseHeaderViewTtlv(long header);
+    public static native int[] responseHeaderViewProtocolVersion(long header);
+    public static native long responseHeaderViewTimeStamp(long header);
+    public static native int responseHeaderViewBatchCount(long header);
+    public static native long responseMessageBatchItemCount(long message);
+    public static native long responseMessageBatchItemAt(long message, long index);
+    public static native long responseBatchItemViewTtlv(long item);
+    public static native long[] responseBatchItemViewOperation(long item);
+    public static native long[] responseBatchItemViewResultStatus(long item);
+    public static native long responseBatchItemExtensionCount(long item);
+    public static native long responseBatchItemExtensionAt(long item, long extensionIndex);
+    public static native long messageExtensionViewTtlv(long extension);
     public static native long codecLimitsCreate(long maxMessageBytes, long maxStructureDepth, long maxElements);
 }

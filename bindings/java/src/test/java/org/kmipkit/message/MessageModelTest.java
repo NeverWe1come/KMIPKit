@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.OptionalLong;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.ttlv.CodecLimits;
@@ -13,6 +15,9 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvItemView;
+import org.kmipkit.ttlv.TtlvStructureView;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.kmipkit.ttlv.TtlvValue;
 
 final class MessageModelTest {
@@ -29,6 +34,7 @@ final class MessageModelTest {
     private static final int REQUEST_PAYLOAD = 0x420079;
     private static final int TIME_STAMP = 0x420092;
     private static final int RESULT_STATUS = 0x42007F;
+    private static final int RESPONSE_PAYLOAD = 0x42007C;
     private static final int MESSAGE_EXTENSION = 0x420051;
     private static final int VENDOR_IDENTIFICATION = 0x42009D;
     private static final int CRITICALITY_INDICATOR = 0x420026;
@@ -53,6 +59,7 @@ final class MessageModelTest {
             assertTrue(header.effectiveBatchOrderOption());
             assertTrue(header.batchErrorContinuationOption().isEmpty());
             assertEquals(2, header.effectiveBatchErrorContinuationOption());
+            assertTrue(header.timeStamp().isEmpty());
 
             assertEquals(OptionalLong.of(RAW_UNKNOWN), item.operation());
             assertEquals(1, item.extensionCount());
@@ -60,6 +67,13 @@ final class MessageModelTest {
                     TtlvStructure value = extension.ttlv();
                     var view = value.view()) {
                 assertEquals(3, view.itemCount());
+                assertEquals(List.of(VENDOR_IDENTIFICATION, CRITICALITY_INDICATOR, VENDOR_EXTENSION),
+                        tags(view));
+                try (TtlvItemView vendorExtension = view.itemAt(2);
+                        TtlvValueView vendorExtensionValue = vendorExtension.value();
+                        TtlvStructureView vendorValue = vendorExtensionValue.structure()) {
+                    assertEquals(VENDOR_TAG, tagAt(vendorValue, 0));
+                }
             }
         }
     }
@@ -86,6 +100,7 @@ final class MessageModelTest {
 
         assertEquals(1, error.kindCode());
         assertEquals(OptionalLong.of(0), error.structureIndex());
+        assertTrue(error.fieldIndex().isEmpty());
         assertFalse(error.getMessage().contains("payload-secret-sentinel"));
         assertFalse(error.toString().contains("payload-secret-sentinel"));
     }
@@ -118,9 +133,11 @@ final class MessageModelTest {
                 nested(PROTOCOL_VERSION, version),
                 datetime(TIME_STAMP, 123456789L),
                 integer(BATCH_COUNT, 1));
+        TtlvStructure payload = structure();
         TtlvStructure item = structure(
                 enumeration(OPERATION, RAW_UNKNOWN),
-                enumeration(RESULT_STATUS, RAW_UNKNOWN));
+                enumeration(RESULT_STATUS, RAW_UNKNOWN),
+                nested(RESPONSE_PAYLOAD, payload));
         return message(RESPONSE_HEADER, header, item);
     }
 
@@ -139,13 +156,11 @@ final class MessageModelTest {
     }
 
     private static TtlvStructure structure(TtlvItem... items) {
-        try (TtlvStructure empty = TtlvStructure.create()) {
-            TtlvStructure value = empty;
-            for (TtlvItem item : items) {
-                value = TtlvStructure.withItem(value, item, LIMITS);
-            }
-            return value;
+        TtlvStructure value = TtlvStructure.create();
+        for (TtlvItem item : items) {
+            value = TtlvStructure.withItem(value, item, LIMITS);
         }
+        return value;
     }
 
     private static TtlvItem nested(int tag, TtlvStructure structure) {
@@ -175,6 +190,20 @@ final class MessageModelTest {
     private static TtlvItem item(int rawTag, TtlvValue value) {
         try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked()) {
             return TtlvItem.create(tag, value, LIMITS);
+        }
+    }
+
+    private static List<Integer> tags(TtlvStructureView structure) {
+        List<Integer> tags = new ArrayList<>();
+        for (long index = 0; index < structure.itemCount(); index++) {
+            tags.add(tagAt(structure, index));
+        }
+        return tags;
+    }
+
+    private static int tagAt(TtlvStructureView structure, long index) {
+        try (TtlvItemView item = structure.itemAt(index); var tag = item.tag()) {
+            return tag.raw();
         }
     }
 }
