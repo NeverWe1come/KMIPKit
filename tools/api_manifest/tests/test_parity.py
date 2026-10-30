@@ -707,12 +707,12 @@ class PublicApiParityTests(unittest.TestCase):
                         )
                         assert support is not None
                         support_source = (ROOT / support["testFile"]).read_text(encoding="utf-8")
-                        support_body = self._rust_test_body(support_source, rust_test)
+                        support_body = self._rust_function_body(support_source, rust_test)
                         fixture_body = support_body
                         if case_id not in fixture_body:
                             shared_runner = "run_generated_public_client_abi_consumer"
                             self.assertIn(f"{shared_runner}(", support_body)
-                            fixture_body = self._rust_test_body(support_source, shared_runner)
+                            fixture_body = self._rust_function_body(support_source, shared_runner)
                         self.assertIn(case_id, fixture_body)
                         self.assertIn('tests/fixtures/api/shared-capability-parity.json', fixture_body)
                         self.assertIn(c_entry, fixture_body)
@@ -743,9 +743,9 @@ class PublicApiParityTests(unittest.TestCase):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == test_name:
                     return ast.get_source_segment(source, node) or ""
             self.fail(f"Python consumer test {test_name} is missing from {source_path}")
-        return self._rust_test_body(source, test_name)
+        return self._rust_function_body(source, test_name)
 
-    def _rust_test_body(self, source: str, test_name: str) -> str:
+    def _rust_function_body(self, source: str, test_name: str) -> str:
         match = re.search(rf"\bfn\s+{re.escape(test_name)}\s*\([^)]*\)[^{{]*\{{", source)
         self.assertIsNotNone(match, test_name)
         assert match is not None
