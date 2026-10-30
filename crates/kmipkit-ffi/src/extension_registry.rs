@@ -6913,6 +6913,74 @@ pub extern "C" fn kmipkit_request_header_view_batch_count(
     })
 }
 
+/// Returns the effective Asynchronous Indicator, using KMIP 2.1 §9.2's Prohibited value (`3`) when absent.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_effective_asynchronous_indicator(
+    header: *mut kmipkit_request_header_view_t,
+    out_indicator: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_indicator);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = message.header().effective_asynchronous_indicator();
+        SUCCESS
+    })
+}
+
+/// Returns the effective Attestation Capable Indicator, using KMIP 2.1 §9.3's `false` default.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_effective_attestation_capable_indicator(
+    header: *mut kmipkit_request_header_view_t,
+    out_indicator: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_indicator);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = u8::from(message.header().effective_attestation_capable_indicator());
+        SUCCESS
+    })
+}
+
+/// Returns the effective Batch Error Continuation Option, using KMIP 2.1 §9.6's Stop value (`2`) when absent.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_effective_batch_error_continuation_option(
+    header: *mut kmipkit_request_header_view_t,
+    out_option: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_option);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = message.header().effective_batch_error_continuation_option();
+        SUCCESS
+    })
+}
+
+/// Returns the effective Batch Order Option, using KMIP 2.1 §9.8's `true` default.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_effective_batch_order_option(
+    header: *mut kmipkit_request_header_view_t,
+    out_option: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_option);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = u8::from(message.header().effective_batch_order_option());
+        SUCCESS
+    })
+}
+
 /// Returns the number of validated Request Batch Items in source order.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_message_batch_item_count(

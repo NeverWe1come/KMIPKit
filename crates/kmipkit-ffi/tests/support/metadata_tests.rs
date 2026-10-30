@@ -7,7 +7,7 @@ const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
 // Message-model C ABI declarations remain blocked until T107 completes
 // Java/Python parity and shared consumer review.
-const BLOCKED_C_SYMBOLS: [&str; 39] = [
+const BLOCKED_C_SYMBOLS: [&str; 43] = [
     "kmipkit_message_extension_view_release",
     "kmipkit_message_extension_view_ttlv",
     "kmipkit_message_validation_error_field_index",
@@ -20,6 +20,10 @@ const BLOCKED_C_SYMBOLS: [&str; 39] = [
     "kmipkit_request_batch_item_view_operation",
     "kmipkit_request_batch_item_view_ttlv",
     "kmipkit_request_header_view_batch_count",
+    "kmipkit_request_header_view_effective_asynchronous_indicator",
+    "kmipkit_request_header_view_effective_attestation_capable_indicator",
+    "kmipkit_request_header_view_effective_batch_error_continuation_option",
+    "kmipkit_request_header_view_effective_batch_order_option",
     "kmipkit_request_header_view_protocol_version",
     "kmipkit_request_header_view_release",
     "kmipkit_request_header_view_ttlv",

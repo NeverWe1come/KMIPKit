@@ -331774,6 +331774,70 @@
       "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
     },
     {
+      "declarationId": "T104:kmipkit_request_header_view_effective_asynchronous_indicator:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_effective_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits shared four-language parity fixtures and a reviewed declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_effective_attestation_capable_indicator:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_effective_attestation_capable_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits shared four-language parity fixtures and a reviewed declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_effective_batch_error_continuation_option:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_effective_batch_error_continuation_option",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits shared four-language parity fixtures and a reviewed declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_effective_batch_order_option:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_effective_batch_order_option",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits shared four-language parity fixtures and a reviewed declaration mapping."
+    },
+    {
       "declarationId": "T104:kmipkit_request_header_view_protocol_version:c-observed",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
