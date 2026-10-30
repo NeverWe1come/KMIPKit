@@ -63,6 +63,7 @@ SHARED_PARITY_CASES = {
     "batch.ordered-completed-pending-failed.v1",
     "discover-versions.supported-versions.v1",
     "ttlv.open-values-and-child-order.v1",
+    "ttlv.decoder-root-structure.v1",
     "extensions.recognition-and-generic-preservation.v1",
     "creation.create.request-response.v1",
     "creation.key-pair.request-response.v1",
@@ -200,17 +201,6 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(
             {case["id"] for case in cases},
             SHARED_PARITY_CASES,
-        )
-
-    def test_ttlv_decoder_root_fixture_is_tracked_as_shared_parity_case(self) -> None:
-        decoder_case_id = "ttlv.decoder-root-structure.v1"
-        self.assertIn(decoder_case_id, SHARED_PARITY_CASES)
-
-        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
-        case = next(item for item in fixtures["cases"] if item["id"] == decoder_case_id)
-        self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
-        self.assertTrue(
-            all(mapping["status"] == "available" for mapping in case["consumerTests"].values())
         )
 
         available_languages: set[str] = set()
@@ -433,6 +423,17 @@ class PublicApiParityTests(unittest.TestCase):
         )
         source_case_ids = {case["id"] for case in extension_fixtures["cases"]}
         self.assertTrue(set(extension["input"]["caseIds"]).issubset(source_case_ids))
+
+    def test_ttlv_decoder_root_fixture_is_tracked_as_shared_parity_case(self) -> None:
+        decoder_case_id = "ttlv.decoder-root-structure.v1"
+        self.assertIn(decoder_case_id, SHARED_PARITY_CASES)
+
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        case = next(item for item in fixtures["cases"] if item["id"] == decoder_case_id)
+        self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
+        self.assertTrue(
+            all(mapping["status"] == "available" for mapping in case["consumerTests"].values())
+        )
 
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))

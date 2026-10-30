@@ -1235,7 +1235,17 @@
           "0x540002"
         ],
         "enumerationValue": 3775005444,
-        "byteStringHex": "80ff01"
+        "byteStringHex": "80ff01",
+        "truncatedError": {
+          "kind": "TruncatedValue",
+          "kindCode": 3,
+          "byteOffset": 8
+        },
+        "messageLimitError": {
+          "kind": "MessageTooLarge",
+          "kindCode": 1,
+          "byteOffset": 0
+        }
       },
       "errorCategory": null,
       "cleanup": [

@@ -268,8 +268,9 @@ final class SharedCapabilityParityFixtureTest {
         org.kmipkit.ttlv.TtlvDecodeException truncated = assertThrows(
                 org.kmipkit.ttlv.TtlvDecodeException.class,
                 () -> org.kmipkit.ttlv.TtlvCodec.decode(java.util.HexFormat.of().parseHex(truncatedHex)));
-        assertEquals(3, truncated.kind());
-        assertEquals(8, truncated.byteOffset());
+        String expectedTruncated = objectField(expected, "truncatedError");
+        assertEquals(numberField(expectedTruncated, "kindCode"), truncated.kind());
+        assertEquals(numberField(expectedTruncated, "byteOffset"), truncated.byteOffset());
         assertFalse(truncated.getMessage().contains(truncatedHex));
 
         long maxBytes = numberField(input, "messageLimitBytes");
@@ -277,8 +278,9 @@ final class SharedCapabilityParityFixtureTest {
         org.kmipkit.ttlv.TtlvDecodeException limit = assertThrows(
                 org.kmipkit.ttlv.TtlvDecodeException.class,
                 () -> org.kmipkit.ttlv.TtlvCodec.decodeWithLimits(wire, limits));
-        assertEquals(1, limit.kind());
-        assertEquals(0, limit.byteOffset());
+        String expectedLimit = objectField(expected, "messageLimitError");
+        assertEquals(numberField(expectedLimit, "kindCode"), limit.kind());
+        assertEquals(numberField(expectedLimit, "byteOffset"), limit.byteOffset());
     }
 
     private static byte[] byteArray(org.kmipkit.ttlv.TtlvValueView value) {
