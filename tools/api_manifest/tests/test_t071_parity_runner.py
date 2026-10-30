@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import json
+import io
 import subprocess
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
+
+from tools.api_manifest import t071_parity
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -43,14 +49,57 @@ class T071ParityRunnerTests(unittest.TestCase):
             consumers["c"]["test"],
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         )
+        self.assertIn("--features", consumers["c"]["command"])
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
         self.assertEqual(
             consumers["java"]["test"],
             "org.kmipkit.ClientFacadeTlsIntegrationTest.executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["java"]["expectedTestName"],
+            "executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         )
         self.assertEqual(
             consumers["python"]["test"],
             "test_discover_versions_response_mapping_matches_shared_fixture",
         )
+
+    def test_runner_rejects_a_successful_command_that_runs_no_test(self) -> None:
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+        error_output = io.StringIO()
+        with (
+            patch("tools.api_manifest.t071_parity.subprocess.run", return_value=completed),
+            redirect_stdout(io.StringIO()),
+            redirect_stderr(error_output),
+        ):
+            status = t071_parity.main(["--case", DISCOVER_VERSIONS_CASE])
+
+        self.assertNotEqual(status, 0)
+        self.assertIn("did not run the expected test", error_output.getvalue())
+
+    def test_runner_rejects_gradle_success_when_expected_test_report_is_missing(self) -> None:
+        java_consumer = next(
+            consumer
+            for consumer in t071_parity.build_plan(DISCOVER_VERSIONS_CASE)["consumers"]
+            if consumer["language"] == "java"
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            error_output = io.StringIO()
+            completed = subprocess.CompletedProcess(
+                args=java_consumer["command"], returncode=0, stdout="BUILD SUCCESSFUL", stderr=""
+            )
+            with (
+                patch.object(t071_parity, "ROOT", root),
+                patch("tools.api_manifest.t071_parity.subprocess.run", return_value=completed),
+                redirect_stdout(io.StringIO()),
+                redirect_stderr(error_output),
+            ):
+                status = t071_parity.run_plan({"consumers": [java_consumer]})
+
+        self.assertNotEqual(status, 0)
+        self.assertIn("did not run the expected test", error_output.getvalue())
 
 
 if __name__ == "__main__":
