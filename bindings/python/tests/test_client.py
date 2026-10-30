@@ -1808,6 +1808,9 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     native_make_handle = extensions._make_handle
     captured_request_arguments: list[tuple[object, ...]] = []
     captured_batch_item_ids: list[bytes] = []
+    construction_complete = False
+    split_item: extensions.ClientBatchItem | None = None
+    identified_item: extensions.ClientBatchItem | None = None
 
     def capture_split_key_builder(
         c_type: str,
@@ -1839,11 +1842,13 @@ def test_create_split_key_fixture_success_and_pending_metadata(
                 prime_field_size=None,
                 protection_storage_masks=masks,
             )
-            split_requests.append(
-                extensions.with_unique_batch_item_id(
-                    split_item, batch_item_id.encode("ascii")
-                )
+            identified_item = extensions.with_unique_batch_item_id(
+                split_item, batch_item_id.encode("ascii")
             )
+            split_item.close()
+            split_item = None
+            split_requests.append(identified_item)
+            identified_item = None
         assert len(captured_request_arguments) == len(unique_batch_item_ids) == 2
         assert captured_batch_item_ids == [
             batch_item_id.encode("ascii") for batch_item_id in unique_batch_item_ids
@@ -1863,9 +1868,17 @@ def test_create_split_key_fixture_success_and_pending_metadata(
             assert builder_arguments[7] == 0
             assert builder_arguments[8] != client.ffi.NULL
             assert builder_arguments[9] != client.ffi.NULL
+        construction_complete = True
     finally:
         attributes.close()
         masks.close()
+        if split_item is not None:
+            split_item.close()
+        if identified_item is not None:
+            identified_item.close()
+        if not construction_complete:
+            for split_request in split_requests:
+                split_request.close()
 
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     item_storage = [

@@ -383,64 +383,9 @@ fn create_key_pair_batch_is_one_exchange_and_associates_reordered_results_by_exa
 #[test]
 fn create_key_pair_maps_shared_fixture_over_one_exchange() {
     let case = shared_fixture_case("creation.key-pair.request-response.v1");
-    let input = &case["input"];
     let expected = &case["expectedOutput"];
-    let common_tags = fixture_tag_list(&input["commonAttributes"]["attributeTagsInOrder"]);
-    let private_tags = fixture_tag_list(&input["privateKeyAttributes"]["attributeTagsInOrder"]);
-    let public_tags = fixture_tag_list(&input["publicKeyAttributes"]["attributeTagsInOrder"]);
-    assert_eq!(expected["groupsRemainDistinct"], true);
-    assert_eq!(input["effectiveTable191ValuesEqual"], true);
-    assert_eq!(input["protectionStorageMasks"]["commonPresent"], true);
-    assert_eq!(input["protectionStorageMasks"]["privatePresent"], false);
-    assert_eq!(input["protectionStorageMasks"]["publicPresent"], true);
-    assert_eq!(expected["resultMessage"], serde_json::Value::Null);
-    assert_eq!(expected["resultStatus"].as_u64(), Some(u64::from(SUCCESS)));
-
-    let private_identifier = &expected["privateUniqueIdentifier"];
-    let private_value = match private_identifier["wireType"].as_str() {
-        Some("Enumeration") => Value::enumeration(
-            u32::try_from(
-                private_identifier["enumeration"]
-                    .as_u64()
-                    .expect("fixture private identifier is unsigned"),
-            )
-            .expect("fixture private identifier fits u32"),
-        ),
-        other => panic!("unsupported fixture private identifier wire type {other:?}"),
-    };
-    let public_identifier = &expected["publicUniqueIdentifier"];
-    let public_value = match public_identifier["wireType"].as_str() {
-        Some("TextString") => Value::text_string(
-            public_identifier["text"]
-                .as_str()
-                .expect("fixture public identifier is text")
-                .to_owned(),
-        ),
-        other => panic!("unsupported fixture public identifier wire type {other:?}"),
-    };
-    let success_payload = test_structure([
-        test_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, private_value),
-        test_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, public_value),
-    ]);
-    let response = response_bytes([response_batch_item(
-        None,
-        u32::try_from(
-            expected["resultStatus"]
-                .as_u64()
-                .expect("fixture status is unsigned"),
-        )
-        .expect("fixture status fits u32"),
-        None,
-        None,
-        None,
-        Some(success_payload),
-    )]);
-    let request = CreateKeyPairRequest::new()
-        .with_common_attributes(fixture_attribute_set(&common_tags))
-        .with_private_key_attributes(fixture_attribute_set(&private_tags))
-        .with_public_key_attributes(fixture_attribute_set(&public_tags))
-        .with_common_protection_storage_masks(Structure::new())
-        .with_public_protection_storage_masks(Structure::new());
+    let request = key_pair_request_from_fixture(&case);
+    let response = key_pair_success_response_from_fixture(expected);
     let (mut client, fake, request_capture) = client_for_with_request_observer(
         ExchangeScript::Success {
             response,
@@ -480,8 +425,84 @@ fn create_key_pair_maps_shared_fixture_over_one_exchange() {
     assert!(outcome.create_key_pair_response().is_some());
     assert!(outcome.create_split_key_response().is_none());
     assert!(format!("{outcome:?}").starts_with("CreateKeyPairCompleted("));
+    assert_key_pair_response_matches_fixture(typed, expected);
+    let request = request_capture.borrow();
+    let request = request
+        .as_ref()
+        .expect("the fake transport observed a request");
+    assert!(request_has_key_pair_fixture_groups(request, &case));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+fn key_pair_request_from_fixture(case: &JsonValue) -> CreateKeyPairRequest {
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let common_tags = fixture_tag_list(&input["commonAttributes"]["attributeTagsInOrder"]);
+    let private_tags = fixture_tag_list(&input["privateKeyAttributes"]["attributeTagsInOrder"]);
+    let public_tags = fixture_tag_list(&input["publicKeyAttributes"]["attributeTagsInOrder"]);
+    assert_eq!(expected["groupsRemainDistinct"], true);
+    assert_eq!(input["effectiveTable191ValuesEqual"], true);
+    assert_eq!(input["protectionStorageMasks"]["commonPresent"], true);
+    assert_eq!(input["protectionStorageMasks"]["privatePresent"], false);
+    assert_eq!(input["protectionStorageMasks"]["publicPresent"], true);
+    CreateKeyPairRequest::new()
+        .with_common_attributes(fixture_attribute_set(&common_tags))
+        .with_private_key_attributes(fixture_attribute_set(&private_tags))
+        .with_public_key_attributes(fixture_attribute_set(&public_tags))
+        .with_common_protection_storage_masks(Structure::new())
+        .with_public_protection_storage_masks(Structure::new())
+}
+
+fn key_pair_success_response_from_fixture(expected: &JsonValue) -> Vec<u8> {
+    assert_eq!(expected["resultMessage"], serde_json::Value::Null);
+    assert_eq!(expected["resultStatus"].as_u64(), Some(u64::from(SUCCESS)));
+    let private_identifier = &expected["privateUniqueIdentifier"];
+    let private_value = match private_identifier["wireType"].as_str() {
+        Some("Enumeration") => Value::enumeration(
+            u32::try_from(
+                private_identifier["enumeration"]
+                    .as_u64()
+                    .expect("fixture private identifier is unsigned"),
+            )
+            .expect("fixture private identifier fits u32"),
+        ),
+        other => panic!("unsupported fixture private identifier wire type {other:?}"),
+    };
+    let public_identifier = &expected["publicUniqueIdentifier"];
+    let public_value = match public_identifier["wireType"].as_str() {
+        Some("TextString") => Value::text_string(
+            public_identifier["text"]
+                .as_str()
+                .expect("fixture public identifier is text")
+                .to_owned(),
+        ),
+        other => panic!("unsupported fixture public identifier wire type {other:?}"),
+    };
+    let success_payload = test_structure([
+        test_item(PRIVATE_KEY_UNIQUE_IDENTIFIER, private_value),
+        test_item(PUBLIC_KEY_UNIQUE_IDENTIFIER, public_value),
+    ]);
+    response_bytes([response_batch_item(
+        None,
+        u32::try_from(
+            expected["resultStatus"]
+                .as_u64()
+                .expect("fixture status is unsigned"),
+        )
+        .expect("fixture status fits u32"),
+        None,
+        None,
+        None,
+        Some(success_payload),
+    )])
+}
+
+fn assert_key_pair_response_matches_fixture(
+    response: &kmipkit_protocol::CreateKeyPairResponse,
+    expected: &JsonValue,
+) {
     assert_eq!(
-        typed.result().status().raw(),
+        response.result().status().raw(),
         u32::try_from(
             expected["resultStatus"]
                 .as_u64()
@@ -489,9 +510,10 @@ fn create_key_pair_maps_shared_fixture_over_one_exchange() {
         )
         .expect("fixture status fits u32")
     );
-    assert!(typed.result().message().is_none());
+    assert!(response.result().message().is_none());
+    let private_identifier = &expected["privateUniqueIdentifier"];
     assert_eq!(
-        typed.private_key_unique_identifier(),
+        response.private_key_unique_identifier(),
         Some(&kmipkit_protocol::UniqueIdentifier::Enumeration(
             u32::try_from(
                 private_identifier["enumeration"]
@@ -501,8 +523,9 @@ fn create_key_pair_maps_shared_fixture_over_one_exchange() {
             .expect("fixture private identifier fits u32")
         ))
     );
+    let public_identifier = &expected["publicUniqueIdentifier"];
     assert_eq!(
-        typed.public_key_unique_identifier(),
+        response.public_key_unique_identifier(),
         Some(&kmipkit_protocol::UniqueIdentifier::TextString(
             public_identifier["text"]
                 .as_str()
@@ -510,12 +533,6 @@ fn create_key_pair_maps_shared_fixture_over_one_exchange() {
                 .to_owned()
         ))
     );
-    let request = request_capture.borrow();
-    let request = request
-        .as_ref()
-        .expect("the fake transport observed a request");
-    assert!(request_has_key_pair_fixture_groups(request, &case));
-    assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
 #[test]

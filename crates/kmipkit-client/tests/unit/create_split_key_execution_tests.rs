@@ -757,6 +757,8 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
 
 /// Maps the fixture's ordered success identifiers and Pending metadata through one batch.
 /// KMIP 2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
+// One acceptance case keeps mixed outcomes and full wire assertions auditable together.
+#[allow(clippy::too_many_lines)]
 #[test]
 fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
