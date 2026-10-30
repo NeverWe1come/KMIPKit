@@ -103,7 +103,8 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
             line for line in dependencies.splitlines() if line.startswith("| KMIPKIT-0010 |")
         )
         self.assertIn("| Accepted |", profile_row)
-        self.assertIn("profile validation may be mapped without a support or conformance claim", profile_row)
+        self.assertIn("T036 may map the existing per-exchange profile-validation API", profile_row)
+        self.assertIn("Baseline readiness is `evidence_incomplete`", profile_row)
 
 
     def test_t042_stays_open_until_t036_profile_api_parity_is_complete(self) -> None:

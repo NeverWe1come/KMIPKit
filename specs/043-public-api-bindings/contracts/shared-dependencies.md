@@ -2,7 +2,7 @@
 
 This matrix records the shared non-operation specifications whose public types or behaviors can appear in the full 1.0 API manifest. “Approved” here means the current release-line spec explicitly records Approved/Accepted status and its approval/acceptance evidence. Approval to implement a draft does not satisfy that gate.
 
-Status snapshot: active `release/1.0.0` base `fd6b7782`, checked 2026-10-10. Revalidate these gates at implementation start.
+Status snapshot: active `release/1.0.0` base `dccd5821a1197425f002677f68f002e95a12ff76`, checked 2026-10-30 after KMIPKIT-0010 PR #90 merged. T026 and T057 are complete on that release head.
 
 | Feature | Shared capability area | Current recorded status | KMIPKIT-0043 gate |
 |---|---|---|---|
@@ -13,7 +13,7 @@ Status snapshot: active `release/1.0.0` base `fd6b7782`, checked 2026-10-10. Rev
 | KMIPKIT-0007 | Typed client execution and Discover Versions | Approved for implementation with approval record | Map the approved client behavior and Discover Versions; keep explicit execution and delivery-state semantics. |
 | KMIPKIT-0008 | Credentials and attestation models | Approved for implementation with approval record | Map approved in-memory models only; preserve its no-credential-send boundary. |
 | KMIPKIT-0009 | Poll, Cancel, Process, asynchronous follow-up and Query Asynchronous Requests | Approved for implementation by explicit maintainer approval dated 2026-10-29; see `specs/009-asynchronous-operations/approval-record.md`. Query response interpretation is recorded as KMIPKIT-DEC-015; the Process Table 278 catalog requirement and owner review checklists remain open | T035 maps the four explicit one-exchange operations across Rust, C, Java, and Python. Keep the generic Query response and exact correlation bytes; the manifest remains `declared` and no complete conformance claim is made while catalog traceability and reviewer gates remain open. |
-| KMIPKIT-0010 | Profile applicability, validation, and support claims | Draft | Keep profile-validation APIs and profile capability claims blocked until formal approval and evidence. |
+| KMIPKIT-0010 | Profile applicability, validation, and support claims | Accepted | T026 and T057 close the applicable implementation/workflow and coverage gates. T036 may map the existing per-exchange profile-validation API; keep profile support and conformance claims blocked while Baseline readiness is `evidence_incomplete`. |
 | KMIPKIT-0011 | Dependency policy and supply-chain constraints | Approved | Apply required dependency metadata/checks; do not add a user-facing capability beyond the approved contract. |
 | KMIPKIT-0012 | Vendor extension registry and registry API slice | Approved for implementation under standing maintainer authorization | Preserve registry declarations and behavior while migrating v1 to v2. |
 | KMIPKIT-0013 | Production TLS/HTTPS transport configuration | Accepted | Map only public transport construction/configuration already accepted and implemented; preserve TLS and no-injection boundaries. |
