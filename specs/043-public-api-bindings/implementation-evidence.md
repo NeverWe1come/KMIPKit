@@ -6446,7 +6446,7 @@ This mapping remains `declared`; it does not change the Hash operation's current
 
 ## T071 parity runner CI contract and first case (2026-10-30)
 
-The shared parity fixture contains 13 cases, each currently declaring Rust, compiled C, Java 17, and Python 3.12 consumers as available. The T071 runner in this branch currently supports only `discover-versions.supported-versions.v1`; this is one case, not completion of T071 or proof of parity across the complete public API surface.
+The shared parity fixture contains 13 cases, each currently declaring Rust, compiled C, Java 17, and Python 3.12 consumers as available. At this checkpoint, the T071 runner supported only `discover-versions.supported-versions.v1`; later case additions are recorded below. Each case remains one increment, not completion of T071 or proof of parity across the complete public API surface.
 
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
@@ -6471,3 +6471,17 @@ The T071 runner now accepts `batch.ordered-completed-pending-failed.v1` and reso
 | Refactor | this evidence update | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case batch.ordered-completed-pending-failed.v1`; `git diff --check` | Pass: all 9 runner contract tests; the selected Rust, compiled C, Java, and Python consumer each passed; no whitespace errors. Windows builds emitted aws-lc-sys compiler-probe/NASM and linker warnings, but all selected tests passed. The first temporary Python 3.12 environment lacked pytest; the rerun used the existing Python 3.12 pytest environment. |
 
 The runtime command executes one selected test for each language and does not execute the full 13-case corpus. No generated output or T071 task status was changed.
+
+### T071 client registry-isolation parity case 3 of 13 (2026-10-30)
+
+The runner now accepts `client-configuration.registry-isolation.v1` and resolves the Rust integration test target, compiled C ABI harness, Java registry test, and Python registry method. The plan contract asserts all four consumers and specifically prevents the Rust integration test from being sent to `--lib`. It also verifies the class-qualified pytest selector required by the fixture's `ExtensionRegistryTests` method. This is case 3 of 13; T071 remains open and complete-surface parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `3af5e4d1b` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_registry_isolation_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner returned exit code 2 with `unsupported T071 parity case: client-configuration.registry-isolation.v1`. |
+| Green | `c51b52674` | The same plan test; `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the plan selected the exact Rust integration target and matched the C, Java, and Python fixture consumers; all 10 runner contract tests passed. The first runtime attempt then exposed the Python class-method selector mismatch, captured by the follow-up Red/Green cycle below. |
+| Red follow-up | `06408c753` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_registry_isolation_plan_selects_all_four_runtime_consumers -v` | Expected failure: the plan omitted the `ExtensionRegistryTests` class from pytest's selector, so the fixture method could not be selected. |
+| Green follow-up | `4e53230a9` | The same plan test; `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -q` | Pass: the plan includes the class-qualified pytest selector; all 10 runner contract tests passed. |
+| Refactor | this evidence commit | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -q`; Python 3.12.14: `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case client-configuration.registry-isolation.v1`; `git diff --check` | Pass: all 10 runner contract tests and the selected Rust integration, compiled C, Java, and Python tests passed. The Python runtime was 3.12.14. The Java test ran with the available JDK 21.0.12; Java 17 was not available on this host and is not verified by this run. Windows aws-lc compiler-probe/NASM and linker warnings appeared, but the selected tests passed. No generated output or T071 task status changed. |
+
+The runtime command executes one selected test for each language and does not execute the full 13-case corpus. T071 remains open.
