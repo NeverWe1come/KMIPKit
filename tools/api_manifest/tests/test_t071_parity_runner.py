@@ -25,6 +25,7 @@ REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 API_LEVELS_CASE = "api-levels.shared.v1"
 OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
+EXTENSION_RECOGNITION_CASE = "extensions.recognition-and-generic-preservation.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -381,6 +382,54 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle",
         )
 
+    def test_extension_recognition_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                EXTENSION_RECOGNITION_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], EXTENSION_RECOGNITION_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            consumers["rust"]["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-client",
+                "--lib",
+                "every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders",
+            ],
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.ExtensionRegistryTest."
+            "everySharedInboundFixtureRunsThroughThePublicJavaAdapterInBothOrders",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_extension_registry.py::ExtensionRegistryTests::"
+            "test_shared_inbound_fixtures_are_inspected_and_generic_ttlv_is_preserved",
+        )
+
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (
             DISCOVER_VERSIONS_CASE,
@@ -389,6 +438,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             SCHEMA_REDACTION_CASE,
             API_LEVELS_CASE,
             OPEN_TTLV_VALUES_CASE,
+            EXTENSION_RECOGNITION_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
