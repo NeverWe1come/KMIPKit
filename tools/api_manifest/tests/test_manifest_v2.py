@@ -2441,7 +2441,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn(facade["declarationId"], operation["declarations"]["rust"])
 
                 if method == "reprovision_with_options":
-                    self.assertEqual(shared_options, client["languageMappings"])
+                    self.assertEqual(
+                        {
+                            "packageId": "rust-kmipkit-client",
+                            "name": client_name,
+                        },
+                        client["languageMappings"]["rust"],
+                    )
                     for language in ("c", "java", "python"):
                         self.assertIn(
                             shared_options[language]["name"],
