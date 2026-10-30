@@ -6443,3 +6443,15 @@ The Rust `ClientRequest::hash` convenience method is now mapped to the approved 
 | Refactor | this evidence commit | `cargo test -p kmipkit-client --lib hash_execution_tests`; `py -3 -B -m unittest tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --check`; `cargo fmt --all --check`; `git diff --check` | Pass: all 5 Hash execution tests and all 4 manifest tests; all 12 generated outputs current; formatting and diff checks passed. |
 
 This mapping remains `declared`; it does not change the Hash operation's current readiness state or claim KMIP conformance. The broader public declaration inventory and T071/T075/T085 release gates remain open.
+
+## T071 parity runner CI contract and first case (2026-10-30)
+
+The shared parity fixture contains 13 cases, each currently declaring Rust, compiled C, Java 17, and Python 3.12 consumers as available. The T071 runner in this branch currently supports only `discover-versions.supported-versions.v1`; this is one case, not completion of T071 or proof of parity across the complete public API surface.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `217a0dc49` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_t071_runner_contracts_are_part_of_script_contract_ci -v` | Expected failure: the Script Contracts workflow did not execute the T071 runner contract suite. |
+| Green | `623975680` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `py -3 -B -m unittest scripts.tests.test_workflow -q` | Pass: 7 T071 runner tests and 55 workflow contract tests. CI Script Contracts now runs the T071 runner suite on Ubuntu, Windows, and macOS. |
+| Refactor | this evidence commit | Python 3.12: `python -B tools/api_manifest/t071_parity.py --case discover-versions.supported-versions.v1`; `git diff --check` | Pass: the selected Rust client test, compiled C ABI consumer, Java 17 test, and Python test each ran and passed (one test per language); no whitespace errors. |
+
+The workflow change wires runner-contract tests into Script Contracts; it does not execute the cross-language corpus in CI. The parity-runner execution is an explicit local command until a CI job with all four language toolchains is configured. T071 remains open: the runner must cover the remaining fixture cases and satisfy the task's complete-surface, negative-input, unknown-value, asynchronous, Usage Allocation, ownership, and redaction evidence before this task can be checked.
