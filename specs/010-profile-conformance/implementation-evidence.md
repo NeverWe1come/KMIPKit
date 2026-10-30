@@ -8686,3 +8686,7 @@ Refactor: isolated nested wrong-type Usage Limits cases from the broader wrapper
 ## T057 coverage closure attempt (2026-10-30)
 
 Red: exact-head CI run [40990385708](https://github.com/NeverWe1come/KMIPKit/actions/runs/40990385708) failed the changed-Rust coverage gate at 7,706/8,113 executable lines; the 95% threshold requires 7,708, so two covered lines were still missing. Replaying the official aggregator against that run's downloaded platform and adapter artifacts and the same PR base/merge commits reproduced the same result. The Linux, Windows, and macOS coverage producers themselves succeeded. No threshold or temporary exception changed.
+
+Green: added `profile_object_state_debug_redacts_identifiers_and_asserted_facts`, which verifies that both `ProfileObjectState` and `ProfileValidationContext` omit the object identifier and caller-attested state from Debug output. A focused `cargo llvm-cov` run exercised the corresponding `ProfileObjectState` Debug implementation; the assertions confirm redaction rather than merely invoking the formatter.
+
+After the follow-up, `cargo test -p kmipkit-protocol --all-features --quiet` passed 1,235 unit tests plus all protocol integration suites and doctests. `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` passed. T057 remains open pending the exact updated-head hosted coverage and selected-scope aggregate gates.

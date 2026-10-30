@@ -1,6 +1,28 @@
 use super::*;
 
 #[test]
+// KMIPKit agent rules §8 require caller-attested state to remain redacted.
+fn profile_object_state_debug_redacts_identifiers_and_asserted_facts() {
+    const OBJECT_ID: &str = "profile-state-debug-secret-object-id";
+
+    let state = crate::ProfileObjectState::new(OBJECT_ID)
+        .with_original_creation_date_present(Some(true))
+        .with_usage_limits_present(Some(true))
+        .with_usage_limits_total(Some(40))
+        .with_usage_limits_count(Some(3));
+    let state_debug = format!("{state:?}");
+    assert!(!state_debug.contains(OBJECT_ID));
+    assert!(!state_debug.contains("original_creation_date_present"));
+    assert!(state_debug.contains("[REDACTED]"));
+
+    let context = crate::ProfileValidationContext::new().with_object_state(0, state);
+    let context_debug = format!("{context:?}");
+    assert!(!context_debug.contains(OBJECT_ID));
+    assert!(context_debug.contains("object_state_count: 1"));
+    assert!(context_debug.contains("[REDACTED]"));
+}
+
+#[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn original_creation_date_context_allows_only_the_first_addition() {
     const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
