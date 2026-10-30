@@ -26506,7 +26506,10 @@ fn profile_state_context_lookup_work_is_bounded_for_large_contexts() {
     }
     let lookup_steps = PROFILE_CONTEXT_INDEX_COMPARISONS.with(std::cell::Cell::get);
 
-    assert!(lookup_steps > 0, "index comparison accounting must be active");
+    assert!(
+        lookup_steps > 0,
+        "index comparison accounting must be active"
+    );
     assert!(
         lookup_steps <= ENTRY_COUNT * 32,
         "profile context lookup used {lookup_steps} index comparisons for {ENTRY_COUNT} states"
