@@ -12,6 +12,30 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
 RUST_REPORT_DIR = REPO_ROOT / "specs" / "043-public-api-bindings" / "reports"
 RUST_REPORT_PATH = max(RUST_REPORT_DIR.glob("rust-export-report-*.json"))
+EXPECTED_RUST_ONLY_DECLARATIONS = {
+    "kmipkit_transport::Transport",
+    "kmipkit_transport::Transport::exchange",
+    "kmipkit_transport::TransportResponse",
+    "kmipkit_transport::TransportResponse::new",
+    "kmipkit_transport::TransportResponse::as_bytes",
+    "kmipkit_transport::RequestDeliveryState",
+    "kmipkit_transport::RequestDeliveryState::NotSent",
+    "kmipkit_transport::RequestDeliveryState::PossiblySent",
+    "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+    "kmipkit_transport::RequestDeliveryState::not_sent",
+    "kmipkit_transport::RequestDeliveryState::write_started",
+    "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+    "kmipkit_transport::TransportCauseCategory",
+    "kmipkit_transport::TransportCauseCategory::Io",
+    "kmipkit_transport::TransportCauseCategory::Tls",
+    "kmipkit_transport::TransportCauseCategory::Http",
+    "kmipkit_transport::TransportCauseCategory::Timeout",
+    "kmipkit_transport::TransportCauseCategory::Other",
+    "kmipkit_transport::TransportError",
+    "kmipkit_transport::TransportError::new",
+    "kmipkit_transport::TransportError::delivery_state",
+    "kmipkit_transport::TransportError::cause_category",
+}
 SPEC = importlib.util.spec_from_file_location("audit_shared_rust_inventory", MODULE_PATH)
 AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(AUDIT)
@@ -35,10 +59,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 24)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 855)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            24,
+            855,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -58,8 +82,8 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 10451)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 290)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 10457)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 435)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
@@ -106,13 +130,13 @@ class SharedRustInventoryTests(unittest.TestCase):
                 self.assertEqual(operation["apiState"], "blocked")
 
     def test_transport_is_the_only_accepted_rust_only_capability(self) -> None:
-        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         rows = [row for row in self.manifest["publicDeclarations"] if row["parityScope"] == "rust-only-adr"]
 
-        self.assertEqual(len(rows), 5)
+        self.assertEqual({row["exportName"] for row in rows}, EXPECTED_RUST_ONLY_DECLARATIONS)
         self.assertEqual({row["capabilityId"] for row in rows}, {"rust_transport_exchange"})
         self.assertEqual({row["packageId"] for row in rows}, {"rust-kmipkit-transport"})
-        self.assertEqual(len(inventory["rustOnlyDeclarations"]), 5)
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        self.assertEqual(len(inventory["rustOnlyDeclarations"]), len(EXPECTED_RUST_ONLY_DECLARATIONS))
 
     def test_approved_registry_capability_matches_its_existing_four_language_declarations(self) -> None:
         capability = next(
