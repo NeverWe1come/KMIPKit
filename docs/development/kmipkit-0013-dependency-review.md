@@ -26,11 +26,17 @@ fixtures without activating the optional edge back to `kmipkit-transport`.
 test doubles. No production package depends on `kmipkit-test-support` or
 `rcgen`.
 
-The initial `rustls = 0.23.43` pin was affected by RUSTSEC-2026-0285. The
-upstream fixed release is 0.23.45; its release notes identify 0.23.13 through
-0.23.44 as affected. The manifest and root lockfile now pin 0.23.45. Sources:
-[RustSec RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html)
-and [rustls 0.23.45 release notes](https://github.com/rustls/rustls/releases).
+The initial `rustls = 0.23.43` pin was affected by RUSTSEC-2026-0285. It was
+updated to 0.23.45, whose release notes identify 0.23.13 through 0.23.44 as
+affected. On 2026-10-14, RustSec added four advisories covering 0.23.45 and
+identified 0.23.46 as the fixed release. The manifest and root lockfile now
+pin 0.23.46; no advisory exceptions were added. Sources: [RustSec
+RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html),
+[RUSTSEC-2026-0346](https://rustsec.org/advisories/RUSTSEC-2026-0346.html),
+[RUSTSEC-2026-0347](https://rustsec.org/advisories/RUSTSEC-2026-0347.html),
+[RUSTSEC-2026-0348](https://rustsec.org/advisories/RUSTSEC-2026-0348.html),
+[RUSTSEC-2026-0349](https://rustsec.org/advisories/RUSTSEC-2026-0349.html), and
+[rustls 0.23.46 on crates.io](https://crates.io/crates/rustls/0.23.46).
 
 ## Verification evidence
 

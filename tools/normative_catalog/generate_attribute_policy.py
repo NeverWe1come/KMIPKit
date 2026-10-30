@@ -22,6 +22,11 @@ _TAG_VALUE = re.compile(r"(?:0[xX])?([0-9A-Fa-f]{6})\Z")
 _SOURCE_POLICY_COUNT = 62
 _RUNTIME_POLICY_COUNT = 61
 _CERTIFICATE_ATTRIBUTES_ID = "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
+_MULTI_INSTANCE_POLICIES = {
+    "No": "Single",
+    "Yes": "Multiple",
+    "Yes for PGP keys. No for X.509 certificates.": "PgpKeyOrX509Certificate",
+}
 
 
 def _required_text(record: dict[str, Any], field: str) -> str:
@@ -139,6 +144,7 @@ def _standard_policies(catalog: dict[str, Any]) -> list[dict[str, Any]]:
             _required_text(attribute, "source_modifiable_by_client")
             _required_text(attribute, "source_deletable_by_client")
             _required_text(attribute, "source_always_required")
+            _required_text(attribute, "source_multiple_instances_permitted")
             _policy_rules(attribute, "source_operation_restrictions")
             _policy_rules(attribute, "source_conditional_rules")
             continue
@@ -162,6 +168,9 @@ def _standard_policies(catalog: dict[str, Any]) -> list[dict[str, Any]]:
             "source_modifiable_by_client": _required_text(attribute, "source_modifiable_by_client"),
             "source_deletable_by_client": _required_text(attribute, "source_deletable_by_client"),
             "source_always_required": _required_text(attribute, "source_always_required"),
+            "source_multiple_instances_permitted": _required_text(
+                attribute, "source_multiple_instances_permitted"
+            ),
             "source_operation_restrictions": _policy_rules(attribute, "source_operation_restrictions"),
             "source_conditional_rules": _policy_rules(attribute, "source_conditional_rules"),
         }
@@ -171,6 +180,14 @@ def _standard_policies(catalog: dict[str, Any]) -> list[dict[str, Any]]:
         raise ValueError("catalog must contain exactly 61 tag-addressable standard attribute policies")
     policies.sort(key=lambda policy: policy["tag"])
     return policies
+
+
+def _multiplicity_variant(policy: dict[str, Any]) -> str:
+    source_value = policy["source_multiple_instances_permitted"]
+    variant = _MULTI_INSTANCE_POLICIES.get(source_value)
+    if variant is None:
+        raise ValueError("catalog has an unrecognized source multiplicity cell")
+    return variant
 
 
 def _vendor_policy(catalog: dict[str, Any]) -> dict[str, Any]:
@@ -231,6 +248,35 @@ def _render_rules(field: str, rules: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _render_multiplicity_method(policies: list[dict[str, Any]]) -> list[str]:
+    tags_by_variant: dict[str, list[str]] = {}
+    for policy in policies:
+        variant = _multiplicity_variant(policy)
+        if variant != "Single":
+            tags_by_variant.setdefault(variant, []).append(
+                f"0x{policy['tag'] >> 16:02X}_{(policy['tag'] >> 8) & 0xFF:02X}_{policy['tag'] & 0xFF:02X}"
+            )
+
+    lines = [
+        "#[rustfmt::skip]",
+        "impl AttributePolicy {",
+        "    pub(super) const fn multiplicity(self) -> AttributeMultiplicity {",
+        "        match self.tag {",
+    ]
+    for variant, tags in tags_by_variant.items():
+        lines.append(f"            {' | '.join(tags)} => AttributeMultiplicity::{variant},")
+    lines.extend(
+        [
+            "            _ => AttributeMultiplicity::Single,",
+            "        }",
+            "    }",
+            "}",
+            "",
+        ]
+    )
+    return lines
+
+
 def render_rust(catalog: dict[str, Any]) -> str:
     """Render deterministic, source-preserving private policy metadata."""
     policies = _standard_policies(catalog)
@@ -265,25 +311,37 @@ def render_rust(catalog: dict[str, Any]) -> str:
         "}",
         "",
         "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
-        "pub(super) struct VendorAttributePolicy {",
-        "    pub(super) source_refs: &'static [SourceRef],",
-        "    pub(super) structure_table: &'static str,",
-        "    pub(super) source_text: &'static str,",
-        "    pub(super) member_element_id: &'static str,",
-        "    pub(super) equals: &'static str,",
-        "    pub(super) source_indicates_origin: &'static str,",
-        "    pub(super) prohibited_client_operations: &'static [&'static str],",
+        "pub(super) enum AttributeMultiplicity {",
+        "    Single,",
+        "    Multiple,",
+        "    PgpKeyOrX509Certificate,",
         "}",
         "",
-        "impl VendorAttributePolicy {",
-        "    pub(super) fn matches_vendor_identification(self, value: &str) -> bool {",
-        "        value == self.equals",
-        "    }",
-        "}",
-        "",
-        "#[rustfmt::skip]",
-        "pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[",
     ]
+    lines.extend(_render_multiplicity_method(policies))
+    lines.extend(
+        [
+            "#[derive(Clone, Copy, Debug, Eq, PartialEq)]",
+            "pub(super) struct VendorAttributePolicy {",
+            "    pub(super) source_refs: &'static [SourceRef],",
+            "    pub(super) structure_table: &'static str,",
+            "    pub(super) source_text: &'static str,",
+            "    pub(super) member_element_id: &'static str,",
+            "    pub(super) equals: &'static str,",
+            "    pub(super) source_indicates_origin: &'static str,",
+            "    pub(super) prohibited_client_operations: &'static [&'static str],",
+            "}",
+            "",
+            "impl VendorAttributePolicy {",
+            "    pub(super) fn matches_vendor_identification(self, value: &str) -> bool {",
+            "        value == self.equals",
+            "    }",
+            "}",
+            "",
+            "#[rustfmt::skip]",
+            "pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[",
+        ]
+    )
     for policy in policies:
         lines.extend(
             [

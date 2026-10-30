@@ -199,11 +199,15 @@ fn enumeration_value(item: &Item) -> Option<u32> {
     })
 }
 
+fn explicit_request_identifier() -> UniqueIdentifier {
+    UniqueIdentifier::TextString("destroy-test-object".to_owned())
+}
+
 #[test]
 fn destroy_success_returns_server_result_without_simulating_object_state() {
     for (request_identifier, response_identifier) in [
         (Some("requested-object"), "server-returned-object"),
-        (None, "server-returned-placeholder-object"),
+        (Some("another-requested-object"), "server-returned-object"),
     ] {
         let response = response_bytes(
             SUCCESS,
@@ -281,7 +285,10 @@ fn destroy_failure_preserves_common_result_and_does_not_retry() {
     });
 
     let response = client
-        .destroy(DestroyRequest::new(None), &CodecLimits::defaults())
+        .destroy(
+            DestroyRequest::new(Some(explicit_request_identifier())),
+            &CodecLimits::defaults(),
+        )
         .expect("a valid server Failure remains an Destroy result");
     let outcome = response.outcome();
     let typed = outcome
@@ -327,7 +334,10 @@ fn malformed_destroy_success_is_a_redacted_protocol_error_after_one_exchange() {
         });
 
         let error = client
-            .destroy(DestroyRequest::new(None), &CodecLimits::defaults())
+            .destroy(
+                DestroyRequest::new(Some(explicit_request_identifier())),
+                &CodecLimits::defaults(),
+            )
             .expect_err("a successful Destroy response needs one Unique Identifier");
 
         assert_eq!(error.category(), ClientErrorCategory::Protocol);
@@ -361,7 +371,8 @@ fn destroy_pending_preserves_exact_correlation_without_poll_or_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let typed_request = ClientRequest::Destroy(DestroyRequest::new(None));
+    let typed_request =
+        ClientRequest::Destroy(DestroyRequest::new(Some(explicit_request_identifier())));
     let batch = ClientBatch::new(
         ClientBatchItem::new(typed_request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
     )

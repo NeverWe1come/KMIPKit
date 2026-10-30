@@ -39,6 +39,12 @@ impl MacVerifyRequest {
         }
     }
 
+    /// Returns the optional object identifier in its original wire form.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.identifier.as_ref()
+    }
+
     /// Supplies the optional Unique Identifier.
     #[must_use]
     pub fn with_unique_identifier(mut self, value: UniqueIdentifier) -> Self {

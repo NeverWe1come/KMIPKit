@@ -179,6 +179,300 @@ fn query_accepts_the_empty_response_payload_form_and_preserves_common_failure_re
 }
 
 #[test]
+fn query_response_requires_both_profile_version_parts_when_version_is_present() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let incomplete_versions = [
+        structure([item(PROFILE_VERSION_MAJOR, Value::integer(2))]),
+        structure([item(PROFILE_VERSION_MINOR, Value::integer(1))]),
+    ];
+
+    for version in incomplete_versions {
+        let payload = structure([
+            item(
+                PROFILE_INFORMATION,
+                Value::structure(structure([
+                    item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    item(PROFILE_VERSION, Value::structure(version)),
+                ])),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_response_requires_profile_name_in_profile_information() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+
+    let invalid_profile_information = [
+        structure([]),
+        structure([item(PROFILE_NAME, Value::integer(0x0000_012a))]),
+    ];
+
+    for profile_information in invalid_profile_information {
+        let payload = structure([
+            item(PROFILE_INFORMATION, Value::structure(profile_information)),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_response_rejects_wrong_types_for_optional_profile_information_fields() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+    const SERVER_URI: u32 = 0x0042_00ed;
+    const SERVER_PORT: u32 = 0x0042_00ee;
+
+    let invalid_profile_information = [
+        structure([
+            item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+            item(SERVER_URI, Value::integer(5696)),
+        ]),
+        structure([
+            item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+            item(SERVER_PORT, Value::text_string("5696".to_owned())),
+        ]),
+    ];
+
+    for profile_information in invalid_profile_information {
+        let payload = structure([
+            item(PROFILE_INFORMATION, Value::structure(profile_information)),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_response_rejects_non_integer_profile_version_parts() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00eb;
+    const PROFILE_NAME: u32 = 0x0042_00ec;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let malformed_versions = [
+        structure([
+            item(PROFILE_VERSION_MAJOR, Value::enumeration(2)),
+            item(PROFILE_VERSION_MINOR, Value::integer(1)),
+        ]),
+        structure([
+            item(PROFILE_VERSION_MAJOR, Value::integer(2)),
+            item(PROFILE_VERSION_MINOR, Value::enumeration(1)),
+        ]),
+    ];
+
+    for version in malformed_versions {
+        let payload = structure([
+            item(
+                PROFILE_INFORMATION,
+                Value::structure(structure([
+                    item(PROFILE_NAME, Value::enumeration(0x0000_012a)),
+                    item(PROFILE_VERSION, Value::structure(version)),
+                ])),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ]);
+        let message = response_message(QUERY_OPERATION, 0, None, None, Some(payload));
+
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+}
+
+#[test]
+fn query_response_rejects_malformed_profile_information_and_preserves_unknown_version_fields() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00EB;
+    const PROFILE_NAME: u32 = 0x0042_00EC;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let invalid_profile_information = [
+        item(
+            PROFILE_INFORMATION,
+            Value::text_string("Profile Information must be a structure".to_owned()),
+        ),
+        item(
+            PROFILE_INFORMATION,
+            Value::structure(structure([
+                item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+                item(PROFILE_VERSION, Value::enumeration(2)),
+            ])),
+        ),
+    ];
+    for profile_information in invalid_profile_information {
+        let message = response_message(
+            QUERY_OPERATION,
+            0,
+            None,
+            None,
+            Some(structure([
+                profile_information,
+                item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+            ])),
+        );
+        assert!(matches!(
+            QueryResponse::try_from_response_item(response_item(&message)),
+            Err(QueryError::MalformedResponsePayload)
+        ));
+    }
+
+    let version_with_unknown_field = structure([
+        item(PROFILE_VERSION_MAJOR, Value::integer(2)),
+        item(PROFILE_VERSION_MINOR, Value::integer(1)),
+        item(
+            0x0054_0001,
+            Value::text_string("vendor version field".to_owned()),
+        ),
+    ]);
+    let message = response_message(
+        QUERY_OPERATION,
+        0,
+        None,
+        None,
+        Some(structure([
+            item(
+                PROFILE_INFORMATION,
+                Value::structure(structure([
+                    item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+                    item(
+                        PROFILE_VERSION,
+                        Value::structure(version_with_unknown_field),
+                    ),
+                ])),
+            ),
+            item(QUERY_RESPONSE_TAGS[13], Value::structure(structure([]))),
+        ])),
+    );
+    let response = QueryResponse::try_from_response_item(response_item(&message))
+        .expect("unknown Profile Version members remain forward-compatible");
+    let unknown_version_member_is_preserved = response
+        .profile_information()
+        .next()
+        .expect("the response retains Profile Information")
+        .with_value(|value| {
+            let ValueView::Structure(profile_information) = value else {
+                return false;
+            };
+            let Some(profile_version) = profile_information
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == PROFILE_VERSION)
+            else {
+                return false;
+            };
+            profile_version.with_value(|value| {
+                let ValueView::Structure(version) = value else {
+                    return false;
+                };
+                version.children().iter().any(|field| {
+                    field.tag().raw() == 0x0054_0001
+                        && field.with_value(|value| {
+                            matches!(value, ValueView::TextString(value) if value == "vendor version field")
+                        })
+                })
+            })
+        });
+    assert!(unknown_version_member_is_preserved);
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §6.1.40, Tables 281–284.
+fn profile_information_helper_rejects_incomplete_fields_and_wrong_types() {
+    const PROFILE_INFORMATION: u32 = 0x0042_00EB;
+    const PROFILE_NAME: u32 = 0x0042_00EC;
+    const PROFILE_SERVER_URI: u32 = 0x0042_00ED;
+    const PROFILE_SERVER_PORT: u32 = 0x0042_00EE;
+    const PROFILE_VERSION: u32 = 0x0042_0142;
+    const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
+    const PROFILE_VERSION_MINOR: u32 = 0x0042_0144;
+
+    let helper_accepts = |value| {
+        item(PROFILE_INFORMATION, value)
+            .with_value(|view| crate::query::profile_information_is_well_formed(&view))
+    };
+    assert!(!helper_accepts(Value::text_string(
+        "Profile Information must be a structure".to_owned(),
+    )));
+    assert!(!helper_accepts(Value::structure(structure([]))));
+    assert!(!helper_accepts(Value::structure(structure([item(
+        PROFILE_NAME,
+        Value::text_string("wrong Profile Name type".to_owned()),
+    )]))));
+    assert!(!helper_accepts(Value::structure(structure([
+        item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+        item(PROFILE_SERVER_URI, Value::integer(443)),
+    ]))));
+    assert!(!helper_accepts(Value::structure(structure([
+        item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+        item(
+            PROFILE_SERVER_URI,
+            Value::text_string("https://kmip.example.org".to_owned()),
+        ),
+        item(PROFILE_SERVER_PORT, Value::enumeration(5696)),
+    ]))));
+    for version in [
+        Value::integer(2),
+        Value::structure(structure([])),
+        Value::structure(structure([item(
+            PROFILE_VERSION_MAJOR,
+            Value::enumeration(2),
+        )])),
+        Value::structure(structure([
+            item(PROFILE_VERSION_MAJOR, Value::integer(2)),
+            item(PROFILE_VERSION_MINOR, Value::enumeration(1)),
+        ])),
+    ] {
+        assert!(!helper_accepts(Value::structure(structure([
+            item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+            item(PROFILE_VERSION, version),
+        ]))));
+    }
+    assert!(helper_accepts(Value::structure(structure([
+        item(PROFILE_NAME, Value::enumeration(0x0000_012A)),
+        item(
+            PROFILE_SERVER_URI,
+            Value::text_string("https://kmip.example.org".to_owned()),
+        ),
+        item(PROFILE_SERVER_PORT, Value::integer(5696)),
+        item(
+            PROFILE_VERSION,
+            Value::structure(structure([
+                item(PROFILE_VERSION_MAJOR, Value::integer(2)),
+                item(PROFILE_VERSION_MINOR, Value::integer(1)),
+            ])),
+        ),
+    ]))));
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
     let response_fields = vec![
@@ -207,7 +501,28 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         item(QUERY_RESPONSE_TAGS[5], Value::structure(structure([]))),
         item(QUERY_RESPONSE_TAGS[6], Value::enumeration(0x8000_0045)),
         item(QUERY_RESPONSE_TAGS[7], Value::structure(structure([]))),
-        item(QUERY_RESPONSE_TAGS[8], Value::structure(structure([]))),
+        item(
+            QUERY_RESPONSE_TAGS[8],
+            Value::structure(structure([
+                item(0x0042_00ec, Value::enumeration(0x8000_0042)),
+                item(
+                    0x0042_00ed,
+                    Value::text_string("kmip://kms.example.test".to_owned()),
+                ),
+                item(0x0042_00ee, Value::integer(5696)),
+                item(
+                    0x0042_0142,
+                    Value::structure(structure([
+                        item(0x0042_0143, Value::integer(2)),
+                        item(0x0042_0144, Value::integer(1)),
+                    ])),
+                ),
+                item(
+                    0x0054_0001,
+                    Value::text_string("profile-specific extension".to_owned()),
+                ),
+            ])),
+        ),
         item(
             QUERY_RESPONSE_TAGS[9],
             Value::structure(structure([item(0x0042_0057, Value::integer(7))])),
@@ -296,7 +611,52 @@ fn query_response_exposes_all_table_283_members_and_unknown_nested_items() {
         [0x8000_0045]
     );
     assert_eq!(response.rng_parameters().count(), 1);
-    assert_eq!(response.profile_information().count(), 1);
+    let profile_information = response
+        .profile_information()
+        .next()
+        .expect("Profile Information is preserved");
+    profile_information.with_value(|value| match value {
+        ValueView::Structure(profile_information) => {
+            assert_eq!(
+                profile_information
+                    .children()
+                    .iter()
+                    .map(|field| field.tag().raw())
+                    .collect::<Vec<_>>(),
+                [
+                    0x0042_00ec,
+                    0x0042_00ed,
+                    0x0042_00ee,
+                    0x0042_0142,
+                    0x0054_0001
+                ]
+            );
+            profile_information.children()[0]
+                .with_value(|value| assert!(matches!(value, ValueView::Enumeration(&0x8000_0042))));
+            profile_information.children()[1]
+                .with_value(|value| assert!(matches!(value, ValueView::TextString(_))));
+            profile_information.children()[2]
+                .with_value(|value| assert!(matches!(value, ValueView::Integer(&5696))));
+            profile_information.children()[3].with_value(|value| match value {
+                ValueView::Structure(version) => assert_eq!(
+                    version
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect::<Vec<_>>(),
+                    [0x0042_0143, 0x0042_0144]
+                ),
+                _ => panic!("Profile Version is a Structure"),
+            });
+            profile_information.children()[4].with_value(|value| {
+                assert!(matches!(
+                    value,
+                    ValueView::TextString("profile-specific extension")
+                ));
+            });
+        }
+        _ => panic!("Profile Information is a Structure"),
+    });
     assert_eq!(response.validation_information().count(), 1);
     assert_eq!(response.capability_information().count(), 1);
     assert_eq!(

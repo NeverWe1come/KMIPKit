@@ -52,6 +52,12 @@ impl GetAttributesRequest {
         })
     }
 
+    /// Returns the optional object identifier selected by this request.
+    #[must_use]
+    pub fn unique_identifier(&self) -> Option<&str> {
+        self.unique_identifier.as_deref()
+    }
+
     /// Builds the ordered Request Payload Structure defined in Table 223.
     ///
     /// # Errors
@@ -87,7 +93,10 @@ impl GetAttributesRequest {
 /// the ordered direct attribute Items in Table 224's Attributes Structure. The
 /// §6.1.20 no-match prose permits a response payload containing only the Unique
 /// Identifier; `None` preserves that shape, while `Some(empty)` preserves a
-/// present empty Attributes Structure. Other KMIP statuses have no typed payload.
+/// present empty Attributes Structure. Repetitions are preserved where the
+/// source permits them, and known single-instance violations are rejected.
+/// Other KMIP statuses retain the common result and have no typed response
+/// payload.
 pub struct GetAttributesResponse {
     result: KmipOperationResult,
     unique_identifier: Option<String>,
@@ -98,10 +107,11 @@ impl GetAttributesResponse {
     /// Converts one already validated KMIPKIT-0006 response item.
     ///
     /// Successful payload parsing follows OASIS KMIP v2.1 §6.1.20 and Table 224,
-    /// preserving direct attribute multiplicity and wire order. The no-match
-    /// prose explicitly permits only Unique Identifier, although Table 224 marks
-    /// Attributes required. The parser accepts both normative shapes and
-    /// preserves the distinction between an absent and empty Attributes field.
+    /// preserving direct attribute multiplicity and wire order while rejecting
+    /// known single-instance violations. The no-match prose permits only Unique
+    /// Identifier, although Table 224 marks Attributes required. The parser
+    /// accepts both shapes and preserves the distinction between an absent and
+    /// empty Attributes field.
     ///
     /// # Errors
     ///
@@ -282,7 +292,12 @@ fn parse_attributes(structure: &StructureView<'_>) -> Result<AttributeSet, GetAt
         items.push(item);
     }
 
-    AttributeSet::try_new(items).map_err(GetAttributesError::InvalidAttributeSet)
+    let attributes =
+        AttributeSet::try_new(items).map_err(GetAttributesError::InvalidAttributeSet)?;
+    attributes
+        .validate_single_instance_cardinality()
+        .map_err(GetAttributesError::InvalidAttributeSet)?;
+    Ok(attributes)
 }
 
 fn clone_value(value: ValueView<'_>) -> Result<Value, GetAttributesError> {

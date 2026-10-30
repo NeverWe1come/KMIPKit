@@ -81,7 +81,8 @@ static const kmipkit_fixture_item_t kmipkit_fixture_payload_3[] = {
 static const kmipkit_fixture_item_t kmipkit_fixture_payload_4[] = {
     { UINT32_C(0x420001), 7U, "alpha-v1", INT64_C(0), UINT32_C(0), NULL, 0U },
     { UINT32_C(0x420004), 3U, NULL, INT64_C(42), UINT32_C(0), NULL, 0U },
-    { UINT32_C(0x420005), 7U, "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A", INT64_C(0), UINT32_C(0), NULL, 0U }
+    { UINT32_C(0x420005), 7U, "SYNTHETIC-ONLY-EXTENSION-SECRET-7C4A", INT64_C(0), UINT32_C(0), NULL, 0U },
+    { UINT32_C(0x540005), 7U, "vendor-payload-sentinel", INT64_C(0), UINT32_C(0), NULL, 0U }
 };
 static const char *const kmipkit_fixture_matched_4[] = { "known.alpha" };
 static const kmipkit_fixture_attachment_t kmipkit_fixture_attachments_4[] = { { "synthetic-secret-bearing", false }, { "valid-recognized", true } };
@@ -90,7 +91,7 @@ static const kmipkit_fixture_case_t kmipkit_fixture_cases[] = {
     { "invalid-schema", "example.vendor", false, kmipkit_fixture_payload_1, 2U, "unrecognized.schema_invalid", kmipkit_fixture_matched_1, 1U, false },
     { "multiply-matching", "example.vendor", false, kmipkit_fixture_payload_2, 3U, "unrecognized.ambiguous", kmipkit_fixture_matched_2, 2U, false },
     { "unknown-preserved", "example.vendor", false, kmipkit_fixture_payload_3, 2U, "unrecognized.no_match", NULL, 0U, false },
-    { "synthetic-secret-bearing", "example.vendor", false, kmipkit_fixture_payload_4, 3U, "recognized", kmipkit_fixture_matched_4, 1U, true },
+    { "synthetic-secret-bearing", "example.vendor", false, kmipkit_fixture_payload_4, 4U, "recognized", kmipkit_fixture_matched_4, 1U, true },
 };
 static const kmipkit_fixture_outbound_request_t kmipkit_fixture_outbound_requests[] = {
     { "synthetic-secret-bearing", "outbound.validated", kmipkit_fixture_attachments_4, 2U },

@@ -19,7 +19,9 @@ const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const OFFSET: u32 = 0x0042_0058;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const SUCCESS: u32 = 0;
+const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 
 /// A KMIP 2.1 Re-certify request from §6.1.45, Table 300.
 ///
@@ -117,10 +119,33 @@ impl RecertifyRequest {
     /// # Errors
     ///
     /// Returns a sanitized error if Certificate Request Value is present
-    /// without its required Certificate Request Type, or if the payload cannot
-    /// be represented by the generic TTLV model.
+    /// without its required Certificate Request Type, if Certificate Request
+    /// Value is omitted without one explicit non-ID-Placeholder Unique
+    /// Identifier, source-defined Attribute cardinality rules are not met, or
+    /// the payload cannot be represented by the generic TTLV model.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if self.certificate_request_value.is_some() && self.certificate_request_type.is_none() {
+        if let Some(attributes) = self.attributes.as_ref() {
+            let view = attributes.view();
+            crate::attribute::validate_single_instance_attribute_items(
+                view.children(),
+                Some(CERTIFICATE_OBJECT_TYPE),
+                true,
+            )
+            .map_err(|_| common::request_error())?;
+        }
+
+        let has_request_value = self.certificate_request_value.is_some();
+        if has_request_value && self.certificate_request_type.is_none() {
+            return Err(invalid_request());
+        }
+
+        let has_explicit_identifier = self.unique_identifier.as_ref().is_some_and(|identifier| {
+            !matches!(
+                identifier,
+                UniqueIdentifier::Enumeration(ID_PLACEHOLDER_ENUMERATION_VALUE)
+            )
+        });
+        if !has_request_value && !has_explicit_identifier {
             return Err(invalid_request());
         }
 

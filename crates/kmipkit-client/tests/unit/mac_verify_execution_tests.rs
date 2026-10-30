@@ -10,7 +10,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::rc::Rc;
 
-use kmipkit_protocol::{MacVerifyRequest, SecretBytes};
+use kmipkit_protocol::{MacVerifyRequest, SecretBytes, UniqueIdentifier};
 use kmipkit_transport::{
     RequestDeliveryState, Transport, TransportCauseCategory, TransportError, TransportResponse,
 };
@@ -90,7 +90,9 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 
 fn request() -> ClientRequest {
     ClientRequest::mac_verify(
-        MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"opaque-mac".to_vec())),
+        MacVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("mac-verify-key".to_owned()))
+            .with_mac_data(SecretBytes::new(b"opaque-mac".to_vec())),
     )
 }
 
@@ -252,6 +254,7 @@ fn nonfinal_mac_verify_response_shape_error_retains_generic_ttlv() {
         asynchronous_response_bytes(MAC_VERIFY_OPERATION, SUCCESS, None, None, Some(payload));
     let (mut client, _) = client(response);
     let request = MacVerifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("mac-verify-key".to_owned()))
         .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
         .with_init_indicator(false)
         .with_final_indicator(false);
@@ -320,6 +323,7 @@ fn reordered_batch_responses_keep_each_requests_multipart_indicator_context() {
     let (mut client, state) = client(reordered_batch_response_bytes());
     let multipart = ClientRequest::mac_verify(
         MacVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("mac-verify-key".to_owned()))
             .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
             .with_init_indicator(false)
             .with_final_indicator(false),

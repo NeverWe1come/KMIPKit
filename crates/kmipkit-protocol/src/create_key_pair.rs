@@ -37,8 +37,9 @@ const PUBLIC_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_006f;
 /// A typed KMIP 2.1 Create Key Pair request payload.
 ///
 /// The six optional Table 189 groups remain independent. Attribute items keep
-/// their tags, values, repetitions, and group-local order; the server applies
-/// the Table 189 multi-instance union semantics.
+/// their tags, values, allowed repetitions, and group-local order; each object
+/// attribute group rejects repeated source-defined single-instance values.
+/// The server applies the Table 189 multi-instance union semantics.
 pub struct CreateKeyPairRequest {
     common_attributes: Option<AttributeSet>,
     private_key_attributes: Option<AttributeSet>,
@@ -132,9 +133,29 @@ impl CreateKeyPairRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error for an inconsistent Table 191 value
-    /// or a generic TTLV model constraint failure.
+    /// Returns a sanitized protocol error for repeated single-instance
+    /// attributes, an inconsistent Table 191 value, or a generic TTLV model
+    /// constraint failure.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        for attributes in [
+            self.common_attributes.as_ref(),
+            self.private_key_attributes.as_ref(),
+            self.public_key_attributes.as_ref(),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            attributes
+                .validate_single_instance_cardinality()
+                .map_err(|error| {
+                    ProtocolError::new(
+                        ProtocolErrorKind::InvalidValue,
+                        ProtocolCauseCategory::InvalidValue,
+                        error,
+                    )
+                })?;
+        }
+
         validate_table_191(
             self.common_attributes.as_ref(),
             self.private_key_attributes.as_ref(),
@@ -378,7 +399,7 @@ fn unique_attribute(
     Ok(value)
 }
 
-fn values_equal(left: &Item, right: &Item) -> bool {
+pub(crate) fn values_equal(left: &Item, right: &Item) -> bool {
     left.with_value(|left_value| {
         right.with_value(|right_value| value_views_equal(left_value, right_value))
     })

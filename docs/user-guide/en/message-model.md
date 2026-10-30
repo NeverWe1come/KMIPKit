@@ -13,6 +13,13 @@ ownership to `RequestMessage::try_from_ttlv` or
 category and numeric location if the message envelope, header, batch items, or
 Message Extensions do not have the required shape.
 
+Each Message Extension must include a Vendor Extension with at least one child
+tag from KMIP's `0x540000..=0x54FFFF` extension allocation (§§9.13, 11.56).
+The model preserves that subtree without interpreting vendor-specific values.
+The calling application must choose a Vendor Identification that uniquely
+identifies its vendor; KMIPKit validates its text shape but cannot verify
+uniqueness against an external vendor registry.
+
 The request and response expose typed views for common header fields and batch
 items. Use their accessors to read the Protocol Version, Batch Count, raw
 option values, timestamps, item IDs, result status, and correlation values.

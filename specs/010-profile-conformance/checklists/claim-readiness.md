@@ -18,7 +18,7 @@
 
 - [ ] CHK006 Is profile readiness kept separate from release publication and formal certification? [Scope, Spec §FR-011]
 - [ ] CHK007 Does the readiness report avoid emitting a claim even when its evidence state is complete? [Clarity, Spec §FR-011]
-- [ ] CHK008 Is Baseline Client the initial target while its claim remains ineligible with the current fixture evidence? [Acceptance Criteria, Spec §FR-003, §SC-004]
+- [ ] CHK008 Is Baseline Client the initial target, with its one-or-more test threshold applied and every case disposition shown without implying a conformance claim? [Acceptance Criteria, Spec §FR-003, §SC-004]
 - [ ] CHK009 Are server prerequisites, deviations, source discrepancies, and missing evidence visible as blockers or qualified notes? [Completeness, Spec §FR-010]
 - [ ] CHK010 Are server profiles, JSON/XML profiles, and unsupported conditional profiles excluded from 1.0 claims? [Scope, Spec §FR-007]
 

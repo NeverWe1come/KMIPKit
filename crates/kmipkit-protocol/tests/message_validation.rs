@@ -1,5 +1,5 @@
 //! OASIS KMIP Specification v2.1: §§6.1.38, 8.3, 8.6, 9.1–9.2, 9.9–9.10,
-//! 9.13, 9.19, 9.21; Tables 276, 396, 399, 400, 408–409, and 418.
+//! 9.13, 9.19, 9.21, 11.56; Tables 276, 396, 399, 400, 408–409, and 418.
 //!
 //! Traceability: KMIPKIT-0006-FR-004, FR-008, FR-010, FR-011, FR-014, FR-020,
 //! FR-021; SC-002, SC-003, SC-004, SC-006.
@@ -128,7 +128,13 @@ fn message_extension(vendor: &str, criticality: bool) -> Structure {
     structure([
         item(VENDOR_IDENTIFICATION, Value::text_string(vendor.to_owned())),
         item(CRITICALITY_INDICATOR, Value::boolean(criticality)),
-        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+        item(
+            VENDOR_EXTENSION,
+            Value::structure(structure([item(
+                0x0054_0001,
+                Value::text_string("opaque vendor value".to_owned()),
+            )])),
+        ),
     ])
 }
 
@@ -203,6 +209,7 @@ fn poll_pending_response_uses_the_section_6_1_38_no_payload_exception() {
 
 #[test]
 fn a_single_item_request_may_omit_its_unique_id() {
+    // KMIP Specification v2.1 §8.3 Table 396; §9.21.
     let message = RequestMessage::try_from_ttlv(request_optional_ids([None]))
         .expect("Table 396 makes the ID optional for a single item");
 
@@ -217,10 +224,16 @@ fn a_single_item_request_may_omit_its_unique_id() {
 }
 
 #[test]
-fn every_multi_item_request_requires_an_id() {
-    let message = request_optional_ids([Some(vec![0x01]), None]);
+fn multi_item_request_requires_a_unique_id_on_every_batch_item() {
+    // KMIP Specification v2.1 §8.3 Table 396; §9.21.
+    let error = RequestMessage::try_from_ttlv(request_optional_ids([Some(vec![0x01]), None]))
+        .expect_err("Table 396 requires an ID on every item when Batch Count exceeds one");
 
-    assert!(RequestMessage::try_from_ttlv(message).is_err());
+    assert_eq!(
+        error.kind(),
+        MessageValidationErrorKind::MissingRequiredField
+    );
+    assert_eq!(error.structure_index(), Some(2));
 }
 
 #[derive(Clone, Debug)]
@@ -290,10 +303,9 @@ fn repeated_request_extensions_preserve_order_and_expose_typed_fields() {
         Some("Vendor.B".to_owned())
     );
     assert_eq!(second.criticality_indicator(), Some(true));
-    assert!(
-        second
-            .with_vendor_extension(|extension| extension.children().is_empty())
-            .unwrap_or_default()
+    assert_eq!(
+        second.with_vendor_extension(|extension| extension.children().len()),
+        Some(1)
     );
     assert!(batch_item.message_extension(2).is_none());
 }
@@ -322,6 +334,35 @@ fn malformed_request_message_extension_is_rejected() {
         item(CRITICALITY_INDICATOR, Value::boolean(false)),
         item(VENDOR_EXTENSION, Value::structure(Structure::new())),
     ]);
+    let empty_vendor_extension = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+        item(VENDOR_EXTENSION, Value::structure(Structure::new())),
+    ]);
+    let wrong_vendor_extension_type = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+        item(
+            VENDOR_EXTENSION,
+            Value::text_string("extension contents must be a structure".to_owned()),
+        ),
+    ]);
+    let wrong_type_error =
+        RequestMessage::try_from_ttlv(request_with_extensions([wrong_vendor_extension_type]))
+            .expect_err("§9.13 requires vendor-extension contents to be structurally represented");
+    assert_eq!(
+        wrong_type_error.kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
+    let error = RequestMessage::try_from_ttlv(request_with_extensions([empty_vendor_extension]))
+        .expect_err("§9.13 and §11.56 require vendor-specific extension data");
+    assert_eq!(error.kind(), MessageValidationErrorKind::InvalidFieldValue);
 
     for extension in [
         missing_vendor_extension,
@@ -367,7 +408,7 @@ fn response_message_extension_is_a_singleton() {
 }
 
 #[test]
-fn client_correlation_values_are_preserved_at_message_header_scope() {
+fn message_headers_preserve_independent_client_correlation_values() {
     let request = request_tree_with_header_fields(item(
         CLIENT_CORRELATION_VALUE,
         Value::text_string("request-17".to_owned()),
@@ -386,7 +427,7 @@ fn client_correlation_values_are_preserved_at_message_header_scope() {
         response
             .header()
             .with_client_correlation_value(str::to_owned),
-        Some("request-17".to_owned())
+        Some("response-client-42".to_owned())
     );
     assert_eq!(
         response
@@ -501,7 +542,7 @@ fn response_with_correlations() -> Structure {
                 item(TIME_STAMP, Value::date_time(1)),
                 item(
                     CLIENT_CORRELATION_VALUE,
-                    Value::text_string("request-17".to_owned()),
+                    Value::text_string("response-client-42".to_owned()),
                 ),
                 item(
                     SERVER_CORRELATION_VALUE,

@@ -14,6 +14,8 @@ use std::time::{Duration, Instant};
 
 static NETWORK_FIXTURE_LOCK: Mutex<()> = Mutex::new(());
 
+// Serialize loopback socket tests because hosted Windows can exclude ports used
+// by another listener test while it is still active.
 fn lock_network_fixture() -> MutexGuard<'static, ()> {
     match NETWORK_FIXTURE_LOCK.lock() {
         Ok(guard) => guard,
@@ -169,6 +171,32 @@ fn binds_udp_ephemeral_port_before_tcp_pairing() {
         io::ErrorKind::InvalidInput
     );
     assert_eq!(*bind_calls.borrow(), ["UDP", "TCP"]);
+}
+
+#[test]
+fn uses_udp_ephemeral_port_when_tcp_ephemeral_ports_are_excluded() {
+    let mut tcp_addresses = Vec::new();
+    let (udp_socket, tcp_listener) = bind_fake_dns_sockets_with(
+        |address| {
+            assert_eq!(address, fake_dns_address(0));
+            Ok(fake_dns_socket(fake_dns_address(53_002)))
+        },
+        |address| {
+            tcp_addresses.push(address);
+            if address.port() == 0 {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated TCP excluded ephemeral-port range",
+                ))
+            } else {
+                Ok(fake_dns_socket(address))
+            }
+        },
+    )
+    .expect("UDP should allocate a usable port when TCP port-zero allocation is excluded");
+
+    assert_eq!(tcp_addresses, [fake_dns_address(53_002)]);
+    assert_eq!(udp_socket.local_addr, tcp_listener.local_addr);
 }
 
 #[test]

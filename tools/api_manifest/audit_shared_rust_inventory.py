@@ -46,8 +46,8 @@ RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportResponse::new",
     "kmipkit_transport::TransportResponse::as_bytes",
 }
-DRAFT_SPEC_IDS = {"KMIPKIT-0009", "KMIPKIT-0010"}
-REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-16.json")
+DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
+REPORT_PATH = Path("specs/043-public-api-bindings/reports/shared-rust-inventory-2026-10-30.json")
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
@@ -447,7 +447,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-17.json"
+    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-30.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

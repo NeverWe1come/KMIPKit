@@ -58,10 +58,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9541)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 279)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 10451)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 290)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
-        self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
+        self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
             {
@@ -84,18 +84,25 @@ class SharedRustInventoryTests(unittest.TestCase):
                 self.assertFalse(declaration["ownerRequirementIds"])
                 self.assertIn("KMIPKIT-0043-FR-020", declaration["requirementIds"])
 
-    def test_draft_owned_asynchronous_and_profile_surfaces_remain_blocked(self) -> None:
+    def test_candidate_declarations_remain_blocked_and_approved_async_operations_are_declared(self) -> None:
         for record in self.manifest["publicDeclarations"]:
             if record.get("candidateSpecId") in {"KMIPKIT-0009", "KMIPKIT-0010"}:
                 self.assertEqual(record["declarationState"], "blocked")
                 self.assertNotIn("approvalSource", record)
                 self.assertNotIn("languageMappings", record)
+        asynchronous_operations = [
+            operation
+            for operation in self.manifest["operations"]
+            if operation.get("ownerDependency", {}).get("specId") == "KMIPKIT-0009"
+        ]
+        self.assertEqual(len(asynchronous_operations), 4)
         for operation in self.manifest["operations"]:
             dependency = operation.get("ownerDependency", {})
-            if dependency.get("state") == "candidate" and dependency.get("specId") in {
-                "KMIPKIT-0009",
-                "KMIPKIT-0010",
-            }:
+            if dependency.get("specId") == "KMIPKIT-0009":
+                self.assertEqual(dependency.get("state"), "approved")
+                self.assertEqual(operation["apiState"], "declared")
+                self.assertNotIn("blockedReason", operation)
+            elif dependency.get("state") == "candidate" and dependency.get("specId") == "KMIPKIT-0010":
                 self.assertEqual(operation["apiState"], "blocked")
 
     def test_transport_is_the_only_accepted_rust_only_capability(self) -> None:
@@ -196,7 +203,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         )
 
         operation = next(row for row in self.manifest["operations"] if row["name"] == "Discover Versions")
-        self.assertEqual(operation["apiState"], "declared")
+        self.assertEqual(operation["apiState"], "verified")
         self.assertEqual(operation["featureSpecId"], "KMIPKIT-0007")
         self.assertEqual(
             set(operation["declarations"]),

@@ -151,7 +151,7 @@ const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const VENDOR_EXTENSION: u32 = 0x0042_009C;
-const EXTENSION_PAYLOAD_TAG: u32 = 0x0042_0173;
+const EXTENSION_PAYLOAD_TAG: u32 = 0x0054_0173;
 
 pub(crate) fn structure_contains_tag(tree: &StructureView<'_>, tag: u32) -> bool {
     tree.children().iter().any(|item| {

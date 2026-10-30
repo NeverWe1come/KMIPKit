@@ -33,6 +33,12 @@ impl GetAttributeListRequest {
         Self { unique_identifier }
     }
 
+    /// Returns the optional object identifier selected by this request.
+    #[must_use]
+    pub fn unique_identifier(&self) -> Option<&str> {
+        self.unique_identifier.as_deref()
+    }
+
     /// Builds the ordered Get Attribute List Request Payload from §6.1.21,
     /// Table 226.
     ///

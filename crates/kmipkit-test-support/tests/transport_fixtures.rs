@@ -246,7 +246,7 @@ fn wait_for_question_count(
 
 fn wait_for_active_tcp_requests(fixture: &LocalDnsFixture, expected: usize) {
     let deadline = Instant::now() + Duration::from_secs(2);
-    while fixture.active_tcp_requests() != expected && Instant::now() < deadline {
+    while fixture.active_tcp_requests() < expected && Instant::now() < deadline {
         std::thread::sleep(Duration::from_millis(2));
     }
     assert_eq!(fixture.active_tcp_requests(), expected);

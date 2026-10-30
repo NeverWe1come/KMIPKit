@@ -56,7 +56,7 @@ const RESPONSE_SENTINEL: &str = "KMIP_CREATE_SPLIT_KEY_RESPONSE_SENTINEL_8432";
 const PENDING_CORRELATION: &[u8] = b"CREATE_SPLIT_KEY_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateSplitKeyFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create_split_key-fixture-v1";
-const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -1168,6 +1168,7 @@ fn create_split_key_keeps_repeated_registered_message_extensions_in_caller_order
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
+// §9.12/Table 417's signed Integer bounds the advertised value; the local cap stays larger.
 #[test]
 fn create_split_key_advertises_local_response_cap_clamped_to_signed_integer() {
     let cap = i32::MAX as usize + 1;
@@ -1201,6 +1202,7 @@ fn create_split_key_advertises_local_response_cap_clamped_to_signed_integer() {
     );
 }
 
+// KMIP Specification v2.1 §9.12/Table 417: the response fits the advertised cap.
 #[test]
 fn create_split_key_accepts_response_exactly_at_local_limit() {
     let response = response_bytes([response_batch_item(

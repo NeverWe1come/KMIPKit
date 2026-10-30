@@ -98,14 +98,16 @@ fn cases() -> [Case; 7] {
             operation: GET_ATTRIBUTES,
             client_operation: ClientOperation::GetAttributes,
             request: ClientRequest::get_attributes(
-                GetAttributesRequest::try_new(None, [])
+                GetAttributesRequest::try_new(Some(UNIQUE_IDENTIFIER.to_owned()), [])
                     .expect("an empty Attribute Reference list is valid"),
             ),
         },
         Case {
             operation: GET_ATTRIBUTE_LIST,
             client_operation: ClientOperation::GetAttributeList,
-            request: ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+            request: ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+                UNIQUE_IDENTIFIER.to_owned(),
+            ))),
         },
         Case {
             operation: MODIFY_ATTRIBUTE,

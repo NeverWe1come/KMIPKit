@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt;
 
 use kmipkit_ttlv::codec::CodecLimits;
-use kmipkit_ttlv::{Item, ItemType, ValueView};
+use kmipkit_ttlv::{Item, ItemType, StructureView, ValueView};
 #[cfg(test)]
 use zeroize::Zeroize;
 use zeroize::Zeroizing;
@@ -154,6 +154,25 @@ impl EncodingPlan {
 struct PlanCounts {
     structure_depth: u64,
     elements: u64,
+}
+
+/// Validates a complete root Structure against the outbound limits without
+/// allocating an encoded buffer or copying any payload bytes.
+pub(super) fn validate_structure_limits(
+    structure: StructureView<'_>,
+    limits: &CodecLimits,
+) -> Result<(), EncodeError> {
+    let mut counts = PlanCounts {
+        structure_depth: 0,
+        elements: 1,
+    };
+    let lengths = measure_value(ValueView::Structure(structure), 0, &mut counts)?;
+    let plan = EncodingPlan {
+        encoded_bytes: lengths.encoded_item_bytes()?,
+        structure_depth: counts.structure_depth,
+        elements: counts.elements,
+    };
+    check_plan(&plan, limits)
 }
 
 fn measure_item(

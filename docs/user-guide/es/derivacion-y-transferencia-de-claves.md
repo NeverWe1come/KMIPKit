@@ -235,6 +235,14 @@ el Key Wrap Type elegido por el llamador exactamente cuando el Key Block del
 objeto contiene Key Wrapping Data. `Replace Existing` solo se establece si el
 llamador lo elige explícitamente.
 
+Para los valores de clave envueltos, el llamador aporta IV/Counter/Nonce
+siempre que lo requiera el método de envoltura elegido. Si falta Encoding
+Option, debe codificar como TTLV la estructura Key Value antes de envolverla.
+Estas obligaciones proceden de KMIP Specification v2.1 §3.3, Tablas 14–15.
+KMIPKit conserva la representación aportada: no deduce parámetros a partir de
+claves referenciadas del servidor ni inspecciona el texto claro o cifrado
+envuelto.
+
 Cada método devuelve el resultado del servidor para una sola petición. Un
 fallo de validación local indica `NotSent`; los fallos de transporte conservan
 la evidencia de entrega más precisa disponible. Los resultados Pending siguen

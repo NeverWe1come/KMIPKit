@@ -97,6 +97,24 @@ class CoverageGateTests(unittest.TestCase):
             f"coverage_gate.py must provide the tested coverage contract; load error: {GATE_LOAD_ERROR}",
         )
 
+    def test_rust_masker_matches_raw_string_prefix_without_copying_suffixes(self) -> None:
+        self.require_gate()
+
+        class NoSliceString(str):
+            def __getitem__(self, key: int | slice) -> str:
+                if isinstance(key, slice):
+                    raise AssertionError("Rust source scans must not copy source suffixes")
+                return super().__getitem__(key)
+
+        for raw_literal in ('r##"literal"##', 'br"literal"', 'cr###"literal"###'):
+            with self.subTest(raw_literal=raw_literal):
+                source = NoSliceString(f"let value = {raw_literal};\nfn visible() {{}}\n")
+
+                masked = GATE._mask_rust_non_code(source)
+
+                self.assertNotIn("literal", masked)
+                self.assertIn("fn visible() {}", masked)
+
     def test_code_regions_produce_executable_lines_but_gap_regions_do_not(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
@@ -616,6 +634,36 @@ trait Example { fn declaration(&self); }
             with self.subTest(path=path):
                 self.assertTrue(GATE.is_coverage_source_path(path))
         self.assertTrue(GATE.is_coverage_source_path("crates/kmipkit/src/test/helpers.rs"))
+
+    def test_generated_profile_metadata_is_excluded_from_raw_coverage(self) -> None:
+        self.require_gate()
+        generated_metadata = "crates/kmipkit-protocol/src/profiles_generated.rs"
+        handwritten_validator = "crates/kmipkit-protocol/src/profile.rs"
+
+        self.assertFalse(GATE.is_coverage_source_path(generated_metadata))
+        self.assertTrue(GATE.is_coverage_source_path(handwritten_validator))
+
+        generated_diff = (
+            "diff --git a/crates/kmipkit-protocol/src/profiles_generated.rs "
+            "b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "+++ b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "@@ -1,0 +1,2 @@\n"
+            "+pub const GENERATED_PROFILE_COUNT: usize = 18;\n"
+            "+pub const GENERATED_RULE_COUNT: usize = 265;\n"
+        )
+        self.assertEqual({}, GATE.parse_added_production_lines(generated_diff))
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            generated_path = root / generated_metadata
+            generated_path.parent.mkdir(parents=True)
+            generated_path.write_text("pub const fn generated_metadata() -> usize { 18 }\n", encoding="utf-8")
+            validator_path = root / handwritten_validator
+            validator_path.write_text("pub fn validate_profile() {}\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+
+        self.assertEqual({handwritten_validator}, scan.eligible_files)
 
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
         self.require_gate()

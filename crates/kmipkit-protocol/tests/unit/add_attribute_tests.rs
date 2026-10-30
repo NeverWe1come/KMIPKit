@@ -14,6 +14,10 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const COMMENT: u32 = 0x0042_00FD;
+const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
+const RNG_PARAMETERS: u32 = 0x0042_00D9;
+const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
@@ -254,6 +258,82 @@ fn request_preserves_nested_vendor_value_when_identifier_is_omitted() {
         ]),
         "the nested vendor name and caller bytes remain unchanged and ordered"
     );
+}
+
+#[test]
+fn request_encodes_original_creation_date_as_new_attribute() {
+    // OASIS KMIP v2.1 §4.38, Table 105, and §11.56 permit adding an omitted
+    // date through §6.1.2, Table 167, and §5.7, Table 163.
+    let request = AddAttributeRequest::new(
+        None,
+        NewAttribute::new(item(
+            ORIGINAL_CREATION_DATE,
+            Value::date_time(1_700_000_000),
+        )),
+    );
+    let payload = request
+        .to_ttlv_payload()
+        .expect("Add Attribute carries the caller's Original Creation Date");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), NEW_ATTRIBUTE);
+    fields[0].with_value(|value| match value {
+        ValueView::Structure(wrapper) => {
+            let attributes = wrapper.children();
+            assert_eq!(attributes.len(), 1);
+            assert_eq!(attributes[0].tag().raw(), ORIGINAL_CREATION_DATE);
+            assert!(attributes[0].with_value(|value| matches!(
+                value,
+                ValueView::DateTime(value) if *value == 1_700_000_000
+            )));
+        }
+        _ => panic!("New Attribute must remain a Structure"),
+    });
+}
+
+#[test]
+fn request_encodes_rng_algorithm_directly_in_new_attribute() {
+    // OASIS KMIP v2.1 §4.46, Table 121, and §§7.36, 11.49, and 11.56 permit
+    // adding this attribute with §6.1.2, Table 167, and §5.7, Table 163; RNG
+    // Parameters fields are direct members, without a nested RNG Parameters.
+    let request = AddAttributeRequest::new(
+        None,
+        NewAttribute::new(item(
+            RANDOM_NUMBER_GENERATOR,
+            Value::structure(structure([item(RNG_ALGORITHM, Value::enumeration(1))])),
+        )),
+    );
+    let payload = request
+        .to_ttlv_payload()
+        .expect("Add Attribute carries the caller's Random Number Generator value");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].tag().raw(), NEW_ATTRIBUTE);
+    fields[0].with_value(|value| match value {
+        ValueView::Structure(wrapper) => {
+            let attributes = wrapper.children();
+            assert_eq!(attributes.len(), 1);
+            assert_eq!(attributes[0].tag().raw(), RANDOM_NUMBER_GENERATOR);
+            attributes[0].with_value(|value| match value {
+                ValueView::Structure(rng) => {
+                    let members = rng.children();
+                    assert_eq!(members.len(), 1);
+                    assert_eq!(members[0].tag().raw(), RNG_ALGORITHM);
+                    assert_ne!(members[0].tag().raw(), RNG_PARAMETERS);
+                    assert!(members[0].with_value(|value| matches!(
+                        value,
+                        ValueView::Enumeration(value) if *value == 1
+                    )));
+                }
+                _ => panic!("Random Number Generator must remain a Structure"),
+            });
+        }
+        _ => panic!("New Attribute must remain a Structure"),
+    });
 }
 
 #[test]

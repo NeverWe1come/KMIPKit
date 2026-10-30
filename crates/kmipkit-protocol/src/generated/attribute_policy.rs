@@ -27,6 +27,24 @@ pub(super) struct AttributePolicy {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum AttributeMultiplicity {
+    Single,
+    Multiple,
+    PgpKeyOrX509Certificate,
+}
+
+#[rustfmt::skip]
+impl AttributePolicy {
+    pub(super) const fn multiplicity(self) -> AttributeMultiplicity {
+        match self.tag {
+            0x42_00_04 | 0x42_00_2B | 0x42_00_34 | 0x42_00_4A | 0x42_00_53 | 0x42_00_56 | 0x42_00_B8 | 0x42_00_BF | 0x42_01_3A => AttributeMultiplicity::Multiple,
+            0x42_00_AE => AttributeMultiplicity::PgpKeyOrX509Certificate,
+            _ => AttributeMultiplicity::Single,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) struct VendorAttributePolicy {
     pub(super) source_refs: &'static [SourceRef],
     pub(super) structure_table: &'static str,

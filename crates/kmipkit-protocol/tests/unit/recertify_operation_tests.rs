@@ -1,6 +1,6 @@
 //! Re-certify contracts derived from OASIS KMIP Specification v2.1 §6.1.45,
 //! Tables 298–302. Traceability: `KMIPKIT-REQ-SPEC-6.1.45-001`, `-002-001`,
-//! `-002-002`, `-004`, `-006-001`, `-006-002`, and `-008`. These are derived
+//! `-002-002`, `-002-003`, `-004`, `-006-001`, `-006-002`, and `-008`. These are derived
 //! tests, not official OASIS Test Case executions.
 
 use crate::async_operation_fixtures::{response_message, structure};
@@ -132,12 +132,121 @@ fn request_requires_type_when_certificate_request_value_is_present() {
 }
 
 #[test]
+fn request_requires_unique_identifier_when_certificate_request_value_is_omitted() {
+    assert!(RecertifyRequest::new().into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_id_placeholder_when_certificate_request_value_is_omitted() {
+    let request = RecertifyRequest::new().with_unique_identifier(UniqueIdentifier::Enumeration(1));
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_preserves_optional_identifier_when_certificate_request_value_is_present() {
+    let payload = RecertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()))
+        .into_ttlv_payload()
+        .expect("Certificate Request Value permits an omitted Unique Identifier");
+
+    assert_eq!(
+        field_tags(&payload),
+        [CERTIFICATE_REQUEST_TYPE, CERTIFICATE_REQUEST_VALUE]
+    );
+}
+
+#[test]
+fn request_preserves_id_placeholder_when_certificate_request_value_is_present() {
+    let payload = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::Enumeration(1))
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(SecretBytes::new(b"opaque-request".to_vec()))
+        .into_ttlv_payload()
+        .expect("the omission-specific rule does not constrain this request form");
+
+    assert_eq!(
+        field_tags(&payload),
+        [
+            UNIQUE_IDENTIFIER,
+            CERTIFICATE_REQUEST_TYPE,
+            CERTIFICATE_REQUEST_VALUE
+        ]
+    );
+}
+
+#[test]
 fn request_can_omit_request_fields_to_reuse_existing_certificate_type() {
     let payload = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "existing-certificate".to_owned(),
+        ))
         .into_ttlv_payload()
-        .expect("§6.1.45 reuses the existing type when request fields are omitted");
+        .expect("§6.1.45 permits omitted request fields when an explicit identifier is present");
 
-    assert!(payload.view().children().is_empty());
+    assert_eq!(field_tags(&payload), [UNIQUE_IDENTIFIER]);
+}
+
+#[test]
+fn request_rejects_repeated_single_instance_attributes_and_undetermined_dsa_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.45 Table 300.
+    let repeated_comment = structure([
+        item(0x0042_00FD, Value::text_string("first".to_owned())),
+        item(0x0042_00FD, Value::text_string("second".to_owned())),
+    ]);
+    let duplicate_singleton = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certificate".to_owned()))
+        .with_attributes(repeated_comment);
+    assert!(duplicate_singleton.into_ttlv_payload().is_err());
+
+    let repeated_dsa_without_certificate_type = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let undetermined_context = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certificate".to_owned()))
+        .with_attributes(repeated_dsa_without_certificate_type);
+    assert!(undetermined_context.into_ttlv_payload().is_err());
+
+    let repeated_dsa_for_x509 = structure([
+        item(0x0042_001D, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let x509_context = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certificate".to_owned()))
+        .with_attributes(repeated_dsa_for_x509);
+    assert!(x509_context.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_without_certificate_type_context() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.45 Table 300.
+    let attributes = structure([
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certificate".to_owned()))
+        .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
+}
+
+#[test]
+fn request_rejects_repeated_dsa_for_x509_certificate_type() {
+    // KMIP Specification v2.1 §§4, 4.22 Table 72, and §6.1.45 Table 300.
+    let attributes = structure([
+        item(0x0042_001D, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(1)),
+        item(0x0042_00AE, Value::enumeration(2)),
+    ]);
+    let request = RecertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("certificate".to_owned()))
+        .with_attributes(attributes);
+
+    assert!(request.into_ttlv_payload().is_err());
 }
 
 #[test]

@@ -471,7 +471,10 @@ fn high_level_get_attribute_list_executes_one_request_without_retries() {
     });
 
     let result = client
-        .get_attribute_list(GetAttributeListRequest::new(None), &CodecLimits::defaults())
+        .get_attribute_list(
+            GetAttributeListRequest::new(Some(OBJECT_IDENTIFIER.to_owned())),
+            &CodecLimits::defaults(),
+        )
         .expect("the high-level method returns the typed response item");
 
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -484,7 +487,7 @@ fn high_level_get_attribute_list_executes_one_request_without_retries() {
 #[test]
 fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
     for reason in TABLE_225_REASONS {
-        let request = GetAttributesRequest::try_new(None, [])
+        let request = GetAttributesRequest::try_new(Some(OBJECT_IDENTIFIER.to_owned()), [])
             .expect("Table 223 permits a request for all attributes");
         let (mut client, fake, _) = client_for(ExchangeScript::Success {
             response: response_bytes(
@@ -531,7 +534,7 @@ fn get_attributes_preserves_table_225_failures_and_does_not_retry() {
 #[test]
 fn get_attribute_list_preserves_every_table_228_failure_result_without_retry() {
     for reason in TABLE_228_REASONS {
-        let request = GetAttributeListRequest::new(None);
+        let request = GetAttributeListRequest::new(Some(OBJECT_IDENTIFIER.to_owned()));
         let (mut client, fake, _) = client_for(ExchangeScript::Success {
             response: response_bytes(
                 GET_ATTRIBUTE_LIST_OPERATION,
@@ -582,13 +585,15 @@ fn pending_attribute_reads_preserve_typed_response_and_correlation_without_retry
         (
             GET_ATTRIBUTES_OPERATION,
             ClientRequest::get_attributes(
-                GetAttributesRequest::try_new(None, [])
+                GetAttributesRequest::try_new(Some(OBJECT_IDENTIFIER.to_owned()), [])
                     .expect("the empty Attribute Reference list is valid"),
             ),
         ),
         (
             GET_ATTRIBUTE_LIST_OPERATION,
-            ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+            ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+                OBJECT_IDENTIFIER.to_owned(),
+            ))),
         ),
     ] {
         let (mut client, fake, _) = client_for(ExchangeScript::Success {

@@ -110,6 +110,9 @@ fn wrapper_round_trip(value: CredentialValue, raw_type: u32, expected_fields: us
     }
 }
 
+// KMIP Specification v2.1 §9.11 permits Credentials for authentication as
+// indicated by KMIP Profiles; this verifies model serialization and redaction,
+// not mechanism selection or server acceptance.
 #[test]
 fn credential_and_authentication_public_views_preserve_order_and_redact() {
     let raw_type = 0xF123_4567;
@@ -159,6 +162,8 @@ fn credential_and_authentication_public_views_preserve_order_and_redact() {
     assert_eq!(parsed.credentials().len(), 2);
 }
 
+// KMIP Specification v2.1 §9.11 and Tables 410–416 define the Credential variants
+// represented here; this test makes no profile-authentication or server-acceptance claim.
 #[test]
 fn typed_credential_wrappers_expose_views_and_lossless_conversions() {
     let cases = [

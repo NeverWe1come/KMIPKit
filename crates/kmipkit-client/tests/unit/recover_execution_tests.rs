@@ -14,7 +14,7 @@
 //! These are derived structural/execution tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{
-    EncryptRequest, OperationData, RecoverRequest, SecretBytes, UniqueIdentifier,
+    EncryptRequest, OperationData, PollRequest, RecoverRequest, SecretBytes, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{
@@ -31,7 +31,9 @@ use std::rc::Rc;
 
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
 use crate::execute::{Client, encode_message_for_test};
-use crate::execute_test_support::{one_item_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, one_item_response_bytes, test_item, test_structure,
+};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientErrorCategory, ClientOperation,
     ClientRequest,
@@ -39,6 +41,7 @@ use crate::{
 
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+const POLL_OPERATION: u32 = 0x0000_001A;
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
@@ -138,7 +141,12 @@ fn recover_wire_code_matches_kmip_table_470() {
         response,
         request_write_chunks: vec![4],
     });
-    let result = client.recover(RecoverRequest::new(None), &CodecLimits::defaults());
+    let result = client.recover(
+        RecoverRequest::new(Some(UniqueIdentifier::TextString(
+            "recover-test-object".to_owned(),
+        ))),
+        &CodecLimits::defaults(),
+    );
 
     let request = request.borrow();
     assert_recover_request(
@@ -146,7 +154,7 @@ fn recover_wire_code_matches_kmip_table_470() {
             .as_ref()
             .expect("the fake transport captured the request")
             .as_slice(),
-        None,
+        Some("recover-test-object"),
     );
     assert!(result.is_ok());
 }
@@ -246,7 +254,7 @@ fn enumeration_value(item: &Item) -> Option<u32> {
 fn recover_success_returns_completed_result_and_leaves_get_explicit() {
     for (request_identifier, response_identifier) in [
         (Some("requested-object"), "server-returned-object"),
-        (None, "server-returned-placeholder-object"),
+        (Some("another-requested-object"), "server-returned-object"),
     ] {
         let response = response_bytes(
             SUCCESS,
@@ -323,7 +331,12 @@ fn recover_failure_preserves_common_result_and_does_not_retry() {
     });
 
     let response = client
-        .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+        .recover(
+            RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "recover-test-object".to_owned(),
+            ))),
+            &CodecLimits::defaults(),
+        )
         .expect("a valid server Failure remains a Recover result");
     let outcome = response.outcome();
     let typed = outcome
@@ -369,7 +382,12 @@ fn malformed_recover_success_is_a_redacted_protocol_error_after_one_exchange() {
         });
 
         let error = client
-            .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+            .recover(
+                RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                    "recover-test-object".to_owned(),
+                ))),
+                &CodecLimits::defaults(),
+            )
             .expect_err("a successful Recover response needs one Unique Identifier");
 
         assert_eq!(error.category(), ClientErrorCategory::Protocol);
@@ -403,7 +421,9 @@ fn recover_pending_preserves_exact_correlation_without_poll_or_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let typed_request = ClientRequest::Recover(RecoverRequest::new(None));
+    let typed_request = ClientRequest::Recover(RecoverRequest::new(Some(
+        UniqueIdentifier::TextString("recover-test-object".to_owned()),
+    )));
     let batch = ClientBatch::new(
         ClientBatchItem::new(typed_request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
     )
@@ -442,12 +462,100 @@ fn recover_pending_preserves_exact_correlation_without_poll_or_follow_up() {
 }
 
 #[test]
+fn caller_issues_poll_after_recover_pending_with_the_returned_correlation() {
+    // OASIS KMIP v2.1 §§6.1.42 and 6.1.38, Tables 288–290 and 276.
+    let recover_pending = response_bytes(
+        OPERATION_PENDING,
+        None,
+        None,
+        Some(PENDING_CORRELATION),
+        Some(REQUEST_BATCH_ID),
+        Some(test_structure([])),
+    );
+    let poll_complete = asynchronous_response_bytes(
+        POLL_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0054_1234,
+            Value::byte_string(b"completed-recover-response".to_vec()),
+        )])),
+    );
+    let requests = Rc::new(RefCell::new(Vec::new()));
+    let mut client = Client::for_test(RecoverPollTransport {
+        responses: [recover_pending, poll_complete].into_iter().collect(),
+        requests: Rc::clone(&requests),
+    });
+
+    let recovered = client
+        .execute(
+            ClientBatch::new(
+                ClientBatchItem::new(ClientRequest::Recover(RecoverRequest::new(Some(
+                    UniqueIdentifier::TextString("recover-test-object".to_owned()),
+                ))))
+                .with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
+            )
+            .with_asynchronous_indicator(1),
+            &CodecLimits::defaults(),
+        )
+        .expect("Recover Pending remains explicit for the caller");
+    let recovered = recovered.get(0).expect("Recover result item exists");
+    assert_eq!(recovered.outcome().operation(), ClientOperation::Recover);
+    assert_eq!(
+        recovered.outcome().result().status().raw(),
+        OPERATION_PENDING
+    );
+    let correlation = recovered
+        .outcome()
+        .asynchronous_correlation_value()
+        .expect("Recover Pending returns its asynchronous correlation value")
+        .to_vec();
+    assert_eq!(correlation, PENDING_CORRELATION);
+    assert_eq!(
+        requests.borrow().len(),
+        1,
+        "Recover does not poll implicitly"
+    );
+
+    let polled = client
+        .execute_poll(
+            PollRequest::new(correlation.as_slice()),
+            &CodecLimits::defaults(),
+        )
+        .expect("the caller explicitly issues Poll with the returned correlation");
+    assert_eq!(polled.operation(), ClientOperation::Poll);
+    assert_eq!(polled.result().status().raw(), SUCCESS);
+    assert!(
+        polled
+            .with_response_payload(|payload| payload.children().len())
+            .is_some()
+    );
+
+    let requests = requests.borrow();
+    assert_eq!(
+        requests
+            .iter()
+            .map(|request| request.operation)
+            .collect::<Vec<_>>(),
+        [Some(RECOVER_OPERATION), Some(POLL_OPERATION)]
+    );
+    assert!(!requests[0].poll_correlation_matches_expected);
+    assert!(requests[1].poll_correlation_matches_expected);
+}
+
+#[test]
 fn recover_partial_write_failure_preserves_possibly_sent_delivery_without_retry() {
     let (mut client, fake, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 2 });
 
     let error = client
-        .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+        .recover(
+            RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "recover-test-object".to_owned(),
+            ))),
+            &CodecLimits::defaults(),
+        )
         .expect_err("a partial Recover request write returns a transport error");
 
     assert_eq!(error.category(), ClientErrorCategory::Transport);
@@ -456,6 +564,98 @@ fn recover_partial_write_failure_preserves_possibly_sent_delivery_without_retry(
         Some(RequestDeliveryState::PossiblySent)
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct RecoverPollRequestObservation {
+    operation: Option<u32>,
+    poll_correlation_matches_expected: bool,
+}
+
+struct RecoverPollTransport {
+    responses: VecDeque<Vec<u8>>,
+    requests: Rc<RefCell<Vec<RecoverPollRequestObservation>>>,
+}
+
+impl Transport for RecoverPollTransport {
+    fn exchange(
+        &mut self,
+        request: &[u8],
+        _max_response_bytes: usize,
+    ) -> Result<TransportResponse, TransportError> {
+        self.requests
+            .borrow_mut()
+            .push(observe_recover_poll_request(request));
+        self.responses
+            .pop_front()
+            .map(TransportResponse::new)
+            .ok_or_else(|| {
+                TransportError::new(
+                    RequestDeliveryState::NotSent,
+                    TransportCauseCategory::Other,
+                    io::Error::other("the explicit Recover/Poll sequence has no scripted response"),
+                )
+            })
+    }
+}
+
+impl Drop for RecoverPollTransport {
+    fn drop(&mut self) {
+        for response in &mut self.responses {
+            response.zeroize();
+        }
+    }
+}
+
+fn observe_recover_poll_request(bytes: &[u8]) -> RecoverPollRequestObservation {
+    let message = decode(bytes).unwrap_or_else(|_| panic!("captured request is valid TTLV"));
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            panic!("request message is a Structure");
+        };
+        let batch_item = message
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == BATCH_ITEM)
+            .unwrap_or_else(|| panic!("request contains one Batch Item"));
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                panic!("request Batch Item is a Structure");
+            };
+            let operation = batch_item
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == OPERATION)
+                .and_then(enumeration_value);
+            let poll_correlation_matches_expected = batch_item
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)
+                .is_some_and(|payload| {
+                    payload.with_value(|value| {
+                        let ValueView::Structure(payload) = value else {
+                            return false;
+                        };
+                        payload
+                            .children()
+                            .iter()
+                            .find(|field| field.tag().raw() == ASYNCHRONOUS_CORRELATION_VALUE)
+                            .is_some_and(|field| {
+                                field.with_value(|value| match value {
+                                    ValueView::ByteString(correlation) => {
+                                        correlation == PENDING_CORRELATION
+                                    }
+                                    _ => false,
+                                })
+                            })
+                    })
+                });
+            RecoverPollRequestObservation {
+                operation,
+                poll_correlation_matches_expected,
+            }
+        })
+    })
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

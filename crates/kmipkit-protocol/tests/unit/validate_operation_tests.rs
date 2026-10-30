@@ -69,6 +69,27 @@ fn req_001_models_one_chain_and_rejects_malformed_certificate_wrapper() {
 }
 
 #[test]
+fn req_001_rejects_empty_chain_even_when_validity_date_is_present() {
+    let empty = ValidateRequest::new();
+    assert_eq!(empty.chain_len(), 0);
+    assert!(empty.into_ttlv_payload().is_err());
+
+    let date_only = ValidateRequest::new().with_validity_date(17);
+    assert_eq!(date_only.chain_len(), 0);
+    assert!(date_only.into_ttlv_payload().is_err());
+
+    let identifier_and_date = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
+        .with_validity_date(17);
+    assert_eq!(
+        field_tags(&identifier_and_date.into_ttlv_payload().unwrap()),
+        [IDENTIFIER, DATE]
+    );
+}
+
+#[test]
 fn req_002_001_certificate_identifier_and_mixed_inputs_are_available() {
     let certificate_only = ValidateRequest::new().with_certificate(certificate(SENTINEL));
     assert_eq!(
@@ -94,11 +115,15 @@ fn req_002_001_certificate_identifier_and_mixed_inputs_are_available() {
 #[test]
 fn req_002_002_optional_validity_date_preserves_exact_value() {
     for date in [i64::MIN, 0, i64::MAX] {
-        let request = ValidateRequest::new().with_validity_date(date);
+        let request = ValidateRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString(
+                "managed-certificate".to_owned(),
+            ))
+            .with_validity_date(date);
         assert_eq!(request.validity_date(), Some(date));
         let payload = request.into_ttlv_payload().unwrap();
-        assert_eq!(field_tags(&payload), [DATE]);
-        payload.view().children()[0]
+        assert_eq!(field_tags(&payload), [IDENTIFIER, DATE]);
+        payload.view().children()[1]
             .with_value(|v| assert!(matches!(v, ValueView::DateTime(raw) if *raw == date)));
     }
 }
@@ -144,17 +169,15 @@ fn req_005_repeated_identifiers_preserve_order_and_open_values() {
 }
 
 #[test]
-fn req_006_omitted_date_remains_absent_for_server_default() {
-    let request = ValidateRequest::new();
+fn req_006_omitted_date_remains_absent_in_request_serialization() {
+    let request = ValidateRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "managed-certificate".to_owned(),
+    ));
     assert_eq!(request.validity_date(), None);
-    assert_eq!(request.chain_len(), 0);
-    assert!(
-        request
-            .into_ttlv_payload()
-            .unwrap()
-            .view()
-            .children()
-            .is_empty()
+    assert_eq!(request.chain_len(), 1);
+    assert_eq!(
+        field_tags(&request.into_ttlv_payload().unwrap()),
+        [IDENTIFIER]
     );
     let payload = ValidateRequest::default()
         .with_certificate(certificate(SENTINEL))
@@ -338,6 +361,9 @@ fn generic_unknown_response_data_remains_exact_and_redacted() {
 #[test]
 fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
     let request = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
         .with_extension(item(
             0x0054_1234,
             Value::byte_string(b"extension-private-sentinel".to_vec()),
@@ -358,6 +384,9 @@ fn unknown_request_extensions_preserve_order_without_overriding_table_fields() {
         .with_value(|v| assert!(matches!(v, ValueView::Enumeration(0xf123_4567))));
     for known in [0x0042_0013, 0x0042_0094, 0x0042_009a] {
         let error = ValidateRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString(
+                "managed-certificate".to_owned(),
+            ))
             .with_extension(item(
                 known,
                 Value::text_string("extension-private-sentinel".to_owned()),
@@ -376,6 +405,9 @@ fn request_extension_depth_limit_is_checked_before_encoding() {
         nested = structure([item(0x0054_1234, Value::structure(nested))]);
     }
     let error = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
         .with_extension(item(0x0054_1234, Value::structure(nested)))
         .into_ttlv_payload()
         .unwrap_err();

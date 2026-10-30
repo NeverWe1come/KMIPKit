@@ -30,6 +30,11 @@ pub struct UsernameAndPasswordCredential {
 }
 
 /// A Device Credential Value retaining its exact TTLV tree.
+///
+/// The caller is responsible for choosing one or more identifier fields that
+/// are unique under the server's configured policy. `KMIPKit` preserves these
+/// values but cannot verify uniqueness because KMIP 2.1 defines no comparison
+/// scope.
 pub struct DeviceCredential {
     tree: Structure,
 }
@@ -312,6 +317,12 @@ fn validate(
     at_least_one: &[u32],
 ) -> Result<(), CredentialValidationError> {
     validation::validate_fields(&tree.view(), rules, at_least_one)
+}
+
+impl DeviceCredential {
+    pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
+        validation::validate_fields(view, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)
+    }
 }
 
 fn validate_ticket(tree: &Structure) -> Result<(), CredentialValidationError> {

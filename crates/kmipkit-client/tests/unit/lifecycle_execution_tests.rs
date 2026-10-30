@@ -31,8 +31,8 @@ const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const VENDOR_EXTENSION: u32 = 0x0042_009C;
-const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
-const FUTURE_EXTENSION_TAG: u32 = 0x0042_0174;
+const DISCRIMINATOR_TAG: u32 = 0x0054_0173;
+const FUTURE_EXTENSION_TAG: u32 = 0x0054_0174;
 
 const UNKNOWN_STATUS: u32 = 0xA1B2_C3D4;
 const UNKNOWN_REASON: u32 = 0xC3D4_E5F6;
@@ -72,19 +72,27 @@ fn lifecycle_results_preserve_unknown_status_reason_and_accepted_extension_value
     let requests = [
         (
             0x0000_0012,
-            ClientRequest::Activate(ActivateRequest::new(None)),
+            ClientRequest::Activate(ActivateRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0015,
-            ClientRequest::Archive(ArchiveRequest::new(None)),
+            ClientRequest::Archive(ArchiveRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0014,
-            ClientRequest::Destroy(DestroyRequest::new(None)),
+            ClientRequest::Destroy(DestroyRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
         (
             0x0000_0016,
-            ClientRequest::Recover(RecoverRequest::new(None)),
+            ClientRequest::Recover(RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "lifecycle-object".to_owned(),
+            )))),
         ),
     ];
 

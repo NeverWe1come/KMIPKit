@@ -27,8 +27,8 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 ## Scenario 3: Report Baseline evidence gaps
 
 1. Generate the profile readiness report from the checked-in catalog.
-2. Inspect `KMIPKIT-PROFILE-BASELINE-CLIENT` and its 16 mandatory tests.
-3. Confirm each unavailable fixture remains unavailable, the readiness state is incomplete, and no public conformance claim appears.
+2. Inspect `KMIPKIT-PROFILE-BASELINE-CLIENT` and its linked mandatory tests.
+3. Confirm the 16 linked Baseline/Shared Knowledge Link fixtures are pinned; T036 records 10 full BL-M replays, 3 full SKLC-M replays, and 3 typed preflight blockers; Profiles §6.1 item 4's one-or-more rule is represented; and no public conformance claim appears.
 
 ## Scenario 4: Fail a conditional profile closed
 
@@ -79,7 +79,7 @@ This guide defines acceptance scenarios for the implementation phase. It does no
 ## Scenario 12: Reject untrusted, stale, or caller-asserted verification evidence
 
 1. Run the required CI matrix for a pull request and confirm the run remains ineligible to certify evidence; after the reviewed change is present on the protected `release/1.0.0` branch, produce a manifest from its same-run `push` aggregate and fresh branch-protection API response.
-2. Repeat with `pull_request`, `schedule`, or another event; an unprotected or wrong ref; a previous commit/run attempt; another repository or workflow; each missing/failing required job including `coverage-gate`; a duplicate verification ID; malformed metadata; missing token/API access; a protection response with too few reviews, stale approvals not dismissed, missing/malformed `bypass_pull_request_allowances`, any user/team/app bypass entry, admins not enforced, force pushes or deletions enabled; and a locally supplied `verified` status.
+2. Repeat with `pull_request`, `schedule`, or another event; an unprotected/wrong ref; a previous commit/run attempt; another repository/workflow; each missing/failing required job including `coverage-gate`; duplicate verification ID; malformed metadata; missing token/API access; nonzero approval count or code-owner review enabled; stale reviews not dismissed; malformed or non-empty configured bypass allowances (an omitted allowance field is valid only because this personal-repository API omits it when none are configured); admins not enforced; force pushes/deletions enabled; and locally supplied `verified` status.
 3. Confirm only the valid same-run `push` manifest for the protected release ref with sufficient current policy and all six required job IDs verifies results; every other input leaves evidence incomplete and names the stable verification/check ID without exposing logs or arbitrary paths.
 
 ## Scenario 13: Keep committed reports independent of CI run IDs

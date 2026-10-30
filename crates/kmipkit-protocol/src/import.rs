@@ -33,8 +33,14 @@ const ATTRIBUTES: u32 = 0x0042_0125;
 ///
 /// The caller supplies the identifier, object type, Attributes, and complete
 /// Any Object. An optional Key Wrap Type is caller-selected for a wrapped key;
-/// `KMIPKit` preserves the provided object representation and performs no
-/// local unwrap or import.
+/// `KMIPKit` preserves the provided object representation, rejects duplicate
+/// source-defined singleton Attributes, and performs no local unwrap or
+/// import. For caller-supplied wrapped Key Values, the caller
+/// is responsible for providing IV/Counter/Nonce when the selected wrapping
+/// method requires it (KMIP Specification v2.1 §3.3, Table 14), and for
+/// TTLV-encoding the Key Value Structure before wrapping it when Encoding
+/// Option is absent (§3.3, Table 15). `KMIPKit` does not infer referenced-key
+/// parameters or inspect wrapped plaintext or ciphertext.
 pub struct ImportRequest {
     unique_identifier: UniqueIdentifier,
     object_type: ObjectType,
@@ -126,6 +132,16 @@ impl ImportRequest {
     /// TTLV model limit is exceeded.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         if self.object.item_type() != ItemType::Structure
+            || self
+                .attributes
+                .validate_single_instance_cardinality_for_object_type(self.object_type.raw())
+                .is_err()
+            || crate::attribute::validate_key_value_attribute_cardinality(
+                &self.object,
+                Some(self.object_type.raw()),
+                false,
+            )
+            .is_err()
             || !key_wrap_type_matches_object(
                 self.object_type,
                 &self.object,

@@ -23,7 +23,9 @@ mod variants;
 
 pub use attestation::AttestationCredential;
 pub use authentication::{Authentication, CredentialView};
-pub use hashed_password::HashedPasswordCredential;
+pub use hashed_password::{
+    HashedPasswordCredential, HashedPasswordTimestampSequence, HashedPasswordTimestampSequenceError,
+};
 pub use nonce::Nonce;
 pub use secret::{SecretBytes, SecretText};
 pub use value::{Credential, CredentialType};
@@ -31,6 +33,24 @@ pub use variants::{
     CredentialValue, DeviceCredential, OneTimePasswordCredential, OpaqueTtlv, TicketCredential,
     UsernameAndPasswordCredential,
 };
+
+pub(crate) fn validate_attestation_value_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<(), CredentialValidationError> {
+    attestation::AttestationCredential::validate_view(view)
+}
+
+pub(crate) fn validate_device_credential_value_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<(), CredentialValidationError> {
+    DeviceCredential::validate_view(view)
+}
+
+pub(crate) fn credential_type_from_view(
+    view: &kmipkit_ttlv::StructureView<'_>,
+) -> Result<CredentialType, CredentialValidationError> {
+    validation::credential_type_from_view(view)
+}
 
 use std::error::Error;
 use std::fmt;

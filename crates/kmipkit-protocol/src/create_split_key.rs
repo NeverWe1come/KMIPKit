@@ -179,8 +179,16 @@ impl CreateSplitKeyRequest {
     /// # Errors
     ///
     /// Returns a sanitized protocol error for the FR-015 client-policy
-    /// violation or an invalid generic TTLV model value.
+    /// violation, source-defined Attribute cardinality violation, or an
+    /// invalid generic TTLV model value.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        crate::attribute::validate_single_instance_attribute_items(
+            self.attributes.as_items(),
+            Some(self.object_type.raw()),
+            true,
+        )
+        .map_err(|_| crate::cryptographic_operation::request_error())?;
+
         self.validate_client_policy().map_err(|error| {
             ProtocolError::new(
                 ProtocolErrorKind::InvalidValue,

@@ -15,6 +15,11 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const COMMENT: u32 = 0x0042_00FD;
+const CERTIFICATE_TYPE: u32 = 0x0042_001D;
+const DIGITAL_SIGNATURE_ALGORITHM: u32 = 0x0042_00AE;
+const OBJECT_TYPE: u32 = 0x0042_0057;
+const NIST_KEY_TYPE: u32 = 0x0042_013A;
 const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
 const VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME: u32 = 0x0042_000A;
@@ -109,9 +114,9 @@ fn response_item(message: &ResponseMessage) -> ResponseBatchItemView<'_> {
         .expect("fixture contains one response batch item")
 }
 
-fn attribute_date_time(attribute: &Item) -> Option<i64> {
+fn attribute_enumeration(attribute: &Item) -> Option<u32> {
     attribute.with_value(|value| match value {
-        ValueView::DateTime(value) => Some(*value),
+        ValueView::Enumeration(value) => Some(*value),
         _ => None,
     })
 }
@@ -304,10 +309,7 @@ fn attribute_reference_preserves_unknown_raw_tag_enumeration() {
 fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
     let request = GetAttributesRequest::try_new(
         Some(OBJECT_IDENTIFIER.to_owned()),
-        [
-            AttributeReference::tag(0x0042_002F),
-            AttributeReference::tag(0x0042_0030),
-        ],
+        [AttributeReference::tag(NIST_KEY_TYPE)],
     )
     .expect("the selected Attribute References are distinct");
     assert_eq!(
@@ -317,7 +319,7 @@ fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
             .view()
             .children()
             .len(),
-        3
+        2
     );
 
     let message = response_message(
@@ -325,9 +327,9 @@ fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
         None,
         None,
         Some(successful_payload([
-            // §4.18 Table 63 assigns Date-Time to Deactivation Date.
-            item(0x0042_002F, Value::date_time(7)),
-            item(0x0042_002F, Value::date_time(19)),
+            // §4.34 Table 98 permits multiple NIST Key Type instances.
+            item(NIST_KEY_TYPE, Value::enumeration(1)),
+            item(NIST_KEY_TYPE, Value::enumeration(2)),
         ])),
     );
     let actual = GetAttributesResponse::try_from_response_item(response_item(&message))
@@ -344,9 +346,9 @@ fn response_preserves_direct_attribute_instances_and_omits_missing_values() {
         attributes
             .as_items()
             .iter()
-            .map(|attribute| (attribute.tag().raw(), attribute_date_time(attribute)))
+            .map(|attribute| (attribute.tag().raw(), attribute_enumeration(attribute)))
             .collect::<Vec<_>>(),
-        [(0x0042_002F, Some(7)), (0x0042_002F, Some(19))]
+        [(NIST_KEY_TYPE, Some(1)), (NIST_KEY_TYPE, Some(2))]
     );
 }
 
@@ -408,10 +410,12 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
         None,
         None,
         Some(successful_payload([
-            item(0x0042_0057, Value::enumeration(3)),
+            item(OBJECT_TYPE, Value::enumeration(3)),
             // §4.18 Table 63 assigns Date-Time to Deactivation Date.
             item(0x0042_002F, Value::date_time(7)),
-            item(0x0042_0057, Value::enumeration(4)),
+            // §4.34 Table 98 allows repeated NIST Key Type values.
+            item(NIST_KEY_TYPE, Value::enumeration(3)),
+            item(NIST_KEY_TYPE, Value::enumeration(4)),
         ])),
     );
     let actual = GetAttributesResponse::try_from_response_item(response_item(&message))
@@ -429,10 +433,131 @@ fn response_without_references_preserves_the_full_direct_attribute_set_in_order(
             .map(|attribute| (attribute.tag().raw(), attribute.item_type()))
             .collect::<Vec<_>>(),
         [
-            (0x0042_0057, ItemType::Enumeration),
+            (OBJECT_TYPE, ItemType::Enumeration),
             (0x0042_002F, ItemType::DateTime),
-            (0x0042_0057, ItemType::Enumeration),
+            (NIST_KEY_TYPE, ItemType::Enumeration),
+            (NIST_KEY_TYPE, ItemType::Enumeration),
         ]
+    );
+}
+
+#[test]
+fn response_rejects_repeated_unconditional_single_instance_attributes() {
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(COMMENT, Value::text_string("first".to_owned())),
+            item(COMMENT, Value::text_string("second".to_owned())),
+        ])),
+    );
+
+    let result = GetAttributesResponse::try_from_response_item(response_item(&message));
+    assert!(
+        result.is_err(),
+        "KMIP v2.1 §4 and Comment Table 46 make Comment single-instance"
+    );
+}
+
+#[test]
+fn response_rejects_repeated_digital_signature_algorithm_for_x509_certificate() {
+    // Table 72 permits repeated Digital Signature Algorithm only for PGP keys;
+    // it is single-instance for X.509 certificates when that context is present.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(1)),
+            item(CERTIFICATE_TYPE, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let result = GetAttributesResponse::try_from_response_item(response_item(&message));
+    assert!(
+        result.is_err(),
+        "Table 72 forbids duplicate values for an X.509 certificate"
+    );
+}
+
+#[test]
+fn response_preserves_repeated_digital_signature_algorithm_for_pgp_key() {
+    // Table 72 permits multiple instances for PGP keys.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(9)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let response = GetAttributesResponse::try_from_response_item(response_item(&message))
+        .expect("Table 72 permits repeated DSA values for PGP keys");
+    assert_eq!(
+        response
+            .attributes()
+            .expect("successful response has Attributes")
+            .len(),
+        3
+    );
+}
+
+#[test]
+fn response_preserves_conditional_digital_signature_algorithm_without_context() {
+    // Table 72's Certificate branch is undecidable without Certificate Type;
+    // the generic typed response preserves values without inferring X.509.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let response = GetAttributesResponse::try_from_response_item(response_item(&message))
+        .expect("Table 72 multiplicity is undecidable without Certificate Type");
+    assert_eq!(
+        response
+            .attributes()
+            .expect("successful response has Attributes")
+            .len(),
+        3
+    );
+}
+
+#[test]
+fn response_does_not_infer_pgp_key_multiplicity_from_certificate_type() {
+    // Table 41 scopes Certificate Type to Certificate objects. Table 72
+    // permits repeated DSA only for PGP Key Object Type, not PGP Certificates.
+    let message = response_message(
+        0,
+        None,
+        None,
+        Some(successful_payload([
+            item(OBJECT_TYPE, Value::enumeration(1)),
+            item(CERTIFICATE_TYPE, Value::enumeration(2)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
+            item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(2)),
+        ])),
+    );
+
+    let response = GetAttributesResponse::try_from_response_item(response_item(&message))
+        .expect("the generic response preserves unresolved Table 72 multiplicity");
+    assert_eq!(
+        response
+            .attributes()
+            .expect("successful response has Attributes")
+            .len(),
+        4
     );
 }
 
