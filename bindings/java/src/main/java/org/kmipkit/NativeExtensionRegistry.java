@@ -295,6 +295,11 @@ public final class NativeExtensionRegistry {
     public static native long clientExecute(long client, long batch, long[] codecLimits);
     public static native long clientExecuteWithOptions(
             long client, long batch, long[] codecLimits, long[] requestTimeouts);
+    public static native long clientExecuteWithProfiles(
+            long client, long batch, long[] codecLimits, String[] profileIds,
+            long[] stateItemIndexes, String[] uniqueIdentifiers, int[] knownFields,
+            int[] booleanValues, long[] usageLimitsTotals, long[] usageLimitsCounts,
+            long[] requestTimeouts);
     public static native long clientExecutePoll(long client, byte[] correlationValue, long[] codecLimits);
     public static native long clientExecuteCancel(long client, byte[] correlationValue, long[] codecLimits);
     public static native long clientExecuteProcess(

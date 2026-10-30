@@ -15529,7 +15529,7 @@ fn readiness_blockers_have_stable_text_and_requirement_ids() {
         ),
         (
             ProfileReadinessBlocker::ProfileUnavailable,
-            "profile is outside the KMIPKit 1.0 client scope",
+            "profile is outside the KMIPKit 1.0 client scope or its evidence is incomplete",
             None,
         ),
     ];
@@ -15612,7 +15612,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(
-        !readiness
+        readiness
             .blockers()
             .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
     );
@@ -15622,7 +15622,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(readiness.target_selected());
-    assert!(readiness.runtime_validation_available());
+    assert!(!readiness.runtime_validation_available());
     assert!(
         readiness
             .blockers()

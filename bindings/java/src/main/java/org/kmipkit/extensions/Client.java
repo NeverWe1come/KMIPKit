@@ -67,6 +67,93 @@ public final class Client implements AutoCloseable {
         return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
     }
 
+    /** Executes exactly one exchange with an explicit profile selection. */
+    public ClientBatchResponse executeWithProfiles(
+            ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection)
+            throws ClientOperationException {
+        return executeWithProfilesInternal(batch, limits, selection, null, null);
+    }
+
+    /** Executes exactly one profile-validated exchange with timeout overrides. */
+    public ClientBatchResponse executeWithProfilesAndOptions(
+            ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection,
+            RequestOptions options) throws ClientOperationException {
+        return executeWithProfilesInternal(batch, limits, selection, null, options);
+    }
+
+    /** Executes exactly one profile-validated exchange with caller-owned object state. */
+    public ClientBatchResponse executeWithProfilesAndContext(
+            ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection,
+            ProfileValidationContext context) throws ClientOperationException {
+        return executeWithProfilesInternal(batch, limits, selection, context, null);
+    }
+
+    /** Executes exactly one profile-validated exchange with context and timeout overrides. */
+    public ClientBatchResponse executeWithProfilesAndContextAndOptions(
+            ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection,
+            ProfileValidationContext context, RequestOptions options)
+            throws ClientOperationException {
+        return executeWithProfilesInternal(batch, limits, selection, context, options);
+    }
+
+    private ClientBatchResponse executeWithProfilesInternal(
+            ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection,
+            @Nullable ProfileValidationContext context, @Nullable RequestOptions options)
+            throws ClientOperationException {
+        if (batch == null || limits == null || selection == null) {
+            throw new InvalidInputException("profile validation inputs are invalid");
+        }
+        List<ProfileValidationContext.Entry> states = context == null
+                ? List.of() : context.objectStates();
+        long[] indexes = context == null ? null : new long[states.size()];
+        String[] identifiers = context == null ? null : new String[states.size()];
+        int[] knownFields = context == null ? null : new int[states.size()];
+        int[] booleanValues = context == null ? null : new int[states.size()];
+        long[] totals = context == null ? null : new long[states.size()];
+        long[] counts = context == null ? null : new long[states.size()];
+        for (int index = 0; index < states.size(); index++) {
+            ProfileValidationContext.Entry entry = states.get(index);
+            ProfileObjectState state = entry.state();
+            indexes[index] = entry.batchItemIndex();
+            identifiers[index] = state.uniqueIdentifier();
+            Boolean[] facts = {
+                    state.originalCreationDatePresent(), state.usageLimitsPresent(),
+                    state.protectionUseStarted(), state.getUsageAllocationPerformed(),
+                    state.getUsageAllocationChangedCount()};
+            for (int bit = 0; bit < facts.length; bit++) {
+                if (facts[bit] != null) {
+                    knownFields[index] |= 1 << bit;
+                    if (facts[bit]) booleanValues[index] |= 1 << bit;
+                }
+            }
+            if (state.usageLimitsTotal() != null) {
+                knownFields[index] |= 32;
+                totals[index] = state.usageLimitsTotal();
+            }
+            if (state.usageLimitsCount() != null) {
+                knownFields[index] |= 64;
+                counts[index] = state.usageLimitsCount();
+            }
+        }
+        RequestOptions exchangeOptions = options == null ? RequestOptions.defaults() : options;
+        if (options != null && (options.connectTimeout() == null || options.writeTimeout() == null
+                || options.readTimeout() == null || options.totalTimeout() == null)) {
+            throw new InvalidInputException("profile validation options are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        String[] profileIds = selection.profileIds().toArray(String[]::new);
+        long[] timeoutValues = timeoutValues(exchangeOptions);
+        long response = NativeHandle.withNativeHandles(() -> {
+            long client = handle.get();
+            long consumedBatch = batch.nativeHandleOwner().transfer();
+            return NativeExtensionRegistry.clientExecuteWithProfiles(
+                    client, consumedBatch, NativeExtensionRegistry.codecLimitValues(limits),
+                    profileIds, indexes, identifiers, knownFields, booleanValues, totals, counts,
+                    timeoutValues);
+        });
+        return new ClientBatchResponse(response, limits.maxElements(), limits.maxMessageBytes());
+    }
+
     /** Sends exactly one Poll with the caller-supplied opaque correlation bytes. */
     public AsyncOperationOutcome executePoll(byte[] correlationValue, CodecLimits limits)
             throws ClientOperationException {

@@ -74,6 +74,9 @@ typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
 typedef struct kmipkit_attribute_reference_v1_t kmipkit_attribute_reference_v1_t;
 typedef struct kmipkit_client_async_operation_metadata_v1_t kmipkit_client_async_operation_metadata_v1_t;
 typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
+typedef struct kmipkit_profile_validation_selection_v1_t kmipkit_profile_validation_selection_v1_t;
+typedef struct kmipkit_profile_object_state_v1_t kmipkit_profile_object_state_v1_t;
+typedef struct kmipkit_profile_validation_context_v1_t kmipkit_profile_validation_context_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -186,6 +189,35 @@ struct kmipkit_client_async_operation_metadata_v1_t {
     uint32_t reserved;
     const uint8_t * result_message_data;
     uint64_t result_message_length;
+};
+
+struct kmipkit_profile_validation_selection_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    const uint8_t * profile_id_data;
+    uint64_t profile_id_data_length;
+    const uint64_t * profile_id_offsets;
+    const uint64_t * profile_id_lengths;
+    uint64_t profile_id_count;
+};
+
+struct kmipkit_profile_object_state_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t batch_item_index;
+    const uint8_t * unique_identifier_data;
+    uint64_t unique_identifier_length;
+    uint32_t known_fields;
+    uint32_t boolean_values;
+    int64_t usage_limits_total;
+    int64_t usage_limits_count;
+};
+
+struct kmipkit_profile_validation_context_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    const kmipkit_profile_object_state_v1_t * object_states;
+    uint64_t object_state_count;
 };
 
 struct kmipkit_byte_span_v1_t {
@@ -1252,6 +1284,22 @@ int32_t kmipkit_client_execute_process(kmipkit_client_t * client, const uint8_t 
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute_query_async_requests(kmipkit_client_t * client, uint8_t has_correlation_values, const kmipkit_byte_span_v1_t * correlation_values, uint64_t correlation_value_count, uint8_t has_operations, const uint32_t * operations, uint64_t operation_count, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_profiles(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_profile_validation_selection_v1_t * selection, kmipkit_client_batch_response_t ** out_response);
+/* Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_profiles_and_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_profile_validation_selection_v1_t * selection, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_profiles_and_context(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_profile_validation_selection_v1_t * selection, const kmipkit_profile_validation_context_v1_t * context, kmipkit_client_batch_response_t ** out_response);
+/* Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied.
+ */
+/* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_profile_validation_selection_v1_t * selection, const kmipkit_profile_validation_context_v1_t * context, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

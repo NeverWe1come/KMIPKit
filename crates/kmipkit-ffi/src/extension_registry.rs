@@ -34,12 +34,13 @@ use crate::{
     kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
-    kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
-    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
-    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_extension_schema_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_options_v1_t, kmipkit_revocation_reason_t, kmipkit_revoke_request_t,
+    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_validated_extension_value_t,
@@ -69,6 +70,7 @@ use kmipkit_protocol::{
     SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
     StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
 };
+use kmipkit_protocol::{ProfileObjectState, ProfileValidationContext, ProfileValidationSelection};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
     RequestOptions, RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory,

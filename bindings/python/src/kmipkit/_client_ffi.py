@@ -72,6 +72,35 @@ ffi.cdef(
     typedef struct {
         uint32_t struct_size;
         uint32_t abi_version;
+        const uint8_t *profile_id_data;
+        uint64_t profile_id_data_length;
+        const uint64_t *profile_id_offsets;
+        const uint64_t *profile_id_lengths;
+        uint64_t profile_id_count;
+    } kmipkit_profile_validation_selection_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint64_t batch_item_index;
+        const uint8_t *unique_identifier_data;
+        uint64_t unique_identifier_length;
+        uint32_t known_fields;
+        uint32_t boolean_values;
+        int64_t usage_limits_total;
+        int64_t usage_limits_count;
+    } kmipkit_profile_object_state_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        const kmipkit_profile_object_state_v1_t *object_states;
+        uint64_t object_state_count;
+    } kmipkit_profile_validation_context_v1_t;
+
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
         uint32_t endpoint_kind;
         uint32_t trust_kind;
         uint32_t flags;
@@ -197,6 +226,30 @@ ffi.cdef(
         kmipkit_client_t *client,
         kmipkit_client_batch_t **batch,
         kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_profiles(
+        kmipkit_client_t *client, kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_profile_validation_selection_v1_t *selection,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_profiles_and_options_v1(
+        kmipkit_client_t *client, kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_profile_validation_selection_v1_t *selection,
+        const kmipkit_request_options_v1_t *options,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_profiles_and_context(
+        kmipkit_client_t *client, kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_profile_validation_selection_v1_t *selection,
+        const kmipkit_profile_validation_context_v1_t *context,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+        kmipkit_client_t *client, kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_profile_validation_selection_v1_t *selection,
+        const kmipkit_profile_validation_context_v1_t *context,
         const kmipkit_request_options_v1_t *options,
         kmipkit_client_batch_response_t **out_response);
     int32_t kmipkit_client_execute_with_error_ttlv_v1(

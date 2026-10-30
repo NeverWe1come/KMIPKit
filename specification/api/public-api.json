@@ -45,6 +45,11 @@
     "KMIPKIT-0009-FR-010",
     "KMIPKIT-0009-FR-011",
     "KMIPKIT-0009-FR-012",
+    "KMIPKIT-0010-FR-005",
+    "KMIPKIT-0010-FR-012",
+    "KMIPKIT-0010-FR-013",
+    "KMIPKIT-0010-FR-014",
+    "KMIPKIT-0010-FR-019",
     "KMIPKIT-0012-FR-001",
     "KMIPKIT-0012-FR-002",
     "KMIPKIT-0012-FR-003",
@@ -2169,6 +2174,185 @@
       "python": {
         "module": "kmipkit.client",
         "name": "AsyncOperationOutcome"
+      }
+    },
+    {
+      "id": "ProfileValidationSelection",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ProfileValidationSelection",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_profile_validation_selection_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "profile_id_data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "profile_id_data_length",
+            "type": "uint64_t"
+          },
+          {
+            "name": "profile_id_offsets",
+            "type": "const uint64_t *"
+          },
+          {
+            "name": "profile_id_lengths",
+            "type": "const uint64_t *"
+          },
+          {
+            "name": "profile_id_count",
+            "type": "uint64_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ProfileValidationSelection"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "ProfileValidationSelection"
+      }
+    },
+    {
+      "id": "ProfileObjectState",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ProfileObjectState",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_profile_object_state_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "batch_item_index",
+            "type": "uint64_t"
+          },
+          {
+            "name": "unique_identifier_data",
+            "type": "const uint8_t *"
+          },
+          {
+            "name": "unique_identifier_length",
+            "type": "uint64_t"
+          },
+          {
+            "name": "known_fields",
+            "type": "uint32_t"
+          },
+          {
+            "name": "boolean_values",
+            "type": "uint32_t"
+          },
+          {
+            "name": "usage_limits_total",
+            "type": "int64_t"
+          },
+          {
+            "name": "usage_limits_count",
+            "type": "int64_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ProfileObjectState"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "ProfileObjectState"
+      }
+    },
+    {
+      "id": "ProfileValidationContext",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "ProfileValidationContext",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_profile_validation_context_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "object_states",
+            "type": "const kmipkit_profile_object_state_v1_t *"
+          },
+          {
+            "name": "object_state_count",
+            "type": "uint64_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "ProfileValidationContext"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "ProfileValidationContext"
       }
     }
   ],
@@ -31322,6 +31506,642 @@
           "server_result"
         ],
         "returnType": "AsyncOperationOutcome"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_profiles",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_profiles",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "&ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_profiles",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "ownership": "consumed",
+            "handleType": "kmipkit_client_batch_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "selection",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_selection_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithProfiles",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_Executewithprofiles",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_with_profiles",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_profiles",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_profiles_and_options",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_profiles_and_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "&ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "&RequestOptions"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_profiles_and_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "ownership": "consumed",
+            "handleType": "kmipkit_client_batch_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "selection",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_selection_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "options",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithProfilesAndOptions",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_Executewithprofilesandoptions",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_with_profiles_and_options",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_profiles_and_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_profiles_and_context",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_profiles_and_context",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "&ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "&ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_profiles_and_context",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "ownership": "consumed",
+            "handleType": "kmipkit_client_batch_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "selection",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_selection_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "context",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_context_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithProfilesAndContext",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_Executewithprofilesandcontext",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_with_profiles_and_context",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_profiles_and_context",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_with_profiles_and_context_and_options",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_with_profiles_and_context_and_options",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "&ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "&ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "&CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "&RequestOptions"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "batch",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_t **",
+            "ownership": "consumed",
+            "handleType": "kmipkit_client_batch_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "selection",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_selection_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "context",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_profile_validation_context_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "options",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Validates the explicit profile selection for this exchange before transport I/O. The caller-owned selection and optional context are copied for this call only; no profile state is retained between exchanges. No support or conformance claim is implied."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeWithProfilesAndContextAndOptions",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "ClientBatch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_Executewithprofilesandcontextandoptions",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_with_profiles_and_context_and_options",
+        "parameters": [
+          {
+            "name": "batch",
+            "type": "Batch"
+          },
+          {
+            "name": "selection",
+            "type": "ProfileValidationSelection"
+          },
+          {
+            "name": "context",
+            "type": "ProfileValidationContext"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          },
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
       },
       "ordering": "not-applicable"
     }
@@ -326695,56 +327515,164 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::execute_with_profiles",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfiles"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-bd986f9cc2505bda6bd6",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::execute_with_profiles_and_context",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-849bed23402d73631186",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::execute_with_profiles_and_context_and_options",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context_and_options"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-478f70fa658e7b7ccb1f",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::execute_with_profiles_and_options",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_options"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-1376f89a5ba103d8968f",
@@ -326821,126 +327749,369 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::ProfileObjectState",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-9c3a2bd72c15210cc0a2",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-68a5dbdb3a8d2bea96e5",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-63a5ab41ea68ab42e43c",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-a8e87aa213167ce29024",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_original_creation_date_present",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_original_creation_date_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_original_creation_date_present"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-f5686ae803d74948218d",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_protection_use_started",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_protection_use_started"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_protection_use_started"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-1d2a7cf164f13f463beb",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_usage_limits_count",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_count"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-015682e557ba7bab460d",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_usage_limits_present",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_present"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-100b2a966ee630915161",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileObjectState::with_usage_limits_total",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_total"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-a0638fb2daec1bc0eff0",
@@ -326989,42 +328160,123 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::ProfileValidationContext",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b0f1801a3ce2d93666e2",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileValidationContext::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-7251aec2edf691067b46",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileValidationContext::with_object_state",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext::with_object_state"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext.withObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext.with_object_state"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-7077e62f9fbd522ee8ba",
@@ -327437,56 +328689,164 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::ProfileValidationSelection",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-5cdbfdea8ffa51ab127a",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileValidationSelection::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-5476d2bc6dcfc7128eeb",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileValidationSelection::profile_ids",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection::profile_ids"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection.profile_ids"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-8e28138d47369d292336",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ProfileValidationSelection::validate",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_profile_validation",
       "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-e76c30677ef4e1c5c48d",
@@ -336415,6 +337775,2425 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "T036:ProfileValidationSelection:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_profile_validation_selection_v1_t",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileValidationSelection:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileValidationSelection:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.ProfileValidationSelection",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileObjectState:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_profile_object_state_v1_t",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileObjectState:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileObjectState:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.ProfileObjectState",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileValidationContext:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_profile_validation_context_v1_t",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileValidationContext:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:ProfileValidationContext:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.ProfileValidationContext",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_profiles",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfiles"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeWithProfiles",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfiles"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_with_profiles",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfiles"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_options:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_profiles_and_options_v1",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_options:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeWithProfilesAndOptions",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_options:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_with_profiles_and_options",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_profiles_and_context",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeWithProfilesAndContext",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_with_profiles_and_context",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context_and_options:c-kmipkit",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context_and_options:java-kmipkit",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:client_execute_with_profiles_and_context_and_options:python-kmipkit",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_with_profiles_and_context_and_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_with_profiles_and_context_and_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_with_profiles_and_context_and_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.struct_size",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.struct_size",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.abi_version",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.abi_version",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.profile_id_lengths",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.profile_id_lengths",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.profile_id_count",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.profile_id_count",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.struct_size",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.struct_size",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.abi_version",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.abi_version",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.batch_item_index",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.batch_item_index",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.unique_identifier_data",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.unique_identifier_data",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.unique_identifier_length",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.unique_identifier_length",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.known_fields",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.known_fields",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.boolean_values",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.boolean_values",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.usage_limits_total",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.usage_limits_total",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_object_state_v1_t.usage_limits_count",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_object_state_v1_t.usage_limits_count",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_context_v1_t.struct_size",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_context_v1_t.struct_size",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_context_v1_t.abi_version",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_context_v1_t.abi_version",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_context_v1_t.object_states",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_context_v1_t.object_states",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_context_v1_t.object_state_count",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_context_v1_t.object_state_count",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_get_usage_allocation_changed_count",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_get_usage_allocation_changed_count",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_get_usage_allocation_performed",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_get_usage_allocation_performed",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_original_creation_date_present",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_original_creation_date_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_original_creation_date_present"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_original_creation_date_present",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_original_creation_date_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_original_creation_date_present"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_protection_use_started",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_protection_use_started"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_protection_use_started"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_protection_use_started",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_protection_use_started",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_protection_use_started"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_protection_use_started"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_usage_limits_count",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_count"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_usage_limits_count",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_usage_limits_count",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_count"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_count"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_usage_limits_present",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_present"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_usage_limits_present",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_usage_limits_present",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_present"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_present"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileObjectState_with_usage_limits_total",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_total"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileObjectState_with_usage_limits_total",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileObjectState.with_usage_limits_total",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileObjectState::with_usage_limits_total"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_object_state_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileObjectState.with_usage_limits_total"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileValidationContext_with_object_state",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext::with_object_state"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext.withObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext.with_object_state"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileValidationContext_with_object_state",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileValidationContext.with_object_state",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationContext::with_object_state"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_context_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationContext.withObjectState"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationContext.with_object_state"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:java:kmipkit_client_ProfileValidationSelection_profile_ids",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection.profileIds",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection::profile_ids"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection.profile_ids"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:python:kmipkit_client_ProfileValidationSelection_profile_ids",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.ProfileValidationSelection.profile_ids",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection::profile_ids"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection.profile_ids"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.profile_id_data",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.profile_id_data",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.profile_id_data_length",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.profile_id_data_length",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
+    },
+    {
+      "declarationId": "T036:kmipkit_profile_validation_selection_v1_t.profile_id_offsets",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_profile_validation_selection_v1_t.profile_id_offsets",
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ProfileValidationSelection"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_profile_validation_selection_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProfileValidationSelection"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProfileValidationSelection"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -347795,6 +351574,18 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0009-FR-012 and KMIPKIT-0043-FR-021. T035 maps AsyncOperationOutcome ownership and close lifecycle in all four languages."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles",
+      "reason": "Raw-handle JNI bridge to the reviewed C ABI; not a separate facade capability.",
+      "evidence": "T036 maps the public profile-validation method through the minimal JNI bridge under KMIPKIT-0043-FR-021.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      }
     }
   ],
   "apiLevels": [
@@ -352983,6 +356774,95 @@
           "kmipkit.client.Client.execute_poll",
           "kmipkit.client.Client.execute_process",
           "kmipkit.client.Client.execute_query_async_requests"
+        ]
+      }
+    },
+    {
+      "capabilityId": "client_profile_validation",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0010",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::Client::execute_with_profiles",
+          "kmipkit_client::Client::execute_with_profiles_and_context",
+          "kmipkit_client::Client::execute_with_profiles_and_context_and_options",
+          "kmipkit_client::Client::execute_with_profiles_and_options",
+          "kmipkit_client::ProfileObjectState",
+          "kmipkit_client::ProfileObjectState::new",
+          "kmipkit_client::ProfileObjectState::with_get_usage_allocation_changed_count",
+          "kmipkit_client::ProfileObjectState::with_get_usage_allocation_performed",
+          "kmipkit_client::ProfileObjectState::with_original_creation_date_present",
+          "kmipkit_client::ProfileObjectState::with_protection_use_started",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_count",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_present",
+          "kmipkit_client::ProfileObjectState::with_usage_limits_total",
+          "kmipkit_client::ProfileValidationContext",
+          "kmipkit_client::ProfileValidationContext::new",
+          "kmipkit_client::ProfileValidationContext::with_object_state",
+          "kmipkit_client::ProfileValidationSelection",
+          "kmipkit_client::ProfileValidationSelection::new",
+          "kmipkit_client::ProfileValidationSelection::profile_ids",
+          "kmipkit_client::ProfileValidationSelection::validate"
+        ],
+        "c": [
+          "kmipkit_client_execute_with_profiles",
+          "kmipkit_client_execute_with_profiles_and_context",
+          "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
+          "kmipkit_client_execute_with_profiles_and_options_v1",
+          "kmipkit_profile_object_state_v1_t",
+          "kmipkit_profile_validation_context_v1_t",
+          "kmipkit_profile_validation_selection_v1_t"
+        ],
+        "java": [
+          "org.kmipkit.extensions.Client.executeWithProfiles",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndContext",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions",
+          "org.kmipkit.extensions.Client.executeWithProfilesAndOptions",
+          "org.kmipkit.extensions.ProfileObjectState",
+          "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
+          "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
+          "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
+          "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
+          "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
+          "org.kmipkit.extensions.ProfileValidationContext",
+          "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
+          "org.kmipkit.extensions.ProfileValidationSelection",
+          "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
+        ],
+        "python": [
+          "kmipkit.client.Client.execute_with_profiles",
+          "kmipkit.client.Client.execute_with_profiles_and_context",
+          "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
+          "kmipkit.client.Client.execute_with_profiles_and_options",
+          "kmipkit.client.ProfileObjectState",
+          "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
+          "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
+          "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
+          "kmipkit.client.ProfileObjectState.with_protection_use_started",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_count",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_present",
+          "kmipkit.client.ProfileObjectState.with_usage_limits_total",
+          "kmipkit.client.ProfileValidationContext",
+          "kmipkit.client.ProfileValidationContext.with_object_state",
+          "kmipkit.client.ProfileValidationSelection",
+          "kmipkit.client.ProfileValidationSelection.profile_ids"
         ]
       }
     }

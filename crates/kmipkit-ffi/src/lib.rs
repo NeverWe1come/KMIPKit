@@ -321,6 +321,41 @@ pub struct kmipkit_request_options_v1_t {
     pub total_timeout: kmipkit_timeout_limit_v1_t,
 }
 
+/// Borrowed, explicit profile selection for one client exchange.
+#[repr(C)]
+pub struct kmipkit_profile_validation_selection_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub profile_id_data: *const u8,
+    pub profile_id_data_length: u64,
+    pub profile_id_offsets: *const u64,
+    pub profile_id_lengths: *const u64,
+    pub profile_id_count: u64,
+}
+
+/// Caller-owned object state for one request batch item.
+#[repr(C)]
+pub struct kmipkit_profile_object_state_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub batch_item_index: u64,
+    pub unique_identifier_data: *const u8,
+    pub unique_identifier_length: u64,
+    pub known_fields: u32,
+    pub boolean_values: u32,
+    pub usage_limits_total: i64,
+    pub usage_limits_count: i64,
+}
+
+/// Borrowed caller-owned state supplied only for one profile-validated exchange.
+#[repr(C)]
+pub struct kmipkit_profile_validation_context_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub object_states: *const kmipkit_profile_object_state_v1_t,
+    pub object_state_count: u64,
+}
+
 /// Versioned production transport inputs. All spans are borrowed only for the
 /// constructor call; the validated configuration owns its parsed material.
 #[repr(C)]

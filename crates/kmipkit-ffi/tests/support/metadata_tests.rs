@@ -72,6 +72,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "client_asynchronous_operations",
             "client_batch_model",
             "client_execution",
+            "client_profile_validation",
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",

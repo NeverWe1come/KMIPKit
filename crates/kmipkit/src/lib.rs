@@ -111,6 +111,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_asynchronous_operations"
             | "client_batch_model"
             | "client_execution"
+            | "client_profile_validation"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"

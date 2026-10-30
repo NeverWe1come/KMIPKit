@@ -14,7 +14,7 @@ import hashlib
 import ipaddress
 import sys
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from pathlib import Path
 from typing import Any, Self
@@ -572,6 +572,112 @@ class RequestOptions:
             errors.raise_for_status(4)
 
 
+@dataclass(frozen=True, slots=True)
+class ProfileValidationSelection:
+    """Explicit profile IDs selected for one client exchange."""
+
+    profile_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.profile_ids, (str, bytes)) or not isinstance(
+            self.profile_ids, Sequence
+        ) or any(not isinstance(value, str) for value in self.profile_ids):
+            errors.raise_for_status(4)
+        if len(self.profile_ids) > 4_096:
+            errors.raise_for_status(6)
+        total_bytes = 0
+        for value in self.profile_ids:
+            if len(value) > _MAX_TEXT_BYTES:
+                errors.raise_for_status(6)
+            encoded_length = len(value.encode("utf-8"))
+            if encoded_length > _MAX_TEXT_BYTES or total_bytes > _MAX_INPUT_BYTES - encoded_length:
+                errors.raise_for_status(6)
+            total_bytes += encoded_length
+        object.__setattr__(self, "profile_ids", tuple(self.profile_ids))
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ProfileObjectState:
+    """Caller-attested state for one exact object in one request batch item."""
+
+    unique_identifier: str = field(repr=False)
+    original_creation_date_present: bool | None = None
+    usage_limits_present: bool | None = None
+    protection_use_started: bool | None = None
+    get_usage_allocation_performed: bool | None = None
+    get_usage_allocation_changed_count: bool | None = None
+    usage_limits_total: int | None = None
+    usage_limits_count: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.unique_identifier, str):
+            errors.raise_for_status(4)
+        if len(self.unique_identifier) > _MAX_TEXT_BYTES:
+            errors.raise_for_status(6)
+        if len(self.unique_identifier.encode("utf-8")) > _MAX_TEXT_BYTES:
+            errors.raise_for_status(6)
+        for value in (
+            self.original_creation_date_present,
+            self.usage_limits_present,
+            self.protection_use_started,
+            self.get_usage_allocation_performed,
+            self.get_usage_allocation_changed_count,
+        ):
+            if value is not None and type(value) is not bool:
+                errors.raise_for_status(4)
+        for value in (self.usage_limits_total, self.usage_limits_count):
+            if value is not None:
+                _integer_range(value, _MIN_I64, _MAX_I64)
+
+    def with_original_creation_date_present(self, value: bool | None) -> Self:
+        return replace(self, original_creation_date_present=value)
+
+    def with_usage_limits_present(self, value: bool | None) -> Self:
+        return replace(self, usage_limits_present=value)
+
+    def with_protection_use_started(self, value: bool | None) -> Self:
+        return replace(self, protection_use_started=value)
+
+    def with_get_usage_allocation_performed(self, value: bool | None) -> Self:
+        return replace(self, get_usage_allocation_performed=value)
+
+    def with_get_usage_allocation_changed_count(self, value: bool | None) -> Self:
+        return replace(self, get_usage_allocation_changed_count=value)
+
+    def with_usage_limits_total(self, value: int | None) -> Self:
+        return replace(self, usage_limits_total=value)
+
+    def with_usage_limits_count(self, value: int | None) -> Self:
+        return replace(self, usage_limits_count=value)
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ProfileValidationContext:
+    """Caller-owned, exchange-local remote object state; never inferred or cached."""
+
+    object_states: tuple[tuple[int, ProfileObjectState], ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.object_states, Sequence):
+            errors.raise_for_status(4)
+        if len(self.object_states) > 100_000:
+            errors.raise_for_status(6)
+        normalized: list[tuple[int, ProfileObjectState]] = []
+        for index, state in self.object_states:
+            if not isinstance(state, ProfileObjectState):
+                errors.raise_for_status(4)
+            normalized.append((_unsigned(index, 64), state))
+        object.__setattr__(self, "object_states", tuple(normalized))
+
+    def with_object_state(self, batch_item_index: int, state: ProfileObjectState) -> Self:
+        """Return a new context with caller state bound to one batch item."""
+        if not isinstance(state, ProfileObjectState):
+            errors.raise_for_status(4)
+        return ProfileValidationContext(
+            self.object_states + ((_unsigned(batch_item_index, 64), state),)
+        )
+
+
 def _validated_request_options(options: RequestOptions) -> RequestOptions:
     """Copy the approved dataclass fields so subclasses cannot bypass validation."""
     if not isinstance(options, RequestOptions):
@@ -616,6 +722,112 @@ def _request_options_record(options: RequestOptions) -> Any:
         target.nanoseconds = value.nanoseconds
         target.reserved2 = 0
     return record
+
+
+def _profile_validation_records(
+    selection: ProfileValidationSelection,
+    context: ProfileValidationContext | None,
+    options: RequestOptions | None,
+) -> tuple[Any, Any, Any, list[Any], list[tuple[Any, int]]]:
+    """Create borrowed ABI records and keep their staging buffers alive per call."""
+    if not isinstance(selection, ProfileValidationSelection):
+        errors.raise_for_status(4)
+    if context is not None and not isinstance(context, ProfileValidationContext):
+        errors.raise_for_status(4)
+    selection_record = ffi.new("kmipkit_profile_validation_selection_v1_t *")
+    selection_record.struct_size = ffi.sizeof(
+        "kmipkit_profile_validation_selection_v1_t"
+    )
+    selection_record.abi_version = 1
+    encoded_ids = [value.encode("utf-8") for value in selection.profile_ids]
+    offsets: list[int] = []
+    lengths: list[int] = []
+    joined = bytearray()
+    for value in encoded_ids:
+        offsets.append(len(joined))
+        lengths.append(len(value))
+        if len(value) > _MAX_TEXT_BYTES or len(joined) > _MAX_INPUT_BYTES - len(value):
+            errors.raise_for_status(6)
+        joined.extend(value)
+    owners: list[Any] = []
+    wipe_buffers: list[tuple[Any, int]] = []
+    if joined:
+        id_buffer = ffi.new("uint8_t[]", bytes(joined))
+        selection_record.profile_id_data = id_buffer
+        selection_record.profile_id_data_length = len(joined)
+        owners.append(id_buffer)
+    else:
+        selection_record.profile_id_data = ffi.NULL
+        selection_record.profile_id_data_length = 0
+    if offsets:
+        offset_buffer = ffi.new("uint64_t[]", offsets)
+        length_buffer = ffi.new("uint64_t[]", lengths)
+        selection_record.profile_id_offsets = offset_buffer
+        selection_record.profile_id_lengths = length_buffer
+        owners.extend((offset_buffer, length_buffer))
+    else:
+        selection_record.profile_id_offsets = ffi.NULL
+        selection_record.profile_id_lengths = ffi.NULL
+    selection_record.profile_id_count = len(offsets)
+
+    context_record = ffi.NULL
+    if context is not None:
+        context_record = ffi.new("kmipkit_profile_validation_context_v1_t *")
+        context_record.struct_size = ffi.sizeof(
+            "kmipkit_profile_validation_context_v1_t"
+        )
+        context_record.abi_version = 1
+        context_record.object_state_count = len(context.object_states)
+        state_buffers: list[Any] = []
+        if context.object_states:
+            context_total = 0
+            state_array = ffi.new(
+                "kmipkit_profile_object_state_v1_t[]", len(context.object_states)
+            )
+            owners.append(state_array)
+            for index, (item_index, state) in enumerate(context.object_states):
+                identifier = state.unique_identifier.encode("utf-8")
+                if context_total > _MAX_INPUT_BYTES - len(identifier):
+                    errors.raise_for_status(6)
+                context_total += len(identifier)
+                identifier_buffer = ffi.new("uint8_t[]", identifier)
+                owners.append(identifier_buffer)
+                if identifier:
+                    wipe_buffers.append((identifier_buffer, len(identifier)))
+                entry = state_array[index]
+                entry.struct_size = ffi.sizeof("kmipkit_profile_object_state_v1_t")
+                entry.abi_version = 1
+                entry.batch_item_index = item_index
+                entry.unique_identifier_data = identifier_buffer
+                entry.unique_identifier_length = len(identifier)
+                facts = (
+                    state.original_creation_date_present,
+                    state.usage_limits_present,
+                    state.protection_use_started,
+                    state.get_usage_allocation_performed,
+                    state.get_usage_allocation_changed_count,
+                )
+                for bit, value in enumerate(facts):
+                    if value is not None:
+                        entry.known_fields |= 1 << bit
+                        if value:
+                            entry.boolean_values |= 1 << bit
+                if state.usage_limits_total is not None:
+                    entry.known_fields |= 32
+                    entry.usage_limits_total = state.usage_limits_total
+                if state.usage_limits_count is not None:
+                    entry.known_fields |= 64
+                    entry.usage_limits_count = state.usage_limits_count
+            context_record.object_states = state_array
+        else:
+            context_record.object_states = ffi.NULL
+
+    options_record = ffi.NULL
+    if options is not None:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        options_record = _request_options_record(options)
+    return selection_record, context_record, options_record, owners, wipe_buffers
 
 
 @dataclass(frozen=True, slots=True)
@@ -2373,6 +2585,130 @@ class Client(_ClientHandle):
             if response_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
             return _batch_result(response_output[0], limits)
+
+    def _execute_profile_exchange(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        selection: ProfileValidationSelection,
+        context: ProfileValidationContext | None,
+        options: RequestOptions | None,
+    ) -> BatchResult:
+        if not isinstance(batch, Batch) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        selection_record, context_record, options_record, owners, wipe_buffers = (
+            _profile_validation_records(selection, context, options)
+        )
+        functions = {
+            (False, False): lib.kmipkit_client_execute_with_profiles,
+            (False, True): lib.kmipkit_client_execute_with_profiles_and_options_v1,
+            (True, False): lib.kmipkit_client_execute_with_profiles_and_context,
+            (True, True): lib.kmipkit_client_execute_with_profiles_and_context_and_options_v1,
+        }
+        native_function = functions[(context is not None, options is not None)]
+        response_output = ffi.new("kmipkit_client_batch_response_t **")
+        with _NATIVE_CALL_LOCK:
+            batch._acquire_ownership_lock()
+            try:
+                client_pointer = self._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = batch._pointer()
+                batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                original, owner = batch._take()
+                try:
+                    if context is not None and options is not None:
+                        status = native_function(
+                            client_pointer,
+                            batch_slot,
+                            limits_pointer,
+                            selection_record,
+                            context_record,
+                            options_record,
+                            response_output,
+                        )
+                    elif context is not None:
+                        status = native_function(
+                            client_pointer,
+                            batch_slot,
+                            limits_pointer,
+                            selection_record,
+                            context_record,
+                            response_output,
+                        )
+                    elif options is not None:
+                        status = native_function(
+                            client_pointer,
+                            batch_slot,
+                            limits_pointer,
+                            selection_record,
+                            options_record,
+                            response_output,
+                        )
+                    else:
+                        status = native_function(
+                            client_pointer,
+                            batch_slot,
+                            limits_pointer,
+                            selection_record,
+                            response_output,
+                        )
+                except (OverflowError, TypeError, ValueError):
+                    batch._restore(original, owner)
+                    raise errors.InvalidInputError() from None
+                if batch_slot[0] != ffi.NULL:
+                    batch._restore(original, owner)
+                _raise_client_status(status, ffi.NULL)
+            finally:
+                batch._release_ownership_lock()
+                for buffer, length in wipe_buffers:
+                    ffi.buffer(buffer, length)[:] = b"\x00" * length
+        if response_output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        # `owners` intentionally remains live through the synchronous FFI call.
+        del owners
+        return _batch_result(response_output[0], limits)
+
+    def execute_with_profiles(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        selection: ProfileValidationSelection,
+    ) -> BatchResult:
+        """Validate an explicit profile selection for exactly one exchange."""
+        return self._execute_profile_exchange(batch, limits, selection, None, None)
+
+    def execute_with_profiles_and_options(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        selection: ProfileValidationSelection,
+        options: RequestOptions,
+    ) -> BatchResult:
+        """Validate profiles and timeout overrides for exactly one exchange."""
+        return self._execute_profile_exchange(batch, limits, selection, None, options)
+
+    def execute_with_profiles_and_context(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        selection: ProfileValidationSelection,
+        context: ProfileValidationContext,
+    ) -> BatchResult:
+        """Validate profiles using caller-owned state for exactly one exchange."""
+        return self._execute_profile_exchange(batch, limits, selection, context, None)
+
+    def execute_with_profiles_and_context_and_options(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        selection: ProfileValidationSelection,
+        context: ProfileValidationContext,
+        options: RequestOptions,
+    ) -> BatchResult:
+        """Validate profile state and timeout overrides for exactly one exchange."""
+        return self._execute_profile_exchange(batch, limits, selection, context, options)
 
     def execute_guarded_protection_item(
         self,

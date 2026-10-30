@@ -3,9 +3,10 @@
 //! Generated catalog records describe applicability and source obligations.
 //! Only explicitly mapped rules with category-matched executable verification
 //! are enforced; remaining unresolved or unmapped obligations keep a profile
-//! unavailable for runtime validation. The profile prerequisite is KMIP
-//! Specification v2.1 §14.1; Baseline Client's inherited profile closure
-//! follows KMIP Profiles v2.1 §6.1.
+//! unavailable for runtime validation. A selected target also remains
+//! unavailable until its catalog evidence lifecycle is complete. The profile
+//! prerequisite is KMIP Specification v2.1 §14.1; Baseline Client's inherited
+//! profile closure follows KMIP Profiles v2.1 §6.1.
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::error::Error;
@@ -29,7 +30,7 @@ pub enum ProfileValidationErrorCode {
     DuplicateProfile,
     /// The identifier does not resolve to a generated client profile.
     UnknownProfile,
-    /// The profile is outside the approved client product scope.
+    /// The profile is outside the approved client scope or its evidence is incomplete.
     ProfileUnavailable,
     /// A conditional profile has no satisfied typed condition in this release.
     ConditionalProfileUnsatisfied,
@@ -124,6 +125,8 @@ impl ProfileTransport {
 #[derive(Clone, Eq, PartialEq)]
 pub struct ProfileValidationSelection {
     profile_ids: Vec<String>,
+    #[cfg(feature = "test-support")]
+    skip_evidence_gate_for_test: bool,
 }
 
 /// Caller-attested state for one concrete KMIP object during one exchange.
@@ -304,7 +307,26 @@ impl ProfileValidationSelection {
     {
         Self {
             profile_ids: profile_ids.into_iter().map(Into::into).collect(),
+            #[cfg(feature = "test-support")]
+            skip_evidence_gate_for_test: false,
         }
+    }
+
+    /// Creates a selection for testing mapped rule behavior before target evidence is complete.
+    ///
+    /// This constructor is available only with the `test-support` feature and
+    /// must not be used by application code.
+    #[cfg(feature = "test-support")]
+    #[doc(hidden)]
+    #[must_use]
+    pub fn for_test<I, S>(profile_ids: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let mut selection = Self::new(profile_ids);
+        selection.skip_evidence_gate_for_test = true;
+        selection
     }
 
     /// Returns the explicitly selected profile IDs in caller order.
@@ -326,8 +348,21 @@ impl ProfileValidationSelection {
     pub fn validate(&self) -> Result<ProfileValidationResult, ProfileValidationError> {
         validate_selection(self, CLIENT_PROFILES, CLIENT_REQUIREMENTS)
     }
+
+    fn skips_evidence_gate_for_test(&self) -> bool {
+        #[cfg(feature = "test-support")]
+        {
+            self.skip_evidence_gate_for_test
+        }
+        #[cfg(not(feature = "test-support"))]
+        {
+            false
+        }
+    }
 }
 
+// The test-only bypass bit is intentionally omitted from public diagnostics.
+#[allow(clippy::missing_fields_in_debug)]
 impl fmt::Debug for ProfileValidationSelection {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -635,7 +670,7 @@ pub enum ProfileReadinessBlocker {
     DuplicateRequirementRecord { requirement_id: &'static str },
     /// Local evidence names a requirement outside the generated closure.
     UnknownRequirementRecord,
-    /// The profile's typed runtime rule registry is incomplete.
+    /// The profile's typed runtime rules or required evidence lifecycle is incomplete.
     RuntimeValidationUnavailable,
     /// A required official fixture is unavailable.
     MandatoryFixtureUnavailable { test_id: &'static str },
@@ -674,7 +709,9 @@ impl ProfileReadinessBlocker {
             Self::VerificationManifestUnavailable => "current verification manifest is unavailable",
             Self::StaleCatalogEvidenceState => "catalog evidence-complete state is stale",
             Self::CatalogEvidenceReviewRequired => "catalog evidence state requires human review",
-            Self::ProfileUnavailable => "profile is outside the KMIPKit 1.0 client scope",
+            Self::ProfileUnavailable => {
+                "profile is outside the KMIPKit 1.0 client scope or its evidence is incomplete"
+            }
         }
     }
 
@@ -719,12 +756,12 @@ impl ProfileReadinessBlocker {
 ///     .expect("Baseline Client is in the generated catalog");
 ///
 /// assert!(readiness.target_selected());
-/// assert!(readiness.runtime_validation_available());
+/// assert!(!readiness.runtime_validation_available());
 /// assert_eq!(readiness.effective_state(), "evidence_incomplete");
 /// assert!(!readiness.published_claim());
 /// assert!(readiness
 ///     .blockers()
-///     .contains(&ProfileReadinessBlocker::VerificationManifestUnavailable));
+///     .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable));
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ProfileReadiness {
@@ -893,7 +930,7 @@ impl ProfileReadiness {
         self.target_selected
     }
 
-    /// Returns whether a complete typed rule registry permits runtime validation.
+    /// Returns whether typed rules and the target evidence lifecycle permit runtime validation.
     #[must_use]
     pub const fn runtime_validation_available(&self) -> bool {
         self.runtime_validation_available
@@ -14348,7 +14385,38 @@ fn validate_selection(
     profiles: &[GeneratedClientProfile],
     requirements: &[GeneratedClientRequirement],
 ) -> Result<ProfileValidationResult, ProfileValidationError> {
-    validate_selection_with_registry(selection, profiles, requirements, TYPED_RULE_MAPPINGS)
+    let result =
+        validate_selection_with_registry(selection, profiles, requirements, TYPED_RULE_MAPPINGS)?;
+    if !selection.skips_evidence_gate_for_test() {
+        for profile_id in result.profile_ids() {
+            let Some(profile) = find_profile(profiles, profile_id) else {
+                continue;
+            };
+            if profile.selected_target && profile.claim_state != "evidence_complete" {
+                let error = requirements
+                    .iter()
+                    .find(|requirement| requirement.requirement_id == "KMIPKIT-REQ-SPEC-14.1-001")
+                    .map_or_else(
+                        || {
+                            ProfileValidationError::for_profile(
+                                ProfileValidationErrorCode::ProfileUnavailable,
+                                profile_id,
+                            )
+                        },
+                        |requirement| {
+                            ProfileValidationError::for_requirement(
+                                ProfileValidationErrorCode::ProfileUnavailable,
+                                profile_id,
+                                requirement.requirement_id,
+                                requirement.source_clause_ids.first().copied(),
+                            )
+                        },
+                    );
+                return Err(error);
+            }
+        }
+    }
+    Ok(result)
 }
 
 fn validate_selection_with_registry(

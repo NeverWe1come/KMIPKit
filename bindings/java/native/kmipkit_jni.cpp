@@ -133,6 +133,11 @@ void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+        kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
+        const kmipkit_profile_validation_selection_v1_t*,
+        const kmipkit_profile_validation_context_v1_t*,
+        const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_error_ttlv_v1(
         kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
         kmipkit_client_batch_response_t**, kmipkit_ttlv_structure_t**);
@@ -199,6 +204,7 @@ int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_cli
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
         kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_protocol_version_v1_t*, uint64_t, uint64_t*);
 int32_t kmipkit_last_error_get(int32_t*, uint32_t*, uint32_t*, uint32_t*);
+int32_t kmipkit_last_error_clear(void);
 }
 
 namespace {
@@ -206,6 +212,9 @@ namespace {
 constexpr int32_t kErrorProtocol = 8;
 constexpr int32_t kErrorTransport = 9;
 constexpr int32_t kErrorServerResult = 10;
+constexpr uint32_t kErrorCategoryProtocol = 2;
+constexpr uint32_t kErrorCategoryTransport = 3;
+constexpr uint32_t kErrorCategoryServerResult = 4;
 constexpr uint32_t kTransportEndpointRawTls = 1;
 constexpr uint32_t kTransportEndpointHttps = 2;
 constexpr uint32_t kTransportTrustPlatform = 1;
@@ -274,15 +283,16 @@ void throw_client_operation_status(
         throw_java(env, "org/kmipkit/KmipException", "native operation failed");
         return;
     }
-    const char* class_name = status == kErrorProtocol ? "org/kmipkit/ProtocolException"
-            : status == kErrorTransport ? "org/kmipkit/TransportException"
-            : "org/kmipkit/ServerResultException";
+    const char* class_name = category == kErrorCategoryProtocol ? "org/kmipkit/ProtocolException"
+            : category == kErrorCategoryTransport ? "org/kmipkit/TransportException"
+            : category == kErrorCategoryServerResult ? "org/kmipkit/ServerResultException"
+            : "org/kmipkit/ClientOperationException";
     jclass exception_class = env->FindClass(class_name);
     if (exception_class == nullptr) {
         if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
         return;
     }
-    const bool protocol_error = status == kErrorProtocol;
+    const bool protocol_error = category == kErrorCategoryProtocol;
     jmethodID constructor = env->GetMethodID(
             exception_class, "<init>", protocol_error ? "(IIIIJ)V" : "(IIII)V");
     if (constructor == nullptr) {
@@ -4928,6 +4938,193 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWi
         if (response == nullptr) {
             throw_invalid_input(env); // COVERAGE-EXCLUDE: success always returns a response handle.
             return static_cast<jlong>(0); // COVERAGE-EXCLUDE: null success is forbidden by the FFI contract.
+        }
+        return to_java_handle(response);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWithProfiles(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_batch, jlongArray raw_limits,
+        jobjectArray raw_profile_ids, jlongArray raw_item_indexes,
+        jobjectArray raw_unique_identifiers, jintArray raw_known_fields,
+        jintArray raw_boolean_values, jlongArray raw_usage_limits_totals,
+        jlongArray raw_usage_limits_counts, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* batch = from_java_handle<kmipkit_client_batch_t>(raw_batch);
+        ClientBatchReleaseGuard batch_guard{batch};
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr || batch == nullptr || raw_profile_ids == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize profile_count = env->GetArrayLength(raw_profile_ids);
+        if (profile_count < 0 || profile_count > 4096) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> profile_data;
+        std::vector<uint64_t> profile_offsets;
+        std::vector<uint64_t> profile_lengths;
+        profile_offsets.reserve(static_cast<size_t>(profile_count));
+        profile_lengths.reserve(static_cast<size_t>(profile_count));
+        for (jsize index = 0; index < profile_count; ++index) {
+            auto profile_id = static_cast<jstring>(env->GetObjectArrayElement(raw_profile_ids, index));
+            if (profile_id == nullptr || env->ExceptionCheck()) {
+                if (!env->ExceptionCheck()) throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            if (env->GetStringLength(profile_id) > 4096) {
+                env->DeleteLocalRef(profile_id);
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            std::vector<uint8_t> encoded;
+            const bool valid = java_string_to_utf8(env, profile_id, encoded);
+            env->DeleteLocalRef(profile_id);
+            if (!valid || encoded.size() > 4096
+                    || profile_data.size() > 16 * 1024 * 1024 - encoded.size()) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            profile_offsets.push_back(static_cast<uint64_t>(profile_data.size()));
+            profile_lengths.push_back(static_cast<uint64_t>(encoded.size()));
+            profile_data.insert(profile_data.end(), encoded.begin(), encoded.end());
+        }
+
+        kmipkit_profile_validation_selection_v1_t selection{};
+        selection.struct_size = static_cast<uint32_t>(sizeof(selection));
+        selection.abi_version = 1;
+        selection.profile_id_data = profile_data.empty() ? nullptr : profile_data.data();
+        selection.profile_id_data_length = static_cast<uint64_t>(profile_data.size());
+        selection.profile_id_offsets = profile_offsets.empty() ? nullptr : profile_offsets.data();
+        selection.profile_id_lengths = profile_lengths.empty() ? nullptr : profile_lengths.data();
+        selection.profile_id_count = static_cast<uint64_t>(profile_count);
+
+        const bool has_context = raw_item_indexes != nullptr || raw_unique_identifiers != nullptr
+                || raw_known_fields != nullptr || raw_boolean_values != nullptr
+                || raw_usage_limits_totals != nullptr || raw_usage_limits_counts != nullptr;
+        std::vector<uint64_t> item_indexes;
+        std::vector<jint> known_fields;
+        std::vector<jint> boolean_values;
+        std::vector<jlong> usage_totals;
+        std::vector<jlong> usage_counts;
+        std::vector<std::vector<uint8_t>> object_identifiers;
+        std::vector<kmipkit_profile_object_state_v1_t> object_states;
+        kmipkit_profile_validation_context_v1_t context{};
+        const kmipkit_profile_validation_context_v1_t* context_pointer = nullptr;
+        if (has_context) {
+            if (raw_item_indexes == nullptr || raw_unique_identifiers == nullptr
+                    || raw_known_fields == nullptr || raw_boolean_values == nullptr
+                    || raw_usage_limits_totals == nullptr || raw_usage_limits_counts == nullptr) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            const jsize count = env->GetArrayLength(raw_unique_identifiers);
+            if (count < 0 || count > 100000 || env->GetArrayLength(raw_item_indexes) != count
+                    || env->GetArrayLength(raw_known_fields) != count
+                    || env->GetArrayLength(raw_boolean_values) != count
+                    || env->GetArrayLength(raw_usage_limits_totals) != count
+                    || env->GetArrayLength(raw_usage_limits_counts) != count
+                    || !read_long_array(env, raw_item_indexes, count, item_indexes, 100000)) {
+                if (!env->ExceptionCheck()) throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            known_fields.resize(static_cast<size_t>(count));
+            boolean_values.resize(static_cast<size_t>(count));
+            usage_totals.resize(static_cast<size_t>(count));
+            usage_counts.resize(static_cast<size_t>(count));
+            if (count != 0) {
+                env->GetIntArrayRegion(raw_known_fields, 0, count, known_fields.data());
+                env->GetIntArrayRegion(raw_boolean_values, 0, count, boolean_values.data());
+                env->GetLongArrayRegion(raw_usage_limits_totals, 0, count, usage_totals.data());
+                env->GetLongArrayRegion(raw_usage_limits_counts, 0, count, usage_counts.data());
+                if (env->ExceptionCheck()) return static_cast<jlong>(0);
+            }
+            object_identifiers.reserve(static_cast<size_t>(count));
+            size_t context_text_bytes = 0;
+            for (jsize index = 0; index < count; ++index) {
+                auto identifier = static_cast<jstring>(env->GetObjectArrayElement(raw_unique_identifiers, index));
+                if (identifier == nullptr || env->ExceptionCheck()) {
+                    if (!env->ExceptionCheck()) throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                if (env->GetStringLength(identifier) > 4096) {
+                    env->DeleteLocalRef(identifier);
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                object_identifiers.emplace_back();
+                const bool valid = java_string_to_utf8(env, identifier, object_identifiers.back());
+                env->DeleteLocalRef(identifier);
+                if (!valid || object_identifiers.back().size() > 4096) {
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                if (context_text_bytes > 16 * 1024 * 1024 - object_identifiers.back().size()) {
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                context_text_bytes += object_identifiers.back().size();
+            }
+            object_states.resize(static_cast<size_t>(count));
+            for (jsize index = 0; index < count; ++index) {
+                auto& state = object_states[static_cast<size_t>(index)];
+                state.struct_size = static_cast<uint32_t>(sizeof(state));
+                state.abi_version = 1;
+                state.batch_item_index = item_indexes[static_cast<size_t>(index)];
+                const auto& identifier = object_identifiers[static_cast<size_t>(index)];
+                state.unique_identifier_data = identifier.empty() ? nullptr : identifier.data();
+                state.unique_identifier_length = static_cast<uint64_t>(identifier.size());
+                state.known_fields = static_cast<uint32_t>(known_fields[static_cast<size_t>(index)]);
+                state.boolean_values = static_cast<uint32_t>(boolean_values[static_cast<size_t>(index)]);
+                state.usage_limits_total = usage_totals[static_cast<size_t>(index)];
+                state.usage_limits_count = usage_counts[static_cast<size_t>(index)];
+            }
+            context.struct_size = static_cast<uint32_t>(sizeof(context));
+            context.abi_version = 1;
+            context.object_states = object_states.empty() ? nullptr : object_states.data();
+            context.object_state_count = static_cast<uint64_t>(object_states.size());
+            context_pointer = &context;
+        }
+
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        std::vector<uint64_t> timeout_values;
+        if (!read_long_array(env, raw_timeouts, 12, timeout_values, 12)) {
+            return static_cast<jlong>(0);
+        }
+        kmipkit_request_options_v1_t options{};
+        options.struct_size = static_cast<uint32_t>(sizeof(options));
+        options.abi_version = 1;
+        kmipkit_timeout_limit_v1_t* outputs[] = {
+                &options.connect_timeout, &options.write_timeout,
+                &options.read_timeout, &options.total_timeout};
+        for (size_t index = 0; index < 4; ++index) {
+            const uint64_t kind = timeout_values[index * 3];
+            const uint64_t seconds = timeout_values[index * 3 + 1];
+            const uint64_t nanos = timeout_values[index * 3 + 2];
+            if (kind > kTransportTimeoutUnbounded || nanos >= 1'000'000'000
+                    || ((kind == kTransportTimeoutDefault || kind == kTransportTimeoutUnbounded)
+                        && (seconds != 0 || nanos != 0))) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            outputs[index]->kind = static_cast<uint32_t>(kind);
+            outputs[index]->seconds = seconds;
+            outputs[index]->nanoseconds = static_cast<uint32_t>(nanos);
+        }
+        kmipkit_client_batch_response_t* response = nullptr;
+        if (kmipkit_last_error_clear() != 0) {
+            throw_java(env, "org/kmipkit/KmipException", "native operation failed");
+            return static_cast<jlong>(0);
+        }
+        const int32_t status = kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+                client, &batch, limits.get(), &selection, context_pointer, &options, &response);
+        if (status != 0) throw_client_operation_status(env, status);
+        if (status != 0) return static_cast<jlong>(0);
+        if (response == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
         }
         return to_java_handle(response);
     });

@@ -1032,6 +1032,7 @@ pub extern "C" fn kmipkit_client_execute(
             out_response,
             None,
             &RequestOptions::default(),
+            None,
         )
     })
 }
@@ -1636,7 +1637,7 @@ pub unsafe extern "C" fn kmipkit_client_execute_with_options_v1(
             Ok(options) => options,
             Err(status) => return record_ffi_error(status),
         };
-        execute_client_batch(client, batch, limits, out_response, None, &options)
+        execute_client_batch(client, batch, limits, out_response, None, &options, None)
     })
 }
 
@@ -1648,6 +1649,7 @@ fn execute_client_batch(
     out_response: *mut *mut kmipkit_client_batch_response_t,
     out_error_response_ttlv: Option<*mut *mut kmipkit_ttlv_structure_t>,
     request_options: &RequestOptions,
+    profile_validation: Option<(&ProfileValidationSelection, &ProfileValidationContext)>,
 ) -> i32 {
     let out = out_slot!(out_response);
     let out_error = match out_error_response_ttlv {
@@ -1688,7 +1690,17 @@ fn execute_client_batch(
     let Ok(mut client) = client.lock() else {
         return record_ffi_error(ERROR_INTERNAL);
     };
-    match client.execute_with_options(batch, limits, request_options) {
+    let result = match profile_validation {
+        Some((selection, context)) => client.execute_with_profiles_and_context_and_options(
+            batch,
+            selection,
+            context,
+            limits,
+            request_options,
+        ),
+        None => client.execute_with_options(batch, limits, request_options),
+    };
+    match result {
         Ok(response) => {
             *out = try_ffi!(try_make_handle(
                 Kind::ClientBatchResponse,
@@ -1715,6 +1727,295 @@ fn execute_client_batch(
     }
 }
 
+const PROFILE_SELECTION_MAX_IDS: u64 = 4_096;
+const PROFILE_CONTEXT_MAX_STATES: u64 = 100_000;
+const PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT: u32 = 1;
+const PROFILE_STATE_USAGE_LIMITS_PRESENT: u32 = 2;
+const PROFILE_STATE_PROTECTION_USE_STARTED: u32 = 4;
+const PROFILE_STATE_GET_USAGE_ALLOCATION_PERFORMED: u32 = 8;
+const PROFILE_STATE_GET_USAGE_ALLOCATION_CHANGED_COUNT: u32 = 16;
+const PROFILE_STATE_USAGE_LIMITS_TOTAL: u32 = 32;
+const PROFILE_STATE_USAGE_LIMITS_COUNT: u32 = 64;
+const PROFILE_STATE_KNOWN_FIELDS: u32 = 127;
+const PROFILE_STATE_BOOLEAN_FIELDS: u32 = 31;
+
+fn profile_selection_from_v1(
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+) -> FfiResult<ProfileValidationSelection> {
+    if selection.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: a non-null selection must reference a readable v1 record for this call.
+    let selection = unsafe { &*selection };
+    if selection.struct_size as usize != size_of::<kmipkit_profile_validation_selection_v1_t>()
+        || selection.abi_version != 1
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    if selection.profile_id_count > PROFILE_SELECTION_MAX_IDS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let (offsets, lengths) = if selection.profile_id_count == 0 {
+        (&[][..], &[][..])
+    } else {
+        if selection.profile_id_offsets.is_null() || selection.profile_id_lengths.is_null() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        let count =
+            usize::try_from(selection.profile_id_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        // SAFETY: the caller supplies readable offset and length arrays of `count` elements.
+        unsafe {
+            (
+                std::slice::from_raw_parts(selection.profile_id_offsets, count),
+                std::slice::from_raw_parts(selection.profile_id_lengths, count),
+            )
+        }
+    };
+    let profile_id_data = input_span(
+        selection.profile_id_data,
+        selection.profile_id_data_length,
+        MAX_FFI_INPUT_BYTES,
+    )?;
+    let mut profile_ids = Vec::new();
+    profile_ids
+        .try_reserve_exact(offsets.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for (offset, length) in offsets.iter().zip(lengths) {
+        if *length > MAX_TEXT_BYTES {
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        let start = usize::try_from(*offset).map_err(|_| ERROR_INVALID_INPUT)?;
+        let end = start
+            .checked_add(usize::try_from(*length).map_err(|_| ERROR_INVALID_INPUT)?)
+            .filter(|end| *end <= profile_id_data.len())
+            .ok_or(ERROR_INVALID_INPUT)?;
+        let bytes = &profile_id_data[start..end];
+        let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+        profile_ids.push(text.to_owned());
+    }
+    Ok(ProfileValidationSelection::new(profile_ids))
+}
+
+fn profile_context_from_v1(
+    context: *const kmipkit_profile_validation_context_v1_t,
+) -> FfiResult<ProfileValidationContext> {
+    if context.is_null() {
+        return Ok(ProfileValidationContext::new());
+    }
+    // SAFETY: a non-null context must reference a readable v1 record for this call.
+    let context = unsafe { &*context };
+    if context.struct_size as usize != size_of::<kmipkit_profile_validation_context_v1_t>()
+        || context.abi_version != 1
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    if context.object_state_count > PROFILE_CONTEXT_MAX_STATES {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let states = if context.object_state_count == 0 {
+        &[][..]
+    } else {
+        if context.object_states.is_null() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        let count =
+            usize::try_from(context.object_state_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        // SAFETY: the caller supplies `object_state_count` readable v1 object-state records.
+        unsafe { std::slice::from_raw_parts(context.object_states, count) }
+    };
+    let mut result = ProfileValidationContext::new();
+    let mut context_text_bytes = 0_usize;
+    for entry in states {
+        if entry.struct_size as usize != size_of::<kmipkit_profile_object_state_v1_t>()
+            || entry.abi_version != 1
+            || entry.known_fields & !PROFILE_STATE_KNOWN_FIELDS != 0
+            || entry.boolean_values & !PROFILE_STATE_BOOLEAN_FIELDS != 0
+            || entry.boolean_values & !entry.known_fields != 0
+        {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        let index = usize::try_from(entry.batch_item_index).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        let bytes = input_span(
+            entry.unique_identifier_data,
+            entry.unique_identifier_length,
+            MAX_TEXT_BYTES,
+        )?;
+        context_text_bytes = context_text_bytes
+            .checked_add(bytes.len())
+            .filter(|total| usize::try_from(MAX_FFI_INPUT_BYTES).is_ok_and(|limit| *total <= limit))
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        let identifier = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+        let boolean =
+            |field| (entry.known_fields & field != 0).then_some(entry.boolean_values & field != 0);
+        let state = ProfileObjectState::new(identifier)
+            .with_original_creation_date_present(boolean(
+                PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT,
+            ))
+            .with_usage_limits_present(boolean(PROFILE_STATE_USAGE_LIMITS_PRESENT))
+            .with_protection_use_started(boolean(PROFILE_STATE_PROTECTION_USE_STARTED))
+            .with_get_usage_allocation_performed(boolean(
+                PROFILE_STATE_GET_USAGE_ALLOCATION_PERFORMED,
+            ))
+            .with_get_usage_allocation_changed_count(boolean(
+                PROFILE_STATE_GET_USAGE_ALLOCATION_CHANGED_COUNT,
+            ))
+            .with_usage_limits_total(
+                (entry.known_fields & PROFILE_STATE_USAGE_LIMITS_TOTAL != 0)
+                    .then_some(entry.usage_limits_total),
+            )
+            .with_usage_limits_count(
+                (entry.known_fields & PROFILE_STATE_USAGE_LIMITS_COUNT != 0)
+                    .then_some(entry.usage_limits_count),
+            );
+        result = result.with_object_state(index, state);
+    }
+    Ok(result)
+}
+
+fn execute_profile_client_batch(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    context: *const kmipkit_profile_validation_context_v1_t,
+    options: Option<*const kmipkit_request_options_v1_t>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let _ = out_slot!(out_response);
+    let selection = match profile_selection_from_v1(selection) {
+        Ok(selection) => selection,
+        Err(status) => return record_ffi_error(status),
+    };
+    let context = match profile_context_from_v1(context) {
+        Ok(context) => context,
+        Err(status) => return record_ffi_error(status),
+    };
+    let request_options = match options {
+        Some(options) => {
+            if options.is_null() {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            // SAFETY: a non-null options pointer must reference a readable v1 record.
+            match request_options_from_v1(unsafe { &*options }) {
+                Ok(options) => options,
+                Err(status) => return record_ffi_error(status),
+            }
+        }
+        None => RequestOptions::default(),
+    };
+    execute_client_batch(
+        client,
+        batch,
+        limits,
+        out_response,
+        None,
+        &request_options,
+        Some((&selection, &context)),
+    )
+}
+
+/// Executes one explicitly profile-validated batch with optional caller-owned context.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_profiles(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_profile_client_batch(
+            client,
+            batch,
+            limits,
+            selection,
+            ptr::null(),
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes one profile-validated batch with a one-exchange timeout override.
+///
+/// # Safety
+///
+/// `options` must point to a readable initialized v1 record. All other handle,
+/// input, and output pointer contracts match `kmipkit_client_execute_with_profiles`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_execute_with_profiles_and_options_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_profile_client_batch(
+            client,
+            batch,
+            limits,
+            selection,
+            ptr::null(),
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes one profile-validated batch with caller-attested, exchange-local object state.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_profiles_and_context(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    context: *const kmipkit_profile_validation_context_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_profile_client_batch(
+            client,
+            batch,
+            limits,
+            selection,
+            context,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes one profile-validated batch with caller state and a timeout override.
+///
+/// # Safety
+///
+/// `options` must point to a readable initialized v1 record. All other handle,
+/// input, and output pointer contracts match `kmipkit_client_execute_with_profiles_and_context`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_execute_with_profiles_and_context_and_options_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    selection: *const kmipkit_profile_validation_selection_v1_t,
+    context: *const kmipkit_profile_validation_context_v1_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_profile_client_batch(
+            client,
+            batch,
+            limits,
+            selection,
+            context,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
 /// Executes one batch with optional access to the complete generic response on shape errors.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
@@ -1732,6 +2033,7 @@ pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
             out_response,
             Some(out_error_response_ttlv),
             &RequestOptions::default(),
+            None,
         )
     })
 }
@@ -1775,6 +2077,7 @@ pub unsafe extern "C" fn kmipkit_client_execute_with_options_and_error_ttlv_v1(
             out_response,
             Some(out_error_response_ttlv),
             &request_options,
+            None,
         )
     })
 }
@@ -4984,4 +5287,95 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_discover_versions_su
         }
         SUCCESS
     })
+}
+
+#[cfg(test)]
+mod profile_validation_mapping_tests {
+    use super::*;
+
+    #[test]
+    fn c_selection_copies_flat_profile_id_spans_in_caller_order() {
+        let bytes = b"baseline_clientconditional_https";
+        let offsets = [0_u64, 15_u64];
+        let lengths = [15_u64, 17_u64];
+        let selection = kmipkit_profile_validation_selection_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
+                .expect("C ABI selection size fits u32"),
+            abi_version: 1,
+            profile_id_data: bytes.as_ptr(),
+            profile_id_data_length: bytes.len() as u64,
+            profile_id_offsets: offsets.as_ptr(),
+            profile_id_lengths: lengths.as_ptr(),
+            profile_id_count: 2,
+        };
+
+        let parsed = profile_selection_from_v1(&raw const selection).expect("valid C spans parse");
+
+        assert_eq!(
+            parsed.profile_ids(),
+            ["baseline_client", "conditional_https"]
+        );
+    }
+
+    #[test]
+    fn c_context_preserves_tri_state_and_exact_caller_state_for_one_exchange() {
+        let identifier = b"caller-object-id";
+        let entry = kmipkit_profile_object_state_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_object_state_v1_t>())
+                .expect("C ABI object state size fits u32"),
+            abi_version: 1,
+            batch_item_index: 3,
+            unique_identifier_data: identifier.as_ptr(),
+            unique_identifier_length: identifier.len() as u64,
+            known_fields: PROFILE_STATE_ORIGINAL_CREATION_DATE_PRESENT
+                | PROFILE_STATE_USAGE_LIMITS_PRESENT
+                | PROFILE_STATE_USAGE_LIMITS_TOTAL
+                | PROFILE_STATE_USAGE_LIMITS_COUNT,
+            boolean_values: PROFILE_STATE_USAGE_LIMITS_PRESENT,
+            usage_limits_total: 100,
+            usage_limits_count: 7,
+        };
+        let entries = [entry];
+        let context = kmipkit_profile_validation_context_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_validation_context_v1_t>())
+                .expect("C ABI context size fits u32"),
+            abi_version: 1,
+            object_states: entries.as_ptr(),
+            object_state_count: 1,
+        };
+
+        let parsed = profile_context_from_v1(&raw const context).expect("valid C context parses");
+        let expected = ProfileValidationContext::new().with_object_state(
+            3,
+            ProfileObjectState::new("caller-object-id")
+                .with_original_creation_date_present(Some(false))
+                .with_usage_limits_present(Some(true))
+                .with_usage_limits_total(Some(100))
+                .with_usage_limits_count(Some(7)),
+        );
+
+        assert_eq!(parsed, expected);
+    }
+
+    #[test]
+    fn c_selection_rejects_offsets_outside_the_flat_buffer() {
+        let bytes = b"baseline_client";
+        let offsets = [0_u64];
+        let lengths = [bytes.len() as u64 + 1];
+        let selection = kmipkit_profile_validation_selection_v1_t {
+            struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
+                .expect("C ABI selection size fits u32"),
+            abi_version: 1,
+            profile_id_data: bytes.as_ptr(),
+            profile_id_data_length: bytes.len() as u64,
+            profile_id_offsets: offsets.as_ptr(),
+            profile_id_lengths: lengths.as_ptr(),
+            profile_id_count: 1,
+        };
+
+        assert_eq!(
+            profile_selection_from_v1(&raw const selection),
+            Err(ERROR_INVALID_INPUT)
+        );
+    }
 }

@@ -12,6 +12,9 @@ MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 PROFILE_CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 
 RUST_MAPPINGS = {
+    "kmipkit_client::ProfileValidationSelection",
+    "kmipkit_client::ProfileValidationContext",
+    "kmipkit_client::ProfileObjectState",
     "kmipkit_client::Client::execute_with_profiles",
     "kmipkit_client::Client::execute_with_profiles_and_options",
     "kmipkit_client::Client::execute_with_profiles_and_context",
@@ -32,11 +35,9 @@ RUST_MAPPINGS = {
 }
 
 C_MAPPINGS = {
-    "kmipkit_profile_validation_selection_create",
-    "kmipkit_profile_validation_selection_release",
-    "kmipkit_profile_validation_context_create",
-    "kmipkit_profile_validation_context_add_object_state_v1",
-    "kmipkit_profile_validation_context_release",
+    "kmipkit_profile_validation_selection_v1_t",
+    "kmipkit_profile_object_state_v1_t",
+    "kmipkit_profile_validation_context_v1_t",
     "kmipkit_client_execute_with_profiles",
     "kmipkit_client_execute_with_profiles_and_options_v1",
     "kmipkit_client_execute_with_profiles_and_context",
@@ -51,6 +52,15 @@ JAVA_MAPPINGS = {
     "org.kmipkit.extensions.ProfileValidationSelection",
     "org.kmipkit.extensions.ProfileValidationContext",
     "org.kmipkit.extensions.ProfileObjectState",
+    "org.kmipkit.extensions.ProfileValidationSelection.profileIds",
+    "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
+    "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
+    "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
+    "org.kmipkit.extensions.ProfileObjectState.withProtectionUseStarted",
+    "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
+    "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
+    "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
+    "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsCount",
 }
 
 PYTHON_MAPPINGS = {
@@ -61,6 +71,15 @@ PYTHON_MAPPINGS = {
     "kmipkit.client.ProfileValidationSelection",
     "kmipkit.client.ProfileValidationContext",
     "kmipkit.client.ProfileObjectState",
+    "kmipkit.client.ProfileValidationSelection.profile_ids",
+    "kmipkit.client.ProfileValidationContext.with_object_state",
+    "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
+    "kmipkit.client.ProfileObjectState.with_usage_limits_present",
+    "kmipkit.client.ProfileObjectState.with_protection_use_started",
+    "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
+    "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
+    "kmipkit.client.ProfileObjectState.with_usage_limits_total",
+    "kmipkit.client.ProfileObjectState.with_usage_limits_count",
 }
 
 
@@ -87,6 +106,15 @@ class T036ProfileMappingTests(unittest.TestCase):
         )
         self.assertEqual(RUST_MAPPINGS, set(capability["mappings"]["rust"]))
         self.assertTrue(C_MAPPINGS <= set(capability["mappings"]["c"]))
+        selection_type = next(
+            row for row in self.manifest["types"]
+            if row["id"] == "ProfileValidationSelection"
+        )
+        self.assertEqual(
+            ["struct_size", "abi_version", "profile_id_data", "profile_id_data_length",
+             "profile_id_offsets", "profile_id_lengths", "profile_id_count"],
+            [field["name"] for field in selection_type["c"]["fields"]],
+        )
         self.assertTrue(JAVA_MAPPINGS <= set(capability["mappings"]["java"]))
         self.assertTrue(PYTHON_MAPPINGS <= set(capability["mappings"]["python"]))
         self.assertIn("KMIPKIT-0010-FR-005", capability["requirementIds"])

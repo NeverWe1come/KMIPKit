@@ -1,9 +1,23 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.kmipkit.ClientOperationException;
+import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ttlv.CodecLimits;
 
 final class ProfileValidationMappingTest {
     @Test
@@ -21,5 +35,65 @@ final class ProfileValidationMappingTest {
         assertEquals(4, java.util.Arrays.stream(Client.class.getMethods())
                 .filter(method -> method.getName().startsWith("executeWithProfiles"))
                 .count());
+    }
+
+    @Test
+    void jniProfileExecutionSymbolRejectsInvalidHandles() {
+        assertThrows(InvalidInputException.class, () ->
+                NativeExtensionRegistry.clientExecuteWithProfiles(
+                        0, 0, null, null, null, null, null, null, null, null, null));
+    }
+
+    @Test
+    void baselineSelectionFailsClosedBeforeJniOpensATransportConnection() throws Exception {
+        byte[] clientCertificate = testFixture("client-cert.pem");
+        byte[] clientPrivateKey = testFixture("client-key.pem");
+        byte[] serverCertificate = testFixture("server-cert.pem");
+        try (ServerSocket listener = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            listener.setSoTimeout(1_000);
+            FutureTask<Boolean> accepted = new FutureTask<>(() -> {
+                try (Socket ignored = listener.accept()) {
+                    return true;
+                } catch (SocketTimeoutException timeout) {
+                    return false;
+                }
+            });
+            Thread observer = new Thread(accepted, "kmipkit-profile-no-connect-observer");
+            observer.setDaemon(true);
+            observer.start();
+
+            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(), ExtensionRegistryLimits.defaults());
+                    ClientConfiguration configuration = ClientConfiguration.create(registry);
+                    TransportConfiguration transport = TransportConfiguration.builder()
+                            .rawTls("127.0.0.1", listener.getLocalPort())
+                            .clientIdentityPem(new byte[][] {clientCertificate}, clientPrivateKey)
+                            .trustCertificatesPem(new byte[][] {serverCertificate})
+                            .build();
+                    Client client = Client.create(configuration, transport);
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions());
+                ClientOperationException failure = assertThrows(ClientOperationException.class,
+                        () -> client.executeWithProfiles(batch, CodecLimits.defaults(),
+                                new ProfileValidationSelection(
+                                        List.of("KMIPKIT-PROFILE-BASELINE-CLIENT"))));
+                assertEquals(1, failure.categoryCode());
+                assertEquals(1, failure.deliveryStateCode());
+            }
+
+            assertFalse(accepted.get(2, TimeUnit.SECONDS),
+                    "incomplete Baseline readiness must make zero TCP connections");
+        }
+    }
+
+    private static byte[] testFixture(String filename) throws Exception {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null) {
+            Path candidate = directory.resolve(Path.of(
+                    "bindings", "python", "tests", "fixtures", "login-mtls", filename));
+            if (Files.isRegularFile(candidate)) return Files.readAllBytes(candidate);
+            directory = directory.getParent();
+        }
+        throw new IllegalStateException("the shared deterministic mTLS fixture is missing");
     }
 }
