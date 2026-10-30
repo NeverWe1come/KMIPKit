@@ -107,16 +107,21 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
         self.assertIn("Baseline readiness is `evidence_incomplete`", profile_row)
 
 
-    def test_t042_stays_open_until_t036_profile_api_parity_is_complete(self) -> None:
+    def test_t042_closes_after_all_t035_through_t041_mappings_are_complete(self) -> None:
         tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
-        task_rows = [
-            line
-            for line in tasks_path.read_text(encoding="utf-8").splitlines()
-            if line.startswith("- [") and " T042 " in line
-        ]
-        self.assertEqual(len(task_rows), 1)
-        self.assertTrue(task_rows[0].startswith("- [ ] T042 "))
-        self.assertNotIn("while T036 remains blocked on Draft KMIPKIT-0010", task_rows[0])
+        task_rows = {}
+        for line in tasks_path.read_text(encoding="utf-8").splitlines():
+            match = re.match(r"^- \[([ xX])\] (T\d{3})\b", line)
+            if match:
+                task_rows[match.group(2)] = line
+
+        for task_id in ("T035", "T036", "T037", "T038", "T039", "T040", "T041"):
+            with self.subTest(task=task_id):
+                self.assertRegex(task_rows[task_id], r"^- \[[xX]\] ")
+
+        t042 = task_rows["T042"]
+        self.assertTrue(t042.startswith("- [x] "))
+        self.assertIn("mapping readiness does not imply formal conformance", t042)
 
 if __name__ == "__main__":
     unittest.main()
