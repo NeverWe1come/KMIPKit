@@ -1297,6 +1297,59 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 else "specs/004-generic-ttlv-model/spec.md",
             )
 
+    def test_ttlv_codec_owner_has_no_unresolved_public_declarations(self) -> None:
+        unresolved = [
+            declaration
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration.get("candidateSpecId") == "KMIPKIT-0005"
+        ]
+        self.assertFalse(
+            unresolved,
+            "KMIPKIT-0005 public exports must be mapped or specifically excluded: "
+            f"{[row['exportName'] for row in unresolved[:5]]}",
+        )
+
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        expected_decode_mappings = {
+            "kmipkit_ttlv::codec::decode": (
+                "kmipkit_ttlv_decode",
+                "org.kmipkit.ttlv.TtlvCodec.decode",
+                "kmipkit.ttlv.ttlv_decode",
+            ),
+            "kmipkit_ttlv::codec::decode_with_limits": (
+                "kmipkit_ttlv_decode_with_limits",
+                "org.kmipkit.ttlv.TtlvCodec.decodeWithLimits",
+                "kmipkit.ttlv.ttlv_decode_with_limits",
+            ),
+        }
+        for export_name, targets in expected_decode_mappings.items():
+            declaration = declarations[("rust-kmipkit-ttlv", export_name)]
+            self.assertEqual(declaration["declarationState"], "declared")
+            self.assertEqual(declaration["capabilityId"], "ttlv_wire_codec")
+            self.assertEqual(
+                declaration["requirementIds"],
+                [
+                    "KMIPKIT-0005-FR-004",
+                    "KMIPKIT-0005-FR-005",
+                    "KMIPKIT-0005-FR-006",
+                    "KMIPKIT-0005-FR-007",
+                    "KMIPKIT-0005-FR-008",
+                    "KMIPKIT-0005-FR-009",
+                    "KMIPKIT-0005-FR-010",
+                    "KMIPKIT-0043-FR-004",
+                    "KMIPKIT-0043-FR-005",
+                    "KMIPKIT-0043-FR-021",
+                ],
+            )
+            self.assertEqual(
+                [declaration["languageMappings"][language]["name"]
+                 for language in ("c", "java", "python")],
+                list(targets),
+            )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
