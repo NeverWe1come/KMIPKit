@@ -46,4 +46,17 @@ fn main() {
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11");
     client_consumer.compile("kmipkit_client_abi_c_consumer");
+
+    let message_model_consumer =
+        workspace_root.join("bindings/c/tests/message_model_abi_consumer.c");
+    println!(
+        "cargo:rerun-if-changed={}",
+        message_model_consumer.display()
+    );
+    cc::Build::new()
+        .file(message_model_consumer)
+        .include(&consumer_header)
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_message_model_abi_c_consumer");
 }
