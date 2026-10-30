@@ -8574,3 +8574,11 @@ Local verification on the Refactor worktree:
 The selected-scope and Rust workspace aggregate coverage thresholds have not yet been verified on the restored-gate head; exact-head hosted CI must pass them before T057 closes.
 
 T057 remains open until exact-head CI passes the normative-generator 95% line threshold, selected scope thresholds, and Rust workspace aggregate gate. The protected-release aggregate remains a separate post-integration release gate under T026; Baseline remains evidence_incomplete and no profile claim is made.
+
+## KMIPKIT-0010 multi-item optional batch ID coverage (Red, 2026-10-30)
+
+KMIP Specification v2.1 §9.21 defines Unique Batch Item ID as OPTIONAL in a request. A new regression exercises a multi-item request without IDs under Batch Order Option true and checks positional response correlation. The Red run:
+
+- `cargo test -p kmipkit-protocol --all-features --lib profile_correlates_id_free_get_attributes_response_by_batch_order` — expected failure while constructing the request: `MessageValidationError { kind: MissingRequiredField, structure_index: Some(1), field_index: None }`.
+
+Root cause: `validate_request_batch_item` rejects every multi-item request with no Unique Batch Item ID, despite §9.21 and the existing response correlation logic supporting position-based correlation when Batch Order Option is true. No production code or OASIS source has been changed yet. Green and Refactor evidence will follow after correcting the request validator and rerunning the focused and protocol suites.

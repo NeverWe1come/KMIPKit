@@ -15,7 +15,9 @@ use kmipkit_protocol::{
     ProfileValidationSelection, QueryFunction, QueryRequest, RequestMessage, ResponseMessage,
     SetAttributeRequest, SetDefaultsRequest, UniqueIdentifier,
 };
-use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
+use kmipkit_transport::{
+    RequestDeliveryState, RequestOptions, Transport, TransportError, TransportResponse,
+};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Structure, Value, ValueView};
 
@@ -78,6 +80,54 @@ impl Transport for CountingTransport {
 
 fn discover_versions_batch() -> ClientBatch {
     ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()))
+}
+
+#[test]
+fn empty_profile_selection_is_rejected_before_exchange_on_both_entry_points() {
+    let exchanges = Rc::new(Cell::new(0));
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+    let selection = ProfileValidationSelection::new(std::iter::empty::<&str>());
+    let limits = CodecLimits::defaults();
+    let options = RequestOptions::default();
+
+    let options_error = client
+        .execute_with_profiles_and_options(discover_versions_batch(), &selection, &limits, &options)
+        .expect_err("an empty explicit selection fails before transport I/O");
+    assert_eq!(options_error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        options_error.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
+    assert_eq!(
+        options_error
+            .profile_validation_error()
+            .expect("the typed profile failure is preserved")
+            .code(),
+        ProfileValidationErrorCode::EmptySelection
+    );
+
+    let context_error = client
+        .execute_with_profiles_and_context_and_options(
+            discover_versions_batch(),
+            &selection,
+            &ProfileValidationContext::new(),
+            &limits,
+            &options,
+        )
+        .expect_err("context-aware execution rejects an empty selection before I/O");
+    assert_eq!(context_error.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        context_error.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
+    assert_eq!(
+        context_error
+            .profile_validation_error()
+            .expect("the typed profile failure is preserved")
+            .code(),
+        ProfileValidationErrorCode::EmptySelection
+    );
+    assert_eq!(exchanges.get(), 0);
 }
 
 fn query_batch() -> ClientBatch {

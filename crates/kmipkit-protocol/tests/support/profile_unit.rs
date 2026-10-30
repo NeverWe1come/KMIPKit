@@ -13,6 +13,7 @@ use super::{
     client_check_optional_usage_limits_count_is_long_integer,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_create_split_key_requires_prime_field_size_for_polynomial_method,
+    client_get_attributes_rng_response_is_well_formed,
     client_get_or_export_key_compression_type_is_enumeration,
     client_import_preserves_wrapped_object_and_attributes,
     client_key_value_present_is_not_modified,
@@ -26,7 +27,7 @@ use super::{
     client_register_opaque_object_has_required_data_fields,
     client_register_random_number_generator_is_well_formed,
     client_split_key_part_identifier_is_within_declared_parts,
-    client_wrapped_key_value_requires_key_wrapping_data,
+    client_understands_response_operations, client_wrapped_key_value_requires_key_wrapping_data,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
     protocol_version_is_kmip_2_1, reconcile_effective_state,
@@ -976,6 +977,40 @@ fn request_message_with_batch_operations_and_options(
         .expect("test multi-item Request Message has valid batch item identifiers")
 }
 
+fn request_message_with_two_operations_without_ids_and_order(
+    first_operation: u32,
+    first_payload: Structure,
+    second_operation: u32,
+    second_payload: Structure,
+    batch_order_option: bool,
+) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_ORDER_OPTION_TAG, Value::boolean(batch_order_option)),
+                tagged(BATCH_COUNT_TAG, Value::integer(2)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(first_operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(first_payload)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(second_operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(second_payload)),
+            ])),
+        ),
+    ]))
+    .expect("test ordered Request Message without batch IDs has a valid envelope")
+}
+
 fn register_key_value_location_request(
     include_location: bool,
     include_key_value: bool,
@@ -1245,6 +1280,33 @@ fn response_message_with_success_batch_payloads(
     }));
     crate::ResponseMessage::try_from_ttlv(structure(root_items))
         .expect("test successful response batch has valid IDs and payloads")
+}
+
+fn response_message_with_two_success_batch_payloads_without_ids(
+    items: impl IntoIterator<Item = (u32, Structure)>,
+) -> crate::ResponseMessage {
+    let items: Vec<_> = items.into_iter().collect();
+    let batch_count = i32::try_from(items.len()).expect("test batch count fits in an Integer");
+    let mut root_items = vec![tagged(
+        RESPONSE_HEADER_TAG,
+        Value::structure(structure([
+            test_protocol_version(),
+            tagged(TIME_STAMP_TAG, Value::date_time(1)),
+            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
+        ])),
+    )];
+    root_items.extend(items.into_iter().map(|(operation, payload)| {
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        )
+    }));
+    crate::ResponseMessage::try_from_ttlv(structure(root_items))
+        .expect("test ordered response batch without IDs has a valid envelope")
 }
 
 fn get_attributes_x509_response() -> crate::ResponseMessage {
@@ -1596,6 +1658,38 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
+}
+
+#[test]
+// KMIP Specification v2.1 §§6.1.50, 9.8, and 9.21: RNG Seed responses are correlated by batch ID.
+fn profile_accepts_zero_length_rng_seed_response_after_batch_reordering() {
+    const RNG_SEED_OPERATION: u32 = 0x0000_0026;
+    const DATA: u32 = 0x0042_00C2;
+    const DATA_LENGTH: u32 = 0x0042_00D5;
+    const RNG_SEED_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-6.1.50-001";
+
+    let request = request_message_with_two_operation_payloads(
+        RNG_SEED_OPERATION,
+        structure([tagged(DATA, Value::byte_string(b"seed-material".to_vec()))]),
+        LOCATE_OPERATION_TAG,
+        Structure::new(),
+    );
+    let response = response_message_with_success_batch_payloads([
+        (
+            LOCATE_OPERATION_TAG,
+            b"second-item".to_vec(),
+            Structure::new(),
+        ),
+        (
+            RNG_SEED_OPERATION,
+            b"first-item".to_vec(),
+            structure([tagged(DATA_LENGTH, Value::integer(0))]),
+        ),
+    ]);
+
+    table12_profile_result(&[RNG_SEED_REQUIREMENT])
+        .validate_response(&request, &response)
+        .expect("the zero-length RNG Seed result is accepted after ID-based reordering");
 }
 
 fn opaque_object_attributes_ttlv(attributes: impl IntoIterator<Item = Item>) -> Item {
@@ -16235,7 +16329,7 @@ fn baseline_profile_conformance_gates_are_explicit_and_do_not_restrict_requests(
 }
 
 #[test]
-fn client_response_operation_matches_the_operation_it_was_sent_for() {
+fn client_response_operation_correlation_rejects_invalid_batch_responses() {
     // KMIP Specification v2.1 §6.1 requires a client to understand responses
     // to operations it issues. This bounded check pairs response operations
     // with the corresponding request and leaves operation payload decoding to
@@ -23593,6 +23687,120 @@ fn profile_accepts_get_attributes_rng_parameters() {
         .expect("Get Attributes response preserves well-formed RNG Parameters");
 }
 
+#[test]
+// KMIP Specification v2.1 §§9.8 and 9.21: a response ID cannot be attached to a request without one.
+fn profile_rejects_get_attributes_rng_response_id_for_single_request_without_id() {
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+    );
+    let response = response_message_with_success_batch_payloads([(
+        GET_ATTRIBUTES_OPERATION,
+        b"unexpected-item".to_vec(),
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                RANDOM_NUMBER_GENERATOR_TAG,
+                random_number_generator_with_optional_fields(),
+            )])),
+        )]),
+    )]);
+
+    assert_rng_response_rule_rejected(
+        &table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]]),
+        &request,
+        &response,
+    );
+}
+
+#[test]
+// KMIP Specification v2.1 §§9.8 and 9.21, KMIPKIT-REQ-SPEC-9.21-001-001: optional IDs allow position-based correlation.
+fn profile_correlates_id_free_get_attributes_response_by_batch_order() {
+    let request = request_message_with_two_operations_without_ids_and_order(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+        RNG_CREATE_OPERATION,
+        Structure::new(),
+        true,
+    );
+    let response = response_message_with_two_success_batch_payloads_without_ids([
+        (
+            GET_ATTRIBUTES_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_with_optional_fields(),
+                )])),
+            )]),
+        ),
+        (RNG_CREATE_OPERATION, Structure::new()),
+    ]);
+
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_response(&request, &response)
+        .expect("ordered multi-item responses correlate by position without batch IDs");
+    assert!(client_understands_response_operations(
+        Some(&request),
+        Some((&request, &response)),
+    ));
+}
+
+#[test]
+// KMIP Specification v2.1 §§9.8 and 9.21: ID-free multi-item responses need Batch Order.
+fn profile_rejects_id_free_get_attributes_response_without_batch_order() {
+    let request = request_message_with_two_operations_without_ids_and_order(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+        RNG_CREATE_OPERATION,
+        Structure::new(),
+        false,
+    );
+    let response = response_message_with_two_success_batch_payloads_without_ids([
+        (GET_ATTRIBUTES_OPERATION, Structure::new()),
+        (RNG_CREATE_OPERATION, Structure::new()),
+    ]);
+
+    assert!(!client_understands_response_operations(
+        Some(&request),
+        Some((&request, &response)),
+    ));
+    assert!(!client_get_attributes_rng_response_is_well_formed(
+        &request, &response,
+    ));
+}
+
+#[test]
+// KMIP Specification v2.1 §6.1.20: a failed Get Attributes result does not need RNG Parameters.
+fn profile_does_not_require_rng_parameters_for_failed_get_attributes_response() {
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("rng-response-target".to_owned()),
+        )]),
+    );
+    let response = response_message_with_operation_status(
+        Some(GET_ATTRIBUTES_OPERATION),
+        1,
+        Some(0x0000_000A),
+        None,
+    );
+
+    table12_profile_result(&[RNG_PARAMETERS_REQUIREMENTS[3]])
+        .validate_response(&request, &response)
+        .expect("failed Get Attributes results have no successful payload to inspect");
+}
+
 fn assert_rng_response_rule_rejected(
     result: &crate::ProfileValidationResult,
     request: &crate::RequestMessage,
@@ -26511,4 +26719,538 @@ fn simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent() {
     assert!(mapping.evaluator.is_none());
     assert_eq!(mapping.test_evidence, TEST_EVIDENCE);
     assert_eq!(mapping.constraints, CONSTRAINTS);
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
+fn original_creation_date_context_allows_only_the_first_addition() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const OBJECT_ID: &str = "original-creation-date-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const ADD_ATTRIBUTE: u32 = 0x0000_000D;
+
+    let request = request_message_with_operation_payload(
+        ADD_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(
+                    ORIGINAL_CREATION_DATE,
+                    Value::date_time(1_700_000_000),
+                )])),
+            ),
+        ]),
+    );
+    let selected = table12_profile_result(&[REQUIREMENT]);
+
+    selected
+        .validate_request_with_context(
+            &request,
+            &super::ProfileValidationContext::new().with_object_state(
+                0,
+                super::ProfileObjectState::new(OBJECT_ID)
+                    .with_original_creation_date_present(Some(false)),
+            ),
+        )
+        .expect("adding Original Creation Date is permitted when it is absent");
+
+    for context in [
+        super::ProfileValidationContext::new().with_object_state(
+            0,
+            super::ProfileObjectState::new(OBJECT_ID)
+                .with_original_creation_date_present(Some(true)),
+        ),
+        super::ProfileValidationContext::new(),
+    ] {
+        let error = selected
+            .validate_request_with_context(&request, &context)
+            .expect_err("existing or unknown object state cannot authorize a first addition");
+        assert!(matches!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+                | ProfileValidationErrorCode::ProfileStateContextRequired
+        ));
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT));
+        assert_eq!(error.batch_item_index(), Some(0));
+    }
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+fn usage_limits_total_context_distinguishes_protection_from_count_allocation() {
+    const GENERAL_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const ALLOCATION_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const OBJECT_ID: &str = "usage-limits-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const SET_ATTRIBUTE: u32 = 0x0000_0031;
+
+    let request = request_message_with_operation_payload(
+        SET_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(
+                    USAGE_LIMITS,
+                    Value::structure(structure([
+                        tagged(TOTAL, Value::long_integer(40)),
+                        tagged(COUNT, Value::long_integer(3)),
+                        tagged(UNIT, Value::enumeration(1)),
+                    ])),
+                )])),
+            ),
+        ]),
+    );
+    let general = table12_profile_result(&[GENERAL_REQUIREMENT]);
+    let allocation = table12_profile_result(&[ALLOCATION_REQUIREMENT]);
+    let state = |protection, allocation_performed, allocation_changed_count| {
+        super::ProfileObjectState::new(OBJECT_ID)
+            .with_usage_limits_present(Some(true))
+            .with_protection_use_started(protection)
+            .with_get_usage_allocation_performed(allocation_performed)
+            .with_get_usage_allocation_changed_count(allocation_changed_count)
+            .with_usage_limits_total(Some(50))
+            .with_usage_limits_count(Some(3))
+    };
+    let context = |state| super::ProfileValidationContext::new().with_object_state(0, state);
+
+    general
+        .validate_request_with_context(&request, &context(state(Some(false), Some(false), None)))
+        .expect("a Total change before protection or allocation is allowed");
+
+    let protection_error = general
+        .validate_request_with_context(&request, &context(state(Some(true), Some(false), None)))
+        .expect_err("Total is immutable after protection begins");
+    assert_eq!(
+        protection_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(protection_error.requirement_id(), Some(GENERAL_REQUIREMENT));
+
+    general
+        .validate_request_with_context(
+            &request,
+            &context(state(Some(false), Some(true), Some(true))),
+        )
+        .expect("the narrower allocation rule owns the changed-Count case");
+    let allocation_error = allocation
+        .validate_request_with_context(
+            &request,
+            &context(state(Some(false), Some(true), Some(true))),
+        )
+        .expect_err("Total is immutable after allocation changed Count");
+    assert_eq!(
+        allocation_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        allocation_error.requirement_id(),
+        Some(ALLOCATION_REQUIREMENT)
+    );
+
+    let allocation_without_count_change = general
+        .validate_request_with_context(
+            &request,
+            &context(state(Some(false), Some(true), Some(false))),
+        )
+        .expect_err("allocation also prevents Total changes when Count did not change");
+    assert_eq!(
+        allocation_without_count_change.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+fn usage_limits_count_context_requires_the_existing_count_to_match() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const OBJECT_ID: &str = "usage-limits-count-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const SET_ATTRIBUTE: u32 = 0x0000_0031;
+
+    let request = request_message_with_operation_payload(
+        SET_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(
+                    USAGE_LIMITS,
+                    Value::structure(structure([
+                        tagged(TOTAL, Value::long_integer(40)),
+                        tagged(COUNT, Value::long_integer(3)),
+                        tagged(UNIT, Value::enumeration(1)),
+                    ])),
+                )])),
+            ),
+        ]),
+    );
+    let selected = table12_profile_result(&[REQUIREMENT]);
+    let context = |present, count| {
+        super::ProfileValidationContext::new().with_object_state(
+            0,
+            super::ProfileObjectState::new(OBJECT_ID)
+                .with_usage_limits_present(present)
+                .with_usage_limits_count(count),
+        )
+    };
+
+    selected
+        .validate_request_with_context(&request, &context(Some(true), Some(3)))
+        .expect("setting the already allocated Count value is permitted");
+
+    let mismatch = selected
+        .validate_request_with_context(&request, &context(Some(true), Some(2)))
+        .expect_err("changing Usage Limits Count is prohibited");
+    assert_eq!(
+        mismatch.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(mismatch.requirement_id(), Some(REQUIREMENT));
+
+    let unknown = selected
+        .validate_request_with_context(&request, &context(None, Some(3)))
+        .expect_err("unknown Usage Limits presence cannot authorize the operation");
+    assert_eq!(
+        unknown.code(),
+        ProfileValidationErrorCode::ProfileStateContextRequired
+    );
+    assert_eq!(unknown.requirement_id(), Some(REQUIREMENT));
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §§9.8 and 9.21.
+fn client_response_operation_matches_the_operation_it_was_sent_for() {
+    const FIRST_OPERATION: u32 = 0x0000_000A;
+    const SECOND_OPERATION: u32 = 0x0000_0008;
+    let request = request_message_with_two_operation_payloads(
+        FIRST_OPERATION,
+        Structure::new(),
+        SECOND_OPERATION,
+        Structure::new(),
+    );
+
+    let reordered = response_message_with_success_batch_payloads([
+        (SECOND_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (FIRST_OPERATION, b"first-item".to_vec(), Structure::new()),
+    ]);
+    assert!(super::client_understands_response_operations(
+        None,
+        Some((&request, &reordered))
+    ));
+    assert!(super::client_understands_response_operations(None, None));
+
+    let mismatched_operation = response_message_with_success_batch_payloads([
+        (SECOND_OPERATION, b"first-item".to_vec(), Structure::new()),
+        (FIRST_OPERATION, b"second-item".to_vec(), Structure::new()),
+    ]);
+    assert!(!super::client_understands_response_operations(
+        None,
+        Some((&request, &mismatched_operation))
+    ));
+
+    let unknown_identifier = response_message_with_success_batch_payloads([(
+        FIRST_OPERATION,
+        b"unknown-item".to_vec(),
+        Structure::new(),
+    )]);
+    assert!(!super::client_understands_response_operations(
+        None,
+        Some((&request, &unknown_identifier))
+    ));
+
+    let duplicate_response_identifier = response_message_with_success_batch_payloads([
+        (FIRST_OPERATION, b"first-item".to_vec(), Structure::new()),
+        (FIRST_OPERATION, b"first-item".to_vec(), Structure::new()),
+    ]);
+    assert!(!super::client_understands_response_operations(
+        None,
+        Some((&request, &duplicate_response_identifier))
+    ));
+
+    let too_many_response_items = response_message_with_success_batch_payloads([
+        (FIRST_OPERATION, b"first-item".to_vec(), Structure::new()),
+        (SECOND_OPERATION, b"second-item".to_vec(), Structure::new()),
+        (SECOND_OPERATION, b"extra-item".to_vec(), Structure::new()),
+    ]);
+    assert!(!super::client_understands_response_operations(
+        None,
+        Some((&request, &too_many_response_items))
+    ));
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
+fn original_creation_date_context_rejects_malformed_targets_and_non_add_changes() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const OBJECT_ID: &str = "original-creation-date-malformed-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
+    const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+    const ADD_ATTRIBUTE: u32 = 0x0000_000D;
+    const MODIFY_ATTRIBUTE: u32 = 0x0000_000E;
+
+    let selected = table12_profile_result(&[REQUIREMENT]);
+    let malformed_target = request_message_with_operation_payload(
+        ADD_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                NEW_ATTRIBUTE,
+                Value::text_string("not an Attribute structure".to_owned()),
+            ),
+        ]),
+    );
+    let malformed_error = selected
+        .validate_request_with_context(&malformed_target, &super::ProfileValidationContext::new())
+        .expect_err("a malformed target wrapper fails closed before state lookup");
+    assert_eq!(
+        malformed_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let unknown_fact = request_message_with_operation_payload(
+        ADD_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(
+                    ORIGINAL_CREATION_DATE,
+                    Value::date_time(1_700_000_000),
+                )])),
+            ),
+        ]),
+    );
+    let unknown_error = selected
+        .validate_request_with_context(
+            &unknown_fact,
+            &super::ProfileValidationContext::new()
+                .with_object_state(0, super::ProfileObjectState::new(OBJECT_ID)),
+        )
+        .expect_err("an existing state entry with an unknown fact is insufficient");
+    assert_eq!(
+        unknown_error.code(),
+        ProfileValidationErrorCode::ProfileStateContextRequired
+    );
+
+    let modify = request_message_with_operation_payload(
+        MODIFY_ATTRIBUTE,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+            tagged(
+                CURRENT_ATTRIBUTE,
+                Value::structure(structure([tagged(
+                    ORIGINAL_CREATION_DATE,
+                    Value::date_time(1_700_000_000),
+                )])),
+            ),
+        ]),
+    );
+    let modify_error = selected
+        .validate_request_with_context(
+            &modify,
+            &super::ProfileValidationContext::new().with_object_state(
+                0,
+                super::ProfileObjectState::new(OBJECT_ID)
+                    .with_original_creation_date_present(Some(false)),
+            ),
+        )
+        .expect_err("Modify Attribute cannot change Original Creation Date");
+    assert_eq!(
+        modify_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let delete_payload = crate::DeleteAttributeRequest::new(
+        Some(OBJECT_ID.to_owned()),
+        None,
+        Some(crate::AttributeReference::tag(ORIGINAL_CREATION_DATE)),
+    )
+    .to_ttlv_payload()
+    .expect("the standard Original Creation Date tag is a valid Attribute Reference");
+    let delete = request_message_with_operation_payload(0x0000_000F, delete_payload);
+    let delete_error = selected
+        .validate_request_with_context(
+            &delete,
+            &super::ProfileValidationContext::new().with_object_state(
+                0,
+                super::ProfileObjectState::new(OBJECT_ID)
+                    .with_original_creation_date_present(Some(true)),
+            ),
+        )
+        .expect_err("Delete Attribute cannot remove Original Creation Date");
+    assert_eq!(
+        delete_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+fn usage_limits_context_requires_known_protection_and_allocation_facts() {
+    const GENERAL_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const ALLOCATION_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const OBJECT_ID: &str = "usage-limits-unknown-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const SET_ATTRIBUTE: u32 = 0x0000_0031;
+
+    let request_with_total = |total| {
+        request_message_with_operation_payload(
+            SET_ATTRIBUTE,
+            structure([
+                tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+                tagged(
+                    NEW_ATTRIBUTE,
+                    Value::structure(structure([tagged(
+                        USAGE_LIMITS,
+                        Value::structure(structure([
+                            tagged(TOTAL, Value::long_integer(total)),
+                            tagged(COUNT, Value::long_integer(3)),
+                            tagged(UNIT, Value::enumeration(1)),
+                        ])),
+                    )])),
+                ),
+            ]),
+        )
+    };
+    let selected_general = table12_profile_result(&[GENERAL_REQUIREMENT]);
+    let selected_allocation = table12_profile_result(&[ALLOCATION_REQUIREMENT]);
+    let state = |protection, allocation, changed_count, total| {
+        super::ProfileObjectState::new(OBJECT_ID)
+            .with_usage_limits_present(Some(true))
+            .with_protection_use_started(protection)
+            .with_get_usage_allocation_performed(allocation)
+            .with_get_usage_allocation_changed_count(changed_count)
+            .with_usage_limits_total(total)
+            .with_usage_limits_count(Some(3))
+    };
+    let context = |state| super::ProfileValidationContext::new().with_object_state(0, state);
+
+    for state in [
+        state(None, Some(false), None, Some(50)),
+        state(Some(false), None, None, Some(50)),
+    ] {
+        let error = selected_general
+            .validate_request_with_context(&request_with_total(40), &context(state))
+            .expect_err("an unknown protection or allocation fact fails closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::ProfileStateContextRequired
+        );
+    }
+
+    selected_general
+        .validate_request_with_context(
+            &request_with_total(50),
+            &context(state(None, None, None, Some(50))),
+        )
+        .expect("an unchanged Total does not require protection history");
+
+    let missing_total = selected_general
+        .validate_request_with_context(
+            &request_with_total(40),
+            &context(state(Some(false), Some(false), None, None)),
+        )
+        .expect_err("a changed Total requires its current value");
+    assert_eq!(
+        missing_total.code(),
+        ProfileValidationErrorCode::ProfileStateContextRequired
+    );
+
+    let allocation_mismatch = selected_allocation
+        .validate_request_with_context(
+            &request_with_total(40),
+            &context(state(Some(false), Some(false), Some(true), Some(50))),
+        )
+        .expect_err("Count cannot be reported changed when allocation was not performed");
+    assert_eq!(
+        allocation_mismatch.code(),
+        ProfileValidationErrorCode::ProfileStateBindingMismatch
+    );
+
+    selected_allocation
+        .validate_request_with_context(
+            &request_with_total(40),
+            &context(state(Some(false), Some(true), Some(false), Some(50))),
+        )
+        .expect("allocation without a changed Count does not trigger the narrower rule");
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+fn usage_limits_count_context_rejects_malformed_and_unknown_count_values() {
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const OBJECT_ID: &str = "usage-limits-malformed-count-context-test";
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const SET_ATTRIBUTE: u32 = 0x0000_0031;
+
+    let request_with_count = |count| {
+        request_message_with_operation_payload(
+            SET_ATTRIBUTE,
+            structure([
+                tagged(UNIQUE_IDENTIFIER, Value::text_string(OBJECT_ID.to_owned())),
+                tagged(
+                    NEW_ATTRIBUTE,
+                    Value::structure(structure([tagged(
+                        USAGE_LIMITS,
+                        Value::structure(structure([
+                            tagged(TOTAL, Value::long_integer(40)),
+                            tagged(COUNT, count),
+                            tagged(UNIT, Value::enumeration(1)),
+                        ])),
+                    )])),
+                ),
+            ]),
+        )
+    };
+    let selected = table12_profile_result(&[REQUIREMENT]);
+    let context = |count| {
+        super::ProfileValidationContext::new().with_object_state(
+            0,
+            super::ProfileObjectState::new(OBJECT_ID)
+                .with_usage_limits_present(Some(true))
+                .with_usage_limits_count(count),
+        )
+    };
+
+    let malformed = selected
+        .validate_request_with_context(&request_with_count(Value::integer(3)), &context(Some(3)))
+        .expect_err("Usage Limits Count is a Long Integer in the client profile");
+    assert_eq!(
+        malformed.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let unknown = selected
+        .validate_request_with_context(&request_with_count(Value::long_integer(3)), &context(None))
+        .expect_err("the present attribute still needs its current Count");
+    assert_eq!(
+        unknown.code(),
+        ProfileValidationErrorCode::ProfileStateContextRequired
+    );
 }
