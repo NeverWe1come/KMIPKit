@@ -6523,3 +6523,15 @@ The runner now accepts `api-levels.shared.v1` and resolves its fixture-backed lo
 | Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case api-levels.shared.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python fixture consumers all ran and passed; the complete 12-test runner contract suite passed. Python ran on 3.12.14. Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated artifacts or T071 completion status changed. |
 
 The runtime command executes one selected test per language and does not execute the full 13-case corpus. Hosted exact-head Java 17 verification remains pending; T071 remains open.
+
+### T071 generic TTLV open values and child-order parity case 6 of 13 (2026-10-30)
+
+The runner now accepts `ttlv.open-values-and-child-order.v1` and resolves its fixture-backed unknown enumeration, byte string, child-order, and owner/view lifecycle assertions through the exact Rust integration test, compiled C ABI consumer, Java fixture test, and Python fixture test. This is case 6 of 13; T071 remains open and full-surface parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `1e27d1754` | `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_open_ttlv_values_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner rejected `ttlv.open-values-and-child-order.v1` as unsupported. |
+| Green | `910e928f6` | The same plan test; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the plan selected the exact Rust test target, compiled C test, Java method, and Python method; all 13 runner contract tests passed. |
+| Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case ttlv.open-values-and-child-order.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python fixture consumers all ran and passed; the 13-test runner contract suite passed. Python ran on 3.12.14. Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated artifacts or T071 completion status changed. |
+
+The runtime command executes one selected test per language and does not execute the full 13-case corpus. Hosted exact-head Java 17 verification remains pending; T071 remains open.
