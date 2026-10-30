@@ -307520,7 +307520,7 @@
         "kmipkit::ClientRequest::Check",
         "kmipkit_client::ClientRequest::Check"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310096,7 +310096,7 @@
         "kmipkit::ClientRequest::get_usage_allocation",
         "kmipkit_client::ClientRequest::get_usage_allocation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310372,7 +310372,7 @@
         "kmipkit::ClientRequest::obtain_lease",
         "kmipkit_client::ClientRequest::obtain_lease"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
