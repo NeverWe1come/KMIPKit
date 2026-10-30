@@ -23,7 +23,10 @@ public final class TtlvCodec {
             throw new InvalidInputException("TTLV decoder inputs are invalid");
         }
         NativeExtensionRegistry.ensureLoaded();
-        long[] result = NativeTtlvCodec.decode(wire, limits.nativeValues());
+        return decodeResult(NativeTtlvCodec.decode(wire, limits.nativeValues()));
+    }
+
+    static TtlvItem decodeResult(long[] result) {
         if (result == null || result.length != 4) {
             throw new KmipException("KMIPKit TTLV decoding failed");
         }
@@ -40,7 +43,7 @@ public final class TtlvCodec {
         return TtlvItem.fromNative(handle);
     }
 
-    static RuntimeException statusFailure(int status) {
+    private static RuntimeException statusFailure(int status) {
         return switch (status) {
             case ERROR_INVALID_INPUT -> new InvalidInputException("TTLV decoder inputs are invalid");
             case ERROR_RESOURCE_LIMIT -> new ResourceLimitException(
