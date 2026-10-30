@@ -123976,7 +123976,7 @@
         },
         "java": {
           "packageId": "java-kmipkit",
-          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints"
+          "name": "org.kmipkit.extensions.ClientBatchItem.setConstraints"
         },
         "python": {
           "packageId": "python-kmipkit",
