@@ -6535,3 +6535,15 @@ The runner now accepts `ttlv.open-values-and-child-order.v1` and resolves its fi
 | Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case ttlv.open-values-and-child-order.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python fixture consumers all ran and passed; the 13-test runner contract suite passed. Python ran on 3.12.14. Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated artifacts or T071 completion status changed. |
 
 The runtime command executes one selected test per language and does not execute the full 13-case corpus. Hosted exact-head Java 17 verification remains pending; T071 remains open.
+
+### T071 vendor extension recognition and generic preservation parity case 7 of 13 (2026-10-30)
+
+The runner now accepts `extensions.recognition-and-generic-preservation.v1` and selects the shared-inbound Rust unit test, the compiled C extension-registry consumer test, the Java adapter test, and the Python adapter test. The fixture now links its C source-level consumer to the Rust integration test that compiles and executes that C harness. Runtime evidence covers the recognized and unknown-preserved extension cases, both registry registration orders, and generic payload preservation. This is case 7 of 13; T071 remains open and full-surface parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `1ece56767` | `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_extension_recognition_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner rejected `extensions.recognition-and-generic-preservation.v1` as unsupported. |
+| Green | `481ff3c4b` | The same plan test; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `python -B -m unittest tools.api_manifest.tests.test_parity -v` | Pass: the plan selected all four consumers; all 14 runner tests and all 18 public API parity/fixture contract tests passed. |
+| Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case extensions.recognition-and-generic-preservation.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `python -B -m unittest tools.api_manifest.tests.test_parity -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python consumers ran successfully; the C harness reported its inbound-preservation case passed. Python ran on 3.12.14; Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated output or T071 completion status changed. |
+
+The runtime command executes one selected test per language and does not execute the full 13-case corpus. Hosted exact-head Java 17 verification remains pending; T071 remains open.
