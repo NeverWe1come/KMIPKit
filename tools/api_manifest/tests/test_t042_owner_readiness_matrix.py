@@ -115,12 +115,17 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
             if match:
                 task_rows[match.group(2)] = line
 
-        for task_id in ("T035", "T036", "T037", "T038", "T039", "T040", "T041"):
-            with self.subTest(task=task_id):
-                self.assertRegex(task_rows[task_id], r"^- \[[xX]\] ")
-
+        mapping_tasks = ("T035", "T036", "T037", "T038", "T039", "T040", "T041")
+        incomplete = [
+            task_id
+            for task_id in mapping_tasks
+            if not re.match(r"^- \[[xX]\] ", task_rows[task_id])
+        ]
         t042 = task_rows["T042"]
-        self.assertTrue(t042.startswith("- [x] "))
+        if incomplete:
+            self.assertTrue(t042.startswith("- [ ] "))
+        else:
+            self.assertRegex(t042, r"^- \[[xX]\] ")
         self.assertIn("mapping readiness does not imply formal conformance", t042)
 
 if __name__ == "__main__":

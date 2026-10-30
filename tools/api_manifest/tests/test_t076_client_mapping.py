@@ -1574,6 +1574,44 @@ class T076ClientMappingTests(unittest.TestCase):
             f"kmipkit.client.AsyncOperationOutcome.{member}"
             for member in ("closed", "__enter__", "__exit__")
         }
+        profile_model_dataclass_exclusions = {
+            f"kmipkit.client.{wrapper}.{member}"
+            for wrapper in (
+                "ProfileObjectState",
+                "ProfileValidationContext",
+                "ProfileValidationSelection",
+            )
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        profile_validation_selection_repr_exclusion = {
+            "kmipkit.client.ProfileValidationSelection.__repr__"
+        }
+        profile_object_state_readbacks = {
+            f"kmipkit.client.ProfileObjectState.{member}"
+            for member in (
+                "unique_identifier",
+                "original_creation_date_present",
+                "usage_limits_present",
+                "protection_use_started",
+                "get_usage_allocation_performed",
+                "get_usage_allocation_changed_count",
+                "usage_limits_total",
+                "usage_limits_count",
+            )
+        }
+        profile_validation_context_readback = {
+            "kmipkit.client.ProfileValidationContext.object_states"
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1606,6 +1644,10 @@ class T076ClientMappingTests(unittest.TestCase):
             | async_metadata_repr_exclusion
             | async_outcome_constructor_exclusion
             | async_outcome_lifecycle_exclusions
+            | profile_model_dataclass_exclusions
+            | profile_validation_selection_repr_exclusion
+            | profile_object_state_readbacks
+            | profile_validation_context_readback
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1685,6 +1727,24 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("lifecycle", exclusion["reason"])
                     self.assertIn("close", exclusion["reason"])
                     self.assertIn("T035", exclusion["evidence"])
+                elif path in profile_model_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn(
+                        "not an independent cross-language product capability",
+                        exclusion["reason"],
+                    )
+                    self.assertIn("T036", exclusion["evidence"])
+                elif path in profile_validation_selection_repr_exclusion:
+                    self.assertIn("Python presentation behavior", exclusion["reason"])
+                    self.assertIn("T036", exclusion["evidence"])
+                elif path in profile_object_state_readbacks:
+                    self.assertIn("caller-known", exclusion["reason"])
+                    self.assertIn("constructor inputs", exclusion["reason"])
+                    self.assertIn("T036", exclusion["evidence"])
+                elif path in profile_validation_context_readback:
+                    self.assertIn("caller-supplied", exclusion["reason"])
+                    self.assertIn("context inputs", exclusion["reason"])
+                    self.assertIn("T036", exclusion["evidence"])
                 elif path in log_response_repr_exclusion:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
