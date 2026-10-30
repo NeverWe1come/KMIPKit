@@ -22764,6 +22764,786 @@
       "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-transport",
       "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::borrow::Borrow<kmipkit_protocol::discover_versions::DiscoverVersionsError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::borrow::BorrowMut<kmipkit_protocol::discover_versions::DiscoverVersionsError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::From<kmipkit_protocol::discover_versions::DiscoverVersionsError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0007-FR-013, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031. Error behavior remains payload-free under FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::borrow::Borrow<kmipkit_protocol::discover_versions::DiscoverVersionsRequest>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::borrow::BorrowMut<kmipkit_protocol::discover_versions::DiscoverVersionsRequest>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::From<kmipkit_protocol::discover_versions::DiscoverVersionsRequest>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::default::Default>::default",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsRequest as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::borrow::Borrow<kmipkit_protocol::discover_versions::DiscoverVersionsResponse>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::borrow::BorrowMut<kmipkit_protocol::discover_versions::DiscoverVersionsResponse>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::From<kmipkit_protocol::discover_versions::DiscoverVersionsResponse>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031.",
+      "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
     }
   ],
   "capabilities": [
