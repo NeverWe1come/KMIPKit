@@ -1796,6 +1796,7 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     assert expected["resultMessagePresencePreserved"] is True
     assert expected["automaticFollowUp"] is False
     assert expected["transportExchangeCount"] == 1
+    assert expected["uniqueBatchItemIds"] == ["split-success", "split-pending"]
     assert pending_response_identifiers == [
         {"wireType": "TextString", "text": "pending-part"}
     ]
