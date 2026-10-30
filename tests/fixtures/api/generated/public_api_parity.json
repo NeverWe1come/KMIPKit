@@ -11412,6 +11412,450 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles",
       "packageId": "java-kmipkit",
       "reason": "Raw-handle JNI bridge to the reviewed C ABI; not a separate facade capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState initializer is a dataclass-generated Python constructor; the mapped typed model and construction capability represent its four-language contract, so it is not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileObjectState.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext initializer is a dataclass-generated Python constructor; the mapped typed model and construction capability represent its four-language contract, so it is not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationContext.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection initializer is a dataclass-generated Python constructor; the mapped typed model and construction capability represent its four-language contract, so it is not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python value semantics or frozen-instance mechanics, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. Profile IDs are selected caller inputs, not secret material.",
+      "exportName": "kmipkit.client.ProfileValidationSelection.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationSelection repr is Python presentation behavior, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.unique_identifier",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.original_creation_date_present",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_present",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.protection_use_started",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_total",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_count",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. Entries are immutable caller-supplied context inputs, not fetched or inferred.",
+      "exportName": "kmipkit.client.ProfileValidationContext.object_states",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ProfileValidationContext readback exposes caller-supplied immutable context inputs; context construction and per-exchange execution are mapped, so it is not a separate KMIP behavior."
     }
   ],
   "capabilities": [
