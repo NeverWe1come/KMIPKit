@@ -2373,6 +2373,84 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         else:
                             self.assertTrue(operation["declarations"][language])
 
+    def test_t091_remaining_root_client_methods_map_to_verified_operations(self) -> None:
+        methods = (
+            ("get_attribute_list", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"),
+            ("get_constraints", "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"),
+            ("reprovision_with_options", "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"),
+            ("rng_retrieve", "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"),
+            ("rng_seed", "KMIPKIT-ELEM-OP-C2S-RNG-SEED"),
+            ("set_constraints", "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS"),
+            ("set_defaults", "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS"),
+        )
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+        shared_options = {
+            "rust": {
+                "packageId": "rust-kmipkit-client",
+                "name": "kmipkit_client::Client::execute_with_options",
+            },
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_execute_with_options_v1",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.Client.executeWithOptions",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.client.Client.execute_with_options",
+            },
+        }
+
+        for method, operation_id in methods:
+            with self.subTest(method=method):
+                client_name = f"kmipkit_client::Client::{method}"
+                facade_name = f"kmipkit::Client::{method}"
+                client = declarations[("rust-kmipkit-client", client_name)]
+                facade = declarations[("rust-kmipkit", facade_name)]
+                operation = operations[operation_id]
+                expected_mappings = dict(client["languageMappings"])
+                expected_mappings["rust"] = {
+                    "packageId": "rust-kmipkit",
+                    "name": facade_name,
+                }
+
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                self.assertEqual("verified", client["declarationState"])
+                self.assertEqual(operation_id, client["capabilityId"])
+                self.assertEqual("verified", facade["declarationState"])
+                self.assertEqual(operation_id, facade["capabilityId"])
+                self.assertNotIn("candidateSpecId", facade)
+                self.assertEqual(client["requirementIds"], facade["requirementIds"])
+                self.assertEqual(client["approvalSource"], facade["approvalSource"])
+                self.assertEqual(client["parityEvidenceIds"], facade["parityEvidenceIds"])
+                self.assertEqual(expected_mappings, facade["languageMappings"])
+                self.assertIn(facade["declarationId"], operation["declarations"]["rust"])
+
+                if method == "reprovision_with_options":
+                    self.assertEqual(shared_options, client["languageMappings"])
+                    for language in ("c", "java", "python"):
+                        self.assertIn(
+                            shared_options[language]["name"],
+                            client_execution["mappings"][language],
+                        )
+                else:
+                    for language in ("c", "java", "python"):
+                        self.assertTrue(operation["declarations"][language])
+
     def test_t091_set_constraints_client_method_maps_to_matching_operation_constructor(self) -> None:
         declaration = next(
             row

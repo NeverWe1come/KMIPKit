@@ -113,6 +113,47 @@ class ReProvisionParityManifestTests(unittest.TestCase):
             required_parity_evidence=PARITY_EVIDENCE,
         )
 
+    def test_client_options_method_uses_shared_execute_with_options_mapping(self) -> None:
+        declaration = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_client::Client::reprovision_with_options"
+        )
+        operation = self.operations[0]
+        expected_mappings = {
+            "rust": {
+                "packageId": "rust-kmipkit-client",
+                "name": "kmipkit_client::Client::execute_with_options",
+            },
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_execute_with_options_v1",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.Client.executeWithOptions",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.client.Client.execute_with_options",
+            },
+        }
+
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+        self.assertEqual(expected_mappings, declaration["languageMappings"])
+        self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+        client_execution = next(
+            row
+            for row in self.manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+        for language in ("c", "java", "python"):
+            self.assertIn(
+                expected_mappings[language]["name"],
+                client_execution["mappings"][language],
+            )
+
     def test_manifest_declares_both_mutually_exclusive_objects_and_optional_identifier(self) -> None:
         functions = {row["id"]: row for row in self.manifest["functions"]}
         constructor = functions["client_batch_item_reprovision"]
