@@ -6902,3 +6902,13 @@ The first hosted run after the release update, `41097432012`, checked merge cand
 |---|---|---|---|
 | Red — require root-package module availability | this commit | `uv run --project bindings/python python -m pytest bindings/python/tests/test_typed_messages.py -k message_model_module_is_available_on_the_root_package -q` | Expected failure in an isolated interpreter: `kmipkit.__all__` names `messages`, but importing `kmipkit` alone does not bind the submodule on the package. |
 | Green — bind the documented root module | this commit | Same focused pytest command | Pass: a fresh interpreter imports `kmipkit` and observes `kmipkit.messages` without importing the submodule separately. |
+
+### T091 exact Check facade mapping slice (2026-10-30)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require exact four-language mapping | `b65b1acd0` | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_t091_check_request_variant_maps_to_verified_check_operation` | Expected failure: `kmipkit::ClientRequest::Check` was still marked `blocked` despite the verified Check operation contract and its three language adapters. |
+| Green — map the public facade declaration | `7d5aa8168` | Same focused test; `python -B tools/api_manifest/generate.py --repo-root . --check`; `git diff --check` | Pass: the exact Rust variant is owned by `KMIPKIT-0036` / `KMIPKIT-ELEM-OP-C2S-CHECK`, with C `kmipkit_client_batch_item_check`, Java `ClientBatchItem.check`, and Python `client_batch_item_check` mappings. The operation inventory now includes this facade declaration. This mapping represents OASIS KMIP 2.1 §6.1.7, Table 183. All 12 generated outputs verify current. |
+| Inventory test maintenance | `b65b1acd0` | Five focused `PublicApiManifestV2SchemaTests` for current Rust, protocol exclusion, Java, Python, and Check declaration counts | Pass after aligning fixed inventory assertions with the checked-in Rust and binding export audits. |
+
+T091 remains open. Its global reconciliation test still reports 1,352 unresolved candidate declarations after this slice; no completion or release-readiness claim is made.
