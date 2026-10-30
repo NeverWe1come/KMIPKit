@@ -356,6 +356,16 @@ pub struct kmipkit_profile_validation_context_v1_t {
     pub object_state_count: u64,
 }
 
+/// Versioned, payload-free details for one generic TTLV decoder failure.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_ttlv_decode_error_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub kind: u32,
+    pub byte_offset: u64,
+}
+
 /// Versioned production transport inputs. All spans are borrowed only for the
 /// constructor call; the validated configuration owns its parsed material.
 #[repr(C)]

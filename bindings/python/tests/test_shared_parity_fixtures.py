@@ -540,3 +540,63 @@ def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
         and Path(name).suffix.lower() in {".dll", ".dylib", ".so"}
     }
     assert len(native_libraries) == 1
+
+
+def test_ttlv_decoder_matches_shared_fixture_and_redacts_errors() -> None:
+    case = _parity_cases()["ttlv.decoder-root-structure.v1"]
+    wire = bytes.fromhex(case["input"]["wireHex"])
+    expected = case["expectedOutput"]
+
+    item = ttlv.ttlv_decode(wire)
+    root_view = ttlv.ttlv_item_view_from_item(item)
+    item.close()
+    root_value = ttlv.ttlv_item_view_value(root_view)
+    structure_view = ttlv.ttlv_value_view_structure(root_value)
+    enumeration_view = ttlv.ttlv_structure_view_item_at(structure_view, 0)
+    enumeration_value = ttlv.ttlv_item_view_value(enumeration_view)
+    byte_string_view = ttlv.ttlv_structure_view_item_at(structure_view, 1)
+    byte_string_value = ttlv.ttlv_item_view_value(byte_string_view)
+    tag = ttlv.ttlv_item_view_tag(root_view)
+    enumeration_tag = ttlv.ttlv_item_view_tag(enumeration_view)
+    byte_string_tag = ttlv.ttlv_item_view_tag(byte_string_view)
+    try:
+        assert ttlv.tag_value(tag) == int(expected["rootTag"], 16)
+        assert ttlv.ttlv_item_view_type(root_view) == ttlv.ItemType.Structure
+        assert ttlv.ttlv_structure_view_item_count(structure_view) == 2
+        assert [
+            ttlv.tag_value(enumeration_tag),
+            ttlv.tag_value(byte_string_tag),
+        ] == [int(value, 16) for value in expected["childTagsInOrder"]]
+        assert ttlv.ttlv_value_view_enumeration(enumeration_value) == expected[
+            "enumerationValue"
+        ]
+        assert bytes(
+            ttlv.ttlv_value_view_byte_at(byte_string_value, index)
+            for index in range(ttlv.ttlv_value_view_byte_length(byte_string_value))
+        ).hex() == expected["byteStringHex"]
+    finally:
+        tag.close()
+        enumeration_tag.close()
+        byte_string_tag.close()
+        byte_string_value.close()
+        byte_string_view.close()
+        enumeration_value.close()
+        enumeration_view.close()
+        structure_view.close()
+        root_value.close()
+        root_view.close()
+
+    with pytest.raises(errors.TtlvDecodeError) as truncated_error:
+        ttlv.ttlv_decode(bytes.fromhex(case["input"]["truncatedWireHex"]))
+    assert int(truncated_error.value.kind) == expected["truncatedError"]["kindCode"]
+    assert truncated_error.value.byte_offset == expected["truncatedError"]["byteOffset"]
+    assert "5400010500000004dead" not in str(truncated_error.value)
+
+    limits = ttlv.codec_limits_create(case["input"]["messageLimitBytes"], 64, 100_000)
+    try:
+        with pytest.raises(errors.TtlvDecodeError) as limit_error:
+            ttlv.ttlv_decode_with_limits(wire, limits)
+        assert int(limit_error.value.kind) == expected["messageLimitError"]["kindCode"]
+        assert limit_error.value.byte_offset == expected["messageLimitError"]["byteOffset"]
+    finally:
+        limits.close()

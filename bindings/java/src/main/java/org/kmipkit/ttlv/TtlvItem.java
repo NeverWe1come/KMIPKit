@@ -12,6 +12,10 @@ public final class TtlvItem implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.TTLV_ITEM);
     }
 
+    static TtlvItem fromNative(long nativeHandle) {
+        return new TtlvItem(nativeHandle);
+    }
+
     public static TtlvItem create(Tag tag, TtlvValue value, CodecLimits limits) {
         if (tag == null || value == null || limits == null) {
             throw new InvalidInputException("TTLV item inputs are invalid");
@@ -24,6 +28,11 @@ public final class TtlvItem implements AutoCloseable {
             return new TtlvItem(NativeExtensionRegistry.ttlvItemCreate(
                     tagHandle, valueHandle, limitValues));
         });
+    }
+
+    /** Creates a read-only view that retains this item as its native owner. */
+    public TtlvItemView view() {
+        return TtlvItemView.fromNative(NativeTtlvCodec.itemViewFromItem(handle()), this);
     }
 
     long handle() {

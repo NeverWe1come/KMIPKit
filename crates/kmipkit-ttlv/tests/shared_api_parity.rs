@@ -1,5 +1,5 @@
-use kmipkit_ttlv::codec::{CodecLimits, LimitsError};
-use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
+use kmipkit_ttlv::codec::{CodecLimits, DecodeErrorKind, LimitsError, decode, decode_with_limits};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
 const SHARED_FIXTURES: &str =
@@ -185,4 +185,100 @@ fn codec_limits_shared_fixture_covers_defaults_ranges_and_rejection() {
     let error = rejected.expect_err("depth above the model maximum is rejected");
     let _: LimitsError = error;
     assert_eq!(error.to_string(), "Structure depth cannot exceed 64");
+}
+
+#[test]
+fn generic_ttlv_decoder_matches_shared_fixture_and_limits() {
+    // KMIPKIT-0005-FR-004/005/007/009 and KMIPKIT-0043-FR-005/010/017.
+    let case = shared_case("ttlv.decoder-root-structure.v1");
+    let wire = hex_bytes(
+        case["input"]["wireHex"]
+            .as_str()
+            .expect("decoder fixture wire bytes are hexadecimal text"),
+    );
+    let expected = &case["expectedOutput"];
+    let root_tag = u32::from_str_radix(
+        expected["rootTag"]
+            .as_str()
+            .expect("decoder fixture root tag is text")
+            .strip_prefix("0x")
+            .expect("decoder fixture root tag has a hexadecimal prefix"),
+        16,
+    )
+    .expect("decoder fixture root tag is valid hexadecimal");
+    let item = decode(&wire).expect("the complete fixture item decodes");
+    assert_eq!(item.tag().raw(), root_tag);
+    assert_eq!(item.item_type(), ItemType::Structure);
+    let expected_enumeration = u32::try_from(
+        expected["enumerationValue"]
+            .as_u64()
+            .expect("fixture enumeration value is unsigned"),
+    )
+    .expect("fixture enumeration value fits its wire width");
+    item.with_value(|root| match root {
+        ValueView::Structure(structure) => {
+            let children = structure.children();
+            assert_eq!(children.len(), 2);
+            assert_eq!(
+                children
+                    .iter()
+                    .map(|child| child.tag().raw())
+                    .collect::<Vec<_>>(),
+                [0x0054_0001, 0x0054_0002]
+            );
+            assert_eq!(
+                children[0].with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }),
+                Some(expected_enumeration)
+            );
+            assert_eq!(
+                children[1].with_value(|value| match value {
+                    ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                    _ => None,
+                }),
+                Some(hex_bytes(
+                    expected["byteStringHex"]
+                        .as_str()
+                        .expect("decoder fixture byte string is hexadecimal text"),
+                ))
+            );
+        }
+        _ => panic!("the fixture root is a Structure"),
+    });
+
+    let truncated = hex_bytes(
+        case["input"]["truncatedWireHex"]
+            .as_str()
+            .expect("truncated decoder fixture is hexadecimal text"),
+    );
+    let expected_error = &expected["truncatedError"];
+    let error = decode(&truncated).expect_err("truncated Item Value is rejected");
+    assert_eq!(
+        format!("{:?}", error.kind()),
+        expected_error["kind"].as_str().expect("error kind is text")
+    );
+    assert_eq!(
+        error.offset() as u64,
+        expected_error["byteOffset"].as_u64().unwrap()
+    );
+    assert!(!error.to_string().contains("5400010500000004dead"));
+
+    let message_limit = usize::try_from(
+        case["input"]["messageLimitBytes"]
+            .as_u64()
+            .expect("decoder fixture limit is unsigned"),
+    )
+    .expect("decoder fixture limit fits usize");
+    let limits = CodecLimits::new(message_limit, 64, 100_000).unwrap();
+    let limit_error = decode_with_limits(&wire, &limits)
+        .expect_err("input above the configured message limit is rejected");
+    assert_eq!(limit_error.kind(), DecodeErrorKind::MessageTooLarge);
+    assert_eq!(
+        limit_error.offset() as u64,
+        expected["messageLimitError"]["byteOffset"]
+            .as_u64()
+            .unwrap()
+    );
 }

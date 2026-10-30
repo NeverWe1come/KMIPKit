@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 593,
+    "excluded": 682,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 9861,
-    "matched": 9861,
+    "manifest": 9772,
+    "matched": 9772,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10454
@@ -239155,6 +239155,1452 @@
     },
     {
       "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::any::Any>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>>::borrow"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>>::borrow_mut"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 17,
+        "line": 31,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 21,
+        "line": 31,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 21,
+        "line": 31,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::convert::From<kmipkit_ttlv::codec::CodecLimits>>::from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::From<kmipkit_ttlv::codec::CodecLimits>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::convert::From<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::CodecLimits"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::Into<U>>::into",
+      "implementationId": "610",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "CodecLimits"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::CodecLimits"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryFrom<U>>::Error",
+      "implementationId": "613",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "CodecLimits"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::CodecLimits"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "613",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "CodecLimits"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::CodecLimits"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryInto<U>>::Error",
+      "implementationId": "612",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "CodecLimits"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::CodecLimits"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryInto<U>>::try_into",
+      "implementationId": "612",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "CodecLimits"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::CodecLimits as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 31,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::any::Any>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>>::borrow"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>>::borrow_mut"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::convert::From<kmipkit_ttlv::codec::DecodeError>>::from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::From<kmipkit_ttlv::codec::DecodeError>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::convert::From<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::Into<U>>::into",
+      "implementationId": "719",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryFrom<U>>::Error",
+      "implementationId": "722",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "722",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryInto<U>>::Error",
+      "implementationId": "721",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryInto<U>>::try_into",
+      "implementationId": "721",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::cause"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 212,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::description"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 212,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::provide"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 212,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::source"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 212,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 212,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 182,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeError as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 207,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::any::Any>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow_mut"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>>::from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::Into<U>>::into",
+      "implementationId": "682",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeErrorKind"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryFrom<U>>::Error",
+      "implementationId": "685",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeErrorKind"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "685",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeErrorKind"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryInto<U>>::Error",
+      "implementationId": "684",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeErrorKind"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::DecodeErrorKind"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryInto<U>>::try_into",
+      "implementationId": "684",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "DecodeErrorKind"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 118,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 157,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::any::Any>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>>::borrow"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>>::borrow_mut"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::convert::From<kmipkit_ttlv::codec::LimitsError>>::from"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::From<kmipkit_ttlv::codec::LimitsError>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::convert::From<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::LimitsError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::Into<U>>::into",
+      "implementationId": "633",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "LimitsError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::LimitsError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryFrom<U>>::Error",
+      "implementationId": "636",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "LimitsError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::LimitsError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "636",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "LimitsError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::LimitsError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryInto<U>>::Error",
+      "implementationId": "635",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "LimitsError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_ttlv::codec::LimitsError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryInto<U>>::try_into",
+      "implementationId": "635",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_ttlv",
+        "codec",
+        "LimitsError"
+      ],
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::cause"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 112,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::description"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 112,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::provide"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 112,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::source"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 112,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::type_id"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 112,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 101,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "<kmipkit_ttlv::codec::LimitsError as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [],
+      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 107,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
         "kmipkit_ttlv::Item::try_clone"
       ],
       "exportLocations": [
@@ -239416,6 +240862,51 @@
       "location": {
         "column": 1,
         "line": 1,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS"
+      ],
+      "exportLocations": [],
+      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS",
+      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":44,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_ELEMENTS\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 44,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_MESSAGE_BYTES"
+      ],
+      "exportLocations": [],
+      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_MESSAGE_BYTES",
+      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":40,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_MESSAGE_BYTES\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 40,
+        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
+      },
+      "packageId": "rust-kmipkit-ttlv"
+    },
+    {
+      "aliases": [
+        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH"
+      ],
+      "exportLocations": [],
+      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH",
+      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":42,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_STRUCTURE_DEPTH\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 42,
         "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
       },
       "packageId": "rust-kmipkit-ttlv"
@@ -459886,1538 +461377,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::borrow::Borrow<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 17,
-        "line": 31,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 21,
-        "line": 31,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 21,
-        "line": 31,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::convert::From<kmipkit_ttlv::codec::CodecLimits>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::From<kmipkit_ttlv::codec::CodecLimits>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::convert::From<kmipkit_ttlv::codec::CodecLimits>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::CodecLimits"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::Into<U>>::into",
-      "implementationId": "610",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "CodecLimits"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::CodecLimits"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryFrom<U>>::Error",
-      "implementationId": "613",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "CodecLimits"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::CodecLimits"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "613",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "CodecLimits"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::CodecLimits"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryInto<U>>::Error",
-      "implementationId": "612",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "CodecLimits"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::CodecLimits"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::convert::TryInto<U>>::try_into",
-      "implementationId": "612",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "CodecLimits"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::CodecLimits as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::CodecLimits as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::CodecLimits\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 31,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::DecodeError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::borrow::Borrow<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::convert::From<kmipkit_ttlv::codec::DecodeError>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::From<kmipkit_ttlv::codec::DecodeError>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::convert::From<kmipkit_ttlv::codec::DecodeError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::Into<U>>::into",
-      "implementationId": "719",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryFrom<U>>::Error",
-      "implementationId": "722",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "722",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryInto<U>>::Error",
-      "implementationId": "721",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::convert::TryInto<U>>::try_into",
-      "implementationId": "721",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 212,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 212,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 212,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 212,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 212,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 182,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeError as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeError as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::DecodeError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 207,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::borrow::Borrow<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::convert::From<kmipkit_ttlv::codec::DecodeErrorKind>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::Into<U>>::into",
-      "implementationId": "682",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeErrorKind"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryFrom<U>>::Error",
-      "implementationId": "685",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeErrorKind"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "685",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeErrorKind"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryInto<U>>::Error",
-      "implementationId": "684",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeErrorKind"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::DecodeErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::convert::TryInto<U>>::try_into",
-      "implementationId": "684",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "DecodeErrorKind"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 118,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::DecodeErrorKind as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::DecodeErrorKind\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 157,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_ttlv::codec::LimitsError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::borrow::Borrow<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::borrow::BorrowMut<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::convert::From<kmipkit_ttlv::codec::LimitsError>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::From<kmipkit_ttlv::codec::LimitsError>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::convert::From<kmipkit_ttlv::codec::LimitsError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::LimitsError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::Into<U>>::into",
-      "implementationId": "633",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "LimitsError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::LimitsError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryFrom<U>>::Error",
-      "implementationId": "636",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "LimitsError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::LimitsError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "636",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "LimitsError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::LimitsError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryInto<U>>::Error",
-      "implementationId": "635",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "LimitsError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_ttlv::codec::LimitsError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::convert::TryInto<U>>::try_into",
-      "implementationId": "635",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_ttlv",
-        "codec",
-        "LimitsError"
-      ],
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 112,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 112,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 112,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 112,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 112,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 101,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "<kmipkit_ttlv::codec::LimitsError as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "<kmipkit_ttlv::codec::LimitsError as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-ttlv\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_ttlv::codec::LimitsError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 107,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
         "kmipkit_ttlv::Item"
       ],
       "declarationState": "declared",
@@ -462754,54 +462713,6 @@
     },
     {
       "aliases": [
-        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_ELEMENTS",
-      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":44,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_ELEMENTS\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 44,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_MESSAGE_BYTES"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_MESSAGE_BYTES",
-      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":40,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_MESSAGE_BYTES\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 40,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
-        "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [],
-      "exportName": "kmipkit_ttlv::codec::CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH",
-      "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":42,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"assoc_const\",[\"kmipkit_ttlv\",\"codec\",\"CodecLimits\",\"DEFAULT_MAX_STRUCTURE_DEPTH\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 42,
-        "path": "crates/kmipkit-ttlv/src/codec/mod.rs"
-      },
-      "packageId": "rust-kmipkit-ttlv"
-    },
-    {
-      "aliases": [
         "kmipkit_ttlv::codec::CodecLimits::defaults"
       ],
       "declarationState": "declared",
@@ -462884,7 +462795,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeError"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeError",
       "identity": "[\"kmipkit_ttlv\",{\"column\":1,\"line\":183,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"struct\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\"]]",
@@ -462900,7 +462811,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeError::kind"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeError::kind",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":195,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"function\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\",\"kind\"]]",
@@ -462916,7 +462827,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeError::offset"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeError::offset",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":201,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"function\",[\"kmipkit_ttlv\",\"codec\",\"DecodeError\",\"offset\"]]",
@@ -462932,7 +462843,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind",
       "identity": "[\"kmipkit_ttlv\",{\"column\":1,\"line\":119,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"enum\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\"]]",
@@ -462948,7 +462859,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::AllocationFailed"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::AllocationFailed",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":151,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"AllocationFailed\"]]",
@@ -462964,7 +462875,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::ElementLimitExceeded"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::ElementLimitExceeded",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":149,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"ElementLimitExceeded\"]]",
@@ -462980,7 +462891,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::EmptyBigInteger"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::EmptyBigInteger",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":129,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"EmptyBigInteger\"]]",
@@ -462996,7 +462907,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::InvalidBoolean"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::InvalidBoolean",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":133,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"InvalidBoolean\"]]",
@@ -463012,7 +462923,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::InvalidItemLength"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::InvalidItemLength",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":127,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"InvalidItemLength\"]]",
@@ -463028,7 +462939,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::InvalidPaddingExtent"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::InvalidPaddingExtent",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":145,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"InvalidPaddingExtent\"]]",
@@ -463044,7 +462955,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::InvalidUtf8"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::InvalidUtf8",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":131,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"InvalidUtf8\"]]",
@@ -463060,7 +462971,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::MessageTooLarge"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::MessageTooLarge",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":121,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"MessageTooLarge\"]]",
@@ -463076,7 +462987,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::ModelConstraint"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::ModelConstraint",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":153,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"ModelConstraint\"]]",
@@ -463092,7 +463003,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::ReservedTag"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::ReservedTag",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":141,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"ReservedTag\"]]",
@@ -463108,7 +463019,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::StructureBoundary"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::StructureBoundary",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":139,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"StructureBoundary\"]]",
@@ -463124,7 +463035,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::StructureDepthExceeded"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::StructureDepthExceeded",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":147,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"StructureDepthExceeded\"]]",
@@ -463140,7 +463051,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::TrailingBytes"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::TrailingBytes",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":137,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"TrailingBytes\"]]",
@@ -463156,7 +463067,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::TruncatedHeader"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::TruncatedHeader",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":123,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"TruncatedHeader\"]]",
@@ -463172,7 +463083,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::TruncatedValue"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::TruncatedValue",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":125,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"TruncatedValue\"]]",
@@ -463188,7 +463099,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::UnallocatedTag"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::UnallocatedTag",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":143,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"UnallocatedTag\"]]",
@@ -463204,7 +463115,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::DecodeErrorKind::UnsupportedItemType"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::DecodeErrorKind::UnsupportedItemType",
       "identity": "[\"kmipkit_ttlv\",{\"column\":5,\"line\":135,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"variant\",[\"kmipkit_ttlv\",\"codec\",\"DecodeErrorKind\",\"UnsupportedItemType\"]]",
@@ -463220,7 +463131,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::LimitsError"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [],
       "exportName": "kmipkit_ttlv::codec::LimitsError",
       "identity": "[\"kmipkit_ttlv\",{\"column\":1,\"line\":102,\"path\":\"crates/kmipkit-ttlv/src/codec/mod.rs\"},\"struct\",[\"kmipkit_ttlv\",\"codec\",\"LimitsError\"]]",
@@ -463236,7 +463147,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::decode"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 19,
@@ -463258,7 +463169,7 @@
       "aliases": [
         "kmipkit_ttlv::codec::decode_with_limits"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 27,

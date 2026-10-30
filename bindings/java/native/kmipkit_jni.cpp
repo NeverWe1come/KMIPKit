@@ -8649,4 +8649,97 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientAsyncOper
     });
 }
 
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_ttlv_NativeTtlvCodec_decode(
+        JNIEnv* env, jclass, jbyteArray wire, jlongArray raw_limits) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        if (wire == nullptr || raw_limits == nullptr || env->GetArrayLength(raw_limits) != 3) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+
+        jlong configured[3] = {};
+        env->GetLongArrayRegion(raw_limits, 0, 3, configured);
+        if (env->ExceptionCheck()) return static_cast<jlongArray>(nullptr);
+        if (configured[0] < 0 || configured[1] < 0 || configured[2] < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+
+        kmipkit_codec_limits_t* raw_codec_limits = nullptr;
+        const int32_t limits_status = kmipkit_codec_limits_create(
+                static_cast<uint64_t>(configured[0]),
+                static_cast<uint64_t>(configured[1]),
+                static_cast<uint64_t>(configured[2]),
+                &raw_codec_limits);
+        if (limits_status != 0) {
+            throw_status(env, limits_status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        std::unique_ptr<kmipkit_codec_limits_t, decltype(&kmipkit_codec_limits_release)>
+                codec_limits(raw_codec_limits, &kmipkit_codec_limits_release);
+
+        kmipkit_ttlv_decode_error_v1_t error{};
+        error.struct_size = static_cast<uint32_t>(sizeof(error));
+        error.abi_version = 1;
+        const jsize wire_length = env->GetArrayLength(wire);
+        kmipkit_ttlv_item_t* raw_item = nullptr;
+        std::unique_ptr<kmipkit_ttlv_item_t, decltype(&kmipkit_ttlv_item_release)>
+                item(raw_item, &kmipkit_ttlv_item_release);
+        int32_t status = 0;
+
+        if (static_cast<uint64_t>(wire_length) > static_cast<uint64_t>(configured[0])) {
+            error.kind = KMIPKIT_TTLV_DECODE_ERROR_KIND_MESSAGE_TOO_LARGE;
+            status = KMIPKIT_ERROR_RESOURCE_LIMIT;
+        } else {
+            std::vector<uint8_t> bytes;
+            kmipkit::secure::VectorWiper wipe_bytes(bytes);
+            try {
+                bytes.resize(static_cast<std::size_t>(wire_length));
+            } catch (const std::bad_alloc&) {
+                error.kind = KMIPKIT_TTLV_DECODE_ERROR_KIND_ALLOCATION_FAILED;
+                status = KMIPKIT_ERROR_RESOURCE_LIMIT;
+            }
+            if (status == 0) {
+                if (wire_length > 0) {
+                    env->GetByteArrayRegion(wire, 0, wire_length,
+                            reinterpret_cast<jbyte*>(bytes.data()));
+                    if (env->ExceptionCheck()) return static_cast<jlongArray>(nullptr);
+                }
+                status = kmipkit_ttlv_decode_with_limits(
+                        bytes.empty() ? nullptr : bytes.data(),
+                        static_cast<uint64_t>(wire_length), codec_limits.get(),
+                        &error, &raw_item);
+                item.reset(raw_item);
+            }
+        }
+
+        const jlong values[4] = {
+            item == nullptr ? 0 : to_java_handle(item.get()),
+            static_cast<jlong>(error.kind),
+            static_cast<jlong>(error.byte_offset),
+            static_cast<jlong>(status),
+        };
+        jlongArray result = env->NewLongArray(4);
+        if (result == nullptr) return static_cast<jlongArray>(nullptr);
+        env->SetLongArrayRegion(result, 0, 4, values);
+        if (env->ExceptionCheck()) return static_cast<jlongArray>(nullptr);
+        if (item != nullptr) item.release();
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_ttlv_NativeTtlvCodec_itemViewFromItem(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* item = from_java_handle<kmipkit_ttlv_item_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_ttlv_item_view_t>(env, [&](auto output) {
+            return kmipkit_ttlv_item_view_from_item(item, output);
+        });
+    });
+}
+
 } // extern "C"

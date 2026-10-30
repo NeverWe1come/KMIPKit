@@ -1189,6 +1189,93 @@
         }
       },
       "normativeSource": "OASIS KMIP Specification v2.1 §6.1.23, Table 232; approved local guard interpretation in KMIPKIT-0039"
+    },
+    {
+      "id": "ttlv.decoder-root-structure.v1",
+      "capability": "ttlv_wire_codec",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-004",
+        "KMIPKIT-0005-FR-005",
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0005-FR-009",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017"
+      ],
+      "input": {
+        "wireHex": "54000301000000205400010500000004e102030400000000540002080000000380ff010000000000",
+        "truncatedWireHex": "5400010500000004dead",
+        "messageLimitBytes": 15
+      },
+      "expectedOutput": {
+        "rootTag": "0x540003",
+        "rootType": "Structure",
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
+        "enumerationValue": 3775005444,
+        "byteStringHex": "80ff01",
+        "truncatedError": {
+          "kind": "TruncatedValue",
+          "kindCode": 3,
+          "byteOffset": 8
+        },
+        "messageLimitError": {
+          "kind": "MessageTooLarge",
+          "kindCode": 1,
+          "byteOffset": 0
+        }
+      },
+      "javaObservedOutput": {
+        "rootTag": "0x540003",
+        "rootType": "Structure",
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
+        "enumerationValue": 3775005444,
+        "byteStringHex": "80ff01"
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "release-decoded-item-after-retaining-root-view",
+        "release-all-descendant-views"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+          "test": "generic_ttlv_decoder_matches_shared_fixture_and_limits"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "shared_ttlv_decoder_fixture_matches_values_and_errors",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_decodes_ttlv_and_reports_safe_errors",
+              "assertions": [
+                "root-item-view-retains-owner",
+                "unknown-enumeration-and-child-order",
+                "redacted-truncated-input-error-offset",
+                "configured-message-limit"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#genericTtlvDecoderMatchesSharedFixtureAndRetainsRootOwner"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_ttlv_decoder_matches_shared_fixture_and_redacts_errors"
+        }
+      }
     }
   ]
 }

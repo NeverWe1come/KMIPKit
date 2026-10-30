@@ -757,6 +757,27 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
             "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
             "clientBatchSetRequestTimestamp", "clientCreate", "clientExecute",
+            "CLIENT_ASYNC_OPERATION_OUTCOME",
+            "clientAsyncOperationOutcomeMetadataV1",
+            "clientAsyncOperationOutcomeResponsePayloadTtlv",
+            "withClientAsyncOperationOutcomeCorrelationValue",
+            "clientExecuteCancel", "clientExecutePoll", "clientExecuteProcess",
+            "clientExecuteQueryAsyncRequests", "clientExecuteWithProfiles",
+            "clientBatchItemActivate", "clientBatchItemArchive",
+            "clientBatchItemDestroy", "clientBatchItemRecover",
+            "clientBatchItemGetAttributeList", "clientBatchItemGetAttributes",
+            "clientBatchItemAddAttribute", "clientBatchItemAdjustAttribute",
+            "clientBatchItemDeleteAttribute", "clientBatchItemModifyAttribute",
+            "clientBatchItemSetAttribute",
+            "clientBatchItemResponseActivate", "clientBatchItemResponseArchive",
+            "clientBatchItemResponseDestroy", "clientBatchItemResponseRecover",
+            "clientBatchItemResponseGetAttributeList",
+            "clientBatchItemResponseGetAttributes",
+            "clientBatchItemResponseAddAttribute",
+            "clientBatchItemResponseAdjustAttribute",
+            "clientBatchItemResponseDeleteAttribute",
+            "clientBatchItemResponseModifyAttribute",
+            "clientBatchItemResponseSetAttribute",
             "transportConfigCreate",
         }
         expected_native = {
@@ -774,9 +795,22 @@ class BindingExportAuditTests(unittest.TestCase):
         )
         for key in expected_native:
             exclusion = exclusions[key]
-            self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
-            self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
-            self.assertIn("ffi-and-bindings.md", exclusion["evidence"])
+            evidence = exclusion["evidence"]
+            self.assertIn("KMIPKIT-0043-FR-021", evidence)
+            bridge_owner = {
+                "org.kmipkit.NativeExtensionRegistry.clientExecuteWithProfiles": "T036",
+                "org.kmipkit.NativeExtensionRegistry.withClientAsyncOperationOutcomeCorrelationValue": "T035",
+            }.get(key[1])
+            if bridge_owner is None:
+                self.assertIn("KMIPKIT-0043-FR-008", evidence)
+                if "ffi-and-bindings.md" not in evidence:
+                    self.assertTrue(
+                        any(task_id in evidence for task_id in ("T035", "T037", "T039")),
+                        evidence,
+                    )
+            else:
+                self.assertIn(bridge_owner, evidence)
+                self.assertIn("minimal JNI bridge", evidence)
 
         get_usage_request = exclusions[(
             "java-kmipkit",

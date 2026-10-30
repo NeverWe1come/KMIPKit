@@ -128,6 +128,44 @@ def codec_limits_create(
     return _wrap_owned_handle(CodecLimits, handle)
 
 
+def _decode_wire(wire: bytes, limits: CodecLimits | None) -> TtlvItem:
+    if not isinstance(wire, bytes) or (limits is not None and not isinstance(limits, CodecLimits)):
+        errors.raise_for_status(4)
+    error = ffi.new("kmipkit_ttlv_decode_error_v1_t *")
+    error.struct_size = ffi.sizeof("kmipkit_ttlv_decode_error_v1_t")
+    error.abi_version = 1
+    output = ffi.new("kmipkit_ttlv_item_t **")
+    data = ffi.from_buffer("const uint8_t[]", wire) if wire else ffi.NULL
+    if limits is None:
+        status = _invoke(lib.kmipkit_ttlv_decode, data, len(wire), error, output)
+    else:
+        status = _invoke(
+            lib.kmipkit_ttlv_decode_with_limits,
+            data,
+            len(wire),
+            limits._pointer(),
+            error,
+            output,
+        )
+    if status != 0:
+        if error.kind != 0:
+            raise errors.TtlvDecodeError(int(error.kind), int(error.byte_offset))
+        errors.raise_for_status(status)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return _wrap_owned_handle(TtlvItem, output[0])
+
+
+def ttlv_decode(wire: bytes) -> TtlvItem:
+    """Decode exactly one complete Item using the default bounded codec limits."""
+    return _decode_wire(wire, None)
+
+
+def ttlv_decode_with_limits(wire: bytes, limits: CodecLimits) -> TtlvItem:
+    """Decode exactly one complete Item using caller-selected resource limits."""
+    return _decode_wire(wire, limits)
+
+
 def codec_limits_max_message_bytes(limits: CodecLimits) -> int:
     return _scalar(
         "uint64_t", lib.kmipkit_codec_limits_max_message_bytes, limits._pointer()
@@ -245,6 +283,18 @@ def ttlv_item_create(tag: Tag, value: Value, limits: CodecLimits) -> TtlvItem:
         consumed=(1,),
     )
     return _wrap_owned_handle(TtlvItem, handle)
+
+
+def ttlv_item_view_from_item(item: TtlvItem) -> TtlvItemView:
+    """Create a read-only view of an owned Item while retaining its native owner."""
+    if not isinstance(item, TtlvItem):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_item_view_t",
+        lib.kmipkit_ttlv_item_view_from_item,
+        item._pointer(),
+    )
+    return _wrap_owned_handle(TtlvItemView, handle, owner=item)
 
 
 def ttlv_structure_with_item(

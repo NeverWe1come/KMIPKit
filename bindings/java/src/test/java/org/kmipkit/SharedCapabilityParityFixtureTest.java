@@ -47,7 +47,7 @@ final class SharedCapabilityParityFixtureTest {
                 stringArrayField(fixture, "executableConsumerLanguages"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(13, ids.size());
+        assertEquals(14, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
@@ -231,6 +231,54 @@ final class SharedCapabilityParityFixtureTest {
                 numberField(configuredInput, "maxMessageBytes"),
                 numberField(invalidDepth, "value"),
                 numberField(configuredInput, "maxElements")));
+    }
+
+    @Test
+    void genericTtlvDecoderMatchesSharedFixtureAndRetainsRootOwner() throws IOException {
+        String fixture = Files.readString(sharedFixturePath());
+        String item = caseById(fixture, "ttlv.decoder-root-structure.v1");
+        String input = objectField(item, "input");
+        String expected = objectField(item, "expectedOutput");
+        byte[] wire = java.util.HexFormat.of().parseHex(stringField(input, "wireHex"));
+        org.kmipkit.ttlv.TtlvItem decoded = org.kmipkit.ttlv.TtlvCodec.decode(wire);
+        org.kmipkit.ttlv.TtlvItemView root = decoded.view();
+        decoded.close();
+
+        try (root;
+                var rootValue = root.value();
+                var structure = rootValue.structure();
+                var enumerationItem = structure.itemAt(0);
+                var enumerationValue = enumerationItem.value();
+                var byteStringItem = structure.itemAt(1);
+                var byteStringValue = byteStringItem.value();
+                var rootTag = root.tag();
+                var enumerationTag = enumerationItem.tag();
+                var byteStringTag = byteStringItem.tag()) {
+            assertEquals(Long.parseLong(stringField(expected, "rootTag").substring(2), 16), rootTag.raw());
+            assertEquals("Structure", root.itemType().name());
+            assertEquals(List.of("0x540001", "0x540002"),
+                    List.of(String.format("0x%06x", enumerationTag.raw()),
+                            String.format("0x%06x", byteStringTag.raw())));
+            assertEquals(numberField(expected, "enumerationValue"), enumerationValue.enumeration());
+            assertArrayEquals(java.util.HexFormat.of().parseHex(stringField(expected, "byteStringHex")),
+                    byteArray(byteStringValue));
+        }
+
+        String truncatedHex = stringField(input, "truncatedWireHex");
+        org.kmipkit.ttlv.TtlvDecodeException truncated = assertThrows(
+                org.kmipkit.ttlv.TtlvDecodeException.class,
+                () -> org.kmipkit.ttlv.TtlvCodec.decode(java.util.HexFormat.of().parseHex(truncatedHex)));
+        assertEquals(3, truncated.kind());
+        assertEquals(8, truncated.byteOffset());
+        assertFalse(truncated.getMessage().contains(truncatedHex));
+
+        long maxBytes = numberField(input, "messageLimitBytes");
+        var limits = CodecLimits.create(maxBytes, 64, 100_000);
+        org.kmipkit.ttlv.TtlvDecodeException limit = assertThrows(
+                org.kmipkit.ttlv.TtlvDecodeException.class,
+                () -> org.kmipkit.ttlv.TtlvCodec.decodeWithLimits(wire, limits));
+        assertEquals(1, limit.kind());
+        assertEquals(0, limit.byteOffset());
     }
 
     private static byte[] byteArray(org.kmipkit.ttlv.TtlvValueView value) {

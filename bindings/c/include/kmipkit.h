@@ -28,6 +28,25 @@ typedef uint32_t kmipkit_unique_identifier_kind_t;
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
 
+typedef uint32_t kmipkit_ttlv_decode_error_kind_t;
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_MESSAGE_TOO_LARGE ((kmipkit_ttlv_decode_error_kind_t)1)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER ((kmipkit_ttlv_decode_error_kind_t)2)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_VALUE ((kmipkit_ttlv_decode_error_kind_t)3)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_ITEM_LENGTH ((kmipkit_ttlv_decode_error_kind_t)4)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_EMPTY_BIG_INTEGER ((kmipkit_ttlv_decode_error_kind_t)5)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_UTF8 ((kmipkit_ttlv_decode_error_kind_t)6)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_BOOLEAN ((kmipkit_ttlv_decode_error_kind_t)7)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_UNSUPPORTED_ITEM_TYPE ((kmipkit_ttlv_decode_error_kind_t)8)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRAILING_BYTES ((kmipkit_ttlv_decode_error_kind_t)9)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_STRUCTURE_BOUNDARY ((kmipkit_ttlv_decode_error_kind_t)10)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_RESERVED_TAG ((kmipkit_ttlv_decode_error_kind_t)11)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_UNALLOCATED_TAG ((kmipkit_ttlv_decode_error_kind_t)12)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_INVALID_PADDING_EXTENT ((kmipkit_ttlv_decode_error_kind_t)13)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_STRUCTURE_DEPTH_EXCEEDED ((kmipkit_ttlv_decode_error_kind_t)14)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_ELEMENT_LIMIT_EXCEEDED ((kmipkit_ttlv_decode_error_kind_t)15)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_ALLOCATION_FAILED ((kmipkit_ttlv_decode_error_kind_t)16)
+#define KMIPKIT_TTLV_DECODE_ERROR_KIND_MODEL_CONSTRAINT ((kmipkit_ttlv_decode_error_kind_t)17)
+
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG ((uint32_t)1)
 #define KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME ((uint32_t)2)
 
@@ -77,6 +96,7 @@ typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_ope
 typedef struct kmipkit_profile_validation_selection_v1_t kmipkit_profile_validation_selection_v1_t;
 typedef struct kmipkit_profile_object_state_v1_t kmipkit_profile_object_state_v1_t;
 typedef struct kmipkit_profile_validation_context_v1_t kmipkit_profile_validation_context_v1_t;
+typedef struct kmipkit_ttlv_decode_error_v1_t kmipkit_ttlv_decode_error_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -205,6 +225,13 @@ struct kmipkit_profile_validation_context_v1_t {
     uint32_t abi_version;
     const kmipkit_profile_object_state_v1_t * object_states;
     uint64_t object_state_count;
+};
+
+struct kmipkit_ttlv_decode_error_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t kind;
+    uint64_t byte_offset;
 };
 
 struct kmipkit_byte_span_v1_t {
@@ -1280,6 +1307,12 @@ int32_t kmipkit_client_execute_with_profiles_and_context(kmipkit_client_t * clie
  */
 /* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute_with_profiles_and_context_and_options_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_profile_validation_selection_v1_t * selection, const kmipkit_profile_validation_context_v1_t * context, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0005-FR-004, KMIPKIT-0005-FR-005, KMIPKIT-0005-FR-006, KMIPKIT-0005-FR-007, KMIPKIT-0005-FR-009, KMIPKIT-0005-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_ttlv_decode(const uint8_t * data, uint64_t length, kmipkit_ttlv_decode_error_v1_t * error, kmipkit_ttlv_item_t ** out_item);
+/* KMIPKIT-0005-FR-004, KMIPKIT-0005-FR-005, KMIPKIT-0005-FR-006, KMIPKIT-0005-FR-007, KMIPKIT-0005-FR-009, KMIPKIT-0005-FR-010, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_ttlv_decode_with_limits(const uint8_t * data, uint64_t length, kmipkit_codec_limits_t * limits, kmipkit_ttlv_decode_error_v1_t * error, kmipkit_ttlv_item_t ** out_item);
+/* KMIPKIT-0004-FR-010, KMIPKIT-0005-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_ttlv_item_view_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_view_t ** out_view);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

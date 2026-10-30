@@ -61,6 +61,13 @@ unsafe extern "C" {
         configured_elements: u64,
         invalid_structure_depth: u64,
     ) -> i32;
+    fn shared_ttlv_decoder_fixture_matches_values_and_errors(
+        wire: *const u8,
+        wire_length: u64,
+        truncated_wire: *const u8,
+        truncated_length: u64,
+        message_limit_bytes: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_execute_tls(
         argc: i32,
         argv: *mut *mut c_char,
@@ -236,6 +243,45 @@ fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
     };
 
     assert_eq!(result, 1, "the C ABI must match the CodecLimits fixture");
+}
+
+#[test]
+fn c_abi_consumer_decodes_ttlv_and_reports_safe_errors() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "ttlv.decoder-root-structure.v1")
+        .expect("the generic TTLV decoder fixture case exists");
+    let wire = decode_fixture_hex(
+        case["input"]["wireHex"]
+            .as_str()
+            .expect("decoder fixture wire is hexadecimal text"),
+    );
+    let truncated_wire = decode_fixture_hex(
+        case["input"]["truncatedWireHex"]
+            .as_str()
+            .expect("truncated decoder fixture is hexadecimal text"),
+    );
+    let message_limit = case["input"]["messageLimitBytes"]
+        .as_u64()
+        .expect("decoder fixture message limit is unsigned");
+
+    // SAFETY: the fixture-backed byte slices remain live throughout the synchronous C call.
+    let result = unsafe {
+        shared_ttlv_decoder_fixture_matches_values_and_errors(
+            wire.as_ptr(),
+            u64::try_from(wire.len()).expect("fixture wire length fits u64"),
+            truncated_wire.as_ptr(),
+            u64::try_from(truncated_wire.len()).expect("truncated fixture length fits u64"),
+            message_limit,
+        )
+    };
+    assert_eq!(result, 1, "the C ABI must decode and report safe errors");
 }
 
 #[test]

@@ -40,10 +40,10 @@ use crate::{
     kmipkit_request_options_v1_t, kmipkit_revocation_reason_t, kmipkit_revoke_request_t,
     kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
     kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_validated_extension_value_t,
+    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_usage_allocation_context_t, kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
@@ -76,7 +76,7 @@ use kmipkit_transport::{
     RequestOptions, RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory,
     TransportConfig, TrustSource,
 };
-use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::codec::{CodecLimits, DecodeErrorKind, decode_with_limits};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::time::Duration;
 
@@ -457,6 +457,7 @@ impl ClientBatchBuilder {
 enum ViewRoot {
     Structure,
     Value,
+    Item,
     RecognitionGeneric,
     ValidatedGeneric,
 }
@@ -546,6 +547,21 @@ impl TtlvView {
                     _ => Err(ERROR_INVALID_INPUT),
                 })
             }
+            ViewRoot::Item => {
+                let HandleValue::Item(item) = &self.owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                let item_steps = match steps.split_first() {
+                    Some((ViewStep::Value, remaining)) => remaining,
+                    _ => steps,
+                };
+                item.with_value(|value| match value {
+                    ValueView::Structure(structure) => {
+                        resolve_structure_path(&structure, item_steps, callback)
+                    }
+                    _ => Err(ERROR_INVALID_INPUT),
+                })
+            }
             ViewRoot::RecognitionGeneric => {
                 let HandleValue::Recognition(recognition) = &self.owner.value else {
                     return Err(ERROR_INVALID_INPUT);
@@ -578,6 +594,12 @@ impl TtlvView {
             return Err(ERROR_INVALID_INPUT);
         }
         let Some((ViewStep::Item(index), parent_steps)) = self.steps.split_last() else {
+            if self.root == ViewRoot::Item && self.steps.is_empty() {
+                let HandleValue::Item(item) = &self.owner.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                return Ok(callback(item));
+            }
             return Err(ERROR_INVALID_INPUT);
         };
         self.with_structure_at(parent_steps, |structure| {
@@ -601,6 +623,21 @@ impl TtlvView {
                 return Err(ERROR_INVALID_INPUT);
             };
             return value.with_value(callback);
+        }
+        if self.root == ViewRoot::Item && matches!(self.steps.as_slice(), [ViewStep::Value]) {
+            let HandleValue::Item(item) = &self.owner.value else {
+                return Err(ERROR_INVALID_INPUT);
+            };
+            return item.with_value(callback);
+        }
+
+        if self.root == ViewRoot::Item {
+            let [ViewStep::Value, remaining @ ..] = self.steps.as_slice() else {
+                return Err(ERROR_INVALID_INPUT);
+            };
+            return self.with_structure_at(&[], |structure| {
+                resolve_value_path(structure, remaining, callback)
+            })?;
         }
 
         self.with_structure_at(&[], |structure| {
@@ -6234,6 +6271,115 @@ pub extern "C" fn kmipkit_codec_limits_max_elements(
     ffi_entrypoint(|| codec_limit_value(limits, max_elements, CodecLimits::max_elements))
 }
 
+fn decode_error_kind_code(kind: DecodeErrorKind) -> u32 {
+    match kind {
+        DecodeErrorKind::MessageTooLarge => 1,
+        DecodeErrorKind::TruncatedHeader => 2,
+        DecodeErrorKind::TruncatedValue => 3,
+        DecodeErrorKind::InvalidItemLength => 4,
+        DecodeErrorKind::EmptyBigInteger => 5,
+        DecodeErrorKind::InvalidUtf8 => 6,
+        DecodeErrorKind::InvalidBoolean => 7,
+        DecodeErrorKind::UnsupportedItemType => 8,
+        DecodeErrorKind::TrailingBytes => 9,
+        DecodeErrorKind::StructureBoundary => 10,
+        DecodeErrorKind::ReservedTag => 11,
+        DecodeErrorKind::UnallocatedTag => 12,
+        DecodeErrorKind::InvalidPaddingExtent => 13,
+        DecodeErrorKind::StructureDepthExceeded => 14,
+        DecodeErrorKind::ElementLimitExceeded => 15,
+        DecodeErrorKind::AllocationFailed => 16,
+        DecodeErrorKind::ModelConstraint => 17,
+        _ => u32::MAX,
+    }
+}
+
+fn decode_error_status(kind: DecodeErrorKind) -> i32 {
+    match kind {
+        DecodeErrorKind::MessageTooLarge
+        | DecodeErrorKind::StructureDepthExceeded
+        | DecodeErrorKind::ElementLimitExceeded
+        | DecodeErrorKind::AllocationFailed => ERROR_RESOURCE_LIMIT,
+        _ => ERROR_PROTOCOL,
+    }
+}
+
+fn decode_ttlv_into_handle(
+    data: *const u8,
+    length: u64,
+    limits: &CodecLimits,
+    error: *mut kmipkit_ttlv_decode_error_v1_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    let error = scalar_out!(error);
+    let out = out_slot!(out_item);
+    if error.struct_size as usize != size_of::<kmipkit_ttlv_decode_error_v1_t>()
+        || error.abi_version != 1
+    {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    error.kind = 0;
+    error.byte_offset = 0;
+
+    let Ok(max_message_bytes) = u64::try_from(limits.max_message_bytes()) else {
+        return record_ffi_error(ERROR_RESOURCE_LIMIT);
+    };
+    if length > max_message_bytes || length > isize::MAX as u64 {
+        error.kind = decode_error_kind_code(DecodeErrorKind::MessageTooLarge);
+        return record_ffi_error(ERROR_RESOURCE_LIMIT);
+    }
+    let bytes = match input_span(data, length, isize::MAX as u64) {
+        Ok(bytes) => bytes,
+        Err(status) => return record_ffi_error(status),
+    };
+    match decode_with_limits(bytes, limits) {
+        Ok(item) => match try_make_handle(Kind::Item, HandleValue::Item(item)) {
+            Ok(item) => {
+                *out = item;
+                SUCCESS
+            }
+            Err(status) => record_ffi_error(status),
+        },
+        Err(decode_error) => {
+            error.kind = decode_error_kind_code(decode_error.kind());
+            error.byte_offset = match u64::try_from(decode_error.offset()) {
+                Ok(offset) => offset,
+                Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+            };
+            record_ffi_error(decode_error_status(decode_error.kind()))
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_decode(
+    data: *const u8,
+    length: u64,
+    error: *mut kmipkit_ttlv_decode_error_v1_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        decode_ttlv_into_handle(data, length, &CodecLimits::defaults(), error, out_item)
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_decode_with_limits(
+    data: *const u8,
+    length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    error: *mut kmipkit_ttlv_decode_error_v1_t,
+    out_item: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let limits = match codec_limits_from_handle(limits) {
+            Ok(limits) => limits,
+            Err(status) => return record_ffi_error(status),
+        };
+        decode_ttlv_into_handle(data, length, &limits, error, out_item)
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_ttlv_value_integer(
     value: i32,
@@ -6507,6 +6653,21 @@ pub extern "C" fn kmipkit_ttlv_structure_view(
             Kind::StructureView,
             HandleValue::StructureView(view)
         ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_item_view_from_item(
+    item: *mut kmipkit_ttlv_item_t,
+    out_view: *mut *mut kmipkit_ttlv_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let _ = read_handle!(item, Item);
+        let owner = try_ffi!(clone_handle_owner(item, Kind::Item));
+        let view = TtlvView::new(owner, ViewRoot::Item, ViewTarget::Item);
+        *out = try_ffi!(try_make_handle(Kind::ItemView, HandleValue::ItemView(view)));
         SUCCESS
     })
 }

@@ -52,6 +52,42 @@ class ResourceLimitError(KmipKitError):
     category = "resource_limit"
 
 
+class TtlvDecodeErrorKind(_IntEnum):
+    """Stable generic TTLV decoder categories; unknown integer values remain preservable."""
+
+    MESSAGE_TOO_LARGE = 1
+    TRUNCATED_HEADER = 2
+    TRUNCATED_VALUE = 3
+    INVALID_ITEM_LENGTH = 4
+    EMPTY_BIG_INTEGER = 5
+    INVALID_UTF8 = 6
+    INVALID_BOOLEAN = 7
+    UNSUPPORTED_ITEM_TYPE = 8
+    TRAILING_BYTES = 9
+    STRUCTURE_BOUNDARY = 10
+    RESERVED_TAG = 11
+    UNALLOCATED_TAG = 12
+    INVALID_PADDING_EXTENT = 13
+    STRUCTURE_DEPTH_EXCEEDED = 14
+    ELEMENT_LIMIT_EXCEEDED = 15
+    ALLOCATION_FAILED = 16
+    MODEL_CONSTRAINT = 17
+
+
+class TtlvDecodeError(KmipKitError):
+    """A redacted decoder failure containing only a stable category and byte offset."""
+
+    category = "ttlv_decode"
+
+    def __init__(self, kind: int, byte_offset: int) -> None:
+        self.kind = _known_or_raw(TtlvDecodeErrorKind, int(kind))
+        self.byte_offset = int(byte_offset)
+        super().__init__()
+        self.args = (
+            f"KMIPKit TTLV decoding failed ({self.kind}; byte offset {self.byte_offset})",
+        )
+
+
 class ClientErrorCategory(_IntEnum):
     """Stable client execution categories returned by the C ABI."""
 

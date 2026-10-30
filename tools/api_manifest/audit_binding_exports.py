@@ -97,7 +97,11 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             name = macro.group(1)
             if name == include_guard:
                 continue
-            records.append(_record(package, name, "constant" if name.startswith("KMIPKIT_ERROR_") else "macro", str(line_number)))
+            is_error_constant = name.startswith((
+                "KMIPKIT_ERROR_",
+                "KMIPKIT_TTLV_DECODE_ERROR_KIND_",
+            ))
+            records.append(_record(package, name, "constant" if is_error_constant else "macro", str(line_number)))
     parsed_aggregate_spans: set[tuple[int, int]] = set()
     aggregate_pattern = re.compile(r"\btypedef\s+(struct|union)(?:\s+[A-Za-z_]\w*)?\s*\{([^{}]*)\}\s*([A-Za-z_]\w*)\s*;", re.S)
 
