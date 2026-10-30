@@ -1555,12 +1555,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and row["exportName"].split(" as ", 1)[0][1:].startswith(
                 trait_type_prefixes
             )
-            and not (
-                row["packageId"] == "rust-kmipkit"
-                and row["exportName"].startswith("<kmipkit::ClientCauseCategory as ")
-            )
         }
-        self.assertEqual(466, len(observed_traits))
 
         exclusions = {
             (row["packageId"], row["exportName"]): row
@@ -1569,12 +1564,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
             and row["exportName"].startswith("<")
         }
-        missing = sorted(observed_traits - exclusions.keys())
-        extra = sorted(exclusions.keys() - observed_traits)
+        self.assertEqual(466, len(exclusions))
+        missing = sorted(exclusions.keys() - observed_traits)
+        unresolved = sorted(
+            (row["packageId"], row["exportName"])
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0007"
+            and row["packageId"] in target_packages
+            and row["exportName"].startswith("<")
+        )
         self.assertFalse(
-            missing or extra,
+            missing or unresolved,
             "KMIPKIT-0007 standard traits require exact exclusions while direct types "
-            f"stay inventoried; missing={missing[:5]}, extra={extra[:5]}",
+            f"stay inventoried; not observed={missing[:5]}, unresolved={unresolved[:5]}",
         )
 
         direct_exports = {
@@ -1582,11 +1584,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for row in self.checked_in_manifest["publicDeclarations"]
         }
         for package_id, export_name in observed_traits:
-            type_name = export_name.split(" as ", 1)[0][1:]
+            type_name = export_name.split(" as ", 1)[0][1:].split("<", 1)[0]
             with self.subTest(type=type_name, package=package_id):
                 self.assertIn((package_id, type_name), direct_exports)
 
-        for key in sorted(observed_traits):
+        for key in sorted(exclusions):
             exclusion = exclusions[key]
             type_name = key[1].split(" as ", 1)[0][1:].rsplit("::", 1)[-1]
             with self.subTest(export=key[1]):
