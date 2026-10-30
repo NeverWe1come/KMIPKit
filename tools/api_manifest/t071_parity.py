@@ -25,6 +25,7 @@ API_LEVELS_CASE = "api-levels.shared.v1"
 OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
 EXTENSION_RECOGNITION_CASE = "extensions.recognition-and-generic-preservation.v1"
 CREATE_REQUEST_CASE = "creation.create.request-response.v1"
+CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -182,6 +183,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_shared_parity_fixtures.py",
             "test_creation_create_matches_shared_fixture",
+        ),
+    },
+    CREATE_KEY_PAIR_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/creation_parity_tests.rs",
+            "create_key_pair_request_and_result_match_shared_creation_fixture",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "generated_public_client_abi_consumer_compiles_and_runs",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+            "org.kmipkit.SharedCapabilityParityFixtureTest#creationKeyPairMatchesSharedFixture",
+        ),
+        "python": (
+            "bindings/python/tests/test_shared_parity_fixtures.py",
+            "test_creation_key_pair_matches_shared_fixture",
         ),
     },
 }
