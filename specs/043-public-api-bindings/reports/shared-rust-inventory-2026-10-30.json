@@ -5,7 +5,7 @@
   "observedRustDeclarationCount": 10457,
   "directRustDeclarationCount": 8414,
   "conditionalRustDeclarationCount": 2043,
-  "mappedRustDeclarationCount": 453,
+  "mappedRustDeclarationCount": 455,
   "approvedExcludedRustDeclarationCount": 1399,
   "crates": [
     {
@@ -44,9 +44,9 @@
       "packageId": "rust-kmipkit",
       "crateName": "kmipkit",
       "observedDeclarationCount": 2142,
-      "mappedDeclarationCount": 44,
+      "mappedDeclarationCount": 46,
       "excludedDeclarationCount": 473,
-      "blockedDeclarationCount": 1625
+      "blockedDeclarationCount": 1623
     }
   ],
   "mappedDeclarations": [
@@ -154,6 +154,68 @@
         "KMIPKIT-0009-FR-012",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-de77208fcc8ec464c640",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::Client::execute_guarded_protection_item",
+      "capabilityId": "usage_allocation_guard",
+      "ownerSpecId": "KMIPKIT-0043",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-42e1f850d988fe700584",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+      "capabilityId": "usage_allocation_guard",
+      "ownerSpecId": "KMIPKIT-0043",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
       "parityScope": "four-language"
     },

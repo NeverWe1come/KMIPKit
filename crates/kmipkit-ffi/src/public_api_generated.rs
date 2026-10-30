@@ -4397,6 +4397,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator",
     ),
     (
+        "rust-observed-de77208fcc8ec464c640",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_guarded_protection_item",
+    ),
+    (
+        "rust-observed-42e1f850d988fe700584",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+    ),
+    (
         "rust-observed-299ba161f67d044a77cc",
         "rust-kmipkit-client",
         "kmipkit_client::Client::get_attribute_list",
