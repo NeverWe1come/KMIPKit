@@ -93,6 +93,9 @@ mod get_usage_allocation_abi_tests;
 #[path = "../tests/support/interop_abi_tests.rs"]
 mod interop_abi_tests;
 #[cfg(test)]
+#[path = "../tests/support/message_model_abi_tests.rs"]
+mod message_model_abi_tests;
+#[cfg(test)]
 #[path = "../tests/support/log_abi_tests.rs"]
 mod log_abi_tests;
 #[cfg(test)]
