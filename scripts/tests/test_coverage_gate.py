@@ -635,6 +635,24 @@ trait Example { fn declaration(&self); }
                 self.assertTrue(GATE.is_coverage_source_path(path))
         self.assertTrue(GATE.is_coverage_source_path("crates/kmipkit/src/test/helpers.rs"))
 
+    def test_generated_profile_metadata_is_excluded_from_raw_coverage(self) -> None:
+        self.require_gate()
+        generated_metadata = "crates/kmipkit-protocol/src/profiles_generated.rs"
+        handwritten_validator = "crates/kmipkit-protocol/src/profile.rs"
+
+        self.assertFalse(GATE.is_coverage_source_path(generated_metadata))
+        self.assertTrue(GATE.is_coverage_source_path(handwritten_validator))
+
+        generated_diff = (
+            "diff --git a/crates/kmipkit-protocol/src/profiles_generated.rs "
+            "b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "+++ b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "@@ -1,0 +1,2 @@\n"
+            "+pub const GENERATED_PROFILE_COUNT: usize = 18;\n"
+            "+pub const GENERATED_RULE_COUNT: usize = 265;\n"
+        )
+        self.assertEqual({}, GATE.parse_added_production_lines(generated_diff))
+
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
