@@ -1777,6 +1777,221 @@ def _fixture_attribute_structure(tags: list[str]) -> ttlv.Structure:
     assert released == ["item", "item", "item", "item", "response"]
 
 
+def test_create_split_key_fixture_success_and_pending_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Map success and Pending from OASIS KMIP v2.1 §6.1.10 Tables 193–195 and §5.1 Table 157."""
+    fixture_path = Path(__file__).resolve().parents[3] / "tests/fixtures/api/shared-capability-parity.json"
+    fixture_cases = json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+    case = next(
+        case for case in fixture_cases if case["id"] == "creation.split-key.request-response.v1"
+    )
+    request = case["input"]
+    expected = case["expectedOutput"]
+    pending_expected = expected["pendingMetadata"]
+    pending_response_identifiers = expected["pendingResponseUniqueIdentifiersInWireOrder"]
+    assert request["attributesPresent"] is True
+    assert request["protectionStorageMasks"]["present"] is True
+    assert expected["primeFieldSizePresent"] is False
+    assert expected["resultMessagePresencePreserved"] is True
+    assert expected["automaticFollowUp"] is False
+    assert expected["transportExchangeCount"] == 1
+    assert pending_response_identifiers == [
+        {"wireType": "TextString", "text": "pending-part"}
+    ]
+
+    attributes = ttlv.ttlv_structure_create()
+    masks = ttlv.ttlv_structure_create()
+    split_request = None
+    native_make_handle = extensions._make_handle
+    captured_request_arguments: list[tuple[object, ...]] = []
+
+    def capture_split_key_builder(
+        c_type: str,
+        function_name: str,
+        arguments: tuple[object, ...],
+        out_index: int | None = None,
+        consumed_indices: tuple[int, ...] = (),
+    ) -> object:
+        if function_name == "kmipkit_client_batch_item_create_split_key":
+            captured_request_arguments.append(arguments)
+        return native_make_handle(c_type, function_name, arguments, out_index, consumed_indices)
+
+    monkeypatch.setattr(extensions, "_make_handle", capture_split_key_builder)
+    try:
+        split_request = extensions.client_batch_item_create_split_key(
+            request["objectType"],
+            request["splitKeyParts"],
+            request["splitKeyThreshold"],
+            request["splitKeyMethod"],
+            attributes,
+            unique_identifier=extensions.UniqueIdentifier.integer(
+                request["uniqueIdentifier"]["integer"]
+            ),
+            prime_field_size=None,
+            protection_storage_masks=masks,
+        )
+        assert split_request is not None
+        assert len(captured_request_arguments) == 1
+        builder_arguments = captured_request_arguments[0]
+        assert builder_arguments[0] == request["objectType"]
+        identifier_argument = builder_arguments[1]
+        assert identifier_argument.kind == int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+        assert identifier_argument.integer_value == request["uniqueIdentifier"]["integer"]  # type: ignore[attr-defined]
+        assert builder_arguments[2:5] == (
+            request["splitKeyParts"],
+            request["splitKeyThreshold"],
+            request["splitKeyMethod"],
+        )
+        assert builder_arguments[5] == 0
+        assert builder_arguments[6] == client.ffi.NULL
+        assert builder_arguments[7] == 0
+        assert builder_arguments[8] != client.ffi.NULL
+        assert builder_arguments[9] != client.ffi.NULL
+    finally:
+        if split_request is not None:
+            split_request.close()
+        attributes.close()
+        masks.close()
+
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_storage = [
+        _opaque("kmipkit_client_batch_item_response_t") for _ in range(2)
+    ]
+    item_pointers = [pointer for pointer, _storage in item_storage]
+    correlation_bytes = bytes.fromhex(pending_expected["correlationValueHex"])
+    correlation = client.ffi.new("uint8_t[]", correlation_bytes)
+    identifier_storage: list[object] = []
+    released: list[str] = []
+
+    def item_index(item: object) -> int:
+        return item_pointers.index(item)
+
+    def write_identifier(output: object, identifier: dict[str, object]) -> None:
+        kind = str(identifier["wireType"])
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.text_length = 0  # type: ignore[attr-defined]
+        output.enumeration_value = 0  # type: ignore[attr-defined]
+        output.integer_value = 0  # type: ignore[attr-defined]
+        if kind == "TextString":
+            data = client.ffi.new("uint8_t[]", str(identifier["text"]).encode("utf-8"))
+            identifier_storage.append(data)
+            output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+            output.text_data = data  # type: ignore[attr-defined]
+            output.text_length = len(str(identifier["text"]).encode("utf-8"))  # type: ignore[attr-defined]
+        elif kind == "Enumeration":
+            output.kind = int(extensions.UniqueIdentifierKind.ENUMERATION)  # type: ignore[attr-defined]
+            output.enumeration_value = int(identifier["enumeration"])  # type: ignore[attr-defined]
+        else:
+            assert kind == "Integer"
+            output.kind = int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+            output.integer_value = int(identifier["integer"])  # type: ignore[attr-defined]
+
+    def metadata(item: object, out: object) -> int:
+        index = item_index(item)
+        _initialize_metadata_v2(out)
+        out.operation = int(pending_expected["sourceOperation"])  # type: ignore[attr-defined]
+        out.outcome_kind = 2 if index == 1 else 1  # type: ignore[attr-defined]
+        out.result_status = int(pending_expected["status"] if index == 1 else expected["resultStatus"])  # type: ignore[attr-defined]
+        return 0
+
+    def item_at(_response: object, index: int, out: object) -> int:
+        out[0] = item_pointers[int(index)]  # type: ignore[index]
+        return 0
+
+    def absent_span(_item: object, present: object, value: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        value.data = client.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    def pending_correlation(item: object, present: object, value: object) -> int:
+        if item_index(item) == 1:
+            present[0] = 1  # type: ignore[index]
+            value.data = correlation  # type: ignore[attr-defined]
+            value.length = len(correlation_bytes)  # type: ignore[attr-defined]
+            return 0
+        return absent_span(item, present, value)
+
+    def split_count(item: object, present: object, count: object) -> int:
+        index = item_index(item)
+        identifiers = (
+            expected["responseUniqueIdentifiersInWireOrder"]
+            if index == 0
+            else pending_response_identifiers
+        )
+        present[0] = 1  # type: ignore[index]
+        count[0] = len(identifiers)  # type: ignore[index]
+        return 0
+
+    def split_identifier(item: object, index: int, output: object) -> int:
+        identifiers = (
+            expected["responseUniqueIdentifiersInWireOrder"]
+            if item_index(item) == 0
+            else pending_response_identifiers
+        )
+        write_identifier(output, identifiers[int(index)])
+        return 0
+
+    creation_symbols = _no_creation_response_symbols()
+    creation_symbols.update(
+        {
+            "kmipkit_client_batch_item_response_create_split_key_count": split_count,
+            "kmipkit_client_batch_item_response_create_split_key_unique_identifier_at": split_identifier,
+        }
+    )
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _response: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _item: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 2) or 0,
+        kmipkit_client_batch_response_item_at=item_at,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
+        kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        **creation_symbols,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert len(result.items) == 2
+        completed, pending = result.items
+        assert completed.operation == pending_expected["sourceOperation"]
+        assert completed.outcome == client.BatchOutcome.COMPLETED
+        assert completed.result_status == expected["resultStatus"]
+        assert completed.result_reason is None
+        assert completed.result_message is expected["resultMessage"]
+        expected_identifiers = tuple(
+            {
+                "TextString": extensions.UniqueIdentifier.text_string,
+                "Enumeration": extensions.UniqueIdentifier.enumeration,
+                "Integer": extensions.UniqueIdentifier.integer,
+            }[identifier["wireType"]](
+                identifier.get("text", identifier.get("enumeration", identifier.get("integer")))
+            )
+            for identifier in expected["responseUniqueIdentifiersInWireOrder"]
+        )
+        expected_pending_identifiers = tuple(
+            extensions.UniqueIdentifier.text_string(identifier["text"])
+            for identifier in pending_response_identifiers
+        )
+        assert completed.split_key_unique_identifiers == expected_identifiers
+        assert pending.operation == pending_expected["sourceOperation"]
+        assert pending.outcome == client.BatchOutcome.PENDING
+        assert pending.result_status == pending_expected["status"]
+        assert pending.result_reason is None
+        assert pending.result_message is pending_expected["resultMessage"]
+        assert pending.pending_correlation_value == correlation_bytes
+        assert pending.split_key_unique_identifiers == expected_pending_identifiers
+        assert pending_expected["correlationValueHex"] == "00ff80"
+    finally:
+        result.close()
+
+    assert released == ["item", "item", "response"]
+
+
 def test_create_split_key_response_preserves_more_than_one_hundred_thousand_identifiers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
