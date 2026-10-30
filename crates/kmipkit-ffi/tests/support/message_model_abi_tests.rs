@@ -226,3 +226,22 @@ fn ffi_output_region_validator_rejects_overlapping_slots() {
         Err(ERROR_INVALID_INPUT)
     );
 }
+
+#[test]
+fn request_message_constructor_rejects_aliased_output_slots_before_consuming_input() {
+    let structure = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(valid_request_message_tree()),
+    )
+    .expect("the generic TTLV input handle is allocated");
+    let mut output: *mut crate::kmipkit_request_message_t = ptr::null_mut();
+    let output_error = (&raw mut output).cast();
+
+    assert_eq!(
+        kmipkit_request_message_from_ttlv(structure, &raw mut output, output_error),
+        ERROR_INVALID_INPUT
+    );
+    assert!(output.is_null());
+    assert!(reference_handle(structure, Kind::Structure).is_ok());
+    kmipkit_ttlv_structure_release(structure);
+}

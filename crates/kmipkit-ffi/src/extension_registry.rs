@@ -3168,6 +3168,22 @@ fn memory_regions_overlap(
     first_start < second_end && second_start < first_end
 }
 
+fn validate_output_regions(regions: &[(*const u8, usize)]) -> FfiResult<()> {
+    for (index, (pointer, length)) in regions.iter().copied().enumerate() {
+        if pointer.is_null() {
+            continue;
+        }
+        for (other_pointer, other_length) in regions[..index].iter().copied() {
+            if !other_pointer.is_null()
+                && memory_regions_overlap(pointer, length, other_pointer, other_length)
+            {
+                return Err(ERROR_INVALID_INPUT);
+            }
+        }
+    }
+    Ok(())
+}
+
 fn validate_validate_input_aliases(
     output: *mut *mut kmipkit_client_batch_item_t,
     certificates: *const *mut kmipkit_ttlv_structure_t,
@@ -6647,7 +6663,8 @@ pub extern "C" fn kmipkit_ttlv_structure_create(
 ///
 /// On structural validation failure, `out_validation_error` receives a payload-free error handle
 /// containing only a stable kind and optional numeric indexes. The supplied structure handle is
-/// consumed whether validation succeeds or fails.
+/// consumed whether validation succeeds or fails. The two output slots must be disjoint; an
+/// overlapping pair is rejected before the input handle is consumed or either slot is written.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_message_from_ttlv(
     structure: *mut kmipkit_ttlv_structure_t,
@@ -6655,6 +6672,16 @@ pub extern "C" fn kmipkit_request_message_from_ttlv(
     out_validation_error: *mut *mut kmipkit_message_validation_error_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (
+                out_message.cast(),
+                std::mem::size_of::<*mut kmipkit_request_message_t>(),
+            ),
+            (
+                out_validation_error.cast(),
+                std::mem::size_of::<*mut kmipkit_message_validation_error_t>(),
+            ),
+        ]));
         let out_message = out_slot!(out_message);
         let out_validation_error = out_slot!(out_validation_error);
         let structure = try_ffi!(owned_payload(structure, Kind::Structure));
@@ -6786,6 +6813,8 @@ pub extern "C" fn kmipkit_request_message_batch_item_at(
 }
 
 /// Returns the raw Operation Enumeration without narrowing unknown values.
+///
+/// The `out_present` and `out_operation` slots must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_batch_item_view_operation(
     item: *mut kmipkit_request_batch_item_view_t,
@@ -6793,6 +6822,10 @@ pub extern "C" fn kmipkit_request_batch_item_view_operation(
     out_operation: *mut u32,
 ) -> i32 {
     ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_operation.cast(), std::mem::size_of::<u32>()),
+        ]));
         let present = scalar_out!(out_present);
         let operation_out = scalar_out!(out_operation);
         *present = 0;
@@ -6804,7 +6837,7 @@ pub extern "C" fn kmipkit_request_batch_item_view_operation(
         let operation = message
             .batch_items()
             .nth(*index)
-            .and_then(|batch_item| batch_item.operation());
+            .and_then(kmipkit_protocol::RequestBatchItemView::operation);
         if let Some(operation) = operation {
             *present = 1;
             *operation_out = operation;
@@ -6831,38 +6864,50 @@ pub extern "C" fn kmipkit_message_validation_error_kind(
 }
 
 /// Returns whether the validation error has a top-level Structure item index.
+///
+/// The `out_present` and `out_index` slots must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_message_validation_error_structure_index(
     error: *mut kmipkit_message_validation_error_t,
     out_present: *mut u8,
     out_index: *mut u64,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let present = scalar_out!(out_present);
-        let index_out = scalar_out!(out_index);
-        *present = 0;
-        *index_out = 0;
-        let error = read_handle!(error, MessageValidationError);
-        let HandleValue::MessageValidationError(error) = error.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        try_ffi!(write_optional_message_index(
-            present,
-            index_out,
-            error.structure_index(),
-        ));
-        SUCCESS
-    })
+    message_validation_error_index(
+        error,
+        out_present,
+        out_index,
+        MessageValidationError::structure_index,
+    )
 }
 
 /// Returns whether the validation error has a field index within its Structure.
+///
+/// The `out_present` and `out_index` slots must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_message_validation_error_field_index(
     error: *mut kmipkit_message_validation_error_t,
     out_present: *mut u8,
     out_index: *mut u64,
 ) -> i32 {
+    message_validation_error_index(
+        error,
+        out_present,
+        out_index,
+        MessageValidationError::field_index,
+    )
+}
+
+fn message_validation_error_index(
+    error: *mut kmipkit_message_validation_error_t,
+    out_present: *mut u8,
+    out_index: *mut u64,
+    select_index: fn(MessageValidationError) -> Option<usize>,
+) -> i32 {
     ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_index.cast(), std::mem::size_of::<u64>()),
+        ]));
         let present = scalar_out!(out_present);
         let index_out = scalar_out!(out_index);
         *present = 0;
@@ -6874,7 +6919,7 @@ pub extern "C" fn kmipkit_message_validation_error_field_index(
         try_ffi!(write_optional_message_index(
             present,
             index_out,
-            error.field_index(),
+            select_index(error)
         ));
         SUCCESS
     })
