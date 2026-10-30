@@ -105,10 +105,17 @@ class BatchOutcome(IntEnum):
 
 @dataclass(frozen=True, slots=True)
 class ProtocolVersion:
-    """A KMIP protocol version pair returned by Discover Versions."""
+    """A KMIP protocol version pair using raw signed TTLV Integer values."""
 
     major: int
     minor: int
+
+    def __post_init__(self) -> None:
+        for name, value in (("major", self.major), ("minor", self.minor)):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise TypeError(f"{name} must be an integer")
+            if not -(2**31) <= value <= 2**31 - 1:
+                raise ValueError(f"{name} must fit a signed 32-bit integer")
 
 
 @dataclass(frozen=True, slots=True, repr=False)

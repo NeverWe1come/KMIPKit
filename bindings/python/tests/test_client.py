@@ -83,6 +83,13 @@ def test_protocol_version_rejects_non_integer_components(value: object) -> None:
         client.ProtocolVersion(value, 1)  # type: ignore[arg-type]
 
 
+def test_protocol_version_preserves_signed_ttlv_integer_boundaries() -> None:
+    version = client.ProtocolVersion(-(2**31), 2**31 - 1)
+
+    assert version.major == -(2**31)
+    assert version.minor == 2**31 - 1
+
+
 def test_transport_config_rejects_file_backed_revocation_lists_without_echoing_path() -> None:
     path = Path("revocation-list-not-read.der")
 
