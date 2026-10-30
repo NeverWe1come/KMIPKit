@@ -10,4 +10,4 @@ runtime copies cannot be deterministically zeroized.
 from . import client, errors, extensions, metadata, ttlv
 from .extensions import with_extension
 
-__all__ = ["client", "errors", "extensions", "metadata", "ttlv", "with_extension"]
+__all__ = ["client", "errors", "extensions", "messages", "metadata", "ttlv", "with_extension"]
