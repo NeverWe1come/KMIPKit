@@ -1592,6 +1592,59 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertIn(declaration_id, operation["declarations"]["rust"])
 
+    def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
+        cases = (
+            (
+                "rust-observed-4d05f9d9fc8377cd7a6f",
+                "kmipkit_client::ClientRequest::Check",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
+                "kmipkit_client_batch_item_check",
+                "org.kmipkit.extensions.ClientBatchItem.check",
+                "kmipkit.extensions.client_batch_item_check",
+            ),
+            (
+                "rust-observed-12029d442c5430d1f445",
+                "kmipkit_client::ClientRequest::get_usage_allocation",
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "kmipkit_client_batch_item_get_usage_allocation",
+                "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+                "kmipkit.extensions.client_batch_item_get_usage_allocation",
+            ),
+            (
+                "rust-observed-1966bfc9acb5c4e64ccb",
+                "kmipkit_client::ClientRequest::obtain_lease",
+                "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
+                "kmipkit_client_batch_item_obtain_lease",
+                "org.kmipkit.extensions.ClientBatchItem.obtainLease",
+                "kmipkit.extensions.client_batch_item_obtain_lease",
+            ),
+        )
+        declarations = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+
+        for declaration_id, export_name, operation_id, c_name, java_name, python_name in cases:
+            with self.subTest(export=export_name):
+                declaration = declarations[declaration_id]
+                self.assertEqual(export_name, declaration["exportName"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": "rust-kmipkit-client", "name": export_name},
+                        "c": {"packageId": "c-kmipkit", "name": c_name},
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {"packageId": "python-kmipkit", "name": python_name},
+                    },
+                    declaration["languageMappings"],
+                )
+                self.assertIn(declaration_id, operations[operation_id]["declarations"]["rust"])
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
