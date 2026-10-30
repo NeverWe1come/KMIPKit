@@ -139,6 +139,16 @@ const ERROR_INVALID_SCHEMA: i32 = 5;
 const ERROR_RESOURCE_LIMIT: i32 = 6;
 const ERROR_INTERNAL: i32 = 7;
 const ERROR_PROTOCOL: i32 = 8;
+const MESSAGE_VALIDATION_ERROR_MISSING_REQUIRED_FIELD: u32 = 1;
+const MESSAGE_VALIDATION_ERROR_DUPLICATE_FIELD: u32 = 2;
+const MESSAGE_VALIDATION_ERROR_FIELD_OUT_OF_ORDER: u32 = 3;
+const MESSAGE_VALIDATION_ERROR_WRONG_ITEM_TYPE: u32 = 4;
+const MESSAGE_VALIDATION_ERROR_INVALID_BATCH_COUNT: u32 = 5;
+const MESSAGE_VALIDATION_ERROR_BATCH_COUNT_MISMATCH: u32 = 6;
+const MESSAGE_VALIDATION_ERROR_INVALID_SINGLE_ITEM_OPTION: u32 = 7;
+const MESSAGE_VALIDATION_ERROR_INVALID_RESULT: u32 = 8;
+const MESSAGE_VALIDATION_ERROR_INVALID_FIELD_VALUE: u32 = 9;
+const MESSAGE_VALIDATION_ERROR_UNKNOWN: u32 = 255;
 const ERROR_TRANSPORT: i32 = 9;
 const ERROR_SERVER_RESULT: i32 = 10;
 const ERROR_CATEGORY_NONE: u32 = 0;
@@ -6815,20 +6825,34 @@ pub extern "C" fn kmipkit_message_validation_error_kind(
         let HandleValue::MessageValidationError(error) = error.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = match error.kind() {
-            MessageValidationErrorKind::MissingRequiredField => 1,
-            MessageValidationErrorKind::DuplicateField => 2,
-            MessageValidationErrorKind::FieldOutOfOrder => 3,
-            MessageValidationErrorKind::WrongItemType => 4,
-            MessageValidationErrorKind::InvalidBatchCount => 5,
-            MessageValidationErrorKind::BatchCountMismatch => 6,
-            MessageValidationErrorKind::InvalidSingleItemOption => 7,
-            MessageValidationErrorKind::InvalidResult => 8,
-            MessageValidationErrorKind::InvalidFieldValue => 9,
-            _ => 255,
-        };
+        *out = message_validation_error_kind_code(error.kind());
         SUCCESS
     })
+}
+
+fn message_validation_error_kind_code(kind: MessageValidationErrorKind) -> u32 {
+    match kind {
+        MessageValidationErrorKind::MissingRequiredField => {
+            MESSAGE_VALIDATION_ERROR_MISSING_REQUIRED_FIELD
+        }
+        MessageValidationErrorKind::DuplicateField => MESSAGE_VALIDATION_ERROR_DUPLICATE_FIELD,
+        MessageValidationErrorKind::FieldOutOfOrder => MESSAGE_VALIDATION_ERROR_FIELD_OUT_OF_ORDER,
+        MessageValidationErrorKind::WrongItemType => MESSAGE_VALIDATION_ERROR_WRONG_ITEM_TYPE,
+        MessageValidationErrorKind::InvalidBatchCount => {
+            MESSAGE_VALIDATION_ERROR_INVALID_BATCH_COUNT
+        }
+        MessageValidationErrorKind::BatchCountMismatch => {
+            MESSAGE_VALIDATION_ERROR_BATCH_COUNT_MISMATCH
+        }
+        MessageValidationErrorKind::InvalidSingleItemOption => {
+            MESSAGE_VALIDATION_ERROR_INVALID_SINGLE_ITEM_OPTION
+        }
+        MessageValidationErrorKind::InvalidResult => MESSAGE_VALIDATION_ERROR_INVALID_RESULT,
+        MessageValidationErrorKind::InvalidFieldValue => {
+            MESSAGE_VALIDATION_ERROR_INVALID_FIELD_VALUE
+        }
+        _ => MESSAGE_VALIDATION_ERROR_UNKNOWN,
+    }
 }
 
 #[unsafe(no_mangle)]
