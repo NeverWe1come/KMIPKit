@@ -17371,7 +17371,8 @@
         "parameters": [
           {
             "name": "uniqueIdentifier",
-            "type": "UniqueIdentifier"
+            "type": "UniqueIdentifier",
+            "nullable": true
           },
           {
             "name": "usageLimitsCount",
@@ -22233,7 +22234,7 @@
         "parameters": [
           {
             "name": "request",
-            "type": "GetUsageAllocationRequest"
+            "type": "ObtainLeaseRequest"
           }
         ],
         "returnType": "ClientRequest"
@@ -22273,7 +22274,8 @@
         "parameters": [
           {
             "name": "uniqueIdentifier",
-            "type": "UniqueIdentifier"
+            "type": "UniqueIdentifier",
+            "nullable": true
           }
         ],
         "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemObtainLease",
@@ -22338,7 +22340,7 @@
         "owner": "client",
         "requestBoundary": "not-applicable",
         "parameters": [],
-        "returnType": "GetUsageAllocationResponse"
+        "returnType": "ObtainLeaseResponse"
       },
       "c": {
         "symbol": "kmipkit_client_batch_item_response_obtain_lease",
@@ -117457,7 +117459,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
         "KMIPKIT-REQ-SPEC-6.1.7-005"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -117482,7 +117484,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_check"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/python/tests/test_check_operation.py",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-7d0a0d3b5012f4f4d679",
@@ -118684,7 +118694,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.23-002-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -118709,7 +118719,17 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_get_usage_allocation"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-897100a08cc9f70af152",
@@ -118842,7 +118862,7 @@
         "KMIPKIT-REQ-SPEC-6.1.35-002",
         "KMIPKIT-REQ-SPEC-6.1.35-005"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -118867,7 +118887,16 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_obtain_lease"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-7af22c938cadd92dcdb2",
@@ -134733,7 +134762,7 @@
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
         "KMIPKIT-REQ-SPEC-6.1.7-005"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -134758,7 +134787,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_check"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CheckResponseMappingTest.java",
+        "bindings/python/tests/test_check_operation.py",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/check_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-4101af17eabc6602faaa",
@@ -137112,7 +137149,7 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.23-002-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -137137,7 +137174,17 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_get_usage_allocation"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-f2cb4db02a35d8a95ebe",
@@ -137370,7 +137417,7 @@
         "KMIPKIT-REQ-SPEC-6.1.35-002",
         "KMIPKIT-REQ-SPEC-6.1.35-005"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -137395,7 +137442,16 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_obtain_lease"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ObtainLeaseMappingTest.java",
+        "bindings/python/tests/test_obtain_lease_operation.py",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs",
+        "tools/api_manifest/tests/test_obtain_lease_parity_manifest.py"
+      ]
     },
     {
       "declarationId": "rust-observed-113a4d9a85f7c8e5b5f1",
