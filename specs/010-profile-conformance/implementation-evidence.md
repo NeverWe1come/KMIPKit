@@ -8599,3 +8599,9 @@ Full protocol-suite and exact-head hosted coverage results remain pending; T057 
 Refactor: removed the now-unused batch-count argument from `validate_request_batch_item` and its call sites; request message validation remains responsible for the header Batch Count and item-count match. `cargo fmt --all --check`, `git diff --check`, and the focused request-validation and positional-correlation tests passed after the refactor.
 
 The first full `cargo test -p kmipkit-protocol --all-features` run exposed the stale integration assertion `every_multi_item_request_requires_an_id`. It failed because the now-correct validator accepts the optional ID. The test was replaced with an assertion that a multi-item message preserves one present ID and one omitted ID; `cargo test -p kmipkit-protocol --all-features --test message_validation` then passed all 15 tests. Duplicate present IDs remain rejected by a separate integration test.
+
+Final local protocol verification after that correction:
+
+- `cargo test -p kmipkit-protocol --all-features --quiet` — PASS: 1,228 unit tests, every protocol integration suite, and doctests.
+- `cargo llvm-cov -p kmipkit-protocol --all-features --json --output-path <temporary report> --quiet` — PASS: coverage instrumentation ran the same package tests and wrote its JSON report. This Windows-only report is diagnostic; it does not substitute for the three-platform exact-head CI thresholds.
+- `cargo fmt --all --check` and `git diff --check` — PASS.
