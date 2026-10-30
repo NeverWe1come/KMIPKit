@@ -87,6 +87,42 @@ PYTHON_MAPPINGS = {
     "kmipkit.client.ProfileObjectState.with_usage_limits_count",
 }
 
+JAVA_PROFILE_EXPORTS = {
+    "org.kmipkit.extensions.ProfileValidationSelection.<init>",
+    "org.kmipkit.extensions.ProfileValidationSelection.equals",
+    "org.kmipkit.extensions.ProfileValidationSelection.hashCode",
+    "org.kmipkit.extensions.ProfileValidationSelection.toString",
+    "org.kmipkit.extensions.ProfileObjectState.<init>",
+    "org.kmipkit.extensions.ProfileObjectState.equals",
+    "org.kmipkit.extensions.ProfileObjectState.hashCode",
+    "org.kmipkit.extensions.ProfileObjectState.toString",
+    "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+    "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+    "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+    "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+    "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+    "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+    "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
+    "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+    "org.kmipkit.extensions.ProfileValidationContext.<init>",
+    "org.kmipkit.extensions.ProfileValidationContext.equals",
+    "org.kmipkit.extensions.ProfileValidationContext.hashCode",
+    "org.kmipkit.extensions.ProfileValidationContext.toString",
+    "org.kmipkit.extensions.ProfileValidationContext.objectStates",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.equals",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.hashCode",
+    "org.kmipkit.extensions.ProfileValidationContext.Entry.toString",
+}
+JAVA_PROFILE_RECORD_METHOD_EXCLUSIONS = {
+    export
+    for export in JAVA_PROFILE_EXPORTS
+    if export.endswith((".equals", ".hashCode", ".toString"))
+}
+
 
 class T036ProfileMappingTests(unittest.TestCase):
     @classmethod
@@ -137,6 +173,58 @@ class T036ProfileMappingTests(unittest.TestCase):
 
         self.assertEqual("evidence_incomplete", baseline["claim_state"])
         self.assertFalse(baseline.get("support_claim", False))
+
+    def test_all_observed_java_profile_exports_are_mapped_or_exactly_excluded(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertEqual(
+            JAVA_PROFILE_EXPORTS,
+            (JAVA_PROFILE_EXPORTS & declarations.keys())
+            | (JAVA_PROFILE_EXPORTS & exclusions.keys()),
+        )
+        self.assertFalse(JAVA_PROFILE_EXPORTS & (declarations.keys() & exclusions.keys()))
+        for export in JAVA_PROFILE_EXPORTS - JAVA_PROFILE_RECORD_METHOD_EXCLUSIONS:
+            with self.subTest(export=export):
+                declaration = declarations.get(export)
+                self.assertIsNotNone(declaration)
+                assert declaration is not None
+                self.assertEqual("client_profile_validation", declaration["capabilityId"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+                self.assertEqual(
+                    "specs/010-profile-conformance/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+        for export in JAVA_PROFILE_RECORD_METHOD_EXCLUSIONS:
+            with self.subTest(exclusion=export):
+                exclusion = exclusions.get(export)
+                self.assertIsNotNone(exclusion)
+                assert exclusion is not None
+                self.assertIn("record", exclusion["reason"].lower())
+                self.assertEqual(
+                    "specs/010-profile-conformance/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+
+    def test_python_profile_ids_export_uses_the_scanned_field_kind(self) -> None:
+        row = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.client.ProfileValidationSelection.profile_ids"
+            and row["packageId"] == "python-kmipkit"
+        )
+        self.assertEqual("field", row["kind"])
 
     def test_incomplete_baseline_evidence_is_not_described_as_runtime_available(self) -> None:
         conformance = " ".join(

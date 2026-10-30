@@ -598,6 +598,56 @@ class PublicApiParityTests(unittest.TestCase):
             with self.subTest(public_type=public_type):
                 self.assertIn(f"typedef struct {public_type} {public_type};", public_header)
 
+    def test_t104_java_message_bridge_paths_are_exact_internal_exclusions(self) -> None:
+        expected = {
+            "org.kmipkit.NativeExtensionRegistry.MESSAGE_EXTENSION_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.REQUEST_BATCH_ITEM_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.REQUEST_HEADER_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.REQUEST_MESSAGE",
+            "org.kmipkit.NativeExtensionRegistry.RESPONSE_BATCH_ITEM_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.RESPONSE_HEADER_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.RESPONSE_MESSAGE",
+            "org.kmipkit.NativeExtensionRegistry.messageExtensionViewTtlv",
+            "org.kmipkit.NativeExtensionRegistry.requestBatchItemExtensionAt",
+            "org.kmipkit.NativeExtensionRegistry.requestBatchItemExtensionCount",
+            "org.kmipkit.NativeExtensionRegistry.requestBatchItemViewOperation",
+            "org.kmipkit.NativeExtensionRegistry.requestBatchItemViewTtlv",
+            "org.kmipkit.NativeExtensionRegistry.requestHeaderViewBatchCount",
+            "org.kmipkit.NativeExtensionRegistry.requestHeaderViewProtocolVersion",
+            "org.kmipkit.NativeExtensionRegistry.requestHeaderViewTtlv",
+            "org.kmipkit.NativeExtensionRegistry.requestMessageBatchItemAt",
+            "org.kmipkit.NativeExtensionRegistry.requestMessageBatchItemCount",
+            "org.kmipkit.NativeExtensionRegistry.requestMessageFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.requestMessageHeader",
+            "org.kmipkit.NativeExtensionRegistry.requestMessageTtlv",
+            "org.kmipkit.NativeExtensionRegistry.responseBatchItemExtensionAt",
+            "org.kmipkit.NativeExtensionRegistry.responseBatchItemExtensionCount",
+            "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewOperation",
+            "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewResultStatus",
+            "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewTtlv",
+            "org.kmipkit.NativeExtensionRegistry.responseHeaderViewBatchCount",
+            "org.kmipkit.NativeExtensionRegistry.responseHeaderViewProtocolVersion",
+            "org.kmipkit.NativeExtensionRegistry.responseHeaderViewTimeStamp",
+            "org.kmipkit.NativeExtensionRegistry.responseHeaderViewTtlv",
+            "org.kmipkit.NativeExtensionRegistry.responseMessageBatchItemAt",
+            "org.kmipkit.NativeExtensionRegistry.responseMessageBatchItemCount",
+            "org.kmipkit.NativeExtensionRegistry.responseMessageFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.responseMessageHeader",
+            "org.kmipkit.NativeExtensionRegistry.responseMessageTtlv",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertTrue(expected)
+        self.assertTrue(expected <= exclusions.keys())
+        for export in expected:
+            with self.subTest(export=export):
+                row = exclusions[export]
+                self.assertIn("internal JNI bridge", row["reason"])
+                self.assertEqual("specs/043-public-api-bindings/spec.md", row["approvalSource"]["path"])
+
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
         case = next(
