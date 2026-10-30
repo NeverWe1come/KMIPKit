@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 PROFILE_CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 CONFORMANCE_DOC_PATH = ROOT / "docs" / "compliance" / "conformance.md"
+USER_GUIDE_PATHS = (
+    ROOT / "docs" / "user-guide" / "en" / "profile-conformance.md",
+    ROOT / "docs" / "user-guide" / "es" / "profile-conformance.md",
+)
 
 RUST_MAPPINGS = {
     "kmipkit_client::ProfileValidationSelection",
@@ -144,6 +148,22 @@ class T036ProfileMappingTests(unittest.TestCase):
         self.assertIn("runtime profile selection for Baseline remains unavailable", conformance)
         self.assertIn("per-exchange validation fails closed before transport", conformance)
         self.assertIn("evidence_incomplete", conformance)
+
+        english_guide = " ".join(USER_GUIDE_PATHS[0].read_text(encoding="utf-8").split())
+        spanish_guide = " ".join(USER_GUIDE_PATHS[1].read_text(encoding="utf-8").split())
+        self.assertNotIn("Baseline Client runtime selection is available", english_guide)
+        self.assertNotIn("Baseline Client currently meets this runtime gate", english_guide)
+        self.assertIn(
+            "Baseline Client runtime selection remains unavailable while evidence is incomplete",
+            english_guide,
+        )
+        self.assertNotIn("Baseline Client está disponible", spanish_guide)
+        self.assertNotIn("validación runtime está disponible", spanish_guide)
+        self.assertNotIn("Baseline Client ya cumple este control runtime", spanish_guide)
+        self.assertIn(
+            "La selección runtime de Baseline Client no está disponible mientras su evidencia siga incompleta",
+            spanish_guide,
+        )
 
 
 if __name__ == "__main__":
