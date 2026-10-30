@@ -920,6 +920,13 @@ fn run_generated_public_client_abi_consumer(
         .iter()
         .find(|case| case["id"] == "discover-versions.supported-versions.v1")
         .expect("the Discover Versions fixture case exists");
+    let create_case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .expect("the Create fixture case exists");
+    let create_input = create_case["input"].clone();
     let creation_failure_case = creation_failure_case_override;
     let server_result_message = CString::new(
         creation_failure_case["input"]["resultMessage"]
@@ -1045,6 +1052,7 @@ fn run_generated_public_client_abi_consumer(
         Arc::clone(&exchange_count),
         fixture_versions.clone(),
         server_result_message.as_bytes().to_vec(),
+        create_input,
     );
 
     let executable = CString::new("kmipkit_public_client_consumer")
@@ -1142,6 +1150,7 @@ fn spawn_public_client_batch_peer(
     exchange_count: Arc<AtomicU64>,
     fixture_versions: Vec<(i32, i32)>,
     failure_message: Vec<u8>,
+    create_input: serde_json::Value,
 ) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         let (stream, _) = listener
@@ -1159,6 +1168,10 @@ fn spawn_public_client_batch_peer(
         let mut tls = StreamOwned::new(connection, stream);
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        assert!(
+            c_request_contains_create_fixture(&request, &create_input),
+            "compiled C consumer must transmit the Create request represented by the shared fixture"
+        );
         assert!(
             c_request_contains_large_query(&request),
             "C ABI consumer must transmit 100,001 Query Functions and Object Groups over mTLS"
@@ -1199,6 +1212,42 @@ fn spawn_public_client_batch_peer(
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
     })
+}
+
+fn c_request_contains_create_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
+    const OBJECT_TYPE_TAG: [u8; 8] = [0x42, 0x00, 0x57, 0x05, 0, 0, 0, 4];
+    const EMPTY_ATTRIBUTES: [u8; 8] = [0x42, 0x01, 0x25, 0x01, 0, 0, 0, 0];
+    const EMPTY_PROTECTION_STORAGE_MASKS: [u8; 8] = [0x42, 0x01, 0x5f, 0x01, 0, 0, 0, 0];
+
+    if input["operation"] != "Create"
+        || input["attributesPresent"].as_bool() != Some(true)
+        || input["attributeItems"].as_array().map(Vec::len) != Some(0)
+        || input["protectionStorageMasks"]["present"].as_bool() != Some(true)
+        || input["protectionStorageMasks"]["childTags"]
+            .as_array()
+            .map(Vec::len)
+            != Some(0)
+    {
+        return false;
+    }
+    let Some(object_type) = input["objectType"]
+        .as_u64()
+        .and_then(|value| u32::try_from(value).ok())
+    else {
+        return false;
+    };
+    let mut object_type_ttlv = OBJECT_TYPE_TAG.to_vec();
+    object_type_ttlv.extend_from_slice(&object_type.to_be_bytes());
+
+    encoded
+        .windows(object_type_ttlv.len())
+        .any(|window| window == object_type_ttlv)
+        && encoded
+            .windows(EMPTY_ATTRIBUTES.len())
+            .any(|window| window == EMPTY_ATTRIBUTES)
+        && encoded
+            .windows(EMPTY_PROTECTION_STORAGE_MASKS.len())
+            .any(|window| window == EMPTY_PROTECTION_STORAGE_MASKS)
 }
 
 fn c_request_contains_large_query(encoded: &[u8]) -> bool {

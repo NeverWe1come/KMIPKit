@@ -289,6 +289,7 @@ fn create_convenience_method_maps_shared_fixture_over_one_exchange() {
     assert_eq!(input["protectionStorageMasks"]["present"], true);
     assert_eq!(expected["resultStatus"].as_u64(), Some(u64::from(SUCCESS)));
     assert!(expected["resultMessage"].is_null());
+    assert_eq!(expected["uniqueIdentifier"]["wireType"], "Integer");
     let response = response_bytes([response_batch_item(
         None,
         SUCCESS,
@@ -361,12 +362,9 @@ fn create_convenience_method_maps_shared_fixture_over_one_exchange() {
             .expect("fixture identifier fits i32")
         ))
     );
-    assert!(request_contains(
-        &request_bytes,
-        &[
-            0x42, 0x00, 0x57, 0x05, 0x00, 0x00, 0x00, 0x04, 0xff, 0xff, 0xff, 0xff
-        ]
-    ));
+    let mut object_type_ttlv = vec![0x42, 0x00, 0x57, 0x05, 0, 0, 0, 4];
+    object_type_ttlv.extend_from_slice(&object_type.to_be_bytes());
+    assert!(request_contains(&request_bytes, &object_type_ttlv));
     assert!(request_contains(&request_bytes, &[0x42, 0x01, 0x25, 0x01]));
     assert!(request_contains(&request_bytes, &[0x42, 0x01, 0x5f, 0x01]));
     assert_eq!(fake.borrow().exchange_count(), 1);
