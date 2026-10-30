@@ -6571,3 +6571,15 @@ The runner now accepts `creation.key-pair.request-response.v1` and selects the R
 | Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case creation.key-pair.request-response.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python selected tests all ran. Python ran on 3.12.14; Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated output or T071 task status changed. |
 
 The C request and response details above remain open conformance-test gaps. The runtime command executes one selected test per language and does not execute the full 13-case corpus; hosted exact-head verification remains pending.
+
+### T071 Create Split Key request, result, and pending parity case 10 of 13 (2026-10-30)
+
+The runner now accepts `creation.split-key.request-response.v1` and selects the Rust, compiled C, Java, and Python fixture tests. The C entry links to the compiled public consumer main. All four selected tests pass, but they do not exercise the fixture's response identifiers or an actual Pending response through the adapters: current assertions inspect fixture text and/or construct the request. Thus this is execution evidence for the declared consumers, not complete request/result/Pending parity. T071 remains open.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `341390f02` | `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_create_split_key_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner rejected `creation.split-key.request-response.v1` as unsupported. |
+| Green | `99518a580` | The same plan test; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_shared_capability_fixture_maps_executable_consumer_contracts -v` | Pass: all 17 runner tests passed and the shared-fixture consumer contract test passed. |
+| Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case creation.split-key.request-response.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python tests ran. Python ran on 3.12.14; Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated output or T071 completion status changed. |
+
+Request/result/Pending behavior remains an acceptance gap. The runtime command executes one selected test per language and does not execute the full 13-case corpus; hosted exact-head verification remains pending.
