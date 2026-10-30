@@ -1617,6 +1617,68 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 else:
                     self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
 
+    def test_t091_error_ttlv_wrapper_is_excluded_under_the_narrow_0021_capability(self) -> None:
+        expected = {
+            "kmipkit_client::ClientErrorResponseTtlv",
+            "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+
+        for export_name in expected:
+            with self.subTest(export=export_name):
+                self.assertNotIn(export_name, declarations)
+                exclusion = exclusions[export_name]
+                self.assertIn("Rust response-TTLV wrapper", exclusion["reason"])
+                self.assertIn("not a separate four-language capability", exclusion["reason"])
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/021-hash-mac-signature-operations/spec.md",
+                        "status": "Approved",
+                    },
+                    {
+                        key: exclusion["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertIn("KMIPKIT-0021-FR-015", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "crypto_response_ttlv"
+        )
+        self.assertEqual("KMIPKIT-0021", capability["ownerSpecId"])
+        self.assertIn("KMIPKIT-0021-FR-015", capability["requirementIds"])
+        self.assertIn(
+            "kmipkit_client::ClientError::response_ttlv",
+            capability["mappings"]["rust"],
+        )
+        self.assertIn(
+            "kmipkit_client_execute_with_error_ttlv_v1",
+            capability["mappings"]["c"],
+        )
+        self.assertIn(
+            "org.kmipkit.ProtocolException.responseTtlv",
+            capability["mappings"]["java"],
+        )
+        self.assertIn(
+            "kmipkit.errors.ClientExecutionError.response_ttlv",
+            capability["mappings"]["python"],
+        )
+
     def test_t091_discover_versions_concrete_api_maps_to_four_language_operation(self) -> None:
         expected_mappings = {
             "kmipkit_protocol::DiscoverVersionsRequest": {
