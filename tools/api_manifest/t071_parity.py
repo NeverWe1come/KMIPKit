@@ -28,6 +28,7 @@ CREATE_REQUEST_CASE = "creation.create.request-response.v1"
 CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 CREATE_SPLIT_KEY_CASE = "creation.split-key.request-response.v1"
 CREATE_FAILURE_MESSAGE_CASE = "creation.result-message-on-failure.v1"
+CODEC_LIMITS_CASE = "codec-limits.defaults-and-ranges.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -239,6 +240,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_shared_parity_fixtures.py",
             "test_creation_result_message_matches_failure_fixture",
+        ),
+    },
+    CODEC_LIMITS_CASE: {
+        "rust": (
+            "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+            "codec_limits_shared_fixture_covers_defaults_ranges_and_rejection",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_abi_consumer_matches_the_shared_codec_limits_fixture",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+            "org.kmipkit.SharedCapabilityParityFixtureTest#codecLimitsFixtureMatchesDefaultsRangesAndErrors",
+        ),
+        "python": (
+            "bindings/python/tests/test_shared_parity_fixtures.py",
+            "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
         ),
     },
 }
