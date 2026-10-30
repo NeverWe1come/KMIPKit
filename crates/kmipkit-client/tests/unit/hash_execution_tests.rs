@@ -87,6 +87,27 @@ fn request() -> ClientRequest {
     )
 }
 
+#[test]
+fn hash_request_convenience_constructor_selects_variant_and_preserves_payload() {
+    let parameters = test_structure([test_item(HASHING_ALGORITHM, Value::enumeration(6))]);
+    let request = HashRequest::new(parameters).with_data(OperationData::ByteString(
+        SecretBytes::new(b"input-to-hash".to_vec()),
+    ));
+
+    let ClientRequest::Hash(request) = ClientRequest::hash(request) else {
+        panic!("the Hash convenience constructor must select the Hash request variant");
+    };
+    let payload = request
+        .to_ttlv_payload()
+        .expect("the original valid Hash request payload is preserved");
+
+    assert!(structure_contains_byte_string(
+        &payload.view(),
+        DATA,
+        b"input-to-hash"
+    ));
+}
+
 fn response(status: u32, reason: Option<u32>, correlation: Option<&[u8]>) -> Vec<u8> {
     let payload = if status == PENDING {
         Some(test_structure([test_item(

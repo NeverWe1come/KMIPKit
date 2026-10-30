@@ -176,6 +176,43 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
                 self.assertEqual(java_method, row["java"]["method"])
                 self.assertEqual(python_name, row["python"]["function"])
 
+    def test_hash_client_request_convenience_method_has_four_language_mapping(self) -> None:
+        declaration_id = "rust-observed-7cc46b70a35514bf0bf6"
+        declaration = self.declarations[declaration_id]
+
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-HASH", declaration["capabilityId"])
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("four-language", declaration["parityScope"])
+        self.assertEqual(
+            "specs/021-hash-mac-signature-operations/spec.md",
+            declaration["approvalSource"]["path"],
+        )
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::ClientRequest::hash",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_hash",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.hash",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.client_batch_item_hash",
+                },
+            },
+            declaration["languageMappings"],
+        )
+        self.assertIn(
+            declaration_id,
+            self.operations["KMIPKIT-ELEM-OP-C2S-HASH"]["declarations"]["rust"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
