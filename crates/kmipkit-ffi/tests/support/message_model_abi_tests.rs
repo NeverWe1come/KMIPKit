@@ -50,6 +50,31 @@ fn valid_request_message_tree() -> Structure {
     ])
 }
 
+fn request_message_missing_multi_item_id() -> Structure {
+    let version = message_structure([
+        message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        message_item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    let header = message_structure([
+        message_item(PROTOCOL_VERSION_TAG, Value::structure(version)),
+        message_item(BATCH_COUNT_TAG, Value::integer(2)),
+    ]);
+    let first_batch = message_structure([
+        message_item(OPERATION_TAG, Value::enumeration(1)),
+        message_item(0x0042_0093, Value::byte_string(vec![0xA1])),
+        message_item(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+    ]);
+    let second_batch = message_structure([
+        message_item(OPERATION_TAG, Value::enumeration(1)),
+        message_item(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+    ]);
+    message_structure([
+        message_item(REQUEST_HEADER_TAG, Value::structure(header)),
+        message_item(BATCH_ITEM_TAG, Value::structure(first_batch)),
+        message_item(BATCH_ITEM_TAG, Value::structure(second_batch)),
+    ])
+}
+
 #[test]
 fn request_message_handle_exposes_validated_header_and_open_operation() {
     let structure = try_make_handle(
@@ -61,11 +86,7 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
     let mut validation_error = ptr::dangling_mut();
 
     assert_eq!(
-        kmipkit_request_message_from_ttlv(
-            structure,
-            &raw mut message,
-            &raw mut validation_error,
-        ),
+        kmipkit_request_message_from_ttlv(structure, &raw mut message, &raw mut validation_error,),
         SUCCESS
     );
     assert!(!message.is_null());
@@ -81,7 +102,10 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
         kmipkit_request_header_view_protocol_version(header, &raw mut version),
         SUCCESS
     );
-    assert_eq!(version, kmipkit_protocol_version_v1_t { major: 2, minor: 1 });
+    assert_eq!(
+        version,
+        kmipkit_protocol_version_v1_t { major: 2, minor: 1 }
+    );
 
     let mut batch_count = 0_i32;
     assert_eq!(
@@ -122,12 +146,35 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
 
 #[test]
 fn invalid_request_message_returns_only_payload_free_validation_metadata() {
+    let structure = try_make_handle(Kind::Structure, HandleValue::Structure(Structure::new()))
+        .expect("the generic TTLV input handle is allocated");
+    let mut message = ptr::dangling_mut();
+    let mut validation_error = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_request_message_from_ttlv(structure, &raw mut message, &raw mut validation_error,),
+        ERROR_PROTOCOL
+    );
+    assert!(message.is_null());
+    assert!(!validation_error.is_null());
+
+    let mut kind = u32::MAX;
+    assert_eq!(
+        kmipkit_message_validation_error_kind(validation_error, &raw mut kind),
+        SUCCESS
+    );
+    assert_eq!(kind, 1, "missing required field is the stable kind value 1");
+    kmipkit_message_validation_error_release(validation_error);
+}
+
+#[test]
+fn validation_error_exposes_optional_numeric_indexes_without_payload() {
     let structure = try_make_handle(
         Kind::Structure,
-        HandleValue::Structure(Structure::new()),
+        HandleValue::Structure(request_message_missing_multi_item_id()),
     )
     .expect("the generic TTLV input handle is allocated");
-    let mut message = ptr::dangling_mut();
+    let mut message = ptr::null_mut();
     let mut validation_error = ptr::null_mut();
 
     assert_eq!(
@@ -141,11 +188,31 @@ fn invalid_request_message_returns_only_payload_free_validation_metadata() {
     assert!(message.is_null());
     assert!(!validation_error.is_null());
 
-    let mut kind = u32::MAX;
+    let mut has_structure_index = u8::MAX;
+    let mut structure_index = u64::MAX;
     assert_eq!(
-        kmipkit_message_validation_error_kind(validation_error, &raw mut kind),
+        kmipkit_message_validation_error_structure_index(
+            validation_error,
+            &raw mut has_structure_index,
+            &raw mut structure_index,
+        ),
         SUCCESS
     );
-    assert_eq!(kind, 1, "missing required field is the stable kind value 1");
+    assert_eq!(has_structure_index, 1);
+    assert_eq!(structure_index, 2);
+
+    let mut has_field_index = u8::MAX;
+    let mut field_index = u64::MAX;
+    assert_eq!(
+        kmipkit_message_validation_error_field_index(
+            validation_error,
+            &raw mut has_field_index,
+            &raw mut field_index,
+        ),
+        SUCCESS
+    );
+    assert_eq!(has_field_index, 0);
+    assert_eq!(field_index, 0);
+
     kmipkit_message_validation_error_release(validation_error);
 }
