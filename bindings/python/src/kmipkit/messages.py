@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Any, Self, TypeVar, cast
 
 from . import errors, ttlv
-from ._client_ffi import ffi, lib
+from ._client_ffi import ffi
+from ._client_ffi import lib as _native_lib
 from ._ffi import ffi as _base_ffi
-from ._handles import NativeHandle, _NATIVE_CALL_LOCK, _wrap_owned_handle
+from ._handles import _NATIVE_CALL_LOCK, NativeHandle, _wrap_owned_handle
 from .client import ProtocolVersion
+
+lib: Any = _native_lib
 
 _MAX_MESSAGE_BYTES = 16 * 1024 * 1024
 _MAX_U64 = (1 << 64) - 1
@@ -61,10 +64,11 @@ class MessageValidationError(errors.KmipKitError):
         self.structure_index = structure_index
         self.field_index = field_index
         super().__init__()
-        self.args = (
+        message = (
             f"KMIPKit message validation failed (kind {self.kind}; "
-            f"structure index {structure_index}; field index {field_index})",
+            f"structure index {structure_index}; field index {field_index})"
         )
+        self.args = (message,)
 
 
 class _MessageHandle(NativeHandle):
@@ -75,14 +79,18 @@ class _MessageHandle(NativeHandle):
             if self.closed:
                 return
             handle, owner = self._take()
-            getattr(lib, self._release_name)(handle)
+            getattr(_native_lib, self._release_name)(handle)
             del owner
 
 
-def _call(function: object, *arguments: object) -> int:
+_MessageHandleT = TypeVar("_MessageHandleT", bound=_MessageHandle)
+_FieldValueT = TypeVar("_FieldValueT")
+
+
+def _call(function: Any, *arguments: object) -> int:
     with _NATIVE_CALL_LOCK:
         try:
-            return int(function(*arguments))  # type: ignore[operator]
+            return int(function(*arguments))
         except (OverflowError, TypeError, ValueError):
             raise errors.InvalidInputError() from None
 
@@ -91,14 +99,14 @@ def _status(status: int) -> None:
     errors.raise_for_status(status)
 
 
-def _scalar(c_type: str, function: object, *arguments: object) -> int:
+def _scalar(c_type: str, function: Any, *arguments: object) -> int:
     output = ffi.new(f"{c_type} *")
     _status(_call(function, *arguments, output))
     return int(output[0])
 
 
 def _optional_scalar_pair(
-    function: object, handle: NativeHandle, value_type: str
+    function: Any, handle: NativeHandle, value_type: str
 ) -> int | None:
     present = ffi.new("uint8_t *")
     value = ffi.new(f"{value_type} *")
@@ -108,7 +116,7 @@ def _optional_scalar_pair(
     return int(value[0]) if present[0] == 1 else None
 
 
-def _out_handle(c_type: str, function: object, *arguments: object) -> object:
+def _out_handle(c_type: str, function: Any, *arguments: object) -> Any:
     output = ffi.new(f"{c_type} **")
     _status(_call(function, *arguments, output))
     if output[0] == ffi.NULL:
@@ -116,7 +124,9 @@ def _out_handle(c_type: str, function: object, *arguments: object) -> object:
     return output[0]
 
 
-def _wrap_handle(wrapper: type[_MessageHandle], handle: object, owner: object | None = None):
+def _wrap_handle(
+    wrapper: type[_MessageHandleT], handle: object, owner: object | None = None
+) -> _MessageHandleT:
     return _wrap_owned_handle(wrapper, handle, owner=owner)
 
 
@@ -129,11 +139,11 @@ def _consume_and_validate_message(
     structure: ttlv.Structure,
     *,
     handle_type: str,
-    wrapper: type[_MessageHandle],
-    constructor: object,
-    error_release: object,
-    message_release: object,
-) -> _MessageHandle:
+    wrapper: type[_MessageHandleT],
+    constructor: Any,
+    error_release: Any,
+    message_release: Any,
+) -> _MessageHandleT:
     if not isinstance(structure, ttlv.Structure):
         errors.raise_for_status(4)
     output = ffi.new(f"{handle_type} **")
@@ -155,7 +165,9 @@ def _consume_and_validate_message(
                 errors.raise_for_status(4)
             error_handle = validation_error[0]
             try:
-                kind = _scalar("uint32_t", lib.kmipkit_message_validation_error_kind, error_handle)
+                kind = _scalar(
+                    "uint32_t", lib.kmipkit_message_validation_error_kind, error_handle
+                )
                 structure_index = _optional_index(
                     lib.kmipkit_message_validation_error_structure_index,
                     error_handle,
@@ -178,7 +190,7 @@ def _consume_and_validate_message(
         structure._release_ownership_lock()
 
 
-def _optional_index(function: object, handle: object) -> int | None:
+def _optional_index(function: Any, handle: object) -> int | None:
     present = ffi.new("uint8_t *")
     value = ffi.new("uint64_t *")
     _status(_call(function, handle, present, value))
@@ -189,7 +201,7 @@ def _optional_index(function: object, handle: object) -> int | None:
     return int(value[0])
 
 
-def _copy_ttlv(function: object, handle: NativeHandle) -> ttlv.Structure:
+def _copy_ttlv(function: Any, handle: NativeHandle) -> ttlv.Structure:
     output = ffi.new("kmipkit_ttlv_structure_t **")
     _status(_call(function, handle._pointer(), output))
     if output[0] == ffi.NULL:
@@ -220,13 +232,16 @@ def _materialize_value(value_view: ttlv.TtlvValueView) -> object:
         return ttlv.ttlv_value_view_interval(value_view)
     if value_type == ttlv.ItemType.DateTimeExtended:
         return ttlv.ttlv_value_view_date_time_extended(value_view)
-    if value_type in (ttlv.ItemType.BigInteger, ttlv.ItemType.TextString, ttlv.ItemType.ByteString):
+    if value_type in (
+        ttlv.ItemType.BigInteger,
+        ttlv.ItemType.TextString,
+        ttlv.ItemType.ByteString,
+    ):
         length = ttlv.ttlv_value_view_byte_length(value_view)
         if length > _MAX_MESSAGE_BYTES:
             errors.raise_for_status(6)
         raw = bytes(
-            ttlv.ttlv_value_view_byte_at(value_view, index)
-            for index in range(length)
+            ttlv.ttlv_value_view_byte_at(value_view, index) for index in range(length)
         )
         if value_type == ttlv.ItemType.TextString:
             try:
@@ -238,7 +253,7 @@ def _materialize_value(value_view: ttlv.TtlvValueView) -> object:
 
 
 def _field_values(
-    copy_function: object,
+    copy_function: Any,
     handle: NativeHandle,
     raw_tag: int,
 ) -> tuple[object, ...]:
@@ -248,7 +263,9 @@ def _field_values(
         with ttlv.ttlv_structure_view(structure) as structure_view:
             count = ttlv.ttlv_structure_view_item_count(structure_view)
             for index in range(count):
-                with ttlv.ttlv_structure_view_item_at(structure_view, index) as item_view:
+                with ttlv.ttlv_structure_view_item_at(
+                    structure_view, index
+                ) as item_view:
                     with ttlv.ttlv_item_view_tag(item_view) as tag:
                         matches = ttlv.tag_value(tag) == raw_tag
                     if not matches:
@@ -267,7 +284,9 @@ def _field_values(
     return tuple(values)
 
 
-def _field_value(copy_function: object, handle: NativeHandle, raw_tag: int) -> object | None:
+def _field_value(
+    copy_function: Any, handle: NativeHandle, raw_tag: int
+) -> object | None:
     values = _field_values(copy_function, handle, raw_tag)
     if not values:
         return None
@@ -279,7 +298,33 @@ def _field_value(copy_function: object, handle: NativeHandle, raw_tag: int) -> o
     return values[0]
 
 
-def _copy_message_ttlv(handle: NativeHandle, function: object) -> ttlv.Structure:
+def _typed_field_value(
+    copy_function: Any,
+    handle: NativeHandle,
+    raw_tag: int,
+    value_type: type[_FieldValueT],
+) -> _FieldValueT | None:
+    value = _field_value(copy_function, handle, raw_tag)
+    if value is None:
+        return None
+    if not isinstance(value, value_type):
+        errors.raise_for_status(4)
+    return cast(_FieldValueT, value)
+
+
+def _typed_field_values(
+    copy_function: Any,
+    handle: NativeHandle,
+    raw_tag: int,
+    value_type: type[_FieldValueT],
+) -> tuple[_FieldValueT, ...]:
+    values = _field_values(copy_function, handle, raw_tag)
+    if any(not isinstance(value, value_type) for value in values):
+        errors.raise_for_status(4)
+    return tuple(cast(_FieldValueT, value) for value in values)
+
+
+def _copy_message_ttlv(handle: NativeHandle, function: Any) -> ttlv.Structure:
     return _copy_ttlv(function, handle)
 
 
@@ -299,7 +344,7 @@ class RequestMessage(_MessageHandle):
             error_release=lib.kmipkit_message_validation_error_release,
             message_release=lib.kmipkit_request_message_release,
         )
-        return handle  # type: ignore[return-value]
+        return handle
 
     @property
     def batch_item_count(self) -> int:
@@ -346,7 +391,7 @@ class ResponseMessage(_MessageHandle):
             error_release=lib.kmipkit_message_validation_error_release,
             message_release=lib.kmipkit_response_message_release,
         )
-        return handle  # type: ignore[return-value]
+        return handle
 
     @property
     def batch_item_count(self) -> int:
@@ -378,7 +423,11 @@ class ResponseMessage(_MessageHandle):
 
 
 def _checked_index(index: int) -> int:
-    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index <= _MAX_U64:
+    if (
+        isinstance(index, bool)
+        or not isinstance(index, int)
+        or not 0 <= index <= _MAX_U64
+    ):
         errors.raise_for_status(4)
     return index
 
@@ -391,27 +440,48 @@ class RequestHeaderView(_MessageHandle):
     @property
     def protocol_version(self) -> ProtocolVersion:
         version = ffi.new("kmipkit_protocol_version_v1_t *")
-        _status(_call(lib.kmipkit_request_header_view_protocol_version, self._pointer(), version))
-        return ProtocolVersion(int(version.major), int(version.minor))
+        _status(
+            _call(
+                lib.kmipkit_request_header_view_protocol_version,
+                self._pointer(),
+                version,
+            )
+        )
+        version_value = cast(Any, version)
+        return ProtocolVersion(int(version_value.major), int(version_value.minor))
 
     @property
     def batch_count(self) -> int:
-        return _scalar("int32_t", lib.kmipkit_request_header_view_batch_count, self._pointer())
+        return _scalar(
+            "int32_t", lib.kmipkit_request_header_view_batch_count, self._pointer()
+        )
 
     def to_ttlv(self) -> ttlv.Structure:
         return _copy_ttlv(lib.kmipkit_request_header_view_ttlv, self)
 
     @property
     def maximum_response_size(self) -> int | None:
-        return _field_value(lib.kmipkit_request_header_view_ttlv, self, _MAXIMUM_RESPONSE_SIZE)
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv, self, _MAXIMUM_RESPONSE_SIZE, int
+        )
 
     @property
     def client_correlation_value(self) -> str | None:
-        return _field_value(lib.kmipkit_request_header_view_ttlv, self, _CLIENT_CORRELATION_VALUE)
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv,
+            self,
+            _CLIENT_CORRELATION_VALUE,
+            str,
+        )
 
     @property
     def asynchronous_indicator(self) -> int | None:
-        return _field_value(lib.kmipkit_request_header_view_ttlv, self, _ASYNCHRONOUS_INDICATOR)
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv,
+            self,
+            _ASYNCHRONOUS_INDICATOR,
+            int,
+        )
 
     @property
     def effective_asynchronous_indicator(self) -> int:
@@ -420,10 +490,11 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def attestation_capable_indicator(self) -> bool | None:
-        return _field_value(
+        return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
             _ATTESTATION_CAPABLE_INDICATOR,
+            bool,
         )
 
     @property
@@ -435,22 +506,27 @@ class RequestHeaderView(_MessageHandle):
     def attestation_types(self) -> tuple[int, ...]:
         return tuple(
             int(value)
-            for value in _field_values(
-                lib.kmipkit_request_header_view_ttlv, self, _ATTESTATION_TYPE
+            for value in _typed_field_values(
+                lib.kmipkit_request_header_view_ttlv, self, _ATTESTATION_TYPE, int
             )
         )
 
     @property
     def authentication(self) -> ttlv.TtlvStructureView | None:
-        value = _field_value(lib.kmipkit_request_header_view_ttlv, self, _AUTHENTICATION)
-        return value if isinstance(value, ttlv.TtlvStructureView) else None
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv,
+            self,
+            _AUTHENTICATION,
+            ttlv.TtlvStructureView,
+        )
 
     @property
     def batch_error_continuation_option(self) -> int | None:
-        return _field_value(
+        return _typed_field_value(
             lib.kmipkit_request_header_view_ttlv,
             self,
             _BATCH_ERROR_CONTINUATION_OPTION,
+            int,
         )
 
     @property
@@ -460,7 +536,9 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def batch_order_option(self) -> bool | None:
-        return _field_value(lib.kmipkit_request_header_view_ttlv, self, _BATCH_ORDER_OPTION)
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv, self, _BATCH_ORDER_OPTION, bool
+        )
 
     @property
     def effective_batch_order_option(self) -> bool:
@@ -469,7 +547,9 @@ class RequestHeaderView(_MessageHandle):
 
     @property
     def time_stamp(self) -> int | None:
-        return _field_value(lib.kmipkit_request_header_view_ttlv, self, _TIME_STAMP)
+        return _typed_field_value(
+            lib.kmipkit_request_header_view_ttlv, self, _TIME_STAMP, int
+        )
 
 
 class ResponseHeaderView(_MessageHandle):
@@ -480,8 +560,15 @@ class ResponseHeaderView(_MessageHandle):
     @property
     def protocol_version(self) -> ProtocolVersion:
         version = ffi.new("kmipkit_protocol_version_v1_t *")
-        _status(_call(lib.kmipkit_response_header_view_protocol_version, self._pointer(), version))
-        return ProtocolVersion(int(version.major), int(version.minor))
+        _status(
+            _call(
+                lib.kmipkit_response_header_view_protocol_version,
+                self._pointer(),
+                version,
+            )
+        )
+        version_value = cast(Any, version)
+        return ProtocolVersion(int(version_value.major), int(version_value.minor))
 
     @property
     def time_stamp(self) -> int:
@@ -491,40 +578,56 @@ class ResponseHeaderView(_MessageHandle):
 
     @property
     def batch_count(self) -> int:
-        return _scalar("int32_t", lib.kmipkit_response_header_view_batch_count, self._pointer())
+        return _scalar(
+            "int32_t", lib.kmipkit_response_header_view_batch_count, self._pointer()
+        )
 
     def to_ttlv(self) -> ttlv.Structure:
         return _copy_ttlv(lib.kmipkit_response_header_view_ttlv, self)
 
     @property
     def nonce(self) -> ttlv.TtlvStructureView | None:
-        value = _field_value(lib.kmipkit_response_header_view_ttlv, self, _NONCE)
-        return value if isinstance(value, ttlv.TtlvStructureView) else None
+        return _typed_field_value(
+            lib.kmipkit_response_header_view_ttlv,
+            self,
+            _NONCE,
+            ttlv.TtlvStructureView,
+        )
 
     @property
     def server_hashed_password(self) -> bytes | None:
-        value = _field_value(lib.kmipkit_response_header_view_ttlv, self, _SERVER_HASHED_PASSWORD)
-        return value if isinstance(value, bytes) else None
+        return _typed_field_value(
+            lib.kmipkit_response_header_view_ttlv,
+            self,
+            _SERVER_HASHED_PASSWORD,
+            bytes,
+        )
 
     @property
     def attestation_types(self) -> tuple[int, ...]:
         return tuple(
             int(value)
-            for value in _field_values(
-                lib.kmipkit_response_header_view_ttlv, self, _ATTESTATION_TYPE
+            for value in _typed_field_values(
+                lib.kmipkit_response_header_view_ttlv, self, _ATTESTATION_TYPE, int
             )
         )
 
     @property
     def client_correlation_value(self) -> str | None:
-        return _field_value(
-            lib.kmipkit_response_header_view_ttlv, self, _CLIENT_CORRELATION_VALUE
+        return _typed_field_value(
+            lib.kmipkit_response_header_view_ttlv,
+            self,
+            _CLIENT_CORRELATION_VALUE,
+            str,
         )
 
     @property
     def server_correlation_value(self) -> str | None:
-        return _field_value(
-            lib.kmipkit_response_header_view_ttlv, self, _SERVER_CORRELATION_VALUE
+        return _typed_field_value(
+            lib.kmipkit_response_header_view_ttlv,
+            self,
+            _SERVER_CORRELATION_VALUE,
+            str,
         )
 
 
@@ -541,20 +644,27 @@ class RequestBatchItemView(_MessageHandle):
 
     @property
     def ephemeral(self) -> bool | None:
-        value = _field_value(lib.kmipkit_request_batch_item_view_ttlv, self, _EPHEMERAL)
-        return value if isinstance(value, bool) else None
+        return _typed_field_value(
+            lib.kmipkit_request_batch_item_view_ttlv, self, _EPHEMERAL, bool
+        )
 
     @property
     def unique_batch_item_id(self) -> bytes | None:
-        value = _field_value(
-            lib.kmipkit_request_batch_item_view_ttlv, self, _UNIQUE_BATCH_ITEM_ID
+        return _typed_field_value(
+            lib.kmipkit_request_batch_item_view_ttlv,
+            self,
+            _UNIQUE_BATCH_ITEM_ID,
+            bytes,
         )
-        return value if isinstance(value, bytes) else None
 
     @property
     def request_payload(self) -> ttlv.TtlvStructureView | None:
-        value = _field_value(lib.kmipkit_request_batch_item_view_ttlv, self, _REQUEST_PAYLOAD)
-        return value if isinstance(value, ttlv.TtlvStructureView) else None
+        return _typed_field_value(
+            lib.kmipkit_request_batch_item_view_ttlv,
+            self,
+            _REQUEST_PAYLOAD,
+            ttlv.TtlvStructureView,
+        )
 
     def to_ttlv(self) -> ttlv.Structure:
         return _copy_ttlv(lib.kmipkit_request_batch_item_view_ttlv, self)
@@ -589,10 +699,12 @@ class ResponseBatchItemView(_MessageHandle):
 
     @property
     def unique_batch_item_id(self) -> bytes | None:
-        value = _field_value(
-            lib.kmipkit_response_batch_item_view_ttlv, self, _UNIQUE_BATCH_ITEM_ID
+        return _typed_field_value(
+            lib.kmipkit_response_batch_item_view_ttlv,
+            self,
+            _UNIQUE_BATCH_ITEM_ID,
+            bytes,
         )
-        return value if isinstance(value, bytes) else None
 
     @property
     def result_status(self) -> int | None:
@@ -602,24 +714,33 @@ class ResponseBatchItemView(_MessageHandle):
 
     @property
     def result_reason(self) -> int | None:
-        return _field_value(lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_REASON)
+        return _typed_field_value(
+            lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_REASON, int
+        )
 
     @property
     def result_message(self) -> str | None:
-        return _field_value(lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_MESSAGE)
+        return _typed_field_value(
+            lib.kmipkit_response_batch_item_view_ttlv, self, _RESULT_MESSAGE, str
+        )
 
     @property
     def asynchronous_correlation_value(self) -> bytes | None:
-        return _field_value(
+        return _typed_field_value(
             lib.kmipkit_response_batch_item_view_ttlv,
             self,
             _ASYNCHRONOUS_CORRELATION_VALUE,
+            bytes,
         )
 
     @property
     def response_payload(self) -> ttlv.TtlvStructureView | None:
-        value = _field_value(lib.kmipkit_response_batch_item_view_ttlv, self, _RESPONSE_PAYLOAD)
-        return value if isinstance(value, ttlv.TtlvStructureView) else None
+        return _typed_field_value(
+            lib.kmipkit_response_batch_item_view_ttlv,
+            self,
+            _RESPONSE_PAYLOAD,
+            ttlv.TtlvStructureView,
+        )
 
     def to_ttlv(self) -> ttlv.Structure:
         return _copy_ttlv(lib.kmipkit_response_batch_item_view_ttlv, self)
@@ -651,20 +772,24 @@ class MessageExtensionView(_MessageHandle):
 
     @property
     def vendor_identification(self) -> str | None:
-        return _field_value(
-            lib.kmipkit_message_extension_view_ttlv, self, _VENDOR_IDENTIFICATION
+        return _typed_field_value(
+            lib.kmipkit_message_extension_view_ttlv, self, _VENDOR_IDENTIFICATION, str
         )
 
     @property
     def criticality_indicator(self) -> bool | None:
-        return _field_value(
-            lib.kmipkit_message_extension_view_ttlv, self, _CRITICALITY_INDICATOR
+        return _typed_field_value(
+            lib.kmipkit_message_extension_view_ttlv, self, _CRITICALITY_INDICATOR, bool
         )
 
     @property
     def vendor_extension(self) -> ttlv.TtlvStructureView | None:
-        value = _field_value(lib.kmipkit_message_extension_view_ttlv, self, _VENDOR_EXTENSION)
-        return value if isinstance(value, ttlv.TtlvStructureView) else None
+        return _typed_field_value(
+            lib.kmipkit_message_extension_view_ttlv,
+            self,
+            _VENDOR_EXTENSION,
+            ttlv.TtlvStructureView,
+        )
 
 
 __all__ = [

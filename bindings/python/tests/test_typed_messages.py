@@ -5,9 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 
 import pytest
-
 from kmipkit import messages, ttlv
-
 
 _REQUEST_MESSAGE = 0x0042_0078
 _RESPONSE_MESSAGE = 0x0042_007B
@@ -201,20 +199,27 @@ def _field_tags(structure: ttlv.Structure) -> list[int]:
     tags: list[int] = []
     with ttlv.ttlv_structure_view(structure) as structure_view:
         for index in range(ttlv.ttlv_structure_view_item_count(structure_view)):
-            with ttlv.ttlv_structure_view_item_at(structure_view, index) as item_view:
-                with ttlv.ttlv_item_view_tag(item_view) as tag:
-                    tags.append(ttlv.tag_value(tag))
+            with (
+                ttlv.ttlv_structure_view_item_at(structure_view, index) as item_view,
+                ttlv.ttlv_item_view_tag(item_view) as tag,
+            ):
+                tags.append(ttlv.tag_value(tag))
     return tags
 
 
-def test_request_message_preserves_unknown_operation_order_and_effective_defaults() -> None:
+def test_request_message_preserves_unknown_operation_order_and_effective_defaults() -> (
+    None
+):
     original = _request_tree()
 
     with messages.RequestMessage.from_ttlv(original) as request:
         assert original.closed
         assert request.batch_item_count == 1
         with request.header() as header:
-            assert (header.protocol_version.major, header.protocol_version.minor) == (2, 1)
+            assert (header.protocol_version.major, header.protocol_version.minor) == (
+                2,
+                1,
+            )
             assert header.batch_count == 1
             assert header.asynchronous_indicator is None
             assert header.effective_asynchronous_indicator == 3
@@ -241,10 +246,12 @@ def test_request_message_preserves_explicit_raw_header_option_values() -> None:
         header_options=((_ASYNC_INDICATOR, _enumeration(0xF123_4567)),)
     )
 
-    with messages.RequestMessage.from_ttlv(original) as request:
-        with request.header() as header:
-            assert header.asynchronous_indicator == 0xF123_4567
-            assert header.effective_asynchronous_indicator == 0xF123_4567
+    with (
+        messages.RequestMessage.from_ttlv(original) as request,
+        request.header() as header,
+    ):
+        assert header.asynchronous_indicator == 0xF123_4567
+        assert header.effective_asynchronous_indicator == 0xF123_4567
 
 
 def test_response_message_preserves_raw_status_and_response_timestamp() -> None:
@@ -253,7 +260,10 @@ def test_response_message_preserves_raw_status_and_response_timestamp() -> None:
     with messages.ResponseMessage.from_ttlv(original) as response:
         assert original.closed
         with response.header() as header:
-            assert (header.protocol_version.major, header.protocol_version.minor) == (2, 1)
+            assert (header.protocol_version.major, header.protocol_version.minor) == (
+                2,
+                1,
+            )
             assert header.time_stamp == 1_234_567
             assert header.batch_count == 1
         with response.batch_item_at(0) as item:
@@ -278,9 +288,11 @@ def test_response_header_preserves_server_hashed_password_bytes() -> None:
     finally:
         limits.close()
 
-    with messages.ResponseMessage.from_ttlv(original) as response:
-        with response.header() as header:
-            assert header.server_hashed_password == b"\x00\x80hash"
+    with (
+        messages.ResponseMessage.from_ttlv(original) as response,
+        response.header() as header,
+    ):
+        assert header.server_hashed_password == b"\x00\x80hash"
 
 
 def test_extension_view_survives_parent_close_and_returns_lossless_ttlv() -> None:
@@ -313,4 +325,3 @@ def test_invalid_message_error_is_payload_free_and_consumes_input() -> None:
     assert raised.value.structure_index is not None
     assert "DO-NOT-LEAK-MESSAGE-CONTENT" not in str(raised.value)
     assert "DO-NOT-LEAK-MESSAGE-CONTENT" not in repr(raised.value)
-
