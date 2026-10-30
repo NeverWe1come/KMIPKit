@@ -3048,10 +3048,14 @@ static int create_split_key_fixture_response_matches(
     kmipkit_client_batch_item_response_t *response_item, int pending) {
     static const uint8_t expected_text[] = "part-a";
     static const uint8_t expected_pending_text[] = "pending-part";
+    static const uint8_t expected_success_batch_item_id[] = "split-success";
+    static const uint8_t expected_pending_batch_item_id[] = "split-pending";
     static const uint8_t expected_correlation[] = {0x00, 0xff, 0x80};
     kmipkit_client_batch_item_metadata_v2_t metadata = {0};
     kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_byte_span_v1_t batch_item_id = {0};
     kmipkit_byte_span_v1_t correlation = {0};
+    uint8_t batch_item_id_present = 0;
     uint8_t correlation_present = 0;
     uint8_t split_present = 0;
     uint64_t split_count = 0;
@@ -3059,7 +3063,18 @@ static int create_split_key_fixture_response_matches(
     if (response_item == 0) return 0;
     metadata.struct_size = (uint32_t)sizeof(metadata);
     metadata.abi_version = 2;
-    if (kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata) != 0 ||
+    const uint8_t *expected_batch_item_id = pending
+        ? expected_pending_batch_item_id
+        : expected_success_batch_item_id;
+    const uint64_t expected_batch_item_id_length = pending
+        ? sizeof(expected_pending_batch_item_id) - 1
+        : sizeof(expected_success_batch_item_id) - 1;
+    if (kmipkit_client_batch_item_response_unique_batch_item_id(
+            response_item, &batch_item_id_present, &batch_item_id) != 0 ||
+        batch_item_id_present != 1 ||
+        !response_span_matches(batch_item_id, expected_batch_item_id,
+            expected_batch_item_id_length) ||
+        kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata) != 0 ||
         metadata.operation != UINT32_C(40) ||
         metadata.outcome_kind != (pending ? UINT32_C(2) : UINT32_C(1)) ||
         metadata.result_status != (pending ? UINT32_C(2) : UINT32_C(0)) ||

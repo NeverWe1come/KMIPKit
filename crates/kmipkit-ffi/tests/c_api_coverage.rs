@@ -928,7 +928,7 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
         0x0042_000f,
         [
             enumeration(0x0042_005c, 40),
-            ttlv_item(0x0042_0093, 0x08, b"split-success"),
+            ttlv_item(0x0042_0093, 0x08, b"split-success-red"),
             enumeration(
                 0x0042_007f,
                 u32::try_from(
