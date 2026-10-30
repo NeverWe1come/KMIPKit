@@ -262,6 +262,27 @@ class T036ProfileMappingTests(unittest.TestCase):
                     },
                 )
 
+    def test_overloaded_profile_value_constructors_inventory_exact_java_signatures(self) -> None:
+        expected = {
+            "org.kmipkit.extensions.ProfileObjectState.<init>": {
+                "public org.kmipkit.extensions.ProfileObjectState(java.lang.String)",
+                "public org.kmipkit.extensions.ProfileObjectState(java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Long, java.lang.Long)",
+            },
+            "org.kmipkit.extensions.ProfileValidationContext.<init>": {
+                "public org.kmipkit.extensions.ProfileValidationContext()",
+                "public org.kmipkit.extensions.ProfileValidationContext(java.util.List<org.kmipkit.extensions.ProfileValidationContext$Entry>)",
+            },
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] in expected
+        }
+        self.assertEqual(expected.keys(), declarations.keys())
+        for export, signatures in expected.items():
+            with self.subTest(export=export):
+                self.assertEqual(sorted(signatures), declarations[export]["javaSignatures"])
+
     def test_incomplete_baseline_evidence_is_not_described_as_runtime_available(self) -> None:
         conformance = " ".join(
             CONFORMANCE_DOC_PATH.read_text(encoding="utf-8").split()
