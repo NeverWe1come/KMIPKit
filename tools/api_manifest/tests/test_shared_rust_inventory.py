@@ -56,13 +56,25 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
+    def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
+        expected_source = (
+            "specs/043-public-api-bindings/reports/rust-export-report-2026-10-30.json"
+        )
+        generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        checked_in = json.loads(
+            (REPO_ROOT / AUDIT.REPORT_PATH).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(expected_source, generated["source"])
+        self.assertEqual(expected_source, checked_in["source"])
+
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 855)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 920)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            855,
+            920,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
