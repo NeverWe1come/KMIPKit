@@ -489,6 +489,39 @@ class PublicApiParityTests(unittest.TestCase):
         ]
         self.assertEqual(missing_symbols, [])
 
+    def test_t104_message_model_types_and_signatures_are_in_the_generated_contract(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        expected_types = {
+            "RequestMessage": "kmipkit_request_message_t",
+            "RequestHeaderView": "kmipkit_request_header_view_t",
+            "RequestBatchItemView": "kmipkit_request_batch_item_view_t",
+            "ResponseMessage": "kmipkit_response_message_t",
+            "ResponseHeaderView": "kmipkit_response_header_view_t",
+            "ResponseBatchItemView": "kmipkit_response_batch_item_view_t",
+            "MessageExtensionView": "kmipkit_message_extension_view_t",
+            "MessageValidationError": "kmipkit_message_validation_error_t",
+        }
+        manifest_types = {record["id"]: record for record in manifest["types"]}
+        for type_id, c_name in expected_types.items():
+            with self.subTest(type_id=type_id):
+                record = manifest_types.get(type_id)
+                self.assertIsNotNone(record, f"{type_id} must be described in the API manifest")
+                self.assertEqual(record["c"]["name"], c_name)
+                self.assertEqual(record["c"]["kind"], "opaque-handle")
+                self.assertTrue(record["c"].get("releaseFunction"))
+
+        t104_symbols = {
+            declaration["exportName"]
+            for declaration in manifest["publicDeclarations"]
+            if declaration["declarationId"].startswith("T104:")
+        }
+        function_symbols = {function["c"]["symbol"] for function in manifest["functions"]}
+        self.assertEqual(
+            t104_symbols,
+            function_symbols & t104_symbols,
+            "every T104 C export must have a typed function signature for header generation",
+        )
+
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
         case = next(
