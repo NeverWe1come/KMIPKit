@@ -391,7 +391,7 @@ mod tests {
     fn request_batch_validation_covers_required_fields_optional_ids_and_extensions() {
         let valid = request_batch();
         assert_eq!(
-            validate_request_batch_item(&valid.view(), 1).expect("batch valid"),
+            validate_request_batch_item(&valid.view(), 1, false).expect("batch valid"),
             Some(vec![1])
         );
         let identified = structure([
@@ -401,29 +401,34 @@ mod tests {
             message_extension(),
         ]);
         assert_eq!(
-            validate_request_batch_item(&identified.view(), 1).expect("identified batch valid"),
+            validate_request_batch_item(&identified.view(), 1, true)
+                .expect("identified batch valid"),
             Some(vec![3, 4])
         );
         let missing_operation =
             structure([item(REQUEST_PAYLOAD, Value::structure(Structure::new()))]);
         assert_kind(
-            validate_request_batch_item(&missing_operation.view(), 1),
+            validate_request_batch_item(&missing_operation.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_payload = structure([item(OPERATION, Value::enumeration(1))]);
         assert_kind(
-            validate_request_batch_item(&missing_payload.view(), 1),
+            validate_request_batch_item(&missing_payload.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_id = structure([
             item(OPERATION, Value::enumeration(1)),
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
-        // KMIP Specification v2.1 §9.21 makes Unique Batch Item ID optional.
+        // KMIP Specification v2.1 §8.3 Table 396 permits omission only when Batch Count is one.
         assert_eq!(
-            validate_request_batch_item(&missing_id.view(), 1)
+            validate_request_batch_item(&missing_id.view(), 1, false)
                 .expect("a request batch item may omit its optional ID"),
             None
+        );
+        assert_kind(
+            validate_request_batch_item(&missing_id.view(), 1, true),
+            MessageValidationErrorKind::MissingRequiredField,
         );
         let wrong_id = structure([
             item(OPERATION, Value::enumeration(1)),
@@ -431,7 +436,7 @@ mod tests {
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_request_batch_item(&wrong_id.view(), 1),
+            validate_request_batch_item(&wrong_id.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
 
@@ -441,7 +446,7 @@ mod tests {
             item(MESSAGE_EXTENSION, Value::integer(2)),
         ]);
         assert_kind(
-            validate_request_batch_item(&malformed_extension.view(), 1),
+            validate_request_batch_item(&malformed_extension.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
     }

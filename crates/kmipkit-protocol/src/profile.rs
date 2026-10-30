@@ -11124,7 +11124,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::OptionalCapabilityUsable
         )],
         [(
@@ -11137,7 +11137,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -11150,7 +11150,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::OptionalCapabilityUsable
         )],
         [(
@@ -11163,7 +11163,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -11176,7 +11176,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -11189,7 +11189,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -11202,7 +11202,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::OptionalCapabilityUsable
         )],
         [(
@@ -11215,7 +11215,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -11228,7 +11228,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
-            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
+            "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
             RuleTestKind::NegativeBehavior
         )],
         [(
@@ -14064,11 +14064,11 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         Some(client_understands_response_operations),
         &[
             rule_test_evidence(
-                "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
+                "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
                 RuleTestKind::PositiveBehavior,
             ),
             rule_test_evidence(
-                "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
+                "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
                 RuleTestKind::NegativeBehavior,
             ),
             rule_test_evidence(

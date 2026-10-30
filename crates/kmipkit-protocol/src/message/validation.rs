@@ -227,6 +227,13 @@ const REQUEST_BATCH_FIELDS: &[FieldSpec] = &[
     field(REQUEST_PAYLOAD, ItemType::Structure),
     repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
 ];
+const REQUEST_BATCH_FIELDS_WITH_ID: &[FieldSpec] = &[
+    field(OPERATION, ItemType::Enumeration),
+    field(EPHEMERAL, ItemType::Boolean),
+    field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
+    field(REQUEST_PAYLOAD, ItemType::Structure),
+    repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
+];
 const RESPONSE_BATCH_FIELDS: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
     field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
@@ -279,8 +286,11 @@ pub(super) fn validate_request_message(
                         None,
                     ));
                 }
+                let multi_item_request = header
+                    .as_ref()
+                    .is_some_and(|(_, validated_header)| validated_header.batch_count > 1);
                 let item_id = with_structure(child, index, None, |view| {
-                    validate_request_batch_item(&view, index)
+                    validate_request_batch_item(&view, index, multi_item_request)
                 })?;
                 if let Some(item_id) = item_id
                     && !request_ids.insert(item_id)
@@ -516,11 +526,21 @@ fn validate_protocol_version(
 fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
+    require_unique_batch_item_id: bool,
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
+    let required_fields = if require_unique_batch_item_id {
+        &[OPERATION, UNIQUE_BATCH_ITEM_ID, REQUEST_PAYLOAD][..]
+    } else {
+        &[OPERATION, REQUEST_PAYLOAD][..]
+    };
     validate_fields(
         view.children(),
-        REQUEST_BATCH_FIELDS,
-        &[OPERATION, REQUEST_PAYLOAD],
+        if require_unique_batch_item_id {
+            REQUEST_BATCH_FIELDS_WITH_ID
+        } else {
+            REQUEST_BATCH_FIELDS
+        },
+        required_fields,
         Some(top_index),
     )?;
     let id = view

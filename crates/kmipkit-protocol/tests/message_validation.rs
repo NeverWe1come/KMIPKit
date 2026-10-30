@@ -229,7 +229,10 @@ fn multi_item_request_requires_a_unique_id_on_every_batch_item() {
     let error = RequestMessage::try_from_ttlv(request_optional_ids([Some(vec![0x01]), None]))
         .expect_err("Table 396 requires an ID on every item when Batch Count exceeds one");
 
-    assert_eq!(error.kind(), MessageValidationErrorKind::MissingRequiredField);
+    assert_eq!(
+        error.kind(),
+        MessageValidationErrorKind::MissingRequiredField
+    );
     assert_eq!(error.structure_index(), Some(2));
 }
 

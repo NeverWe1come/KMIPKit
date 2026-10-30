@@ -91100,7 +91100,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -91135,7 +91135,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -91170,7 +91170,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -91205,7 +91205,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -91240,7 +91240,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -91275,7 +91275,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -91310,7 +91310,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -91345,7 +91345,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -91380,7 +91380,7 @@
         "specs/010-profile-conformance/contracts/profile-validation.md"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -93172,7 +93172,7 @@
         "crates/kmipkit-protocol/src/profile.rs::client_understands_response_operations"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
+        "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::client_response_operation_matches_the_operation_it_was_sent_for",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::client_response_correlates_reordered_items_by_id_when_batch_order_is_effective",
         "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response"
       ],
@@ -100230,7 +100230,7 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages",
         "crates/kmipkit-protocol/tests/message_contract.rs::valid_request_and_response_preserve_envelope_order_and_counts",
         "crates/kmipkit-protocol/tests/message_contract.rs::response_payload_is_required_for_non_failure_and_absent_for_failure",
-        "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::request_batch_validation_covers_required_fields_ids_and_extensions",
+        "crates/kmipkit-protocol/tests/support/message_validation_unit.rs::request_batch_validation_covers_required_fields_optional_ids_and_extensions",
         "crates/kmipkit-protocol/tests/message_accessors.rs::request_batch_and_extension_accessors_preserve_order_and_values",
         "crates/kmipkit-protocol/tests/message_accessors.rs::response_batch_and_extension_accessors_preserve_all_result_shapes",
         "crates/kmipkit-protocol/tests/message_conversion.rs::request_message_conversion_preserves_bounded_generated_trees"
@@ -100477,7 +100477,7 @@
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_validation.rs::every_multi_item_request_requires_an_id",
+        "crates/kmipkit-protocol/tests/message_validation.rs::multi_item_request_requires_a_unique_id_on_every_batch_item",
         "crates/kmipkit-protocol/tests/message_validation.rs::multi_item_request_rejects_repeated_unique_batch_item_ids",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests"
       ],
