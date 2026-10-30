@@ -6888,3 +6888,4 @@ The API manifest previously had no way to carry an exact C ABI signature for a p
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
 | Red — require root-package module availability | this commit | `uv run --project bindings/python python -m pytest bindings/python/tests/test_typed_messages.py -k message_model_module_is_available_on_the_root_package -q` | Expected failure in an isolated interpreter: `kmipkit.__all__` names `messages`, but importing `kmipkit` alone does not bind the submodule on the package. |
+| Green — bind the documented root module | this commit | Same focused pytest command | Pass: a fresh interpreter imports `kmipkit` and observes `kmipkit.messages` without importing the submodule separately. |
