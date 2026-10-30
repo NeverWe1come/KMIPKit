@@ -1020,6 +1020,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/004-generic-ttlv-model/spec.md",
             )
 
+    def test_profile_test_support_selection_helpers_have_exact_exclusions(self) -> None:
+        expected = {
+            ("rust-kmipkit", "kmipkit::ProfileValidationSelection::for_test"),
+            (
+                "rust-kmipkit-client",
+                "kmipkit_client::ProfileValidationSelection::for_test",
+            ),
+            (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::ProfileValidationSelection::for_test",
+            ),
+        }
+        exclusions = {
+            (record["packageId"], record["exportName"]): record
+            for record in self.checked_in_manifest["approvedExclusions"]
+        }
+        missing = sorted(expected - exclusions.keys())
+        self.assertFalse(missing, f"missing test-support-only exclusions: {missing}")
+        for key in sorted(expected):
+            exclusion = exclusions[key]
+            self.assertIn("test-support", exclusion["reason"])
+            self.assertEqual(
+                exclusion["approvalSource"]["path"],
+                "specs/010-profile-conformance/spec.md",
+            )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
