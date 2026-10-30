@@ -3,9 +3,13 @@ package org.kmipkit.ttlv;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.KmipException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 
 /** Bounded decoder for one complete generic TTLV Item. */
 public final class TtlvCodec {
+    private static final int ERROR_INVALID_INPUT = 4;
+    private static final int ERROR_RESOURCE_LIMIT = 6;
+
     private TtlvCodec() {}
 
     /** Decodes exactly one complete Item using the default 16 MiB, depth 64, and 100,000 Item limits. */
@@ -30,12 +34,18 @@ public final class TtlvCodec {
         if (kind != 0) {
             throw new TtlvDecodeException(kind, offset);
         }
-        if (status == 4) {
-            throw new InvalidInputException("TTLV decoder inputs are invalid");
-        }
         if (status != 0 || handle == 0) {
-            throw new KmipException("KMIPKit TTLV decoding failed");
+            throw statusFailure(status);
         }
         return TtlvItem.fromNative(handle);
+    }
+
+    static RuntimeException statusFailure(int status) {
+        return switch (status) {
+            case ERROR_INVALID_INPUT -> new InvalidInputException("TTLV decoder inputs are invalid");
+            case ERROR_RESOURCE_LIMIT -> new ResourceLimitException(
+                    "TTLV decoding exceeded a configured resource limit");
+            default -> new KmipException("KMIPKit TTLV decoding failed");
+        };
     }
 }
