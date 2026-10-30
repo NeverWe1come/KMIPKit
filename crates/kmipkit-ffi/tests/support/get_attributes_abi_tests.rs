@@ -7,6 +7,19 @@ fn abi_struct_size<T>() -> u32 {
     u32::try_from(std::mem::size_of::<T>()).expect("test ABI record size fits u32")
 }
 
+fn response_fixture_request() -> ClientRequest {
+    ClientRequest::get_attributes(
+        GetAttributesRequest::try_new(
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
+            [
+                AttributeReference::tag(0x0042_002f),
+                AttributeReference::tag(0x0042_0001),
+            ],
+        )
+        .expect("the response fixture references are unique"),
+    )
+}
+
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attributes_request() -> i32;
@@ -112,20 +125,8 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
 
 #[test]
 fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
-    let request = || {
-        ClientRequest::get_attributes(
-            GetAttributesRequest::try_new(
-                Some(RESPONSE_FIXTURE_UID.to_owned()),
-                [
-                    AttributeReference::tag(0x0042_002f),
-                    AttributeReference::tag(0x0042_0001),
-                ],
-            )
-            .expect("the request reference is unique"),
-        )
-    };
     let success = successful_cryptographic_item(
-        request(),
+        response_fixture_request(),
         0x0b,
         b"get-attributes-success",
         vec![
@@ -184,7 +185,8 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     kmipkit_ttlv_structure_release(attributes);
     kmipkit_client_batch_item_response_release(success);
 
-    let failure = failed_cryptographic_item(request(), 0x0b, b"get-attributes-failure");
+    let failure =
+        failed_cryptographic_item(response_fixture_request(), 0x0b, b"get-attributes-failure");
     let mut present = 9;
     let mut identifier = kmipkit_unique_identifier_v1_t {
         struct_size: abi_struct_size::<kmipkit_unique_identifier_v1_t>(),
