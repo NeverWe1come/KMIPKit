@@ -2422,6 +2422,51 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual("declared", capability["capabilityState"])
                 self.assertIn(facade_name, capability["mappings"]["rust"])
 
+    def test_t091_root_profile_reexports_keep_incomplete_claim_blocked(self) -> None:
+        methods = (
+            "execute_with_profiles",
+            "execute_with_profiles_and_context",
+            "execute_with_profiles_and_context_and_options",
+            "execute_with_profiles_and_options",
+        )
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_profile_validation"
+        )
+        baseline = next(
+            row
+            for row in self.catalog["profiles"]
+            if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+
+        self.assertEqual("declared", capability["capabilityState"])
+        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+        for method in methods:
+            with self.subTest(method=method):
+                client_name = f"kmipkit_client::Client::{method}"
+                facade_name = f"kmipkit::Client::{method}"
+                canonical = declarations[("rust-kmipkit-client", client_name)]
+                facade = declarations[("rust-kmipkit", facade_name)]
+                expected_mappings = dict(canonical["languageMappings"])
+                expected_mappings["rust"] = {
+                    "packageId": "rust-kmipkit",
+                    "name": facade_name,
+                }
+
+                self.assertEqual("declared", canonical["declarationState"])
+                self.assertEqual("declared", facade["declarationState"])
+                self.assertEqual("client_profile_validation", facade["capabilityId"])
+                self.assertNotIn("candidateSpecId", facade)
+                self.assertEqual(canonical["requirementIds"], facade["requirementIds"])
+                self.assertEqual(canonical["approvalSource"], facade["approvalSource"])
+                self.assertEqual(expected_mappings, facade["languageMappings"])
+                self.assertIn(facade_name, capability["mappings"]["rust"])
+
     def test_t091_remaining_root_client_methods_map_to_verified_operations(self) -> None:
         methods = (
             ("get_attribute_list", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"),
