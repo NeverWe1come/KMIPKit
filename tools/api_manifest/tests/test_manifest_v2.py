@@ -1350,6 +1350,58 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 list(targets),
             )
 
+    def test_t090_protocol_version_accessors_map_to_existing_four_language_surface(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        expected = {
+            "kmipkit_protocol::ProtocolVersion::from_raw": (
+                "kmipkit_protocol_version_v1_t",
+                "org.kmipkit.extensions.ProtocolVersion.<init>",
+                "kmipkit.client.ProtocolVersion.__init__",
+            ),
+            "kmipkit_protocol::ProtocolVersion::major": (
+                "kmipkit_protocol_version_v1_t.major",
+                "org.kmipkit.extensions.ProtocolVersion.major",
+                "kmipkit.client.ProtocolVersion.major",
+            ),
+            "kmipkit_protocol::ProtocolVersion::minor": (
+                "kmipkit_protocol_version_v1_t.minor",
+                "org.kmipkit.extensions.ProtocolVersion.minor",
+                "kmipkit.client.ProtocolVersion.minor",
+            ),
+        }
+        expected_requirements = [
+            "KMIPKIT-0006-FR-012",
+            "KMIPKIT-0007-FR-002",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+        ]
+
+        for rust_name, (c_name, java_name, python_name) in expected.items():
+            with self.subTest(export=rust_name):
+                declaration = declarations[rust_name]
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(declaration["capabilityId"], "client_execution")
+                self.assertEqual(declaration["requirementIds"], expected_requirements)
+                self.assertEqual(
+                    declaration["languageMappings"],
+                    {
+                        "rust": {
+                            "packageId": "rust-kmipkit-protocol",
+                            "name": rust_name,
+                        },
+                        "c": {"packageId": "c-kmipkit", "name": c_name},
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {
+                            "packageId": "python-kmipkit",
+                            "name": python_name,
+                        },
+                    },
+                )
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
