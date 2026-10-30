@@ -6830,6 +6830,68 @@ pub extern "C" fn kmipkit_message_validation_error_kind(
     })
 }
 
+/// Returns whether the validation error has a top-level Structure item index.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_validation_error_structure_index(
+    error: *mut kmipkit_message_validation_error_t,
+    out_present: *mut u8,
+    out_index: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let index_out = scalar_out!(out_index);
+        *present = 0;
+        *index_out = 0;
+        let error = read_handle!(error, MessageValidationError);
+        let HandleValue::MessageValidationError(error) = error.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        try_ffi!(write_optional_message_index(
+            present,
+            index_out,
+            error.structure_index(),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns whether the validation error has a field index within its Structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_validation_error_field_index(
+    error: *mut kmipkit_message_validation_error_t,
+    out_present: *mut u8,
+    out_index: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let index_out = scalar_out!(out_index);
+        *present = 0;
+        *index_out = 0;
+        let error = read_handle!(error, MessageValidationError);
+        let HandleValue::MessageValidationError(error) = error.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        try_ffi!(write_optional_message_index(
+            present,
+            index_out,
+            error.field_index(),
+        ));
+        SUCCESS
+    })
+}
+
+fn write_optional_message_index(
+    present: &mut u8,
+    out_index: &mut u64,
+    index: Option<usize>,
+) -> FfiResult<()> {
+    if let Some(index) = index {
+        *present = 1;
+        *out_index = u64::try_from(index).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    }
+    Ok(())
+}
+
 fn message_validation_error_kind_code(kind: MessageValidationErrorKind) -> u32 {
     match kind {
         MessageValidationErrorKind::MissingRequiredField => {
