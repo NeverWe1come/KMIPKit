@@ -6496,6 +6496,10 @@ The case-4 review noted that the plan test checked the Java method metadata but 
 |---|---|---|---|
 | Red | this evidence commit | Hosted PR #104 CI run [41004566130](https://github.com/NeverWe1come/KMIPKit/actions/runs/41004566130), head `a961cb8d82f1de2f30b7b99c6615426d3655d4be`, `Python bindings / windows-2022` | Failure: 806 tests passed and `test_rng_operations_cross_native_cffi_over_mutual_tls` failed at `assert peer.is_alive() is False`. Its request/response and redaction assertions had already passed; the `finally` block only calls `peer.join(timeout=10)` after this premature liveness check. The evidence points to a thread-completion timing race in the test, not an RNG response mismatch. |
 
+Green: commit `bce59a885` removes the unsynchronized liveness assertion immediately before cleanup. The `finally` block still joins the peer with a 10-second bound and raises if it remains alive, so thread termination remains asserted after synchronization on both success and failure paths.
+
+Refactor/evidence: the affected RNG integration test passed 10 consecutive focused runs; the full `test_rng_native_integration.py` file passed (2 tests), and `git diff --check` passed. These runs used the existing Python 3.12.14 environment. The updated source head still requires hosted Windows CI; no claim is made that the race is resolved on the hosted runner until that exact-head check passes.
+
 ### T071 schema-redaction parity case 4 of 13 (2026-10-30)
 
 The runner now accepts `errors.schema-redaction.v1` and selects its exact Rust protocol integration target, compiled C ABI harness, Java registry test, and Python registry method. Rust package selection is derived from the reviewed crate test path; a direct `tests/<name>.rs` selects `--test <name>`, while nested `tests/unit/...` remains `--lib`. The plan contract asserts the Rust package/target and the class-qualified Python selector. This is case 4 of 13; T071 remains open and complete-surface parity is not claimed.
