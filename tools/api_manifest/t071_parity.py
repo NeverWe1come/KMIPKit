@@ -11,6 +11,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from pathlib import PurePosixPath
 from typing import Any
 
 
@@ -19,10 +20,15 @@ FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.j
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
+SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
         "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
+    ): "ExtensionRegistryTests",
+    (
+        "bindings/python/tests/test_extension_registry.py",
+        "test_failure_and_default_diagnostics_redact_secret_fixture_values",
     ): "ExtensionRegistryTests",
 }
 CASE_TESTS = {
@@ -78,6 +84,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_extension_registry.py",
             "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
+        ),
+    },
+    SCHEMA_REDACTION_CASE: {
+        "rust": (
+            "crates/kmipkit-protocol/tests/extension_redaction.rs",
+            "schema_error_debug_display_and_source_chain_redact_payload_secrets",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+            "org.kmipkit.ExtensionRegistryTest#invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText",
+        ),
+        "python": (
+            "bindings/python/tests/test_extension_registry.py",
+            "test_failure_and_default_diagnostics_redact_secret_fixture_values",
         ),
     },
 }
@@ -174,8 +198,20 @@ def _consumer_command(
             raise ParityRunnerError(f"{language} fixture consumer does not match its reviewed test")
         if language == "rust":
             test_name = expected_test.rsplit("::", maxsplit=1)[-1]
-            test_path = Path(expected_path)
-            if test_path.parent == Path("crates/kmipkit-client/tests"):
+            test_path = PurePosixPath(expected_path)
+            parts = test_path.parts
+            package_name = parts[1] if len(parts) > 1 else ""
+            if (
+                test_path.is_absolute()
+                or len(parts) < 4
+                or parts[0] != "crates"
+                or parts[2] != "tests"
+                or test_path.suffix != ".rs"
+                or any(part in {".", ".."} for part in parts)
+                or re.fullmatch(r"[a-z][a-z0-9_-]*", package_name) is None
+            ):
+                raise ParityRunnerError("Rust fixture test path is not a safe crate test path")
+            if len(parts) == 4:
                 target = ["--test", test_path.stem]
                 exact_filter = ["--", "--exact"]
             else:
@@ -185,7 +221,7 @@ def _consumer_command(
                 "cargo",
                 "test",
                 "-p",
-                "kmipkit-client",
+                package_name,
                 *target,
                 test_name,
                 *exact_filter,
