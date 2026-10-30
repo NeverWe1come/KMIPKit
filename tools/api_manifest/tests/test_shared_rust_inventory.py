@@ -36,6 +36,25 @@ EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::TransportError::delivery_state",
     "kmipkit_transport::TransportError::cause_category",
 }
+EXPECTED_RUST_ONLY_ROOT_ALIASES = {
+    "kmipkit::RequestDeliveryState",
+    "kmipkit::RequestDeliveryState::NotSent",
+    "kmipkit::RequestDeliveryState::PossiblySent",
+    "kmipkit::RequestDeliveryState::ResponseStarted",
+    "kmipkit::RequestDeliveryState::not_sent",
+    "kmipkit::RequestDeliveryState::response_bytes_received",
+    "kmipkit::RequestDeliveryState::write_started",
+    "kmipkit::TransportCauseCategory",
+    "kmipkit::TransportCauseCategory::Http",
+    "kmipkit::TransportCauseCategory::Io",
+    "kmipkit::TransportCauseCategory::Other",
+    "kmipkit::TransportCauseCategory::Timeout",
+    "kmipkit::TransportCauseCategory::Tls",
+    "kmipkit::TransportError",
+    "kmipkit::TransportError::cause_category",
+    "kmipkit::TransportError::delivery_state",
+    "kmipkit::TransportError::new",
+}
 SPEC = importlib.util.spec_from_file_location("audit_shared_rust_inventory", MODULE_PATH)
 AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(AUDIT)
@@ -95,7 +114,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 10457)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 442)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 496)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
@@ -144,11 +163,38 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_transport_is_the_only_accepted_rust_only_capability(self) -> None:
         rows = [row for row in self.manifest["publicDeclarations"] if row["parityScope"] == "rust-only-adr"]
 
-        self.assertEqual({row["exportName"] for row in rows}, EXPECTED_RUST_ONLY_DECLARATIONS)
+        self.assertEqual(
+            {row["exportName"] for row in rows},
+            EXPECTED_RUST_ONLY_DECLARATIONS | EXPECTED_RUST_ONLY_ROOT_ALIASES,
+        )
         self.assertEqual({row["capabilityId"] for row in rows}, {"rust_transport_exchange"})
-        self.assertEqual({row["packageId"] for row in rows}, {"rust-kmipkit-transport"})
+        self.assertEqual(
+            {row["packageId"] for row in rows},
+            {"rust-kmipkit-transport", "rust-kmipkit"},
+        )
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
-        self.assertEqual(len(inventory["rustOnlyDeclarations"]), len(EXPECTED_RUST_ONLY_DECLARATIONS))
+        self.assertEqual(
+            len(inventory["rustOnlyDeclarations"]),
+            len(EXPECTED_RUST_ONLY_DECLARATIONS | EXPECTED_RUST_ONLY_ROOT_ALIASES),
+        )
+        root_declarations = {
+            row["exportName"]: row
+            for row in rows
+            if row["packageId"] == "rust-kmipkit"
+        }
+        for export_name in EXPECTED_RUST_ONLY_ROOT_ALIASES:
+            with self.subTest(export=export_name):
+                declaration = root_declarations[export_name]
+                self.assertEqual(declaration["parityScope"], "rust-only-adr")
+                self.assertEqual(
+                    declaration["languageMappings"],
+                    {
+                        "rust": {
+                            "packageId": "rust-kmipkit",
+                            "name": export_name,
+                        }
+                    },
+                )
 
     def test_approved_registry_capability_matches_its_existing_four_language_declarations(self) -> None:
         capability = next(
