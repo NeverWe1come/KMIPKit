@@ -45,6 +45,7 @@ const RESULT_STATUS: u32 = 0x0042_007f;
 const RESULT_REASON: u32 = 0x0042_007e;
 const RESULT_MESSAGE: u32 = 0x0042_007d;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
+const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const RESPONSE_TOO_LARGE: u32 = 0x0000_0002;
 const SUCCESS: u32 = 0;
@@ -142,6 +143,143 @@ fn response_bytes_with_limits(
     message.extend(items);
     encode_message_for_test(test_structure(message), limits)
         .expect("fixture response message is encodable")
+}
+
+fn fixture_unique_identifiers(values: &serde_json::Value) -> Vec<UniqueIdentifier> {
+    values
+        .as_array()
+        .expect("fixture identifiers are an array")
+        .iter()
+        .map(|identifier| match identifier["wireType"].as_str() {
+            Some("TextString") => UniqueIdentifier::TextString(
+                identifier["text"]
+                    .as_str()
+                    .expect("TextString identifier has text")
+                    .to_owned(),
+            ),
+            Some("Enumeration") => UniqueIdentifier::Enumeration(
+                u32::try_from(
+                    identifier["enumeration"]
+                        .as_u64()
+                        .expect("Enumeration identifier is U32"),
+                )
+                .expect("identifier fits Enumeration"),
+            ),
+            Some("Integer") => UniqueIdentifier::Integer(
+                i32::try_from(
+                    identifier["integer"]
+                        .as_i64()
+                        .expect("Integer identifier is signed"),
+                )
+                .expect("identifier fits Integer"),
+            ),
+            other => panic!("unsupported fixture Unique Identifier type {other:?}"),
+        })
+        .collect()
+}
+
+fn fixture_identifier_payload(identifiers: &[UniqueIdentifier]) -> Structure {
+    test_structure(identifiers.iter().map(|identifier| {
+        let value = match identifier {
+            UniqueIdentifier::TextString(value) => Value::text_string(value.clone()),
+            UniqueIdentifier::Enumeration(value) => Value::enumeration(*value),
+            UniqueIdentifier::Integer(value) => Value::integer(*value),
+            other => panic!("unsupported fixture Unique Identifier {other:?}"),
+        };
+        test_item(UNIQUE_IDENTIFIER, value)
+    }))
+}
+
+fn assert_fixture_split_key_request(request: &[u8]) {
+    let decoded = decode_with_limits(request, &CodecLimits::defaults())
+        .expect("captured Create Split Key request decodes under default limits");
+    decoded.with_value(|value| {
+        let ValueView::Structure(root) = value else {
+            panic!("captured request root is a Structure");
+        };
+        let batch_items = root
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        assert_eq!(batch_items.len(), 2);
+        for (index, batch_item) in batch_items.iter().enumerate() {
+            batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    panic!("captured batch item is a Structure");
+                };
+                let expected_id: &[u8] = if index == 0 {
+                    b"split-success"
+                } else {
+                    b"split-pending"
+                };
+                assert_eq!(
+                    batch_item
+                        .children()
+                        .iter()
+                        .map(|field| field.tag().raw())
+                        .collect::<Vec<_>>(),
+                    [0x0042_005c, 0x0042_0093, REQUEST_PAYLOAD]
+                );
+                batch_item.children()[0].with_value(|value| {
+                    assert!(matches!(
+                        value,
+                        ValueView::Enumeration(value) if *value == CREATE_SPLIT_KEY
+                    ));
+                });
+                assert!(batch_item.children()[1].with_value(|value| matches!(
+                    value,
+                    ValueView::ByteString(value) if value == expected_id
+                )));
+                batch_item.children()[2].with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("Create Split Key request payload is a Structure");
+                    };
+                    assert_eq!(
+                        payload
+                            .children()
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .collect::<Vec<_>>(),
+                        [
+                            0x0042_0057,
+                            0x0042_0094,
+                            0x0042_008b,
+                            0x0042_008c,
+                            0x0042_008a,
+                            0x0042_0125,
+                            0x0042_015f,
+                        ]
+                    );
+                    payload.children()[0].with_value(|value| {
+                        assert!(
+                            matches!(value, ValueView::Enumeration(value) if *value == 0xf000_0000)
+                        );
+                    });
+                    payload.children()[1].with_value(|value| {
+                        assert!(matches!(value, ValueView::Integer(-7)));
+                    });
+                    payload.children()[2].with_value(|value| {
+                        assert!(matches!(value, ValueView::Integer(-3)));
+                    });
+                    payload.children()[3].with_value(|value| {
+                        assert!(matches!(value, ValueView::Integer(4)));
+                    });
+                    payload.children()[4].with_value(|value| {
+                        assert!(
+                            matches!(value, ValueView::Enumeration(value) if *value == 0xdead_beef)
+                        );
+                    });
+                    for field in &payload.children()[5..] {
+                        assert!(field.with_value(|value| matches!(
+                            value,
+                            ValueView::Structure(structure) if structure.children().is_empty()
+                        )));
+                    }
+                });
+            });
+        }
+    });
 }
 
 fn maximum_response_size(request: &[u8]) -> Option<i32> {
@@ -558,7 +696,10 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
         None,
         None,
         Some(PENDING_CORRELATION),
-        Some(Structure::new()),
+        Some(test_structure([test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-part".to_owned()),
+        )])),
     )]);
     let (mut client, fake) = client_for(ExchangeScript::Success {
         response,
@@ -592,6 +733,13 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
     assert!(response_view.create().is_none());
     assert!(response_view.create_key_pair().is_none());
     assert!(response_view.create_split_key().is_some());
+    assert_eq!(
+        response_view
+            .create_split_key()
+            .expect("Pending retains the operation-specific response")
+            .unique_identifiers(),
+        &[UniqueIdentifier::TextString("pending-part".to_owned())]
+    );
     assert!(response_view.add_attribute().is_none());
     assert!(response_view.adjust_attribute().is_none());
     assert!(response_view.delete_attribute().is_none());
@@ -607,6 +755,176 @@ fn create_split_key_pending_retains_operation_result_and_exact_correlation_witho
         PENDING_CORRELATION
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+/// Maps the fixture's ordered success identifiers and Pending metadata through one batch.
+/// KMIP 2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
+#[test]
+fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared capability fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared capability cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.split-key.request-response.v1")
+        .cloned()
+        .expect("Create Split Key fixture exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let pending_expected = &expected["pendingMetadata"];
+
+    assert_eq!(input["operation"], "Create Split Key");
+    assert_eq!(input["attributesPresent"], true);
+    assert_eq!(input["protectionStorageMasks"]["present"], true);
+    assert_eq!(expected["primeFieldSizePresent"], false);
+    assert_eq!(expected["resultMessagePresencePreserved"], true);
+    assert_eq!(pending_expected["sourceOperation"], CREATE_SPLIT_KEY);
+    assert_eq!(pending_expected["resultReason"], serde_json::Value::Null);
+    assert_eq!(pending_expected["resultMessage"], serde_json::Value::Null);
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let request = || {
+        CreateSplitKeyRequest::new(
+            ObjectType::from_raw(
+                u32::try_from(input["objectType"].as_u64().expect("Object Type is U32"))
+                    .expect("Object Type fits U32"),
+            ),
+            i32::try_from(input["splitKeyParts"].as_i64().expect("parts are Integer"))
+                .expect("parts fit Integer"),
+            i32::try_from(
+                input["splitKeyThreshold"]
+                    .as_i64()
+                    .expect("threshold is Integer"),
+            )
+            .expect("threshold fits Integer"),
+            SplitKeyMethod::from_raw(
+                u32::try_from(
+                    input["splitKeyMethod"]
+                        .as_u64()
+                        .expect("method is Enumeration"),
+                )
+                .expect("method fits Enumeration"),
+            ),
+            AttributeSet::new(),
+        )
+        .with_unique_identifier(UniqueIdentifier::Integer(
+            i32::try_from(
+                input["uniqueIdentifier"]["integer"]
+                    .as_i64()
+                    .expect("fixture identifier is Integer"),
+            )
+            .expect("identifier fits Integer"),
+        ))
+        .with_protection_storage_masks(Structure::new())
+    };
+
+    let identifiers = fixture_unique_identifiers(&expected["responseUniqueIdentifiersInWireOrder"]);
+    let payload = fixture_identifier_payload(&identifiers);
+    let pending_identifiers =
+        fixture_unique_identifiers(&expected["pendingResponseUniqueIdentifiersInWireOrder"]);
+    let pending_payload = fixture_identifier_payload(&pending_identifiers);
+    let successful_status = u32::try_from(
+        expected["resultStatus"]
+            .as_u64()
+            .expect("success status is U32"),
+    )
+    .expect("status fits U32");
+    let pending_status = u32::try_from(
+        pending_expected["status"]
+            .as_u64()
+            .expect("Pending status is U32"),
+    )
+    .expect("Pending status fits U32");
+    let correlation = [0x00, 0xff, 0x80];
+    assert_eq!(pending_expected["correlationValueHex"], "00ff80");
+    let response = response_bytes([
+        response_batch_item(
+            Some(b"split-success"),
+            successful_status,
+            None,
+            None,
+            None,
+            Some(payload),
+        ),
+        response_batch_item(
+            Some(b"split-pending"),
+            pending_status,
+            None,
+            None,
+            Some(&correlation),
+            Some(pending_payload),
+        ),
+    ]);
+    let (transport, capture) = bounded_transport(response);
+    let mut client = Client::for_test(transport);
+    let mut batch = ClientBatch::empty().with_asynchronous_indicator(2);
+    batch.push(
+        ClientBatchItem::new(ClientRequest::CreateSplitKey(request()))
+            .with_unique_batch_item_id(b"split-success".to_vec()),
+    );
+    batch.push(
+        ClientBatchItem::new(ClientRequest::CreateSplitKey(request()))
+            .with_unique_batch_item_id(b"split-pending".to_vec()),
+    );
+
+    let result = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("Create Split Key success and Pending outcomes are returned explicitly");
+    let successful = result.get(0).expect("success result is present");
+    let ClientBatchOutcome::CreateSplitKeyCompleted(success_response) = successful.outcome() else {
+        panic!("successful Create Split Key response remains typed");
+    };
+    assert_eq!(
+        successful.outcome().operation(),
+        ClientOperation::CreateSplitKey
+    );
+    assert_eq!(
+        u64::from(success_response.result().status().raw()),
+        expected["resultStatus"]
+            .as_u64()
+            .expect("fixture status is U32")
+    );
+    assert!(success_response.result().message().is_none());
+    assert_eq!(success_response.unique_identifiers(), identifiers);
+
+    let pending_result = result.get(1).expect("Pending result is present");
+    let ClientBatchOutcome::Pending(pending) = pending_result.outcome() else {
+        panic!("Operation Pending remains an explicit Pending outcome");
+    };
+    assert_eq!(
+        pending_result.outcome().operation(),
+        ClientOperation::CreateSplitKey
+    );
+    assert_eq!(
+        u64::from(pending.result().status().raw()),
+        pending_expected["status"]
+            .as_u64()
+            .expect("fixture status is U32")
+    );
+    assert!(pending.result().reason().is_none());
+    assert!(pending.result().message().is_none());
+    assert_eq!(pending.asynchronous_correlation_value(), correlation);
+    assert_eq!(
+        pending
+            .response()
+            .create_split_key()
+            .expect("Pending retains the operation-specific response payload")
+            .unique_identifiers(),
+        pending_identifiers
+    );
+    assert_eq!(pending_expected["resultReason"], serde_json::Value::Null);
+    assert_eq!(pending_expected["resultMessage"], serde_json::Value::Null);
+    let capture = capture.borrow();
+    assert_fixture_split_key_request(
+        capture
+            .captured_request
+            .as_deref()
+            .expect("fake transport captured the complete request"),
+    );
+    assert_eq!(capture.exchange_count, 1);
 }
 
 #[test]

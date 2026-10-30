@@ -4220,9 +4220,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_count(
         let count = scalar_out!(out_count);
         let response_handle = read_handle!(item, ClientBatchItemResponse);
         let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let response = item.outcome().response();
         *present = 0;
         *count = 0;
-        if let Some(create) = item.outcome().create_split_key_response() {
+        if let Some(create) = response.create_split_key() {
             let identifiers = create.unique_identifiers();
             if !identifiers.is_empty() {
                 *present = 1;
@@ -4255,7 +4256,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_unique_ide
         let Some(item) = response.get(*item_index) else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let Some(create) = item.outcome().create_split_key_response() else {
+        let response = item.outcome().response();
+        let Some(create) = response.create_split_key() else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let Some(identifier) = usize::try_from(index)

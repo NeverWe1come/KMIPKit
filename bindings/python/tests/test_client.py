@@ -1849,8 +1849,6 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         assert builder_arguments[8] != client.ffi.NULL
         assert builder_arguments[9] != client.ffi.NULL
     finally:
-        if split_request is not None:
-            split_request.close()
         attributes.close()
         masks.close()
 
@@ -1941,7 +1939,38 @@ def test_create_split_key_fixture_success_and_pending_metadata(
             "kmipkit_client_batch_item_response_create_split_key_unique_identifier_at": split_identifier,
         }
     )
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    batch_items: list[object] = []
+    execution_calls: list[bool] = []
+
+    def add_item(_batch: object, item_slot: object) -> int:
+        batch_items.append(item_slot[0])  # type: ignore[index]
+        item_slot[0] = client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    def execute(
+        _client: object,
+        batch_slot: object,
+        _limits: object,
+        output: object,
+        error_output: object,
+    ) -> int:
+        execution_calls.append(True)
+        assert len(batch_items) == 1
+        batch_slot[0] = client.ffi.NULL  # type: ignore[index]
+        output[0] = response_pointer  # type: ignore[index]
+        assert error_output[0] == client.ffi.NULL  # type: ignore[index]
+        return 0
+
     fake = SimpleNamespace(
+        kmipkit_client_release=lambda _client: None,
+        kmipkit_client_batch_release=lambda _batch: None,
+        kmipkit_client_batch_add_item=add_item,
+        kmipkit_client_execute_with_error_ttlv_v1=execute,
         kmipkit_client_batch_response_release=lambda _response: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _item: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 2) or 0,
@@ -1954,8 +1983,11 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     )
     monkeypatch.setattr(client, "lib", fake)
 
-    result = client._batch_result(response_pointer)
+    result = None
     try:
+        assert split_request is not None
+        batch.add_item(split_request)
+        result = handle.execute(batch, limits)
         assert len(result.items) == 2
         completed, pending = result.items
         assert completed.operation == pending_expected["sourceOperation"]
@@ -1986,8 +2018,16 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         assert pending.pending_correlation_value == correlation_bytes
         assert pending.split_key_unique_identifiers == expected_pending_identifiers
         assert pending_expected["correlationValueHex"] == "00ff80"
+        assert len(batch_items) == 1
+        assert len(execution_calls) == expected["transportExchangeCount"]
     finally:
-        result.close()
+        if result is not None:
+            result.close()
+        if split_request is not None:
+            split_request.close()
+        batch.close()
+        handle.close()
+        limits.close()
 
     assert released == ["item", "item", "response"]
 

@@ -2079,6 +2079,227 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    // OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
+    @Test
+    void createSplitKeyFixtureSuccessAndPendingMatchSharedFixtureOverMutualTls()
+            throws Exception {
+        String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
+        String splitCase = SharedCapabilityParityFixtureTest.caseById(
+                fixture, "creation.split-key.request-response.v1");
+        String input = SharedCapabilityParityFixtureTest.objectField(splitCase, "input");
+        String expected = SharedCapabilityParityFixtureTest.objectField(splitCase, "expectedOutput");
+        String pendingExpected = SharedCapabilityParityFixtureTest.objectField(expected, "pendingMetadata");
+        long objectType = SharedCapabilityParityFixtureTest.numberField(input, "objectType");
+        int splitKeyParts = Math.toIntExact(
+                SharedCapabilityParityFixtureTest.numberField(input, "splitKeyParts"));
+        int splitKeyThreshold = Math.toIntExact(
+                SharedCapabilityParityFixtureTest.numberField(input, "splitKeyThreshold"));
+        long splitKeyMethod = SharedCapabilityParityFixtureTest.numberField(input, "splitKeyMethod");
+        String uniqueIdentifier = SharedCapabilityParityFixtureTest.objectField(input, "uniqueIdentifier");
+        byte[] correlation = java.util.HexFormat.of().parseHex(
+                SharedCapabilityParityFixtureTest.stringField(pendingExpected, "correlationValueHex"));
+
+        List<byte[]> responseIdentifiers = SharedCapabilityParityFixtureTest
+                .objectArrayFields(expected, "responseUniqueIdentifiersInWireOrder").stream()
+                .map(identifier -> {
+                    try {
+                        return switch (SharedCapabilityParityFixtureTest.stringField(
+                                identifier, "wireType")) {
+                            case "TextString" -> item(0x420094, 7,
+                                    SharedCapabilityParityFixtureTest.stringField(identifier, "text")
+                                            .getBytes(StandardCharsets.UTF_8));
+                            case "Enumeration" -> enumeration(0x420094,
+                                    (int) SharedCapabilityParityFixtureTest.numberField(
+                                            identifier, "enumeration"));
+                            case "Integer" -> item(0x420094, 2,
+                                    integer(Math.toIntExact(SharedCapabilityParityFixtureTest
+                                            .numberField(identifier, "integer"))));
+                            default -> throw new AssertionError("unknown fixture identifier type");
+                        };
+                    } catch (Exception error) {
+                        throw new AssertionError("fixture identifier TTLV encoding failed", error);
+                    }
+                })
+                .toList();
+        List<byte[]> pendingResponseIdentifiers = SharedCapabilityParityFixtureTest
+                .objectArrayFields(expected, "pendingResponseUniqueIdentifiersInWireOrder").stream()
+                .map(identifier -> {
+                    try {
+                        return switch (SharedCapabilityParityFixtureTest.stringField(
+                                identifier, "wireType")) {
+                            case "TextString" -> item(0x420094, 7,
+                                    SharedCapabilityParityFixtureTest.stringField(identifier, "text")
+                                            .getBytes(StandardCharsets.UTF_8));
+                            case "Enumeration" -> enumeration(0x420094,
+                                    (int) SharedCapabilityParityFixtureTest.numberField(
+                                            identifier, "enumeration"));
+                            case "Integer" -> item(0x420094, 2,
+                                    integer(Math.toIntExact(SharedCapabilityParityFixtureTest
+                                            .numberField(identifier, "integer"))));
+                            default -> throw new AssertionError("unknown fixture identifier type");
+                        };
+                    } catch (Exception error) {
+                        throw new AssertionError("fixture Pending identifier TTLV encoding failed", error);
+                    }
+                })
+                .toList();
+        byte[] successPayload = structure(0x42007c,
+                responseIdentifiers.toArray(byte[][]::new));
+        byte[] successItem = structure(0x42000f,
+                enumeration(0x42005c, 0x28),
+                item(0x420093, 8, "split-success".getBytes(StandardCharsets.US_ASCII)),
+                enumeration(0x42007f, Math.toIntExact(
+                        SharedCapabilityParityFixtureTest.numberField(expected, "resultStatus"))),
+                successPayload);
+        byte[] pendingItem = structure(0x42000f,
+                enumeration(0x42005c, Math.toIntExact(
+                        SharedCapabilityParityFixtureTest.numberField(pendingExpected, "sourceOperation"))),
+                item(0x420093, 8, "split-pending".getBytes(StandardCharsets.US_ASCII)),
+                enumeration(0x42007f, Math.toIntExact(
+                        SharedCapabilityParityFixtureTest.numberField(pendingExpected, "status"))),
+                item(0x420006, 8, correlation),
+                structure(0x42007c, pendingResponseIdentifiers.toArray(byte[][]::new)));
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, integer(2)), item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a,
+                version, item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(2)));
+        byte[] responseMessage = structure(0x42007b, header, successItem, pendingItem);
+
+        Path serverStorePath = temporaryDirectory.resolve("split-key-fixture-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("split-key-fixture-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, responseMessage));
+        Thread peerThread = new Thread(peer, "kmipkit-java-split-key-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure masks = TtlvStructure.create();
+                ClientBatch batch = ClientBatch.create()) {
+            assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                    input, "attributesPresent")));
+            assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                    SharedCapabilityParityFixtureTest.objectField(input, "protectionStorageMasks"),
+                    "present")));
+            assertFalse(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                    expected, "primeFieldSizePresent")));
+            assertFalse(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                    expected, "automaticFollowUp")));
+
+            batch.asynchronousIndicator(2)
+                    .add(ClientBatchItem.createSplitKey(objectType,
+                            UniqueIdentifier.integer(Math.toIntExact(
+                                    SharedCapabilityParityFixtureTest.numberField(uniqueIdentifier, "integer"))),
+                            splitKeyParts, splitKeyThreshold, splitKeyMethod, null, attributes, masks)
+                            .withUniqueBatchItemId("split-success".getBytes(StandardCharsets.US_ASCII)))
+                    .add(ClientBatchItem.createSplitKey(objectType,
+                            UniqueIdentifier.integer(Math.toIntExact(
+                                    SharedCapabilityParityFixtureTest.numberField(uniqueIdentifier, "integer"))),
+                            splitKeyParts, splitKeyThreshold, splitKeyMethod, null, attributes, masks)
+                            .withUniqueBatchItemId("split-pending".getBytes(StandardCharsets.US_ASCII)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult completed = response.itemAt(0);
+                    ClientBatchItemResult pending = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
+                assertEquals(0, completed.resultStatus());
+                assertTrue(completed.resultMessage().isEmpty());
+                assertTrue(completed.resultReason().isEmpty());
+                List<UniqueIdentifier> actualIdentifiers =
+                        completed.createSplitKeyUniqueIdentifiers().orElseThrow();
+                List<String> fixtureIdentifiers = SharedCapabilityParityFixtureTest
+                        .objectArrayFields(expected, "responseUniqueIdentifiersInWireOrder");
+                assertEquals(fixtureIdentifiers.size(), actualIdentifiers.size());
+                for (int index = 0; index < fixtureIdentifiers.size(); index++) {
+                    String fixtureIdentifier = fixtureIdentifiers.get(index);
+                    UniqueIdentifier actual = actualIdentifiers.get(index);
+                    switch (SharedCapabilityParityFixtureTest.stringField(
+                            fixtureIdentifier, "wireType")) {
+                        case "TextString" -> {
+                            assertEquals(UniqueIdentifier.Kind.TEXT_STRING, actual.kind());
+                            assertEquals(SharedCapabilityParityFixtureTest.stringField(
+                                    fixtureIdentifier, "text"), actual.text());
+                        }
+                        case "Enumeration" -> {
+                            assertEquals(UniqueIdentifier.Kind.ENUMERATION, actual.kind());
+                            assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                                    fixtureIdentifier, "enumeration"), actual.number());
+                        }
+                        case "Integer" -> {
+                            assertEquals(UniqueIdentifier.Kind.INTEGER, actual.kind());
+                            assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                                    fixtureIdentifier, "integer"), actual.number());
+                        }
+                        default -> throw new AssertionError("unknown fixture identifier type");
+                    }
+                }
+
+                assertTrue(pending.outcomeKind().isPending());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(pendingExpected, "sourceOperation"),
+                        pending.operation());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(pendingExpected, "status"),
+                        pending.resultStatus());
+                assertTrue(pending.resultReason().isEmpty());
+                assertTrue(pending.resultMessage().isEmpty());
+                assertArrayEquals(correlation, pending.pendingCorrelationValue().orElseThrow());
+                List<UniqueIdentifier> pendingIdentifiers =
+                        pending.createSplitKeyUniqueIdentifiers().orElseThrow();
+                assertEquals(pendingResponseIdentifiers.size(), pendingIdentifiers.size());
+                assertEquals(
+                        SharedCapabilityParityFixtureTest.objectArrayFields(
+                                expected, "pendingResponseUniqueIdentifiersInWireOrder").stream()
+                                .map(identifier -> SharedCapabilityParityFixtureTest.stringField(
+                                        identifier, "text"))
+                                .toList(),
+                        pendingIdentifiers.stream().map(UniqueIdentifier::text).toList());
+                assertEquals("00ff80", SharedCapabilityParityFixtureTest.stringField(
+                        pendingExpected, "correlationValueHex"));
+            }
+
+            byte[] capturedRequest = peer.get(12, TimeUnit.SECONDS);
+            byte[] expectedRequestPayload = structure(0x420079,
+                    enumeration(0x420057, (int) objectType),
+                    item(0x420094, 2, integer(Math.toIntExact(
+                            SharedCapabilityParityFixtureTest.numberField(uniqueIdentifier, "integer")))),
+                    item(0x42008b, 2, integer(splitKeyParts)),
+                    item(0x42008c, 2, integer(splitKeyThreshold)),
+                    enumeration(0x42008a, (int) splitKeyMethod),
+                    structure(0x420125),
+                    structure(0x42015f));
+            assertEquals(2, countOccurrences(capturedRequest, expectedRequestPayload),
+                    "both batch items contain the full ordered fixture request payload");
+        } finally {
+            listener.close();
+        }
+    }
+
     @Test
     void joinSplitKeyResponseUsesNativeMappingAndRetainsOwnedTtlvOverTls() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("join-split-server.p12");

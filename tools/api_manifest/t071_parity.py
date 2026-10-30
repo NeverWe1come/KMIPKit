@@ -209,20 +209,20 @@ CASE_TESTS = {
     },
     CREATE_SPLIT_KEY_CASE: {
         "rust": (
-            "crates/kmipkit-client/tests/creation_parity_tests.rs",
-            "create_split_key_request_and_result_match_shared_creation_fixture",
+            "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs",
+            "create_split_key_maps_shared_fixture_success_and_pending_outcomes",
         ),
         "c": (
             "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-            "generated_public_client_abi_consumer_compiles_and_runs",
+            "generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls",
         ),
         "java": (
-            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
-            "org.kmipkit.SharedCapabilityParityFixtureTest#creationSplitKeyMatchesSharedFixture",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#createSplitKeyFixtureSuccessAndPendingMatchSharedFixtureOverMutualTls",
         ),
         "python": (
-            "bindings/python/tests/test_shared_parity_fixtures.py",
-            "test_creation_split_key_matches_shared_fixture",
+            "bindings/python/tests/test_client.py",
+            "test_create_split_key_fixture_success_and_pending_metadata",
         ),
     },
     CREATE_FAILURE_MESSAGE_CASE: {
