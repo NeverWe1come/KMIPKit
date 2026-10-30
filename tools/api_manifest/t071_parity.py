@@ -173,20 +173,20 @@ CASE_TESTS = {
     },
     CREATE_REQUEST_CASE: {
         "rust": (
-            "crates/kmipkit-client/tests/creation_parity_tests.rs",
-            "create_request_and_result_match_shared_creation_fixture",
+            "crates/kmipkit-client/tests/unit/create_execution_tests.rs",
+            "create_convenience_method_maps_shared_fixture_over_one_exchange",
         ),
         "c": (
             "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-            "generated_public_client_abi_consumer_compiles_and_runs",
+            "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
-            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
-            "org.kmipkit.SharedCapabilityParityFixtureTest#creationCreateMatchesSharedFixture",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         ),
         "python": (
-            "bindings/python/tests/test_shared_parity_fixtures.py",
-            "test_creation_create_matches_shared_fixture",
+            "bindings/python/tests/test_client.py",
+            "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
         ),
     },
     CREATE_KEY_PAIR_CASE: {

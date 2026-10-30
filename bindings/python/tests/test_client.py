@@ -1531,9 +1531,30 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fixture_path = Path(__file__).resolve().parents[3] / "tests/fixtures/api/shared-capability-parity.json"
+    fixture_cases = json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+    create_case = next(
+        case for case in fixture_cases if case["id"] == "creation.create.request-response.v1"
+    )
+    create_input = create_case["input"]
+    assert create_input["attributesPresent"] is True
+    assert create_input["protectionStorageMasks"]["present"] is True
+    create_attributes = ttlv.ttlv_structure_create()
+    create_masks = ttlv.ttlv_structure_create()
+    create_request = None
+    try:
+        create_request = extensions.client_batch_item_create(
+            create_input["objectType"], create_attributes, create_masks
+        )
+        assert create_request is not None
+    finally:
+        if create_request is not None:
+            create_request.close()
+        create_attributes.close()
+        create_masks.close()
+
     fixtures = {
         case["id"]: case["expectedOutput"]
-        for case in json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+        for case in fixture_cases
         if case["id"].startswith("creation.")
     }
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")

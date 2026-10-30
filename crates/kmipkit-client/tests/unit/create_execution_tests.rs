@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use kmipkit_protocol::extension as protocol_extension;
-use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType, UniqueIdentifier};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -51,6 +51,8 @@ const PENDING_CORRELATION: &[u8] = b"CREATE_PENDING_CORRELATION_EXACT";
 const EXTENSION_VENDOR: &str = "CreateFixtureVendor";
 const EXTENSION_DISCRIMINATOR: &[u8] = b"create-fixture-v1";
 const DISCRIMINATOR_TAG: u32 = 0x0042_0173;
+const SHARED_API_PARITY_FIXTURE: &str =
+    include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
 
 fn tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -98,6 +100,38 @@ fn success_payload(identifier: &str) -> Structure {
     test_structure([
         test_item(OBJECT_TYPE, Value::enumeration(7)),
         test_item(UNIQUE_IDENTIFIER, Value::text_string(identifier.to_owned())),
+    ])
+}
+
+fn create_fixture_case() -> serde_json::Value {
+    let fixture: serde_json::Value = serde_json::from_str(SHARED_API_PARITY_FIXTURE)
+        .expect("shared API parity fixture is valid JSON");
+    fixture["cases"]
+        .as_array()
+        .expect("shared API parity fixture contains cases")
+        .iter()
+        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .cloned()
+        .expect("shared Create parity case exists")
+}
+
+fn create_fixture_response_payload(case: &serde_json::Value) -> Structure {
+    let expected = &case["expectedOutput"];
+    let object_type = u32::try_from(
+        expected["responseObjectType"]
+            .as_u64()
+            .expect("fixture response Object Type is unsigned"),
+    )
+    .expect("fixture response Object Type fits u32");
+    let identifier = i32::try_from(
+        expected["uniqueIdentifier"]["integer"]
+            .as_i64()
+            .expect("fixture Unique Identifier is a signed Integer"),
+    )
+    .expect("fixture Unique Identifier fits i32");
+    test_structure([
+        test_item(OBJECT_TYPE, Value::enumeration(object_type)),
+        test_item(UNIQUE_IDENTIFIER, Value::integer(identifier)),
     ])
 }
 
@@ -240,22 +274,43 @@ fn create_batch_is_one_exchange_and_associates_reordered_results_by_exact_ids() 
 }
 
 #[test]
-fn create_convenience_method_uses_one_exchange_and_returns_typed_result() {
+fn create_convenience_method_maps_shared_fixture_over_one_exchange() {
+    let case = create_fixture_case();
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let object_type = u32::try_from(
+        input["objectType"]
+            .as_u64()
+            .expect("fixture request Object Type is unsigned"),
+    )
+    .expect("fixture request Object Type fits u32");
+    assert_eq!(input["attributesPresent"], true);
+    assert_eq!(input["attributeItems"].as_array().map(Vec::len), Some(0));
+    assert_eq!(input["protectionStorageMasks"]["present"], true);
+    assert_eq!(expected["resultStatus"].as_u64(), Some(u64::from(SUCCESS)));
+    assert!(expected["resultMessage"].is_null());
     let response = response_bytes([response_batch_item(
         None,
         SUCCESS,
         None,
         None,
         None,
-        Some(success_payload("object-convenience")),
+        Some(create_fixture_response_payload(&case)),
     )]);
-    let (mut client, fake) = client_for(ExchangeScript::Success {
-        response,
-        request_write_chunks: vec![4, 5],
-    });
+    let (mut client, fake, request_bytes) = client_for_with_request_observer(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: vec![4, 5],
+        },
+        ZeroizationObserver::new(None),
+    );
 
     let response = client
-        .create(empty_request(), &CodecLimits::defaults())
+        .create(
+            CreateRequest::new(ObjectType::from_raw(object_type), AttributeSet::new())
+                .with_protection_storage_masks(Structure::new()),
+            &CodecLimits::defaults(),
+        )
         .expect("Client::create dispatches through the shared writer");
 
     let ClientBatchOutcome::CreateCompleted(typed) = response.outcome() else {
@@ -285,13 +340,35 @@ fn create_convenience_method_uses_one_exchange_and_returns_typed_result() {
     assert!(outcome.create_key_pair_response().is_none());
     assert!(outcome.create_split_key_response().is_none());
     assert!(format!("{outcome:?}").starts_with("CreateCompleted("));
-    assert_eq!(typed.result().status().raw(), SUCCESS);
+    assert_eq!(
+        typed.result().status().raw(),
+        u32::try_from(
+            expected["resultStatus"]
+                .as_u64()
+                .expect("fixture status is unsigned")
+        )
+        .expect("fixture status fits u32")
+    );
+    assert!(typed.result().message().is_none());
     assert_eq!(
         typed.unique_identifier(),
-        Some(&kmipkit_protocol::UniqueIdentifier::TextString(
-            "object-convenience".to_owned()
+        Some(&UniqueIdentifier::Integer(
+            i32::try_from(
+                expected["uniqueIdentifier"]["integer"]
+                    .as_i64()
+                    .expect("fixture identifier is a signed Integer")
+            )
+            .expect("fixture identifier fits i32")
         ))
     );
+    assert!(request_contains(
+        &request_bytes,
+        &[
+            0x42, 0x00, 0x57, 0x05, 0x00, 0x00, 0x00, 0x04, 0xff, 0xff, 0xff, 0xff
+        ]
+    ));
+    assert!(request_contains(&request_bytes, &[0x42, 0x01, 0x25, 0x01]));
+    assert!(request_contains(&request_bytes, &[0x42, 0x01, 0x5f, 0x01]));
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 

@@ -1027,6 +1027,17 @@ final class ClientFacadeTlsIntegrationTest {
     @Test
     void executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange() throws Exception {
         String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
+        String createCase = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "creation.create.request-response.v1");
+        String createInput = SharedCapabilityParityFixtureTest.objectField(createCase, "input");
+        String createExpected = SharedCapabilityParityFixtureTest.objectField(createCase, "expectedOutput");
+        String createIdentifier = SharedCapabilityParityFixtureTest.objectField(createExpected, "uniqueIdentifier");
+        long createObjectType = SharedCapabilityParityFixtureTest.numberField(createInput, "objectType");
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                createInput, "attributesPresent")));
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                SharedCapabilityParityFixtureTest.objectField(createInput, "protectionStorageMasks"),
+                "present")));
         String batchFixture = SharedCapabilityParityFixtureTest.caseById(fixture,
                 "batch.ordered-completed-pending-failed.v1");
         String discoverVersionsCase = SharedCapabilityParityFixtureTest.caseById(fixture,
@@ -1100,6 +1111,7 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 TtlvStructure createAttributes = TtlvStructure.create();
+                TtlvStructure createMasks = TtlvStructure.create();
                 TtlvStructure commonAttributes = TtlvStructure.create();
                 TtlvStructure privateAttributes = TtlvStructure.create();
                 TtlvStructure publicAttributes = TtlvStructure.create();
@@ -1129,7 +1141,7 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(requestIds.get(1)))
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(requestIds.get(2)))
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(3)))
-                    .add(ClientBatchItem.create(7, createAttributes, null)
+                    .add(ClientBatchItem.create(createObjectType, createAttributes, createMasks)
                             .withUniqueBatchItemId(uniqueBatchItemId(4)))
                     .add(ClientBatchItem.create(7, createAttributes, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(5)))
@@ -1272,10 +1284,17 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(1, created.operation());
                 ClientBatchItemResult.CreateResponse createResponse =
                         created.createResponse().orElseThrow();
-                assertEquals(7, createResponse.objectType());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(createExpected, "responseObjectType"),
+                        createResponse.objectType());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(createExpected, "resultStatus"),
+                        created.resultStatus());
                 assertEquals(UniqueIdentifier.Kind.INTEGER, createResponse.uniqueIdentifier().kind());
-                assertEquals(-8, createResponse.uniqueIdentifier().number());
+                assertEquals("Integer", SharedCapabilityParityFixtureTest.stringField(createIdentifier, "wireType"));
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(createIdentifier, "integer"),
+                        createResponse.uniqueIdentifier().number());
                 assertTrue(created.resultMessage().isEmpty());
+                assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                        createExpected, "resultMessagePresencePreserved")));
 
                 assertEquals(1, creationFailed.resultStatus());
                 assertEquals(5, creationFailed.resultReason().orElseThrow());
@@ -1541,6 +1560,12 @@ final class ClientFacadeTlsIntegrationTest {
             assertTrue(request.length >= 8);
             assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
                     new byte[] {request[0], request[1], request[2]});
+            assertContains(request, new byte[] {
+                0x42, 0x00, 0x57, 0x05, 0x00, 0x00, 0x00, 0x04,
+                (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff
+            });
+            assertContains(request, new byte[] {0x42, 0x01, 0x25, 0x01, 0x00, 0x00, 0x00, 0x00});
+            assertContains(request, new byte[] {0x42, 0x01, 0x5f, 0x01, 0x00, 0x00, 0x00, 0x00});
             assertTrue(containsOrderedDeriveKeyIdentifiersInBatchItem(request,
                     item(0x420094, 7, "source-key".getBytes(StandardCharsets.UTF_8)),
                     enumeration(0x420094, (int) 0xfedc_ba98L),

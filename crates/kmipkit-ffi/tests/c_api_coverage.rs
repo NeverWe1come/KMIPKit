@@ -833,6 +833,26 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
 
 #[test]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let create_case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .expect("shared Create fixture case exists");
+    let create_expected = &create_case["expectedOutput"];
+    assert_eq!(create_expected["responseObjectType"].as_u64(), Some(7));
+    assert_eq!(create_expected["uniqueIdentifier"]["wireType"], "Integer");
+    assert_eq!(
+        create_expected["uniqueIdentifier"]["integer"].as_i64(),
+        Some(-8)
+    );
+    assert_eq!(create_expected["resultStatus"].as_u64(), Some(0));
+    assert!(create_expected["resultMessage"].is_null());
+
     let creation_failure_case = creation_result_message_fixture_case();
 
     run_generated_public_client_abi_consumer(
