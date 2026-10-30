@@ -122,6 +122,17 @@ JAVA_PROFILE_RECORD_METHOD_EXCLUSIONS = {
     for export in JAVA_PROFILE_EXPORTS
     if export.endswith((".equals", ".hashCode", ".toString"))
 }
+PYTHON_PROFILE_VALUE_FIELDS = {
+    "kmipkit.client.ProfileObjectState.unique_identifier",
+    "kmipkit.client.ProfileObjectState.original_creation_date_present",
+    "kmipkit.client.ProfileObjectState.usage_limits_present",
+    "kmipkit.client.ProfileObjectState.protection_use_started",
+    "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+    "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+    "kmipkit.client.ProfileObjectState.usage_limits_total",
+    "kmipkit.client.ProfileObjectState.usage_limits_count",
+    "kmipkit.client.ProfileValidationContext.object_states",
+}
 
 
 class T036ProfileMappingTests(unittest.TestCase):
@@ -225,6 +236,31 @@ class T036ProfileMappingTests(unittest.TestCase):
             and row["packageId"] == "python-kmipkit"
         )
         self.assertEqual("field", row["kind"])
+
+    def test_profile_value_fields_are_mapped_as_four_language_records(self) -> None:
+        rows = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"] in PYTHON_PROFILE_VALUE_FIELDS
+        }
+        self.assertEqual(PYTHON_PROFILE_VALUE_FIELDS, rows.keys())
+        for export, row in rows.items():
+            with self.subTest(export=export):
+                self.assertEqual("field", row["kind"])
+                self.assertEqual("client_profile_validation", row["capabilityId"])
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(row["languageMappings"]),
+                )
+                self.assertNotIn(
+                    export,
+                    {
+                        exclusion["exportName"]
+                        for exclusion in self.manifest["approvedExclusions"]
+                    },
+                )
 
     def test_incomplete_baseline_evidence_is_not_described_as_runtime_available(self) -> None:
         conformance = " ".join(
