@@ -1632,6 +1632,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 declaration = declarations[declaration_id]
                 self.assertEqual(export_name, declaration["exportName"])
                 self.assertEqual("verified", declaration["declarationState"])
+                self.assertTrue(declaration.get("parityEvidenceIds"))
                 self.assertEqual(operation_id, declaration["capabilityId"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(
