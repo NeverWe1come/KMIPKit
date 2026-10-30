@@ -6671,3 +6671,13 @@ This supersedes the earlier case-11 checkpoint above. The parity runner now sele
 | Refactor | this evidence commit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-client -p kmipkit-ffi --all-targets --all-features -- -D warnings`; Python runner and shared-fixture contract tests; `python -B tools/api_manifest/generate.py --check`; selected case-11 parity runner; `git diff --check` | Pass: format, Clippy, generator verification (12 outputs), 21 runner/fixture contract tests, and all four selected runtime consumers passed. Python ran on 3.12.14 and Java on JDK 21.0.12; hosted Java 17 and exact-head CI remain pending. Windows aws-lc-sys compiler-probe/NASM and linker messages were non-fatal. |
 
 Case 11 of 13 now has four fixture-linked runtime consumers. Full-surface parity, cases 12–13 release criteria, Java 17 hosted evidence, and exact-head CI remain required; T071 remains open.
+
+## T042 owner gate refresh after KMIPKIT-0010 closeout (2026-10-30)
+
+PR #90 is merged to `release/1.0.0`; the checked-in KMIPKIT-0010 specification is accepted for implementation, and T026/T057 are complete on the integrated release. T036 can now map the existing per-exchange profile-validation API. This does not make Baseline ready: its state remains `evidence_incomplete`, and no profile-support or conformance claim is made. T042 stays open until T036 and the other T035–T041 mappings satisfy their language-declaration, parity, and traceability checks.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `97b9e4e77` | `python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v` | Expected failure: the regression required the accepted owner status, closed T026/T057 gates, and no stale Draft blocker, but the shared-dependency matrix still recorded KMIPKIT-0010 as Draft and T042 still depended on that status. |
+| Green | `e8abdd719` | The same focused T042 owner-readiness suite | Pass: the matrix now records KMIPKIT-0010 as Accepted, the task contract allows T036 mapping while preserving the evidence-incomplete claim gate, and T042 remains open for unfinished parity. |
+| Refactor | this evidence commit | `python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v`; `git diff --check` | Pass: all 3 owner-readiness tests pass and the diff is whitespace-clean. No generated API output or profile claim changed. |
