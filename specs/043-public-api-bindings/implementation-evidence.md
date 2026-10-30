@@ -6459,3 +6459,15 @@ The workflow change wires runner-contract tests into Script Contracts; it does n
 ### T071 workflow-contract review follow-up
 
 The first review noted that the workflow assertion searched the entire YAML text and could pass if the runner suite were listed under another job. The assertion now extracts the `script-contracts` job and its `Run Python contracts` step; a negative fixture verifies that an invocation in an unrelated job is rejected. Verification after this correction: 8 T071 runner tests, 55 workflow tests, and `git diff --check` passed. This improves CI-wiring evidence only and does not expand the one-case runtime result or close T071.
+
+### T071 ordered mixed-outcome batch parity case 2 of 13 (2026-10-30)
+
+The T071 runner now accepts `batch.ordered-completed-pending-failed.v1` and resolves the fixture's Rust, compiled C harness, Java 17, and Python 3.12 consumers. Its plan test checks the selected consumer tests, and the Java rerun contract covers both supported cases. This is case 2 of 13; T071 remains open and full-surface acceptance is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `7c5a810a3` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_batch_mixed_outcomes_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner returned exit code 2 with `unsupported T071 parity case: batch.ordered-completed-pending-failed.v1`. |
+| Green | `66d61077e` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_batch_mixed_outcomes_plan_selects_all_four_runtime_consumers -v`; `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the new plan test and all 9 runner contract tests. |
+| Refactor | this evidence update | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case batch.ordered-completed-pending-failed.v1`; `git diff --check` | Pass: all 9 runner contract tests; the selected Rust, compiled C, Java, and Python consumer each passed; no whitespace errors. Windows builds emitted aws-lc-sys compiler-probe/NASM and linker warnings, but all selected tests passed. The first temporary Python 3.12 environment lacked pytest; the rerun used the existing Python 3.12 pytest environment. |
+
+The runtime command executes one selected test for each language and does not execute the full 13-case corpus. No generated output or T071 task status was changed.
