@@ -19,6 +19,12 @@ FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.j
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
+PYTHON_TEST_CLASSES = {
+    (
+        "bindings/python/tests/test_extension_registry.py",
+        "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
+    ): "ExtensionRegistryTests",
+}
 CASE_TESTS = {
     DISCOVER_VERSIONS_CASE: {
         "rust": (
@@ -185,12 +191,16 @@ def _consumer_command(
                 *exact_filter,
             ]
         else:
+            pytest_selector = f"{test_file}::{test_name}"
+            test_class = PYTHON_TEST_CLASSES.get((expected_path, expected_test))
+            if test_class is not None:
+                pytest_selector = f"{test_file}::{test_class}::{test_name}"
             command = [
                 sys.executable,
                 "-m",
                 "pytest",
                 "-q",
-                f"{test_file}::{test_name}",
+                pytest_selector,
             ]
 
     expected_test_name = test_name.rsplit(".", maxsplit=1)[-1] if language == "java" else test_name
