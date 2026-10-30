@@ -77,14 +77,20 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
                     self.assertIn("parity", row.lower())
                     self.assertNotIn("conformant", row.lower())
 
-    def test_t036_profile_validation_stays_blocked_while_owner_spec_is_draft(self) -> None:
+    def test_t036_profile_validation_owner_is_accepted_and_has_closeout_evidence(self) -> None:
         spec_path = ROOT / "specs" / "010-profile-conformance" / "spec.md"
         status = re.search(
             r"(?m)^\*\*Status\*\*:\s*([^\r\n]+)",
             spec_path.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(status)
-        self.assertTrue(status.group(1).startswith("Draft"))
+        self.assertTrue(status.group(1).startswith("Accepted for implementation"))
+
+        tasks = (
+            ROOT / "specs" / "010-profile-conformance" / "tasks.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("- [x] T026 ", tasks)
+        self.assertIn("- [x] T057 ", tasks)
 
         dependencies = (
             ROOT
@@ -96,11 +102,11 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
         profile_row = next(
             line for line in dependencies.splitlines() if line.startswith("| KMIPKIT-0010 |")
         )
-        self.assertIn("| Draft |", profile_row)
-        self.assertIn("profile-validation APIs and profile capability claims blocked", profile_row)
+        self.assertIn("| Accepted |", profile_row)
+        self.assertIn("profile validation may be mapped without a support or conformance claim", profile_row)
 
 
-    def test_t042_stays_open_while_t036_owner_is_draft(self) -> None:
+    def test_t042_stays_open_until_t036_profile_api_parity_is_complete(self) -> None:
         tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
         task_rows = [
             line
@@ -109,6 +115,7 @@ class T042OwnerReadinessMatrixTests(unittest.TestCase):
         ]
         self.assertEqual(len(task_rows), 1)
         self.assertTrue(task_rows[0].startswith("- [ ] T042 "))
+        self.assertNotIn("while T036 remains blocked on Draft KMIPKIT-0010", task_rows[0])
 
 if __name__ == "__main__":
     unittest.main()
