@@ -279,9 +279,8 @@ pub(super) fn validate_request_message(
                         None,
                     ));
                 }
-                let batch_count = header.map_or(0, |(_, value)| value.batch_count);
                 let item_id = with_structure(child, index, None, |view| {
-                    validate_request_batch_item(&view, index, batch_count)
+                    validate_request_batch_item(&view, index)
                 })?;
                 if let Some(item_id) = item_id
                     && !request_ids.insert(item_id)
@@ -517,7 +516,6 @@ fn validate_protocol_version(
 fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
-    _batch_count: i32,
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
     validate_fields(
         view.children(),

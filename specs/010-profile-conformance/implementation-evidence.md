@@ -8581,7 +8581,7 @@ KMIP Specification v2.1 §9.21 defines Unique Batch Item ID as OPTIONAL in a req
 
 - `cargo test -p kmipkit-protocol --all-features --lib profile_correlates_id_free_get_attributes_response_by_batch_order` — expected failure while constructing the request: `MessageValidationError { kind: MissingRequiredField, structure_index: Some(1), field_index: None }`.
 
-Root cause: `validate_request_batch_item` rejects every multi-item request with no Unique Batch Item ID, despite §9.21 and the existing response correlation logic supporting position-based correlation when Batch Order Option is true. No production code or OASIS source has been changed yet. Green and Refactor evidence will follow after correcting the request validator and rerunning the focused and protocol suites.
+Root cause: `validate_request_batch_item` rejected every multi-item request with no Unique Batch Item ID, despite §9.21 and the existing response correlation logic supporting position-based correlation when Batch Order Option is true. The Red commit changed no production code or OASIS source.
 
 Red commit: `7f5fb3a55` (`test(0010): expand profile coverage cases`). Green: `validate_request_batch_item` now preserves the optional ID, while message-level duplicate-ID validation remains unchanged. The message-validation regression now accepts an absent ID, the ordered mixed-batch response test passes, and the profile rejects positional correlation when Batch Order Option is false.
 
@@ -8595,3 +8595,5 @@ Focused Green verification:
 - `cargo test -p kmipkit-protocol --all-features --lib profile_does_not_require_rng_parameters_for_failed_get_attributes_response` — PASS, 1 test.
 
 Full protocol-suite and exact-head hosted coverage results remain pending; T057 stays open until its configured thresholds pass.
+
+Refactor: removed the now-unused batch-count argument from `validate_request_batch_item` and its call sites; request message validation remains responsible for the header Batch Count and item-count match. `cargo fmt --all --check`, `git diff --check`, and the focused request-validation and positional-correlation tests passed after the refactor.
