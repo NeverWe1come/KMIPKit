@@ -13,6 +13,10 @@ const OPERATION_TAG: u32 = 0x0042_005C;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const ASYNC_CORRELATION_VALUE_TAG: u32 = 0x0042_0006;
+const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
+const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
+const VENDOR_EXTENSION_TAG: u32 = 0x0042_009C;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 
 fn message_tag(raw: u32) -> Tag {
     RawTag::new(raw)
@@ -89,6 +93,20 @@ fn valid_pending_response_message_tree() -> Structure {
         message_item(TIME_STAMP_TAG, Value::date_time(5678)),
         message_item(BATCH_COUNT_TAG, Value::integer(1)),
     ]);
+    let extension = message_structure([
+        message_item(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string("Acme".to_owned()),
+        ),
+        message_item(CRITICALITY_INDICATOR_TAG, Value::boolean(false)),
+        message_item(
+            VENDOR_EXTENSION_TAG,
+            Value::structure(message_structure([message_item(
+                0x0054_0001,
+                Value::byte_string(vec![0x00, 0xFE, 0x80]),
+            )])),
+        ),
+    ]);
     let batch = message_structure([
         message_item(OPERATION_TAG, Value::enumeration(0x0000_001A)),
         message_item(RESULT_STATUS_TAG, Value::enumeration(2)),
@@ -96,6 +114,7 @@ fn valid_pending_response_message_tree() -> Structure {
             ASYNC_CORRELATION_VALUE_TAG,
             Value::byte_string(vec![0x00, 0xFF, 0x80]),
         ),
+        message_item(MESSAGE_EXTENSION_TAG, Value::structure(extension)),
     ]);
     message_structure([
         message_item(RESPONSE_HEADER_TAG, Value::structure(header)),
@@ -369,6 +388,40 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
     assert_eq!(has_status, 1);
     assert_eq!(raw_status, 2);
 
+    let mut extension_count = 0_u64;
+    assert_eq!(
+        kmipkit_response_batch_item_extension_count(batch_item, &raw mut extension_count),
+        SUCCESS
+    );
+    assert_eq!(extension_count, 1);
+    let mut extension_view: *mut crate::kmipkit_message_extension_view_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_response_batch_item_extension_at(batch_item, 0, &raw mut extension_view),
+        SUCCESS
+    );
+    let mut extension_ttlv: *mut crate::kmipkit_ttlv_structure_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_message_extension_view_ttlv(extension_view, &raw mut extension_ttlv),
+        SUCCESS
+    );
+    let extension_handle = reference_handle(extension_ttlv, Kind::Structure)
+        .expect("the extension TTLV accessor returns an owned generic Structure");
+    let HandleValue::Structure(extension_tree) = &extension_handle.value else {
+        panic!("the extension TTLV accessor returns a Structure");
+    };
+    let vendor_value = extension_tree.view().children()[2].with_value(|value| match value {
+        ValueView::Structure(vendor_extension) => {
+            vendor_extension.children()[0].with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                _ => None,
+            })
+        }
+        _ => None,
+    });
+    assert_eq!(vendor_value, Some(vec![0x00, 0xFE, 0x80]));
+
+    kmipkit_ttlv_structure_release(extension_ttlv);
+    kmipkit_message_extension_view_release(extension_view);
     kmipkit_response_batch_item_release(batch_item);
     kmipkit_response_header_view_release(header);
     kmipkit_response_message_release(message);
