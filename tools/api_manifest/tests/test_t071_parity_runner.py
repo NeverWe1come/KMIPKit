@@ -463,27 +463,25 @@ class T071ParityRunnerTests(unittest.TestCase):
                 "test",
                 "-p",
                 "kmipkit-client",
-                "--test",
-                "creation_parity_tests",
-                "create_request_and_result_match_shared_creation_fixture",
-                "--",
-                "--exact",
+                "--lib",
+                "create_convenience_method_maps_shared_fixture_over_one_exchange",
             ],
         )
         self.assertEqual(
             consumers["c"]["test"],
-            "generated_public_client_abi_consumer_compiles_and_runs",
+            "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         )
         self.assertIn("coverage-c-consumer", consumers["c"]["command"])
         self.assertEqual(
             consumers["java"]["test"],
-            "org.kmipkit.SharedCapabilityParityFixtureTest.creationCreateMatchesSharedFixture",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest."
+            "executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         )
         self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
         self.assertEqual(
             consumers["python"]["command"][-1],
-            "bindings/python/tests/test_shared_parity_fixtures.py::"
-            "test_creation_create_matches_shared_fixture",
+            "bindings/python/tests/test_client.py::"
+            "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
         )
 
     def test_create_key_pair_plan_selects_all_four_runtime_consumers(self) -> None:
