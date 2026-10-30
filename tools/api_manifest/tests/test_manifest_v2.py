@@ -1420,22 +1420,29 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 )
 
     def test_t090_message_model_rust_trait_exports_have_exact_owner_exclusions(self) -> None:
-        candidates = {
+        unresolved = {
             row["exportName"]
             for row in self.checked_in_manifest["publicDeclarations"]
             if row.get("candidateSpecId") == "KMIPKIT-0006"
             and row["exportName"].startswith("<kmipkit_protocol::")
         }
-        self.assertEqual(len(candidates), 92)
+        self.assertFalse(
+            unresolved,
+            "Rust standard-trait implementations must be exact exclusions: "
+            f"{sorted(unresolved)[:5]}",
+        )
 
-        exclusions = {
-            row["exportName"]: row
+        exclusions = [
+            row
             for row in self.checked_in_manifest["approvedExclusions"]
             if row["packageId"] == "rust-kmipkit-protocol"
-            and row["exportName"] in candidates
-        }
-        self.assertEqual(set(exclusions), candidates)
-        for export_name, exclusion in exclusions.items():
+            and row["approvalSource"]["path"]
+            == "specs/006-message-batch-model/spec.md"
+            and row["exportName"].startswith("<kmipkit_protocol::")
+        ]
+        self.assertEqual(len(exclusions), 92)
+        for exclusion in exclusions:
+            export_name = exclusion["exportName"]
             with self.subTest(export=export_name):
                 self.assertTrue(exclusion["reason"])
                 self.assertTrue(exclusion["evidence"])
