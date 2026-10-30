@@ -335,6 +335,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             BATCH_MIXED_OUTCOMES_CASE,
             REGISTRY_ISOLATION_CASE,
             SCHEMA_REDACTION_CASE,
+            API_LEVELS_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(

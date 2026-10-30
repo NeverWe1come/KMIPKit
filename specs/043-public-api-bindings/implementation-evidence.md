@@ -6511,3 +6511,15 @@ The runner now accepts `errors.schema-redaction.v1` and selects its exact Rust p
 | Refactor | this evidence commit | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; Python 3.12.14: `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case errors.schema-redaction.v1`; `git diff --check` | Pass: all 11 runner contract tests and the selected Rust, compiled C, Java, and Python consumers passed; no whitespace errors. Python ran on 3.12.14. The Java test ran on the available JDK 21.0.12; Java 17 was unavailable and is not verified by this run. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but all selected tests passed. No generated output or T071 task status changed. |
 
 The runtime command executes one selected test for each language and does not execute the full 13-case corpus. T071 remains open.
+
+### T071 local API-level discovery parity case 5 of 13 (2026-10-30)
+
+The runner now accepts `api-levels.shared.v1` and resolves its fixture-backed local capability query through the exact Rust integration test, compiled C ABI consumer, Java fixture test, and Python fixture test. The case asserts the three API levels, zero network calls, and distinction from the KMIP Discover Versions operation; it deliberately makes no operation-mapping completeness claim. This is case 5 of 13; T071 remains open and full-surface parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `259d07a00` | `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_api_levels_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner rejected `api-levels.shared.v1` as unsupported. |
+| Green | `e79a9e6f8` | The same plan test; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the plan resolved the exact Rust target, compiled C test, Java selector, and Python selector; all 12 runner contract tests passed. |
+| Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case api-levels.shared.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python fixture consumers all ran and passed; the complete 12-test runner contract suite passed. Python ran on 3.12.14. Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated artifacts or T071 completion status changed. |
+
+The runtime command executes one selected test per language and does not execute the full 13-case corpus. Hosted exact-head Java 17 verification remains pending; T071 remains open.
