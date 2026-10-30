@@ -2656,6 +2656,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::rekey_with_options",
     ),
     (
+        "rust-observed-ccbb3a4252445df2de32",
+        "rust-kmipkit",
+        "kmipkit::Client::reprovision",
+    ),
+    (
         "rust-observed-4a8e37967c47e8b0b701",
         "rust-kmipkit",
         "kmipkit::Client::reprovision_with_options",
