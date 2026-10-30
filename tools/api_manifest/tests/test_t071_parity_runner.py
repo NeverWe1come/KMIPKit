@@ -17,10 +17,21 @@ from tools.api_manifest import t071_parity
 
 ROOT = Path(__file__).resolve().parents[3]
 RUNNER = ROOT / "tools" / "api_manifest" / "t071_parity.py"
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 
 
 class T071ParityRunnerTests(unittest.TestCase):
+    def test_t071_runner_contracts_are_part_of_script_contract_ci(self) -> None:
+        workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertRegex(
+            workflow,
+            r"& \$python -B -m unittest tools\.api_manifest\.tests\.test_parity "
+            r"tools\.api_manifest\.tests\.test_t076_client_mapping "
+            r"tools\.api_manifest\.tests\.test_t071_parity_runner -v",
+        )
+
     def test_discover_versions_plan_selects_all_four_runtime_consumers(self) -> None:
         result = subprocess.run(
             [
