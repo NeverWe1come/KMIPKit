@@ -1,5 +1,8 @@
 use super::*;
 use crate::kmipkit_protocol_version_v1_t;
+use kmipkit_protocol::MessageExtensionView;
+use kmipkit_ttlv::{StructureView, ValueView};
+use serde_json::Value as JsonValue;
 
 const SHARED_PARITY_FIXTURE: &str =
     include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
@@ -12,10 +15,46 @@ unsafe extern "C" {
     fn kmipkit_message_model_c_consumer_validate_response(
         structure: *mut crate::kmipkit_ttlv_structure_t,
     ) -> i32;
+    fn kmipkit_message_model_c_consumer_typed_parity_request(
+        structure: *mut crate::kmipkit_ttlv_structure_t,
+        expected_operation_0: u32,
+        expected_operation_1: u32,
+        expected_asynchronous_default: u32,
+        expected_attestation_default: u8,
+        expected_batch_error_default: u32,
+        expected_batch_order_default: u8,
+        expected_extension_item_index: u64,
+        expected_id_0: *const u8,
+        expected_id_0_length: u64,
+        expected_id_1: *const u8,
+        expected_id_1_length: u64,
+        expected_bit_mask_0: u32,
+        expected_bit_mask_1: u32,
+        expected_extension_value: *const u8,
+        expected_extension_value_length: u64,
+        expected_extension_criticality: u8,
+    ) -> i32;
+    fn kmipkit_message_model_c_consumer_typed_parity_invalid_request(
+        structure: *mut crate::kmipkit_ttlv_structure_t,
+        expected_kind: u32,
+        expected_structure_index: u64,
+    ) -> i32;
+    fn kmipkit_message_model_c_consumer_typed_parity_response(
+        structure: *mut crate::kmipkit_ttlv_structure_t,
+        expected_operation: u32,
+        expected_status: u32,
+        expected_bit_mask: u32,
+        expected_time_stamp: i64,
+        expected_extension_item_index: u64,
+        expected_extension_value: *const u8,
+        expected_extension_value_length: u64,
+        expected_extension_criticality: u8,
+    ) -> i32;
 }
 
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
 const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
@@ -54,15 +93,13 @@ fn message_structure(items: impl IntoIterator<Item = Item>) -> Structure {
 
 #[test]
 fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
-    let fixture: serde_json::Value = serde_json::from_str(SHARED_PARITY_FIXTURE)
-        .expect("the shared fixture is valid JSON");
+    let fixture: serde_json::Value =
+        serde_json::from_str(SHARED_PARITY_FIXTURE).expect("the shared fixture is valid JSON");
     let case = fixture["cases"]
         .as_array()
         .expect("the shared fixture has cases")
         .iter()
-        .find(|case| {
-            case["id"] == "typed-message.ordered-open-values-and-lifetime.v1"
-        })
+        .find(|case| case["id"] == "typed-message.ordered-open-values-and-lifetime.v1")
         .expect("the typed message parity case is shared with Rust and C");
     assert_eq!(
         case["requirementIds"],
@@ -83,6 +120,555 @@ fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
     assert!(case["expectedOutput"]["request"].is_object());
     assert!(case["expectedOutput"]["response"].is_object());
     assert!(case["expectedOutput"]["validation"].is_object());
+}
+
+fn fixture_tag(value: &JsonValue) -> u32 {
+    u32::from_str_radix(
+        value
+            .as_str()
+            .expect("fixture tags are hexadecimal strings")
+            .strip_prefix("0x")
+            .expect("fixture tags include a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture tag fits in a KMIP tag")
+}
+
+fn fixture_hex_bytes(value: &JsonValue) -> Vec<u8> {
+    let value = value
+        .as_str()
+        .expect("fixture byte values are hexadecimal strings");
+    (0..value.len())
+        .step_by(2)
+        .map(|index| {
+            u8::from_str_radix(&value[index..index + 2], 16)
+                .expect("fixture bytes use valid hexadecimal")
+        })
+        .collect()
+}
+
+fn fixture_raw_hex_u32(value: &JsonValue) -> u32 {
+    u32::from_str_radix(
+        value
+            .as_str()
+            .expect("fixture raw values are hexadecimal strings")
+            .strip_prefix("0x")
+            .expect("fixture raw values include a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture raw value fits the 32-bit field")
+}
+
+fn fixture_extension(extension: &JsonValue) -> Structure {
+    let vendor_tag = fixture_tag(&extension["vendorTag"]);
+    let vendor_value = fixture_hex_bytes(&extension["vendorValueHex"]);
+    let vendor_extension =
+        message_structure([message_item(vendor_tag, Value::byte_string(vendor_value))]);
+    let extension_value = message_structure([
+        message_item(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string(
+                extension["vendorIdentification"]
+                    .as_str()
+                    .expect("fixture vendor identification is text")
+                    .to_owned(),
+            ),
+        ),
+        message_item(
+            CRITICALITY_INDICATOR_TAG,
+            Value::boolean(
+                extension["criticalityIndicator"]
+                    .as_bool()
+                    .expect("fixture criticality indicator is Boolean"),
+            ),
+        ),
+        message_item(VENDOR_EXTENSION_TAG, Value::structure(vendor_extension)),
+    ]);
+    extension_value
+}
+
+fn typed_request_tree(input: &JsonValue, invalid: Option<&JsonValue>) -> Structure {
+    let items = input["batchItems"]
+        .as_array()
+        .expect("fixture request has batch items");
+    let mut header_fields = Vec::new();
+    for raw_tag in input["headerFieldTags"]
+        .as_array()
+        .expect("fixture request has header tags")
+    {
+        let tag = fixture_tag(raw_tag);
+        match tag {
+            PROTOCOL_VERSION_TAG => header_fields.push(message_item(
+                tag,
+                Value::structure(message_structure([
+                    message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+                    message_item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+                ])),
+            )),
+            BATCH_COUNT_TAG => header_fields.push(message_item(
+                tag,
+                Value::integer(i32::try_from(items.len()).expect("fixture batch count fits i32")),
+            )),
+            _ => panic!("fixture contains an unexpected request header tag"),
+        }
+    }
+    let extension = &input["extension"];
+    let missing_id_index = invalid
+        .map(|invalid| {
+            invalid["missingBatchItemIdIndex"]
+                .as_u64()
+                .expect("fixture missing-ID index is unsigned") as usize
+        })
+        .unwrap_or(usize::MAX);
+    let mut root_fields = vec![message_item(
+        REQUEST_HEADER_TAG,
+        Value::structure(message_structure(header_fields)),
+    )];
+    for (index, item) in items.iter().enumerate() {
+        let mut item_fields = vec![message_item(
+            OPERATION_TAG,
+            Value::enumeration(
+                u32::try_from(
+                    item["operationRaw"]
+                        .as_u64()
+                        .expect("fixture operation is an unsigned raw value"),
+                )
+                .expect("fixture operation fits u32"),
+            ),
+        )];
+        if index != missing_id_index {
+            item_fields.push(message_item(
+                0x0042_0093,
+                Value::byte_string(fixture_hex_bytes(&item["uniqueBatchItemIdHex"])),
+            ));
+        }
+        let mut payload_fields = vec![message_item(
+            fixture_tag(&item["bitMaskTag"]),
+            Value::integer(fixture_raw_hex_u32(&item["bitMaskRawHex"]) as i32),
+        )];
+        if index == missing_id_index {
+            payload_fields.push(message_item(
+                0x0054_0002,
+                Value::text_string(
+                    invalid.expect("invalid fixture input exists")["payloadMarker"]
+                        .as_str()
+                        .expect("fixture payload marker is text")
+                        .to_owned(),
+                ),
+            ));
+        }
+        item_fields.push(message_item(
+            REQUEST_PAYLOAD_TAG,
+            Value::structure(message_structure(payload_fields)),
+        ));
+        if item["messageExtension"].as_bool() == Some(true) {
+            item_fields.push(message_item(
+                MESSAGE_EXTENSION_TAG,
+                Value::structure(fixture_extension(extension)),
+            ));
+        }
+        root_fields.push(message_item(
+            BATCH_ITEM_TAG,
+            Value::structure(message_structure(item_fields)),
+        ));
+    }
+    message_structure(root_fields)
+}
+
+fn typed_response_tree(input: &JsonValue) -> Structure {
+    let mut header_fields = Vec::new();
+    for raw_tag in input["headerFieldTags"]
+        .as_array()
+        .expect("fixture response has header tags")
+    {
+        let tag = fixture_tag(raw_tag);
+        match tag {
+            PROTOCOL_VERSION_TAG => header_fields.push(message_item(
+                tag,
+                Value::structure(message_structure([
+                    message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+                    message_item(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+                ])),
+            )),
+            TIME_STAMP_TAG => header_fields.push(message_item(
+                tag,
+                Value::date_time(
+                    input["timeStamp"]
+                        .as_i64()
+                        .expect("fixture time stamp is signed"),
+                ),
+            )),
+            BATCH_COUNT_TAG => header_fields.push(message_item(tag, Value::integer(1))),
+            _ => panic!("fixture contains an unexpected response header tag"),
+        }
+    }
+    let payload = message_structure([message_item(
+        fixture_tag(&input["responsePayloadBitMaskTag"]),
+        Value::integer(fixture_raw_hex_u32(&input["responsePayloadBitMaskRawHex"]) as i32),
+    )]);
+    let mut item_fields = vec![
+        message_item(
+            OPERATION_TAG,
+            Value::enumeration(
+                u32::try_from(
+                    input["operationRaw"]
+                        .as_u64()
+                        .expect("fixture operation is unsigned"),
+                )
+                .expect("fixture operation fits u32"),
+            ),
+        ),
+        message_item(
+            RESULT_STATUS_TAG,
+            Value::enumeration(
+                u32::try_from(
+                    input["resultStatusRaw"]
+                        .as_u64()
+                        .expect("fixture result status is unsigned"),
+                )
+                .expect("fixture result status fits u32"),
+            ),
+        ),
+        message_item(RESPONSE_PAYLOAD_TAG, Value::structure(payload)),
+    ];
+    if input["messageExtension"].as_bool() == Some(true) {
+        item_fields.push(message_item(
+            MESSAGE_EXTENSION_TAG,
+            Value::structure(fixture_extension(&input["extension"])),
+        ));
+    }
+    message_structure([
+        message_item(
+            RESPONSE_HEADER_TAG,
+            Value::structure(message_structure(header_fields)),
+        ),
+        message_item(
+            BATCH_ITEM_TAG,
+            Value::structure(message_structure(item_fields)),
+        ),
+    ])
+}
+
+fn fixture_child_tags(view: &StructureView<'_>) -> Vec<u32> {
+    view.children()
+        .iter()
+        .map(|item| item.tag().raw())
+        .collect()
+}
+
+fn assert_extension_matches_fixture(extension: MessageExtensionView<'_>, expected: &JsonValue) {
+    assert_eq!(
+        extension.with_vendor_identification(str::to_owned),
+        expected["extensionVendorIdentification"]
+            .as_str()
+            .map(str::to_owned)
+    );
+    assert_eq!(
+        extension.criticality_indicator(),
+        expected["extensionCriticalityIndicator"].as_bool()
+    );
+    extension
+        .with_ttlv(|view| {
+            assert_eq!(
+                fixture_child_tags(&view),
+                vec![
+                    VENDOR_IDENTIFICATION_TAG,
+                    CRITICALITY_INDICATOR_TAG,
+                    VENDOR_EXTENSION_TAG
+                ]
+            );
+        })
+        .expect("fixture extension exposes its ordered TTLV");
+    extension
+        .with_vendor_extension(|view| {
+            let item = &view.children()[0];
+            assert_eq!(
+                item.tag().raw(),
+                fixture_tag(&expected["extensionVendorTag"])
+            );
+            item.with_value(|value| match value {
+                ValueView::ByteString(bytes) => assert_eq!(
+                    bytes,
+                    fixture_hex_bytes(&expected["extensionVendorValueHex"]).as_slice()
+                ),
+                other => panic!("fixture vendor extension had unexpected TTLV value: {other:?}"),
+            });
+        })
+        .expect("fixture extension exposes its Vendor Extension");
+}
+
+#[test]
+fn typed_request_response_messages_match_shared_fixture() {
+    let fixture: JsonValue =
+        serde_json::from_str(SHARED_PARITY_FIXTURE).expect("shared parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared parity fixture has cases")
+        .iter()
+        .find(|case| case["id"] == "typed-message.ordered-open-values-and-lifetime.v1")
+        .expect("typed message parity case exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let request_input = &input["request"];
+    let request_expected = &expected["request"];
+    let request =
+        kmipkit_protocol::RequestMessage::try_from_ttlv(typed_request_tree(request_input, None))
+            .expect("fixture request is structurally valid");
+    assert_eq!(
+        request.batch_items().len(),
+        request_expected["batchCount"].as_u64().unwrap() as usize
+    );
+    assert_eq!(
+        request.header().effective_asynchronous_indicator(),
+        request_expected["effectiveDefaults"]["asynchronousIndicator"]
+            .as_u64()
+            .unwrap() as u32
+    );
+    assert_eq!(
+        request.header().effective_attestation_capable_indicator(),
+        request_expected["effectiveDefaults"]["attestationCapableIndicator"]
+            .as_bool()
+            .unwrap()
+    );
+    assert_eq!(
+        request.header().effective_batch_error_continuation_option(),
+        2
+    );
+    assert!(request.header().asynchronous_indicator().is_none());
+    assert!(request.header().attestation_capable_indicator().is_none());
+    assert!(request.header().batch_error_continuation_option().is_none());
+    assert!(request.header().batch_order_option().is_none());
+    request.with_ttlv(|root| {
+        let request_header = root.children()[0].with_value(|value| match value {
+            ValueView::Structure(view) => Some(fixture_child_tags(&view)),
+            _ => None,
+        });
+        assert_eq!(
+            request_header,
+            Some(vec![PROTOCOL_VERSION_TAG, BATCH_COUNT_TAG])
+        );
+    });
+    let request_expected_items = request_expected["batchItems"].as_array().unwrap();
+    for (index, (item, item_expected)) in request
+        .batch_items()
+        .zip(request_expected_items)
+        .enumerate()
+    {
+        assert_eq!(
+            u64::from(item.operation().expect("fixture operation is present")),
+            item_expected["operationRaw"].as_u64().unwrap()
+        );
+        assert_eq!(
+            item.with_unique_batch_item_id(|bytes| bytes.to_vec()),
+            Some(fixture_hex_bytes(&item_expected["uniqueBatchItemIdHex"]))
+        );
+        let expected_tags: Vec<u32> = item_expected["fieldTags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(fixture_tag)
+            .collect();
+        let observed_tags = request.with_ttlv(|root| {
+            root.children()[index + 1].with_value(|value| match value {
+                ValueView::Structure(view) => Some(fixture_child_tags(&view)),
+                _ => None,
+            })
+        });
+        assert_eq!(observed_tags, Some(expected_tags));
+        let raw_bit_mask = item.with_request_payload(|payload| {
+            payload.children()[0].with_value(|value| match value {
+                ValueView::Integer(raw) => Some(*raw as u32),
+                _ => None,
+            })
+        });
+        assert_eq!(
+            raw_bit_mask,
+            Some(Some(fixture_raw_hex_u32(&item_expected["bitMaskRawHex"])))
+        );
+        if index
+            == request_expected["extensionBatchItemIndex"]
+                .as_u64()
+                .unwrap() as usize
+        {
+            let extension = item
+                .message_extension(0)
+                .expect("fixture extension is present");
+            assert_extension_matches_fixture(extension, &request_expected);
+        } else {
+            assert_eq!(item.message_extension_count(), 0);
+        }
+    }
+
+    let response_input = &input["response"];
+    let response_expected = &expected["response"];
+    let response =
+        kmipkit_protocol::ResponseMessage::try_from_ttlv(typed_response_tree(response_input))
+            .expect("fixture response is structurally valid");
+    assert_eq!(response.batch_items().len(), 1);
+    assert_eq!(
+        response.header().time_stamp(),
+        response_input["timeStamp"].as_i64().unwrap()
+    );
+    response.with_ttlv(|root| {
+        let header = root.children()[0].with_value(|value| match value {
+            ValueView::Structure(view) => Some(fixture_child_tags(&view)),
+            _ => None,
+        });
+        assert_eq!(
+            header,
+            Some(vec![PROTOCOL_VERSION_TAG, TIME_STAMP_TAG, BATCH_COUNT_TAG])
+        );
+    });
+    let response_item = response.batch_items().next().unwrap();
+    assert_eq!(
+        u64::from(response_item.operation().unwrap()),
+        response_expected["operationRaw"].as_u64().unwrap()
+    );
+    assert_eq!(
+        u64::from(response_item.result_status().unwrap().raw()),
+        response_expected["resultStatusRaw"].as_u64().unwrap()
+    );
+    let expected_response_tags: Vec<u32> = response_expected["batchItemFieldTags"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(fixture_tag)
+        .collect();
+    assert_eq!(
+        response_item.with_ttlv(|view| fixture_child_tags(&view)),
+        Some(expected_response_tags)
+    );
+    let response_extension = response_item.message_extension(0).unwrap();
+    assert_extension_matches_fixture(response_extension, response_expected);
+
+    let invalid = &input["invalidRequest"];
+    let error = kmipkit_protocol::RequestMessage::try_from_ttlv(typed_request_tree(
+        request_input,
+        Some(invalid),
+    ))
+    .expect_err("fixture request omits the required second item ID");
+    assert_eq!(
+        error.kind(),
+        kmipkit_protocol::MessageValidationErrorKind::MissingRequiredField
+    );
+    assert_eq!(
+        error.structure_index().map(|index| index as u64),
+        expected["validation"]["structureIndex"].as_u64()
+    );
+    assert_eq!(error.field_index(), None);
+    let marker = input["invalidRequest"]["payloadMarker"].as_str().unwrap();
+    assert!(!error.to_string().contains(marker));
+    assert_eq!(expected["validation"]["kindCode"].as_u64(), Some(1));
+
+    let c_request = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(typed_request_tree(request_input, None)),
+    )
+    .expect("fixture request TTLV handle is allocated for compiled C");
+    let first_operation = u32::try_from(
+        request_input["batchItems"][0]["operationRaw"]
+            .as_u64()
+            .unwrap(),
+    )
+    .unwrap();
+    let second_operation = u32::try_from(
+        request_input["batchItems"][1]["operationRaw"]
+            .as_u64()
+            .unwrap(),
+    )
+    .unwrap();
+    let defaults = &request_expected["effectiveDefaults"];
+    let request_extension = &input["request"]["extension"];
+    let request_extension_value = fixture_hex_bytes(&request_extension["vendorValueHex"]);
+    let first_id = fixture_hex_bytes(&request_input["batchItems"][0]["uniqueBatchItemIdHex"]);
+    let second_id = fixture_hex_bytes(&request_input["batchItems"][1]["uniqueBatchItemIdHex"]);
+    let first_mask = fixture_raw_hex_u32(&request_input["batchItems"][0]["bitMaskRawHex"]);
+    let second_mask = fixture_raw_hex_u32(&request_input["batchItems"][1]["bitMaskRawHex"]);
+    // SAFETY: The live Structure handle is transferred to the compiled C consumer, which
+    // constructs and releases the message and every retained view exactly once.
+    assert_eq!(
+        unsafe {
+            kmipkit_message_model_c_consumer_typed_parity_request(
+                c_request,
+                first_operation,
+                second_operation,
+                defaults["asynchronousIndicator"].as_u64().unwrap() as u32,
+                u8::from(defaults["attestationCapableIndicator"].as_bool().unwrap()),
+                defaults["batchErrorContinuationOption"].as_u64().unwrap() as u32,
+                u8::from(defaults["batchOrderOption"].as_bool().unwrap()),
+                request_expected["extensionBatchItemIndex"]
+                    .as_u64()
+                    .unwrap(),
+                first_id.as_ptr(),
+                first_id.len() as u64,
+                second_id.as_ptr(),
+                second_id.len() as u64,
+                first_mask,
+                second_mask,
+                request_extension_value.as_ptr(),
+                request_extension_value.len() as u64,
+                u8::from(
+                    request_expected["extensionCriticalityIndicator"]
+                        .as_bool()
+                        .unwrap(),
+                ),
+            )
+        },
+        0
+    );
+
+    let invalid_request = &input["invalidRequest"];
+    let invalid_structure = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(typed_request_tree(request_input, Some(invalid_request))),
+    )
+    .expect("fixture invalid-request TTLV handle is allocated for compiled C");
+    // SAFETY: The live invalid Structure handle is consumed by the C consumer, which reads and
+    // releases only the returned payload-free validation error handle.
+    assert_eq!(
+        unsafe {
+            kmipkit_message_model_c_consumer_typed_parity_invalid_request(
+                invalid_structure,
+                expected["validation"]["kindCode"].as_u64().unwrap() as u32,
+                expected["validation"]["structureIndex"].as_u64().unwrap(),
+            )
+        },
+        0
+    );
+
+    let response_input = &input["response"];
+    let response_expected = &expected["response"];
+    let response_extension_value =
+        fixture_hex_bytes(&response_input["extension"]["vendorValueHex"]);
+    let response_structure = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(typed_response_tree(response_input)),
+    )
+    .expect("fixture response TTLV handle is allocated for compiled C");
+    // SAFETY: The live response Structure handle is transferred to the compiled C consumer,
+    // which closes the message and item owners before reading its retained extension view.
+    assert_eq!(
+        unsafe {
+            kmipkit_message_model_c_consumer_typed_parity_response(
+                response_structure,
+                response_expected["operationRaw"].as_u64().unwrap() as u32,
+                response_expected["resultStatusRaw"].as_u64().unwrap() as u32,
+                fixture_raw_hex_u32(&response_input["responsePayloadBitMaskRawHex"]),
+                response_input["timeStamp"].as_i64().unwrap(),
+                response_expected["extensionBatchItemIndex"]
+                    .as_u64()
+                    .unwrap(),
+                response_extension_value.as_ptr(),
+                response_extension_value.len() as u64,
+                u8::from(
+                    response_expected["extensionCriticalityIndicator"]
+                        .as_bool()
+                        .unwrap(),
+                ),
+            )
+        },
+        0
+    );
 }
 
 fn assert_structure_tags(

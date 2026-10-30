@@ -1286,6 +1286,218 @@
           "test": "test_ttlv_decoder_matches_shared_fixture_and_redacts_errors"
         }
       }
+    },
+    {
+      "id": "typed-message.ordered-open-values-and-lifetime.v1",
+      "capability": "generic_ttlv_model",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "input": {
+        "request": {
+          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "batchItems": [
+            {
+              "operationRaw": 4045620583,
+              "uniqueBatchItemIdHex": "00ff80",
+              "bitMaskTag": "0x0042002c",
+              "bitMaskRawHex": "0x80000009",
+              "messageExtension": false
+            },
+            {
+              "operationRaw": 10,
+              "uniqueBatchItemIdHex": "020304",
+              "bitMaskTag": "0x0042002c",
+              "bitMaskRawHex": "0x40000003",
+              "messageExtension": true
+            }
+          ],
+          "extension": {
+            "vendorIdentification": "Acme",
+            "criticalityIndicator": false,
+            "vendorTag": "0x00540001",
+            "vendorValueHex": "00fe80"
+          }
+        },
+        "response": {
+          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "timeStamp": 5678,
+          "operationRaw": 10,
+          "resultStatusRaw": 2147483649,
+          "responsePayloadBitMaskTag": "0x0042002c",
+          "responsePayloadBitMaskRawHex": "0x80000009",
+          "messageExtension": true,
+          "extension": {
+            "vendorIdentification": "Acme",
+            "criticalityIndicator": false,
+            "vendorTag": "0x00540001",
+            "vendorValueHex": "00fe80"
+          }
+        },
+        "invalidRequest": {
+          "missingBatchItemIdIndex": 1,
+          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR"
+        }
+      },
+      "expectedOutput": {
+        "request": {
+          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "batchCount": 2,
+          "batchItems": [
+            {
+              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079"],
+              "operationRaw": 4045620583,
+              "uniqueBatchItemIdHex": "00ff80",
+              "bitMaskRawHex": "0x80000009"
+            },
+            {
+              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079", "0x00420051"],
+              "operationRaw": 10,
+              "uniqueBatchItemIdHex": "020304",
+              "bitMaskRawHex": "0x40000003"
+            }
+          ],
+          "effectiveDefaults": {
+            "asynchronousIndicator": 3,
+            "attestationCapableIndicator": false,
+            "batchErrorContinuationOption": 2,
+            "batchOrderOption": true
+          },
+          "extensionBatchItemIndex": 1,
+          "extensionVendorIdentification": "Acme",
+          "extensionCriticalityIndicator": false,
+          "extensionVendorTag": "0x00540001",
+          "extensionVendorValueHex": "00fe80"
+        },
+        "response": {
+          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "batchCount": 1,
+          "batchItemFieldTags": ["0x0042005c", "0x0042007f", "0x0042007c", "0x00420051"],
+          "operationRaw": 10,
+          "resultStatusRaw": 2147483649,
+          "extensionBatchItemIndex": 0,
+          "extensionVendorIdentification": "Acme",
+          "extensionCriticalityIndicator": false,
+          "extensionVendorTag": "0x00540001",
+          "extensionVendorValueHex": "00fe80"
+        },
+        "validation": {
+          "kindCode": 1,
+          "structureIndex": 2,
+          "fieldIndex": null,
+          "diagnosticOmitsPayloadMarker": true,
+          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
+          "cDiagnosticSurface": "none"
+        },
+        "lifetime": {
+          "headerViewSurvivesMessageClose": true,
+          "extensionViewSurvivesParentClose": true,
+          "releaseEachOwnedHandleOnce": true
+        }
+      },
+      "javaObservedOutput": {
+        "request": {
+          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "batchCount": 2,
+          "batchItems": [
+            {
+              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079"],
+              "operationRaw": 4045620583,
+              "uniqueBatchItemIdHex": "00ff80",
+              "bitMaskRawHex": "0x80000009"
+            },
+            {
+              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079", "0x00420051"],
+              "operationRaw": 10,
+              "uniqueBatchItemIdHex": "020304",
+              "bitMaskRawHex": "0x40000003"
+            }
+          ],
+          "effectiveDefaults": {
+            "asynchronousIndicator": 3,
+            "attestationCapableIndicator": false,
+            "batchErrorContinuationOption": 2,
+            "batchOrderOption": true
+          },
+          "extensionBatchItemIndex": 1,
+          "extensionVendorIdentification": "Acme",
+          "extensionCriticalityIndicator": false,
+          "extensionVendorTag": "0x00540001",
+          "extensionVendorValueHex": "00fe80"
+        },
+        "response": {
+          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "batchCount": 1,
+          "batchItemFieldTags": ["0x0042005c", "0x0042007f", "0x0042007c", "0x00420051"],
+          "operationRaw": 10,
+          "resultStatusRaw": 2147483649,
+          "extensionBatchItemIndex": 0,
+          "extensionVendorIdentification": "Acme",
+          "extensionCriticalityIndicator": false,
+          "extensionVendorTag": "0x00540001",
+          "extensionVendorValueHex": "00fe80"
+        },
+        "validation": {
+          "kindCode": 1,
+          "structureIndex": 2,
+          "fieldIndex": null,
+          "diagnosticOmitsPayloadMarker": true,
+          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
+          "cDiagnosticSurface": "none"
+        },
+        "lifetime": {
+          "headerViewSurvivesMessageClose": true,
+          "extensionViewSurvivesParentClose": true,
+          "releaseEachOwnedHandleOnce": true
+        }
+      },
+      "errorCategory": "message_validation",
+      "cleanup": [
+        "consume-input-ttlv-once",
+        "release-message-and-header-views-once",
+        "close-extension-view-after-parent-close"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-ffi/tests/support/message_model_abi_tests.rs",
+          "test": "typed_request_response_messages_match_shared_fixture"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/message_model_abi_consumer.c",
+          "test": "kmipkit_message_model_c_consumer_typed_parity_request",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/support/message_model_abi_tests.rs",
+              "test": "typed_request_response_messages_match_shared_fixture",
+              "assertions": [
+                "fixture-input-builds-c-consumer-ttlv",
+                "optional-and-effective-header-defaults",
+                "ordered-fields-and-unknown-raw-operation-status-values",
+                "raw-request-and-response-bit-mask-values-and-batch-ids",
+                "extension-content-association-and-parent-release-lifetime",
+                "payload-free-validation-kind-structure-index-and-no-field-index"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#typedMessageModelMatchesSharedFixture"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_typed_messages.py",
+          "test": "test_typed_message_model_matches_shared_fixture"
+        }
+      }
     }
   ]
 }
