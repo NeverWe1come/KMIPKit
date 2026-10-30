@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 920,
+    "excluded": 931,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 9537,
-    "matched": 9537,
+    "manifest": 9526,
+    "matched": 9526,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10457
@@ -239165,6 +239165,237 @@
         "column": 5,
         "line": 229,
         "path": "crates/kmipkit-protocol/src/result.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError",
+      "identity": "[\"kmipkit_protocol\",{\"column\":1,\"line\":157,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"enum\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\"]]",
+      "kind": "type",
+      "location": {
+        "column": 1,
+        "line": 157,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":165,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"InvalidOperationResult\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 165,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
+      "identity": "[\"kmipkit_protocol\",{\"column\":28,\"line\":165,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"struct_field\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"InvalidOperationResult\",\"0\"]]",
+      "kind": "field",
+      "location": {
+        "column": 28,
+        "line": 165,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":169,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MalformedProtocolVersion\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 169,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":161,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MissingResultStatus\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 161,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":167,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MissingSuccessPayload\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 167,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":159,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"UnexpectedOperation\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 159,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion"
+      ],
+      "exportLocations": [
+        {
+          "column": 5,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":171,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"UnofferedProtocolVersion\"]]",
+      "kind": "variant",
+      "location": {
+        "column": 5,
+        "line": 171,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions"
+      ],
+      "exportLocations": [
+        {
+          "column": 28,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":43,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsRequest\",\"protocol_versions\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 43,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload"
+      ],
+      "exportLocations": [
+        {
+          "column": 28,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":57,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsRequest\",\"to_ttlv_payload\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 57,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+      },
+      "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item"
+      ],
+      "exportLocations": [
+        {
+          "column": 53,
+          "line": 131,
+          "path": "crates/kmipkit-protocol/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
+      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":109,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsResponse\",\"try_from_response_item\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 109,
+        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
       },
       "packageId": "rust-kmipkit-protocol"
     },
@@ -424748,185 +424979,9 @@
     },
     {
       "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError",
-      "identity": "[\"kmipkit_protocol\",{\"column\":1,\"line\":157,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"enum\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\"]]",
-      "kind": "type",
-      "location": {
-        "column": 1,
-        "line": 157,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":165,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"InvalidOperationResult\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 165,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
-      "identity": "[\"kmipkit_protocol\",{\"column\":28,\"line\":165,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"struct_field\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"InvalidOperationResult\",\"0\"]]",
-      "kind": "field",
-      "location": {
-        "column": 28,
-        "line": 165,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":169,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MalformedProtocolVersion\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 169,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":161,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MissingResultStatus\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 161,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":167,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"MissingSuccessPayload\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 167,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":159,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"UnexpectedOperation\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 159,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 5,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":171,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"variant\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsError\",\"UnofferedProtocolVersion\"]]",
-      "kind": "variant",
-      "location": {
-        "column": 5,
-        "line": 171,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
         "kmipkit_protocol::DiscoverVersionsRequest"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 28,
@@ -424948,7 +425003,7 @@
       "aliases": [
         "kmipkit_protocol::DiscoverVersionsRequest::new"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 28,
@@ -424968,53 +425023,9 @@
     },
     {
       "aliases": [
-        "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 28,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":43,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsRequest\",\"protocol_versions\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 43,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 28,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":57,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsRequest\",\"to_ttlv_payload\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 57,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
         "kmipkit_protocol::DiscoverVersionsResponse"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 53,
@@ -425036,7 +425047,7 @@
       "aliases": [
         "kmipkit_protocol::DiscoverVersionsResponse::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 53,
@@ -425058,7 +425069,7 @@
       "aliases": [
         "kmipkit_protocol::DiscoverVersionsResponse::supported_versions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 53,
@@ -425072,28 +425083,6 @@
       "location": {
         "column": 5,
         "line": 149,
-        "path": "crates/kmipkit-protocol/src/discover_versions.rs"
-      },
-      "packageId": "rust-kmipkit-protocol"
-    },
-    {
-      "aliases": [
-        "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 53,
-          "line": 131,
-          "path": "crates/kmipkit-protocol/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
-      "identity": "[\"kmipkit_protocol\",{\"column\":5,\"line\":109,\"path\":\"crates/kmipkit-protocol/src/discover_versions.rs\"},\"function\",[\"kmipkit_protocol\",\"discover_versions\",\"DiscoverVersionsResponse\",\"try_from_response_item\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 109,
         "path": "crates/kmipkit-protocol/src/discover_versions.rs"
       },
       "packageId": "rust-kmipkit-protocol"

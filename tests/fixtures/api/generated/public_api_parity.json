@@ -23544,6 +23544,138 @@
       "exportName": "<kmipkit_protocol::DiscoverVersionsResponse as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The request advertises the single KMIP 2.1 version fixed by ADR-0002. The four-language Discover Versions builder sends that same value; a separate accessor or caller-controlled list is not part of the client capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust helper serializes one typed request internally. The four-language client APIs expose typed execution and the same wire behavior, not caller-invocable operation-specific serialization."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213.",
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This Rust helper converts a validated KMIP message response item into the typed response. The four-language client result wrappers expose the decoded operation result without requiring callers to invoke an internal conversion routine."
     }
   ],
   "capabilities": [
@@ -57069,7 +57201,12 @@
           "T031:accessor:python"
         ],
         "rust": [
-          "T031:accessor:rust"
+          "T031:accessor:rust",
+          "rust-observed-7c589d778785ccd4a310",
+          "rust-observed-7ee07a8197ab122f0bbb",
+          "rust-observed-266b99f59274f554466e",
+          "rust-observed-8a78ad6b891af2c95e56",
+          "rust-observed-bc03998092947734f26a"
         ]
       },
       "featureSpecId": "KMIPKIT-0007",
@@ -88197,6 +88334,246 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "rust-observed-7c589d778785ccd4a310",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DiscoverVersionsRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "rust-observed-7ee07a8197ab122f0bbb",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_discover_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_discover_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DiscoverVersionsRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "rust-observed-266b99f59274f554466e",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DiscoverVersionsResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "rust-observed-8a78ad6b891af2c95e56",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::result",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_metadata_v2_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemMetadataV2",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemMetadataV2",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DiscoverVersionsResponse::result",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+      "declarationId": "rust-observed-bc03998092947734f26a",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::supported_versions",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_discover_versions_supported_versions",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.supportedVersions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.supported_versions",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DiscoverVersionsResponse::supported_versions",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {

@@ -71033,214 +71033,244 @@
       }
     },
     {
-      "declarationId": "rust-observed-ee599aaa99de65b85096",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "type",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-40c87fe3b0a87307a5f8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-30307e4f15441a91dca6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-bf4f67cef362626ab319",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-533da33083eacbce2770",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5ceb096a7f5861ce80b9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a6fc1b82e69981de25e7",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "variant",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-7c589d778785ccd4a310",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::DiscoverVersionsRequest",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DiscoverVersionsRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_discover_versions"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_discover_versions"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
     },
     {
       "declarationId": "rust-observed-7ee07a8197ab122f0bbb",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::DiscoverVersionsRequest::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-eab193e35f3a770a66d8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8cb1b6440fadae5b813f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DiscoverVersionsRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_discover_versions"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.discoverVersions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_discover_versions"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
     },
     {
       "declarationId": "rust-observed-266b99f59274f554466e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::DiscoverVersionsResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-3be54b73a0e02b69e702",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DiscoverVersionsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
     },
     {
       "declarationId": "rust-observed-8a78ad6b891af2c95e56",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::DiscoverVersionsResponse::result",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DiscoverVersionsResponse::result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_metadata_v2_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemMetadataV2"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemMetadataV2"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
     },
     {
       "declarationId": "rust-observed-bc03998092947734f26a",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::DiscoverVersionsResponse::supported_versions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::DiscoverVersionsResponse::supported_versions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_discover_versions_supported_versions"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.supportedVersions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.supported_versions"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ]
     },
     {
       "declarationId": "rust-observed-fef0d365a9535778bdbc",
@@ -217248,20 +217278,6 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0018",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-0bb4a19f530b0c22ed84",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "field",
-      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -367654,6 +367670,138 @@
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
       },
       "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. Concrete Discover Versions types, variants, fields, and methods remain separately inventoried; the operation's four-language behavior is mapped in T031."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
+      "reason": "This declaration exposes Rust-specific protocol decoding detail. C, Java, and Python expose the stable sanitized client error category, cause, and delivery state rather than Rust enum variant names or embedded result payloads. This keeps cross-language error behavior aligned with KMIPKIT-0007-FR-013.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0007-FR-013; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
+      "reason": "The request advertises the single KMIP 2.1 version fixed by ADR-0002. The four-language Discover Versions builder sends that same value; a separate accessor or caller-controlled list is not part of the client capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
+      "reason": "This Rust helper serializes one typed request internally. The four-language client APIs expose typed execution and the same wire behavior, not caller-invocable operation-specific serialization.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
+      "reason": "This Rust helper converts a validated KMIP message response item into the typed response. The four-language client result wrappers expose the decoded operation result without requiring callers to invoke an internal conversion routine.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; OASIS KMIP Specification v2.1 §6.1.16, Tables 211–213."
     }
   ],
   "apiLevels": [
@@ -368559,7 +368707,12 @@
       ],
       "declarations": {
         "rust": [
-          "T031:accessor:rust"
+          "T031:accessor:rust",
+          "rust-observed-7c589d778785ccd4a310",
+          "rust-observed-7ee07a8197ab122f0bbb",
+          "rust-observed-266b99f59274f554466e",
+          "rust-observed-8a78ad6b891af2c95e56",
+          "rust-observed-bc03998092947734f26a"
         ],
         "c": [
           "T031:accessor:c"
