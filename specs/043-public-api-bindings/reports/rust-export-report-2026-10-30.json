@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 784,
+    "excluded": 855,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 9673,
-    "matched": 9673,
+    "manifest": 9602,
+    "matched": 9602,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10457
@@ -238850,6 +238850,1513 @@
         "path": "crates/kmipkit-protocol/src/result.rs"
       },
       "packageId": "rust-kmipkit-protocol"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::convert::From<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::RequestDeliveryState"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::Into<U>>::into",
+      "implementationId": "540",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "RequestDeliveryState"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::RequestDeliveryState"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::Error",
+      "implementationId": "543",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "RequestDeliveryState"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::RequestDeliveryState"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "543",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "RequestDeliveryState"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::RequestDeliveryState"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::Error",
+      "implementationId": "542",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "RequestDeliveryState"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::RequestDeliveryState"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::try_into",
+      "implementationId": "542",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "RequestDeliveryState"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 17,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 8,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::convert::From<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportCauseCategory"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::Into<U>>::into",
+      "implementationId": "574",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportCauseCategory"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportCauseCategory"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::Error",
+      "implementationId": "577",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportCauseCategory"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportCauseCategory"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "577",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportCauseCategory"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportCauseCategory"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::Error",
+      "implementationId": "576",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportCauseCategory"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportCauseCategory"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::try_into",
+      "implementationId": "576",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportCauseCategory"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 74,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 74,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 74,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 74,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 74,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 48,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 39,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 63,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"Owned\",\"assoc_type\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"clone_into\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"to_owned\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_transport::error::TransportError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"to_string\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::any::Any>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::any::Any>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::TransportError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::TransportError\",\"core::borrow::Borrow<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"borrow\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::TransportError\",\"core::borrow::BorrowMut<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"borrow_mut\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::clone::Clone>::clone"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 10,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::TransportError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 30,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 34,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::TransportError\",\"core::convert::From<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
+      "kind": "associated-item",
+      "location": null,
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "From"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportError as core::convert::Into<U>>::into",
+      "implementationId": "614",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportError"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::Error",
+      "implementationId": "617",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportError"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "Into"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::try_from",
+      "implementationId": "617",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportError"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::Error",
+      "implementationId": "616",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportError"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "condition": {
+        "predicates": [
+          {
+            "arguments": [
+              "kmipkit_transport::error::TransportError"
+            ],
+            "kind": "traitBound",
+            "modifier": "none",
+            "subject": "U",
+            "traitPath": [
+              "core",
+              "convert",
+              "TryFrom"
+            ]
+          }
+        ],
+        "subjectBindings": {}
+      },
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::try_into",
+      "implementationId": "616",
+      "kind": "associated-item",
+      "ownerPath": [
+        "kmipkit_transport",
+        "error",
+        "TransportError"
+      ],
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::error::Error>::cause"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::cause",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 123,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::error::Error>::description"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::description",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 123,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::error::Error>::provide"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::provide",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 123,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::error::Error>::source"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::source",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 124,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::error::Error>::type_id"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::type_id",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 1,
+        "line": 123,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::TransportError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 23,
+        "line": 77,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
+    },
+    {
+      "aliases": [
+        "<kmipkit_transport::TransportError as core::fmt::Display>::fmt"
+      ],
+      "exportLocations": [
+        {
+          "column": 63,
+          "line": 277,
+          "path": "crates/kmipkit-transport/src/lib.rs"
+        }
+      ],
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
+      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_transport::error::TransportError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 114,
+        "path": "crates/kmipkit-transport/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-transport"
     },
     {
       "aliases": [
@@ -453993,432 +455500,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::RequestDeliveryState\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::convert::From<kmipkit_transport::error::RequestDeliveryState>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::Into<U>>::into",
-      "implementationId": "540",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "RequestDeliveryState"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::Error",
-      "implementationId": "543",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "RequestDeliveryState"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "543",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "RequestDeliveryState"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::Error",
-      "implementationId": "542",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "RequestDeliveryState"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::try_into",
-      "implementationId": "542",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "RequestDeliveryState"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 17,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"RequestDeliveryState\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::RequestDeliveryState\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 8,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
         "<kmipkit_transport::RequestOptions as alloc::borrow::ToOwned>::Owned"
       ],
       "declarationState": "blocked",
@@ -455985,582 +457066,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_transport::error::TransportCauseCategory\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::convert::From<kmipkit_transport::error::TransportCauseCategory>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::Into<U>>::into",
-      "implementationId": "574",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportCauseCategory"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::Error",
-      "implementationId": "577",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportCauseCategory"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "577",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportCauseCategory"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::Error",
-      "implementationId": "576",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportCauseCategory"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::try_into",
-      "implementationId": "576",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportCauseCategory"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 74,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 74,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 74,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 74,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 74,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 48,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 39,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportCauseCategory\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_transport::error::TransportCauseCategory\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 63,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
         "<kmipkit_transport::TransportConfig as core::any::Any>::type_id"
       ],
       "declarationState": "blocked",
@@ -457625,582 +458130,6 @@
     },
     {
       "aliases": [
-        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"Owned\",\"assoc_type\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"clone_into\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"borrow\",\"ToOwned\"],\"kmipkit_transport::error::TransportError\",\"alloc::borrow::ToOwned\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"to_owned\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"alloc\",\"string\",\"ToString\"],\"kmipkit_transport::error::TransportError\",\"alloc::string::ToString\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"fmt\",\"Display\"]}}},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"to_string\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::any::Any>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::any::Any>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"any\",\"Any\"],\"kmipkit_transport::error::TransportError\",\"core::any::Any\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"outlives\":\"'static\"},{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"borrow\",\"Borrow\"],\"kmipkit_transport::error::TransportError\",\"core::borrow::Borrow<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"borrow\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"borrow\",\"BorrowMut\"],\"kmipkit_transport::error::TransportError\",\"core::borrow::BorrowMut<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"maybe\",\"trait\":{\"args\":null,\"path\":[\"core\",\"marker\",\"Sized\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"borrow_mut\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::clone::Clone>::clone"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"Clone\"],\"kmipkit_transport::error::TransportError\",\"core::clone::Clone\",{\"params\":[],\"where_predicates\":[]},\"clone_from\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 10,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"clone\",\"CloneToUninit\"],\"kmipkit_transport::error::TransportError\",\"core::clone::CloneToUninit\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[{\"bound_predicate\":{\"bounds\":[{\"trait_bound\":{\"generic_params\":[],\"modifier\":\"none\",\"trait\":{\"args\":null,\"path\":[\"core\",\"clone\",\"Clone\"]}}}],\"generic_params\":[],\"type\":{\"resolved_path\":{\"args\":null,\"path\":[\"kmipkit_transport\",\"error\",\"TransportError\"]}}}}]},\"clone_to_uninit\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"Eq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::Eq\",{\"params\":[],\"where_predicates\":[]},\"assert_receiver_is_total_eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 30,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"eq\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"cmp\",\"PartialEq\"],\"kmipkit_transport::error::TransportError\",\"core::cmp::PartialEq\",{\"params\":[],\"where_predicates\":[]},\"ne\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 34,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"convert\",\"From\"],\"kmipkit_transport::error::TransportError\",\"core::convert::From<kmipkit_transport::error::TransportError>\",{\"params\":[{\"kind\":{\"type\":{\"bounds\":[],\"default\":null,\"is_synthetic\":false}},\"name\":\"T\"}],\"where_predicates\":[]},\"from\",\"function\"]",
-      "kind": "associated-item",
-      "location": null,
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::Into<U>>::into",
-      "implementationId": "614",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportError"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::Error",
-      "implementationId": "617",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportError"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::try_from",
-      "implementationId": "617",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportError"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::Error",
-      "implementationId": "616",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportError"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      },
-      "declarationState": "blocked",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::try_into",
-      "implementationId": "616",
-      "kind": "associated-item",
-      "ownerPath": [
-        "kmipkit_transport",
-        "error",
-        "TransportError"
-      ],
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::error::Error>::cause"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::cause",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"cause\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 123,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::error::Error>::description"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::description",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"description\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 123,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::error::Error>::provide"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::provide",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"provide\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 123,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::error::Error>::source"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::source",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"source\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 124,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::error::Error>::type_id"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::type_id",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"error\",\"Error\"],\"kmipkit_transport::error::TransportError\",\"core::error::Error\",{\"params\":[],\"where_predicates\":[]},\"type_id\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 1,
-        "line": 123,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"fmt\",\"Debug\"],\"kmipkit_transport::error::TransportError\",\"core::fmt::Debug\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 23,
-        "line": 77,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
-        "<kmipkit_transport::TransportError as core::fmt::Display>::fmt"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 63,
-          "line": 277,
-          "path": "crates/kmipkit-transport/src/lib.rs"
-        }
-      ],
-      "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
-      "identity": "[\"rust-trait-implementation\",\"rust-kmipkit-transport\",[\"kmipkit_transport\",\"error\",\"TransportError\"],[\"core\",\"fmt\",\"Display\"],\"kmipkit_transport::error::TransportError\",\"core::fmt::Display\",{\"params\":[],\"where_predicates\":[]},\"fmt\",\"function\"]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 114,
-        "path": "crates/kmipkit-transport/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-transport"
-    },
-    {
-      "aliases": [
         "<kmipkit_transport::TransportResponse as core::any::Any>::type_id"
       ],
       "declarationState": "blocked",
@@ -459176,7 +459105,7 @@
         "kmipkit::RequestDeliveryState",
         "kmipkit_transport::RequestDeliveryState"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459199,7 +459128,7 @@
         "kmipkit::RequestDeliveryState::NotSent",
         "kmipkit_transport::RequestDeliveryState::NotSent"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459222,7 +459151,7 @@
         "kmipkit::RequestDeliveryState::PossiblySent",
         "kmipkit_transport::RequestDeliveryState::PossiblySent"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459245,7 +459174,7 @@
         "kmipkit::RequestDeliveryState::ResponseStarted",
         "kmipkit_transport::RequestDeliveryState::ResponseStarted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459268,7 +459197,7 @@
         "kmipkit::RequestDeliveryState::not_sent",
         "kmipkit_transport::RequestDeliveryState::not_sent"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459291,7 +459220,7 @@
         "kmipkit::RequestDeliveryState::response_bytes_received",
         "kmipkit_transport::RequestDeliveryState::response_bytes_received"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459314,7 +459243,7 @@
         "kmipkit::RequestDeliveryState::write_started",
         "kmipkit_transport::RequestDeliveryState::write_started"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 17,
@@ -459863,7 +459792,7 @@
         "kmipkit::TransportCauseCategory",
         "kmipkit_transport::TransportCauseCategory"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -459886,7 +459815,7 @@
         "kmipkit::TransportCauseCategory::Http",
         "kmipkit_transport::TransportCauseCategory::Http"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -459909,7 +459838,7 @@
         "kmipkit::TransportCauseCategory::Io",
         "kmipkit_transport::TransportCauseCategory::Io"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -459932,7 +459861,7 @@
         "kmipkit::TransportCauseCategory::Other",
         "kmipkit_transport::TransportCauseCategory::Other"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -459955,7 +459884,7 @@
         "kmipkit::TransportCauseCategory::Timeout",
         "kmipkit_transport::TransportCauseCategory::Timeout"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -459978,7 +459907,7 @@
         "kmipkit::TransportCauseCategory::Tls",
         "kmipkit_transport::TransportCauseCategory::Tls"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 39,
@@ -460595,7 +460524,7 @@
         "kmipkit::TransportError",
         "kmipkit_transport::TransportError"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 63,
@@ -460618,7 +460547,7 @@
         "kmipkit::TransportError::cause_category",
         "kmipkit_transport::TransportError::cause_category"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 63,
@@ -460641,7 +460570,7 @@
         "kmipkit::TransportError::delivery_state",
         "kmipkit_transport::TransportError::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 63,
@@ -460664,7 +460593,7 @@
         "kmipkit::TransportError::new",
         "kmipkit_transport::TransportError::new"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 63,

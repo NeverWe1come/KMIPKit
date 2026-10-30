@@ -21912,6 +21912,858 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageTtlv",
       "packageId": "java-kmipkit",
       "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability.",
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-transport",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade."
     }
   ],
   "capabilities": [
@@ -22222,8 +23074,25 @@
       "capabilityState": "declared",
       "mappings": {
         "rust": [
+          "kmipkit_transport::RequestDeliveryState",
+          "kmipkit_transport::RequestDeliveryState::NotSent",
+          "kmipkit_transport::RequestDeliveryState::PossiblySent",
+          "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+          "kmipkit_transport::RequestDeliveryState::not_sent",
+          "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+          "kmipkit_transport::RequestDeliveryState::write_started",
           "kmipkit_transport::Transport",
           "kmipkit_transport::Transport::exchange",
+          "kmipkit_transport::TransportCauseCategory",
+          "kmipkit_transport::TransportCauseCategory::Http",
+          "kmipkit_transport::TransportCauseCategory::Io",
+          "kmipkit_transport::TransportCauseCategory::Other",
+          "kmipkit_transport::TransportCauseCategory::Timeout",
+          "kmipkit_transport::TransportCauseCategory::Tls",
+          "kmipkit_transport::TransportError",
+          "kmipkit_transport::TransportError::cause_category",
+          "kmipkit_transport::TransportError::delivery_state",
+          "kmipkit_transport::TransportError::new",
           "kmipkit_transport::TransportResponse",
           "kmipkit_transport::TransportResponse::as_bytes",
           "kmipkit_transport::TransportResponse::new"
@@ -22232,6 +23101,7 @@
       "ownerAdrId": "ADR-0014",
       "parityScope": "rust-only-adr",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
         "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ]
@@ -94552,6 +95422,567 @@
         "KMIPKIT-0013-FR-007",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-f7111e85a3e5e5ef649a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState",
+      "kind": "type",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-14020d75aa1b58f5bc8f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::NotSent",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::NotSent",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-58ca29b85270d85b20d8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::PossiblySent",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::PossiblySent",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-f437cb527d19d07e5b39",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-2b75c258ea8fda4923e1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::not_sent",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::not_sent",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-3768d91d28bc4b36861c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::write_started",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::write_started",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-b8ba1fabc3353aa088d1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-7cc901dcd29899f18496",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory",
+      "kind": "type",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-982b3a65442ebfb33967",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory::Io",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory::Io",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-178b010f955438a67369",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory::Tls",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory::Tls",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-5f137bef6ed8d1b73b49",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory::Http",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory::Http",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-49d5359249af36af9f46",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory::Timeout",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory::Timeout",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-fbaed13815a189f8d781",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportCauseCategory::Other",
+      "kind": "variant",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportCauseCategory::Other",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-8674526f0c58f7579401",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportError",
+      "kind": "type",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportError",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-ecb5b73a5640edc4e2ce",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportError::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportError::new",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-2f4ec1c6cf0d94d83b95",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportError::delivery_state",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportError::delivery_state",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "rust_transport_exchange",
+      "declarationId": "rust-observed-8ff47c22ccd71f1105a8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_transport::TransportError::cause_category",
+      "kind": "associated-item",
+      "languageMappings": {
+        "rust": {
+          "name": "kmipkit_transport::TransportError::cause_category",
+          "packageId": "rust-kmipkit-transport"
+        }
+      },
+      "packageId": "rust-kmipkit-transport",
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ],
+      "parityScope": "rust-only-adr",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ]
     },

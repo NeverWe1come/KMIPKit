@@ -56,6 +56,7 @@
     "KMIPKIT-0007-FR-001",
     "KMIPKIT-0007-FR-002",
     "KMIPKIT-0007-FR-003",
+    "KMIPKIT-0007-FR-005",
     "KMIPKIT-0007-FR-006",
     "KMIPKIT-0007-FR-008",
     "KMIPKIT-0007-FR-009",
@@ -83550,238 +83551,561 @@
       "packageId": "rust-kmipkit-transport",
       "kind": "type",
       "exportName": "kmipkit_transport::RequestDeliveryState",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-14020d75aa1b58f5bc8f",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::RequestDeliveryState::NotSent",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::NotSent"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-58ca29b85270d85b20d8",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::RequestDeliveryState::PossiblySent",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::PossiblySent"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-f437cb527d19d07e5b39",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::RequestDeliveryState::ResponseStarted",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::ResponseStarted"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-2b75c258ea8fda4923e1",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestDeliveryState::not_sent",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::not_sent"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-3768d91d28bc4b36861c",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestDeliveryState::write_started",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::write_started"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-b8ba1fabc3353aa088d1",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::RequestDeliveryState::response_bytes_received",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::RequestDeliveryState::response_bytes_received"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-7cc901dcd29899f18496",
       "packageId": "rust-kmipkit-transport",
       "kind": "type",
       "exportName": "kmipkit_transport::TransportCauseCategory",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-982b3a65442ebfb33967",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::TransportCauseCategory::Io",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory::Io"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-178b010f955438a67369",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::TransportCauseCategory::Tls",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory::Tls"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-5f137bef6ed8d1b73b49",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::TransportCauseCategory::Http",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory::Http"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-49d5359249af36af9f46",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::TransportCauseCategory::Timeout",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory::Timeout"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-fbaed13815a189f8d781",
       "packageId": "rust-kmipkit-transport",
       "kind": "variant",
       "exportName": "kmipkit_transport::TransportCauseCategory::Other",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportCauseCategory::Other"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-8674526f0c58f7579401",
       "packageId": "rust-kmipkit-transport",
       "kind": "type",
       "exportName": "kmipkit_transport::TransportError",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportError"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-ecb5b73a5640edc4e2ce",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::TransportError::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportError::new"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-2f4ec1c6cf0d94d83b95",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::TransportError::delivery_state",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportError::delivery_state"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-8ff47c22ccd71f1105a8",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
       "exportName": "kmipkit_transport::TransportError::cause_category",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
+        "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "declarationState": "verified",
+      "parityScope": "rust-only-adr",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-transport",
+          "name": "kmipkit_transport::TransportError::cause_category"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-transport/tests/delivery_state.rs",
+        "crates/kmipkit-transport/tests/public_contract.rs",
+        "crates/kmipkit-transport/tests/secret_redaction_current.rs",
+        "crates/kmipkit-transport/tests/unit/raw_tls_error_mapping_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-5568554d6d6f9771e4bf",
@@ -236138,362 +236462,6 @@
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
-      "declarationId": "rust-observed-746a498c5a1fccb264a6",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b47062da120b839451c0",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c21b0bb370fc2ab06f3d",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5821ffbf8a356afee301",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-89b6c50d5b77ea132e0b",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-eaaba266f524e3705fff",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-143858f8005cab5d27c2",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c057f212bf3eac7dd8eb",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-97d2390285a2b2c2108f",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c6dbd9cda4ddf18880c4",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-1f87443bbb57d05fcd87",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c9059a6424eb34a1dea2",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b6f25311f719f6837e32",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8a1bb98f1e549a304a1c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-8af46088cc4f9c433b8e",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-5b7a0984cbd7d34f8a40",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3b0d1f6385107c74b4fb",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0f355b5e2953a44adae2",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::RequestDeliveryState"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-227f8c982d9e63ed1079",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-11c7f3a097c88a545ce1",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
@@ -237843,460 +237811,6 @@
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
-      "declarationId": "rust-observed-948b7b0200b5271bd41d",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-150edca8374b9382117b",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b6ef7a9a9e57280e99af",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-74347f20c87cc2b10c3a",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7e5f7909bb9bbdd82f28",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-27654aa95884a0a617a1",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b1e7efb441bd120c1096",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e7393010066adf1f05cb",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-909835d5755a73588a92",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4f0c4d536b7a6df3fb55",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5d0f8c4a62dd574af3b9",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-60c793e987f7b2382a5a",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-35081a021945c2cb6016",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-9bc428d5a49462e1ede3",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-1c4801ae7cd842e4de42",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e3df33e5ce98b1b6597e",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-91e6bcfd52b4be6bbf96",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-bdadba6053514cd43234",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-66a1e87d249dd2e31a25",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportCauseCategory"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-a11ed6f354af503e83d0",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b6fc57785b50a659d850",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d0a62a01cfe335e52772",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-926936d4ab9fa4e38b99",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-54b28eeb89a82bcf7e3f",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a29409a7650ae5215a17",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-3e5460dc5c81957b2e7f",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-5e1127c24c1e5ea1969e",
       "packageId": "rust-kmipkit-transport",
       "kind": "associated-item",
@@ -239208,460 +238722,6 @@
       "declarationState": "blocked",
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0013",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b48ece31d68f3e9776c1",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-04a69a099169240ee51a",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-947b309e38e914832fa9",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-096ce67fe88a287640f7",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-23daf3d75a7b520ad37c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a356b66412e7a3ea9596",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a23ef333eec67480fafd",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7cec32bc29374ba2f2e4",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-610e70490a709094ac3c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-48a4e1e321c3b3058763",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-393e035fa60fd22542ef",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5d36a4b1973313d5eb7c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f831d2cda7f392b18024",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-82c5142770599fc578fc",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-9aac13741bacf74ba03c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9ce3f77cfe772d13a39d",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7c9c80af9c51d3b0d505",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d598901880c0e9e89f1b",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9db3036caa762d78e313",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_transport::error::TransportError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-868334287a66d0aab80f",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-35519f51bcf5be9809cc",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8191421409be8c5ad4d6",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7d3673089ae23538305d",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f6cc794b2db2bfece2c2",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f075aaa673e6ec8341e1",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-656cc6d853e6102a905c",
-      "packageId": "rust-kmipkit-transport",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
@@ -368142,6 +367202,858 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::Borrow<kmipkit_transport::error::RequestDeliveryState>>::borrow",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::borrow::BorrowMut<kmipkit_transport::error::RequestDeliveryState>>::borrow_mut",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::From<kmipkit_transport::error::RequestDeliveryState>>::from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::RequestDeliveryState as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::Borrow<kmipkit_transport::error::TransportCauseCategory>>::borrow",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::borrow::BorrowMut<kmipkit_transport::error::TransportCauseCategory>>::borrow_mut",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::From<kmipkit_transport::error::TransportCauseCategory>>::from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::cause",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::description",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::provide",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::source",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportCauseCategory as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::Owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as alloc::string::ToString>::to_string",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::Borrow<kmipkit_transport::error::TransportError>>::borrow",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::borrow::BorrowMut<kmipkit_transport::error::TransportError>>::borrow_mut",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::Clone>::clone_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::eq",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::cmp::PartialEq>::ne",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::From<kmipkit_transport::error::TransportError>>::from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::cause",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::description",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::provide",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::source",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::error::Error>::type_id",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Debug>::fmt",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
+    },
+    {
+      "packageId": "rust-kmipkit-transport",
+      "exportName": "<kmipkit_transport::TransportError as core::fmt::Display>::fmt",
+      "reason": "This exact Rust standard-library trait implementation on the low-level transport error/state contract is language-level behavior, not an independent KMIPKit product capability. The contract is explicitly Rust-only under ADR-0014; the safe delivery/cause semantics remain available through the four-language client error facade.",
+      "approvalSource": {
+        "kind": "accepted-adr",
+        "path": "docs/adr/0014-public-transport-exchange-contract.md",
+        "status": "Accepted",
+        "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      },
+      "evidence": "Exact compiler-observed export path. KMIPKIT-0007-FR-005 and accepted ADR-0014 scope the low-level delivery-aware byte-exchange contract to the Rust transport crate. KMIPKIT-0007-FR-013 separately requires the four-language facade to expose safe delivery/cause metadata and redact source text; this standard-library trait path adds no independent product capability."
     }
   ],
   "apiLevels": [
@@ -371883,6 +371795,7 @@
     {
       "capabilityId": "rust_transport_exchange",
       "requirementIds": [
+        "KMIPKIT-0007-FR-005",
         "KMIPKIT-0043-FR-020",
         "KMIPKIT-0043-FR-021"
       ],
@@ -371897,8 +371810,25 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit_transport::RequestDeliveryState",
+          "kmipkit_transport::RequestDeliveryState::NotSent",
+          "kmipkit_transport::RequestDeliveryState::PossiblySent",
+          "kmipkit_transport::RequestDeliveryState::ResponseStarted",
+          "kmipkit_transport::RequestDeliveryState::not_sent",
+          "kmipkit_transport::RequestDeliveryState::response_bytes_received",
+          "kmipkit_transport::RequestDeliveryState::write_started",
           "kmipkit_transport::Transport",
           "kmipkit_transport::Transport::exchange",
+          "kmipkit_transport::TransportCauseCategory",
+          "kmipkit_transport::TransportCauseCategory::Http",
+          "kmipkit_transport::TransportCauseCategory::Io",
+          "kmipkit_transport::TransportCauseCategory::Other",
+          "kmipkit_transport::TransportCauseCategory::Timeout",
+          "kmipkit_transport::TransportCauseCategory::Tls",
+          "kmipkit_transport::TransportError",
+          "kmipkit_transport::TransportError::cause_category",
+          "kmipkit_transport::TransportError::delivery_state",
+          "kmipkit_transport::TransportError::new",
           "kmipkit_transport::TransportResponse",
           "kmipkit_transport::TransportResponse::as_bytes",
           "kmipkit_transport::TransportResponse::new"
