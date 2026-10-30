@@ -4371,30 +4371,7 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let identifier = match &request {
-            ClientRequest::Encrypt(request) => request.unique_identifier(),
-            ClientRequest::Mac(request) => request.unique_identifier(),
-            ClientRequest::Sign(request) => request.unique_identifier(),
-            _ => {
-                return Err(guard_validation_error(
-                    UsageAllocationContextError::UnsupportedOperation,
-                ));
-            }
-        }
-        .ok_or_else(|| {
-            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
-        })?;
-        if crate::usage_allocation::is_id_placeholder(identifier) {
-            return Err(guard_validation_error(
-                UsageAllocationContextError::MismatchedUniqueIdentifier,
-            ));
-        }
-        if identifier != context.unique_identifier() {
-            return Err(guard_validation_error(
-                UsageAllocationContextError::MismatchedUniqueIdentifier,
-            ));
-        }
-        context.reserve(cost).map_err(guard_validation_error)?;
+        reserve_guarded_protection(context, &request, cost)?;
 
         let mut batch = ClientBatch::new(ClientBatchItem::new(request));
         if let Some(indicator) = asynchronous_indicator {
@@ -4468,30 +4445,7 @@ impl Client {
         asynchronous_indicator: Option<u32>,
         limits: &CodecLimits,
     ) -> Result<ClientBatchResponse, ClientError> {
-        let identifier = match item.request() {
-            ClientRequest::Encrypt(request) => request.unique_identifier(),
-            ClientRequest::Mac(request) => request.unique_identifier(),
-            ClientRequest::Sign(request) => request.unique_identifier(),
-            _ => {
-                return Err(guard_validation_error(
-                    UsageAllocationContextError::UnsupportedOperation,
-                ));
-            }
-        }
-        .ok_or_else(|| {
-            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
-        })?;
-        if crate::usage_allocation::is_id_placeholder(identifier) {
-            return Err(guard_validation_error(
-                UsageAllocationContextError::MismatchedUniqueIdentifier,
-            ));
-        }
-        if identifier != context.unique_identifier() {
-            return Err(guard_validation_error(
-                UsageAllocationContextError::MismatchedUniqueIdentifier,
-            ));
-        }
-        context.reserve(cost).map_err(guard_validation_error)?;
+        reserve_guarded_protection(context, item.request(), cost)?;
 
         let mut batch = ClientBatch::new(item);
         if let Some(indicator) = asynchronous_indicator {
@@ -8093,6 +8047,32 @@ fn guard_validation_error(error: UsageAllocationContextError) -> ClientError {
         RequestDeliveryState::NotSent,
         error,
     )
+}
+
+fn reserve_guarded_protection(
+    context: &mut UsageAllocationContext,
+    request: &ClientRequest,
+    cost: i64,
+) -> Result<(), ClientError> {
+    let identifier = match request {
+        ClientRequest::Encrypt(request) => request.unique_identifier(),
+        ClientRequest::Mac(request) => request.unique_identifier(),
+        ClientRequest::Sign(request) => request.unique_identifier(),
+        _ => {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::UnsupportedOperation,
+            ));
+        }
+    }
+    .ok_or_else(|| guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier))?;
+    if crate::usage_allocation::is_id_placeholder(identifier)
+        || identifier != context.unique_identifier()
+    {
+        return Err(guard_validation_error(
+            UsageAllocationContextError::MismatchedUniqueIdentifier,
+        ));
+    }
+    context.reserve(cost).map_err(guard_validation_error)
 }
 
 fn decode_response_message(
