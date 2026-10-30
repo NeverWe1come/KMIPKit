@@ -980,6 +980,46 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(batch_item["declarationState"], "declared")
         self.assertIn("languageMappings", batch_item)
 
+    def test_generic_ttlv_standard_trait_exports_have_exact_exclusions(self) -> None:
+        mapped_ttlv_types = {
+            declaration["exportName"]
+            for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == "rust-kmipkit-ttlv"
+            and declaration["capabilityId"] == "generic_ttlv_model"
+            and declaration["declarationState"] in {"declared", "verified"}
+            and declaration["kind"] == "type"
+        }
+        report = json.loads(
+            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-10-30.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        observed_trait_exports = {
+            ("rust-kmipkit-ttlv", declaration["exportName"])
+            for declaration in report["declarations"] + report["conditionalDeclarations"]
+            if declaration["packageId"] == "rust-kmipkit-ttlv"
+            and declaration["kind"] == "associated-item"
+            and any(
+                declaration["exportName"].startswith(f"<{type_name} as ")
+                for type_name in mapped_ttlv_types
+            )
+        }
+        self.assertEqual(len(observed_trait_exports), 92)
+
+        exclusions = {
+            (record["packageId"], record["exportName"]): record
+            for record in self.checked_in_manifest["approvedExclusions"]
+        }
+        missing = sorted(observed_trait_exports - exclusions.keys())
+        self.assertFalse(missing, f"missing exact TTLV trait exclusions: {missing[:5]}")
+        for key in sorted(observed_trait_exports):
+            exclusion = exclusions[key]
+            self.assertIn("standard Rust trait implementation", exclusion["reason"])
+            self.assertEqual(
+                exclusion["approvalSource"]["path"],
+                "specs/004-generic-ttlv-model/spec.md",
+            )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
