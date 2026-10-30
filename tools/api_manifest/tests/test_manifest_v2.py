@@ -1528,6 +1528,89 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 if "DiscoverVersionsError" in exclusion["exportName"]:
                     self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
 
+    def test_t091_client_execution_standard_traits_have_exact_owner_exclusions(self) -> None:
+        target_packages = {"rust-kmipkit", "rust-kmipkit-client"}
+        trait_type_prefixes = (
+            "kmipkit::Client",
+            "kmipkit::PendingOutcome",
+            "kmipkit::RequestDeliveryState",
+            "kmipkit::Transport",
+            "kmipkit_client::Client",
+            "kmipkit_client::PendingOutcome",
+        )
+        rust_report = json.loads(
+            (RUST_EXPORT_REPORT_DIR / "rust-export-report-2026-10-30.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        observed_traits = {
+            (row["packageId"], row["exportName"])
+            for row in (
+                rust_report["declarations"]
+                + rust_report["conditionalDeclarations"]
+                + rust_report["excluded"]
+            )
+            if row["packageId"] in target_packages
+            and row["exportName"].startswith("<")
+            and row["exportName"].split(" as ", 1)[0][1:].startswith(
+                trait_type_prefixes
+            )
+            and not (
+                row["packageId"] == "rust-kmipkit"
+                and row["exportName"].startswith("<kmipkit::ClientCauseCategory as ")
+            )
+        }
+        self.assertEqual(466, len(observed_traits))
+
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] in target_packages
+            and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
+            and row["exportName"].startswith("<")
+        }
+        missing = sorted(observed_traits - exclusions.keys())
+        extra = sorted(exclusions.keys() - observed_traits)
+        self.assertFalse(
+            missing or extra,
+            "KMIPKIT-0007 standard traits require exact exclusions while direct types "
+            f"stay inventoried; missing={missing[:5]}, extra={extra[:5]}",
+        )
+
+        direct_exports = {
+            (row["packageId"], row["exportName"])
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        for package_id, export_name in observed_traits:
+            type_name = export_name.split(" as ", 1)[0][1:]
+            with self.subTest(type=type_name, package=package_id):
+                self.assertIn((package_id, type_name), direct_exports)
+
+        for key in sorted(observed_traits):
+            exclusion = exclusions[key]
+            type_name = key[1].split(" as ", 1)[0][1:].rsplit("::", 1)[-1]
+            with self.subTest(export=key[1]):
+                self.assertIn("standard-trait implementation", exclusion["reason"])
+                self.assertIn("concrete declaration remains separately inventoried", exclusion["reason"])
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/007-client-execution/spec.md",
+                        "status": "Approved",
+                    },
+                    {
+                        key: exclusion["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if type_name in {"RequestDeliveryState", "TransportCauseCategory", "TransportError"}:
+                    self.assertIn("KMIPKIT-0007-FR-005", exclusion["evidence"])
+                elif type_name in {"ClientError", "ClientErrorResponseTtlv"}:
+                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+                else:
+                    self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
+
     def test_t091_discover_versions_concrete_api_maps_to_four_language_operation(self) -> None:
         expected_mappings = {
             "kmipkit_protocol::DiscoverVersionsRequest": {
