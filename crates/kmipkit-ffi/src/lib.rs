@@ -172,6 +172,10 @@ pub struct kmipkit_response_batch_item_view_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_message_extension_view_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_message_validation_error_t {
     _private: [u8; 0],
 }

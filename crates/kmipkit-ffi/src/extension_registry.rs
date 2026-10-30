@@ -34,16 +34,17 @@ use crate::{
     kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
-    kmipkit_extension_schema_t, kmipkit_message_validation_error_t,
-    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
-    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
-    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
-    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
-    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
-    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_extension_schema_t, kmipkit_message_extension_view_t,
+    kmipkit_message_validation_error_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
+    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
+    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
+    kmipkit_revoke_request_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_validated_extension_value_t,
@@ -365,6 +366,7 @@ enum Kind {
     RequestMessage,
     RequestHeaderView,
     RequestBatchItemView,
+    MessageExtensionView,
     ResponseMessage,
     ResponseHeaderView,
     ResponseBatchItemView,
@@ -430,6 +432,11 @@ enum HandleValue {
         message: Arc<ResponseMessage>,
         index: usize,
     },
+    MessageExtensionView {
+        owner: MessageExtensionOwner,
+        batch_index: usize,
+        extension_index: usize,
+    },
     MessageValidationError(MessageValidationError),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
@@ -442,6 +449,11 @@ enum HandleValue {
     ClientAsyncOperationOutcome(Mutex<kmipkit_client::ClientOperationOutcome>),
     UsageAllocationContext(Mutex<UsageAllocationContext>),
     SplitKeyReference(SplitKeyReference),
+}
+
+enum MessageExtensionOwner {
+    Request(Arc<RequestMessage>),
+    Response(Arc<ResponseMessage>),
 }
 
 struct Handle {
@@ -1651,6 +1663,15 @@ pub extern "C" fn kmipkit_response_batch_item_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::ResponseBatchItemView);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_extension_view_release(
+    handle: *mut kmipkit_message_extension_view_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::MessageExtensionView);
     });
 }
 
@@ -7155,6 +7176,170 @@ pub extern "C" fn kmipkit_response_batch_item_view_result_status(
             *present = 1;
             *status_out = status;
         }
+        SUCCESS
+    })
+}
+
+/// Returns the number of Message Extension Structures in a request batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_extension_count(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(
+            u64::try_from(item.message_extension_count()).map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns a retained view of the indexed request Message Extension.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_extension_at(
+    item: *mut kmipkit_request_batch_item_view_t,
+    extension_index: u64,
+    out_extension: *mut *mut kmipkit_message_extension_view_t,
+) -> i32 {
+    message_extension_at(
+        item.cast(),
+        extension_index,
+        out_extension,
+        Kind::RequestBatchItemView,
+    )
+}
+
+/// Returns the number of Message Extension Structures in a response batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_extension_count(
+    item: *mut kmipkit_response_batch_item_view_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let item = read_handle!(item, ResponseBatchItemView);
+        let HandleValue::ResponseBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = message.batch_items().nth(*index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(
+            u64::try_from(item.message_extension_count()).map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Returns a retained view of the indexed response Message Extension.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_extension_at(
+    item: *mut kmipkit_response_batch_item_view_t,
+    extension_index: u64,
+    out_extension: *mut *mut kmipkit_message_extension_view_t,
+) -> i32 {
+    message_extension_at(
+        item.cast(),
+        extension_index,
+        out_extension,
+        Kind::ResponseBatchItemView,
+    )
+}
+
+fn message_extension_at(
+    item: *mut std::ffi::c_void,
+    extension_index: u64,
+    out_extension: *mut *mut kmipkit_message_extension_view_t,
+    expected_kind: Kind,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_extension);
+        let extension_index =
+            try_ffi!(usize::try_from(extension_index).map_err(|_| ERROR_INVALID_INPUT));
+        let item = try_ffi!(reference_handle(item, expected_kind));
+        let (owner, batch_index, extension_count) = match &item.value {
+            HandleValue::RequestBatchItemView { message, index } => {
+                let Some(item) = message.batch_items().nth(*index) else {
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                };
+                (
+                    MessageExtensionOwner::Request(Arc::clone(message)),
+                    *index,
+                    item.message_extension_count(),
+                )
+            }
+            HandleValue::ResponseBatchItemView { message, index } => {
+                let Some(item) = message.batch_items().nth(*index) else {
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                };
+                (
+                    MessageExtensionOwner::Response(Arc::clone(message)),
+                    *index,
+                    item.message_extension_count(),
+                )
+            }
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        if extension_index >= extension_count {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::MessageExtensionView,
+            HandleValue::MessageExtensionView {
+                owner,
+                batch_index,
+                extension_index,
+            },
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns an owned, order-preserving generic TTLV Structure for a Message Extension.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_message_extension_view_ttlv(
+    extension: *mut kmipkit_message_extension_view_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let extension = read_handle!(extension, MessageExtensionView);
+        let HandleValue::MessageExtensionView {
+            owner,
+            batch_index,
+            extension_index,
+        } = &extension.value
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let tree = match owner {
+            MessageExtensionOwner::Request(message) => message
+                .batch_items()
+                .nth(*batch_index)
+                .and_then(|item| item.message_extension(*extension_index))
+                .and_then(|view| view.with_ttlv(|tree| clone_structure_view(&tree))),
+            MessageExtensionOwner::Response(message) => message
+                .batch_items()
+                .nth(*batch_index)
+                .and_then(|item| item.message_extension(*extension_index))
+                .and_then(|view| view.with_ttlv(|tree| clone_structure_view(&tree))),
+        };
+        let structure = try_ffi!(
+            tree.transpose()
+                .and_then(|tree| tree.ok_or(ERROR_INVALID_INPUT))
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
         SUCCESS
     })
 }
