@@ -173,6 +173,19 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("KMIPKIT_ABI_VERSION", names)
         self.assertIn("KMIPKIT_FEATURE_LEVEL", names)
 
+    def test_c_header_inventory_classifies_ttlv_decode_error_macros_as_constants(self):
+        result = AUDIT.inventory_c_header(
+            "#define KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER UINT32_C(2)\n"
+        )
+        declarations = {
+            row["exportName"]: row["kind"] for row in result["declarations"]
+        }
+        self.assertEqual(
+            declarations["KMIPKIT_TTLV_DECODE_ERROR_KIND_TRUNCATED_HEADER"],
+            "constant",
+        )
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_accounts_for_enum_types_and_values(self):
         result = AUDIT.inventory_c_header("typedef enum { KMIPKIT_A = 0, KMIPKIT_B = 1 } kmipkit_mode_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}

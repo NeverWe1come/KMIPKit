@@ -1350,6 +1350,27 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 list(targets),
             )
 
+    def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
+        expected = {
+            "kmipkit.errors.TtlvDecodeError.__init__",
+            "kmipkit.errors.TtlvDecodeError.args",
+            "kmipkit.errors.TtlvDecodeError.category",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"] in expected
+        }
+        self.assertEqual(set(exclusions), expected)
+        for name, exclusion in exclusions.items():
+            self.assertTrue(exclusion["reason"], name)
+            self.assertTrue(exclusion["evidence"], name)
+            self.assertEqual(
+                exclusion["approvalSource"]["path"],
+                "specs/005-ttlv-wire-codec/spec.md",
+            )
+
     def test_t011_observed_binding_exports_are_reconciled_without_invented_mappings(self) -> None:
         declarations = {
             (item["packageId"], item["exportName"]): item
