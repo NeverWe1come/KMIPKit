@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
+REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 CASE_TESTS = {
     DISCOVER_VERSIONS_CASE: {
         "rust": (
@@ -53,6 +54,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_client.py",
             "test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once",
+        ),
+    },
+    REGISTRY_ISOLATION_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/extension_registry.rs",
+            "client_configurations_own_isolated_immutable_registries",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_abi_consumer_matches_shared_registry_cleanup_fixture",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ExtensionRegistryTest.java",
+            "org.kmipkit.ExtensionRegistryTest#clientConfigurationsOwnImmutableIsolatedRegistrySnapshots",
+        ),
+        "python": (
+            "bindings/python/tests/test_extension_registry.py",
+            "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
         ),
     },
 }
@@ -149,7 +168,22 @@ def _consumer_command(
             raise ParityRunnerError(f"{language} fixture consumer does not match its reviewed test")
         if language == "rust":
             test_name = expected_test.rsplit("::", maxsplit=1)[-1]
-            command = ["cargo", "test", "-p", "kmipkit-client", "--lib", test_name]
+            test_path = Path(expected_path)
+            if test_path.parent == Path("crates/kmipkit-client/tests"):
+                target = ["--test", test_path.stem]
+                exact_filter = ["--", "--exact"]
+            else:
+                target = ["--lib"]
+                exact_filter = []
+            command = [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-client",
+                *target,
+                test_name,
+                *exact_filter,
+            ]
         else:
             command = [
                 sys.executable,
