@@ -8622,3 +8622,45 @@ failed as expected: the parser returned a valid two-item `RequestMessage`
 instead of `MissingRequiredField` at top-level item 2. Exit code was 1. This
 reproduces the nonconforming behavior introduced by the earlier Green change;
 the single-item optional-ID test remains valid under §8.3 Table 396 and §9.21.
+
+Green: DCO-signed commit `38bfaa4e1` restores the conditional requirement in
+the request parser and helper tests. It removes the two profile tests that
+constructed invalid multi-item ID-free requests, moves supplemental profile
+tests into `profile_coverage_unit.rs` to keep the referenced source below the
+1 MiB traceability-reader bound, updates all affected test references, and
+regenerates the checked-in coverage report with the pinned tool. This also
+fixes the prior CI failures in normative inventory, documentation traceability,
+and Python script contracts.
+
+Refactor: DCO-signed commit `3679bf924` removes positional multi-item
+correlation fallbacks from the general operation, RNG Seed, and Get Attributes
+profile evaluators. Position remains usable for the valid single-item,
+ID-omitted case; a new characterization assertion covers that path. Batch
+Order Option cannot replace the IDs required by §8.3 Table 396.
+
+Local verification for the corrected head:
+
+- `cargo test -p kmipkit-protocol --all-features --test message_validation` —
+  PASS: 15 tests, including the single-item omission and multi-item rejection.
+- `cargo test -p kmipkit-protocol --all-features --quiet` — PASS: 1,226 unit
+  tests and every protocol integration suite and doctest.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`
+  — PASS.
+- `cargo fmt --all --check` and `git diff --check` — PASS.
+- `python -B -m unittest discover -s tools/normative_catalog/tests -p
+  test_feature_traceability.py -v` — PASS: 30 tests; one symlink test skipped
+  because Windows denied symlink creation.
+- `python -B -m unittest scripts.tests.test_requirement_traceability -v` —
+  PASS: 2 tests.
+- `python -B tools/normative_catalog/report.py --repo-root . --check` — PASS;
+  regenerated coverage report is current and all typed profile rule evidence
+  paths resolve.
+
+The previous exact-head CI run `40981254227` was for commit `5d83c24a2` and is
+superseded: it failed because `profile_unit.rs` exceeded the traceability
+reader's 1 MiB bound and because evidence references still used old test names.
+The current commits have not yet been exercised by hosted CI. T057 remains
+open until exact-head selected-scope and aggregate coverage checks pass. T026
+is complete at its implementation/configuration boundary; its eligible
+protected-release run remains a post-integration gate, and Baseline remains
+`evidence_incomplete` with no support claim.
