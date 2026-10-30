@@ -609,6 +609,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_ttlv::Value::byte_string",
     ),
     (
+        "rust-observed-32eb61e7cc5dca41858c",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::Value::item_type",
+    ),
+    (
         "rust-observed-f68234c2db58c16a9bc9",
         "rust-kmipkit-ttlv",
         "kmipkit_ttlv::Value::with_value",
@@ -617,6 +622,46 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-a5ae2f3994fa2c6f8688",
         "rust-kmipkit-ttlv",
         "kmipkit_ttlv::ValueView",
+    ),
+    (
+        "rust-observed-ee951a0ca2ee767c2e1a",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::Structure",
+    ),
+    (
+        "rust-observed-6a496abdeb18d7f56b28",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::Integer",
+    ),
+    (
+        "rust-observed-5eec68802fae0c9f2991",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::LongInteger",
+    ),
+    (
+        "rust-observed-331bb6ca633dd9098c7d",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::Enumeration",
+    ),
+    (
+        "rust-observed-7a76c5df81cbdb5e6bdc",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::Boolean",
+    ),
+    (
+        "rust-observed-47b3f772885b939f7905",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::DateTime",
+    ),
+    (
+        "rust-observed-fbd411b095280efb756b",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::Interval",
+    ),
+    (
+        "rust-observed-3a53cfcfe3f316632ac8",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::ValueView::DateTimeExtended",
     ),
     (
         "rust-observed-72971c3fc3e87711e331",

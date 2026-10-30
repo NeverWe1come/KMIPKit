@@ -956,7 +956,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for export_name in (
             "kmipkit.errors",
             "kmipkit.extensions",
-            "kmipkit.ttlv",
             "kmipkit.extensions.with_extension",
             "org.kmipkit.NativeExtensionRegistry",
             "org.kmipkit.generated.ExtensionRegistryApi",
@@ -968,6 +967,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("candidateSpecId", declaration)
                 self.assertIn("blockedReason", declaration)
                 self.assertNotIn("languageMappings", declaration)
+        ttlv_namespace = next(
+            exclusion
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "python-kmipkit"
+            and exclusion["exportName"] == "kmipkit.ttlv"
+        )
+        self.assertIn("namespace boundary", ttlv_namespace["reason"])
+        self.assertEqual(
+            ttlv_namespace["approvalSource"]["path"],
+            "specs/004-generic-ttlv-model/spec.md",
+        )
         generic_python_error = declarations["kmipkit.errors.KmipKitError"]
         self.assertEqual(generic_python_error["declarationState"], "declared")
         self.assertEqual(generic_python_error["capabilityId"], "ffi_runtime_metadata")
@@ -1149,7 +1159,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             self.assertEqual(declaration["capabilityId"], "generic_ttlv_model")
             self.assertEqual(
                 declaration["requirementIds"],
-                ["KMIPKIT-0004-FR-001", "KMIPKIT-0004-FR-008", "KMIPKIT-0004-FR-012"],
+                [
+                    "KMIPKIT-0004-FR-001",
+                    "KMIPKIT-0004-FR-008",
+                    "KMIPKIT-0004-FR-012",
+                    "KMIPKIT-0043-FR-004",
+                    "KMIPKIT-0043-FR-010",
+                    "KMIPKIT-0043-FR-021",
+                ],
             )
             self.assertEqual(
                 [declaration["languageMappings"][language]["name"]
@@ -1532,8 +1549,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 10335)
-        self.assertEqual(len(exclusions), 119)
+        self.assertEqual(len(declarations), 10322)
+        self.assertEqual(len(exclusions), 132)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1936,13 +1953,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 267)
+        self.assertEqual(len(ttlv_declarations), 276)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            243,
+            252,
         )
         self.assertEqual(
             sum(
@@ -2333,7 +2350,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 800)
+        self.assertEqual(len(declarations), 799)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

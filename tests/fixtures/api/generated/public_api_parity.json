@@ -11856,6 +11856,1314 @@
       "exportName": "kmipkit.client.ProfileValidationContext.object_states",
       "packageId": "python-kmipkit",
       "reason": "This exact ProfileValidationContext readback exposes caller-supplied immutable context inputs; context construction and per-exchange execution are mapped, so it is not a separate KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The package namespace contains the separately mapped generic TTLV values, item types, structures, and views. The module name itself has no operation or data behavior to map across Rust, C, Java, and Python.",
+      "exportName": "kmipkit.ttlv",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python module path is a namespace boundary, not an independently usable type or operation. Its TTLV model declarations are accounted for individually under the four-language generic TTLV capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "The implementation is guarded by #[cfg(feature = \"test-support\")] in crates/kmipkit-protocol/src/profile.rs, is re-exported through the listed Rust crate paths, and is documented as unavailable for application use. The default product API and four-language profile selection capability remain represented separately.",
+      "exportName": "kmipkit::ProfileValidationSelection::for_test",
+      "packageId": "rust-kmipkit",
+      "reason": "This exact ProfileValidationSelection::for_test method is available only with the test-support Cargo feature and its own documentation says application code must not use it. It is test-fixture plumbing for exercising mapped profile rules before evidence completion, not a supported product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "The implementation is guarded by #[cfg(feature = \"test-support\")] in crates/kmipkit-protocol/src/profile.rs, is re-exported through the listed Rust crate paths, and is documented as unavailable for application use. The default product API and four-language profile selection capability remain represented separately.",
+      "exportName": "kmipkit_client::ProfileValidationSelection::for_test",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact ProfileValidationSelection::for_test method is available only with the test-support Cargo feature and its own documentation says application code must not use it. It is test-fixture plumbing for exercising mapped profile rules before evidence completion, not a supported product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "The implementation is guarded by #[cfg(feature = \"test-support\")] in crates/kmipkit-protocol/src/profile.rs, is re-exported through the listed Rust crate paths, and is documented as unavailable for application use. The default product API and four-language profile selection capability remain represented separately.",
+      "exportName": "kmipkit_protocol::ProfileValidationSelection::for_test",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "This exact ProfileValidationSelection::for_test method is available only with the test-support Cargo feature and its own documentation says application code must not use it. It is test-fixture plumbing for exercising mapped profile rules before evidence completion, not a supported product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::borrow::Borrow<kmipkit_ttlv::item::Item>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::borrow::BorrowMut<kmipkit_ttlv::item::Item>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::From<kmipkit_ttlv::item::Item>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Item as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::borrow::Borrow<kmipkit_ttlv::value::ItemType>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::borrow::BorrowMut<kmipkit_ttlv::value::ItemType>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::From<kmipkit_ttlv::value::ItemType>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::ItemType as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::borrow::Borrow<kmipkit_ttlv::tag::RawTag>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::borrow::BorrowMut<kmipkit_ttlv::tag::RawTag>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::From<kmipkit_ttlv::tag::RawTag>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::RawTag as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::borrow::Borrow<kmipkit_ttlv::structure::Structure>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::borrow::BorrowMut<kmipkit_ttlv::structure::Structure>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::From<kmipkit_ttlv::structure::Structure>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::default::Default>::default",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Structure as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::borrow::Borrow<kmipkit_ttlv::tag::Tag>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::borrow::BorrowMut<kmipkit_ttlv::tag::Tag>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::From<kmipkit_ttlv::tag::Tag>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Tag as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::borrow::Borrow<kmipkit_ttlv::value::Value>>::borrow",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::borrow::BorrowMut<kmipkit_ttlv::value::Value>>::borrow_mut",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::From<kmipkit_ttlv::value::Value>>::from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The implementation is a Rust standard-library trait item on a TTLV model type already mapped under generic_ttlv_model. It does not add an operation, alter TTLV encoding, discard unknown values, or change item ordering. The four-language capability is represented by the corresponding typed TTLV values and their documented constructors/accessors; this exact trait path is not a separate product capability.",
+      "exportName": "<kmipkit_ttlv::Value as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact standard Rust trait implementation is an idiomatic operation on a generic TTLV value type, not a separate KMIP wire or client capability. Its path is accounted for explicitly while the mapped TTLV value contract remains represented by the four language APIs."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "C, Java, and Python construct owned items from exposed tag/value data while retaining the same ordered value semantics. This Rust method is only a one-call convenience for that composition.",
+      "exportName": "kmipkit_ttlv::Item::try_clone",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact Rust convenience method composes the already mapped item/value constructors and explicit value-copy behavior. It is not a separate generic TTLV capability or a four-language API operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The source contract keeps ModelError local to kmipkit-ttlv to avoid a dependency cycle. The C, Java, and Python facades expose stable mapped error categories rather than the Rust enum variant.",
+      "exportName": "kmipkit_ttlv::ModelError::RawTagOutOfRange",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact ModelError variant is part of the crate-local Rust model error. KMIPKIT-0004-FR-013 requires this lower-layer error to remain local; higher layers map or wrap it through language-specific stable error categories."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The source contract keeps ModelError local to kmipkit-ttlv to avoid a dependency cycle. The C, Java, and Python facades expose stable mapped error categories rather than the Rust enum variant.",
+      "exportName": "kmipkit_ttlv::ModelError::StructureDepthExceeded",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact ModelError variant is part of the crate-local Rust model error. KMIPKIT-0004-FR-013 requires this lower-layer error to remain local; higher layers map or wrap it through language-specific stable error categories."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The source contract keeps ModelError local to kmipkit-ttlv to avoid a dependency cycle. The C, Java, and Python facades expose stable mapped error categories rather than the Rust enum variant.",
+      "exportName": "kmipkit_ttlv::ModelError::TagNotAllocated",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact ModelError variant is part of the crate-local Rust model error. KMIPKIT-0004-FR-013 requires this lower-layer error to remain local; higher layers map or wrap it through language-specific stable error categories."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "StructureView::children and the typed Structure constructors/accessors already expose ordered child data in the language bindings. This helper only packages that explicit copy operation for Rust callers.",
+      "exportName": "kmipkit_ttlv::StructureView::try_clone",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact Rust try_clone convenience method does not add an independent TTLV capability. Callers in each language can create an owned Structure from the exposed ordered items; Rust-only helper syntax is not a four-language API capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Item Type identifies Big Integer while the mapped TtlvValueView byteLength/byteAt operations expose every exact octet without normalization.",
+      "exportName": "kmipkit_ttlv::ValueView::BigInteger",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This Rust enum variant is a representation detail of the mapped ValueView contract. Other language APIs preserve the distinct Item Type and expose the exact borrowed octets through the generic byte-view operations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The mapped view exposes this field's complete octet sequence through byteLength and byteAt; no mathematical-integer normalization is introduced.",
+      "exportName": "kmipkit_ttlv::ValueView::BigInteger::0",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact tuple field is Rust enum storage for the mapped Big Integer view. Other language APIs use Item Type plus byteLength/byteAt to expose the exact octets."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Item Type identifies Byte String while the mapped TtlvValueView byteLength/byteAt operations expose every exact octet.",
+      "exportName": "kmipkit_ttlv::ValueView::ByteString",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This Rust enum variant is a representation detail of the mapped ValueView contract. Other language APIs preserve the distinct Item Type and expose the exact borrowed octets through the generic byte-view operations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The mapped view exposes this field's complete octet sequence through byteLength and byteAt.",
+      "exportName": "kmipkit_ttlv::ValueView::ByteString::0",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact tuple field is Rust enum storage for the mapped Byte String view. Other language APIs use Item Type plus byteLength/byteAt to expose the exact octets."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Item Type identifies Text String while the mapped TtlvValueView byteLength/byteAt operations expose its exact UTF-8 encoding without normalization.",
+      "exportName": "kmipkit_ttlv::ValueView::TextString",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This Rust enum variant is a representation detail of the mapped ValueView contract. Other language APIs preserve the distinct Item Type and expose the UTF-8 bytes through the generic byte-view operations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The mapped view exposes this field's complete UTF-8 byte sequence without normalization through byteLength and byteAt.",
+      "exportName": "kmipkit_ttlv::ValueView::TextString::0",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact tuple field is Rust enum storage for the mapped Text String view. Other language APIs use Item Type plus byteLength/byteAt to expose its exact UTF-8 encoding."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Created**: 2026-10-04",
+        "kind": "feature-specification",
+        "path": "specs/005-ttlv-wire-codec/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The TTLV wire-codec module is only a Rust namespace; concrete limits, encoder, decoder, and wire operations are accounted for under ttlv_wire_codec.",
+      "exportName": "kmipkit_ttlv::codec",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact Rust module path is a namespace boundary, not an independently usable codec operation. Its codec types and functions are inventoried separately under the accepted KMIPKIT-0005 wire-codec capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "The helper is explicitly documented for language bindings and used as internal adapter plumbing. The four-language owned value constructors and lifecycle APIs represent the product capability.",
+      "exportName": "kmipkit_ttlv::try_clone_value",
+      "packageId": "rust-kmipkit-ttlv",
+      "reason": "This exact doc-hidden Rust helper exists for the binding implementation to copy secret-bearing values safely. It is not a supported end-user operation; each binding already performs owned copies at its opaque-handle boundary."
     }
   ],
   "capabilities": [
@@ -12106,18 +13414,27 @@
           "kmipkit_ttlv::Value::enumeration",
           "kmipkit_ttlv::Value::integer",
           "kmipkit_ttlv::Value::interval",
+          "kmipkit_ttlv::Value::item_type",
           "kmipkit_ttlv::Value::long_integer",
           "kmipkit_ttlv::Value::structure",
           "kmipkit_ttlv::Value::text_string",
           "kmipkit_ttlv::Value::with_value",
           "kmipkit_ttlv::ValueView",
+          "kmipkit_ttlv::ValueView::Boolean",
           "kmipkit_ttlv::ValueView::Boolean::0",
+          "kmipkit_ttlv::ValueView::DateTime",
           "kmipkit_ttlv::ValueView::DateTime::0",
+          "kmipkit_ttlv::ValueView::DateTimeExtended",
           "kmipkit_ttlv::ValueView::DateTimeExtended::0",
+          "kmipkit_ttlv::ValueView::Enumeration",
           "kmipkit_ttlv::ValueView::Enumeration::0",
+          "kmipkit_ttlv::ValueView::Integer",
           "kmipkit_ttlv::ValueView::Integer::0",
+          "kmipkit_ttlv::ValueView::Interval",
           "kmipkit_ttlv::ValueView::Interval::0",
+          "kmipkit_ttlv::ValueView::LongInteger",
           "kmipkit_ttlv::ValueView::LongInteger::0",
+          "kmipkit_ttlv::ValueView::Structure",
           "kmipkit_ttlv::ValueView::Structure::0"
         ]
       },
@@ -71391,6 +72708,47 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-32eb61e7cc5dca41858c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::Value::item_type",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_type",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.itemType",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_type",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value::item_type",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "rust-observed-f68234c2db58c16a9bc9",
       "declarationState": "declared",
       "exportName": "kmipkit_ttlv::Value::with_value",
@@ -71466,6 +72824,334 @@
         "KMIPKIT-0004-FR-012",
         "KMIPKIT-0021-FR-009",
         "KMIPKIT-0021-FR-015",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-ee951a0ca2ee767c2e1a",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::Structure",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_structure",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.structure",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_structure",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::Structure",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-6a496abdeb18d7f56b28",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::Integer",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.integer",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::Integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-5eec68802fae0c9f2991",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::LongInteger",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_long_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.longInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_long_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::LongInteger",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-331bb6ca633dd9098c7d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::Enumeration",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_enumeration",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.enumeration",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_enumeration",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::Enumeration",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-7a76c5df81cbdb5e6bdc",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::Boolean",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_boolean",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.booleanValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_boolean",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::Boolean",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-47b3f772885b939f7905",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::DateTime",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_date_time",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.dateTime",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_date_time",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::DateTime",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-fbd411b095280efb756b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::Interval",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_interval",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.interval",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_interval",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::Interval",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-3a53cfcfe3f316632ac8",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::ValueView::DateTimeExtended",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_view_date_time_extended",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValueView.dateTimeExtended",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_view_date_time_extended",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::ValueView::DateTimeExtended",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-012",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
