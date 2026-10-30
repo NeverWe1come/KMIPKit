@@ -30,6 +30,7 @@ CREATE_REQUEST_CASE = "creation.create.request-response.v1"
 CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 CREATE_SPLIT_KEY_CASE = "creation.split-key.request-response.v1"
 CREATE_FAILURE_MESSAGE_CASE = "creation.result-message-on-failure.v1"
+CODEC_LIMITS_CASE = "codec-limits.defaults-and-ranges.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -635,6 +636,47 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_creation_result_message_matches_failure_fixture",
         )
 
+    def test_codec_limits_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                CODEC_LIMITS_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], CODEC_LIMITS_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            consumers["rust"]["test"],
+            "codec_limits_shared_fixture_covers_defaults_ranges_and_rejection",
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "c_abi_consumer_matches_the_shared_codec_limits_fixture",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.SharedCapabilityParityFixtureTest."
+            "codecLimitsFixtureMatchesDefaultsRangesAndErrors",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_shared_parity_fixtures.py::"
+            "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
+        )
+
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (
             DISCOVER_VERSIONS_CASE,
@@ -648,6 +690,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             CREATE_KEY_PAIR_CASE,
             CREATE_SPLIT_KEY_CASE,
             CREATE_FAILURE_MESSAGE_CASE,
+            CODEC_LIMITS_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
