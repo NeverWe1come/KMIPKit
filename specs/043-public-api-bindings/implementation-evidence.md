@@ -6583,3 +6583,15 @@ The runner now accepts `creation.split-key.request-response.v1` and selects the 
 | Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case creation.split-key.request-response.v1`; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; `git diff --check` | Pass: Rust, compiled C, Java, and Python tests ran. Python ran on 3.12.14; Java ran on 21.0.12, so Java 17 remains to be confirmed by hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but selected tests passed. No generated output or T071 completion status changed. |
 
 Request/result/Pending behavior remains an acceptance gap. The runtime command executes one selected test per language and does not execute the full 13-case corpus; hosted exact-head verification remains pending.
+
+### T071 failed-operation Result Message parity case 11 of 13 (2026-10-30)
+
+The runner now accepts `creation.result-message-on-failure.v1` and resolves its Rust fixture-scope assertion, C ABI consumer exercised against a fixture-derived failed Create response over mTLS, Java result-metadata test, and Python result-metadata test. The C execution verifies that the UTF-8 Result Message is returned through the native client. The Rust test checks the fixture's success/failure boundary; Java and Python construct their metadata from the fixture. These are selected consumer checks, not equivalent network-response tests in all four adapters, so T071 remains open and full parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `8d9ceb63b` | `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_create_failure_message_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner rejected `creation.result-message-on-failure.v1` as unsupported. |
+| Green | `95331d4f0` | The same plan test; `python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the plan resolved the exact Rust target, compiled C integration test, Java selector, and Python method; all 18 runner contract tests passed. |
+| Refactor | this evidence commit | `python -B tools/api_manifest/t071_parity.py --case creation.result-message-on-failure.v1`; `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B -m pytest tools/api_manifest/tests/test_t071_parity_runner.py -q`; `git diff --check` | Pass: the selected Rust, compiled C/mTLS, Java, and Python consumers completed; all 18 runner tests passed; no whitespace errors. Python ran on 3.12.14. Java ran on 21.0.12, so Java 17 remains for hosted CI. Windows aws-lc-sys compiler-probe/NASM and linker warnings were non-fatal. The updated head has not yet received hosted CI verification. |
+
+This completes runner registration only for case 11 of the 13-case shared corpus. Full consumer parity, cases 12–13, exact-head CI, and the remaining T071 acceptance criteria remain open.
