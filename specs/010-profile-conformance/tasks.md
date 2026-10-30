@@ -306,7 +306,7 @@
 
 ## Phase 10: Restore temporary CI coverage threshold waiver
 
-- [ ] T057 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0010 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record every minimum coverage check, including normative-generator line coverage and selected-scope/aggregate gates, before requesting review or merge.
+- [x] T057 [US1] Restore the minimum coverage gate for this branch after all KMIPKIT-0010 work is complete: remove only this exact branch from the temporary CI exception, retain the exception for the other active branch only while its specification remains incomplete, then run and record every minimum coverage check, including normative-generator line coverage and selected-scope/aggregate gates, before requesting review or merge.
 
 ## Phase 11: Convergence
 
@@ -459,3 +459,5 @@
 
 - Completion note (2026-10-28): T040 is complete after the generated Baseline readiness row reconciled at 298 requirements, 298 typed mappings, and 298 category-test references; exact-head CI `40667964300` passed, and independent closeout re-review found no remaining findings. T045 was then rerun with `cargo test --locked -p kmipkit-client --lib profile_fixture_replay_tests --all-features -- --nocapture`: 1 test passed and the ledger records 13 replays plus the same three typed blockers. The one-or-more threshold is met; blockers remain explicit and no official conformance claim is made. T026, T057, and T056 remain open, so PR #90 stays draft.
 - Completion note (2026-10-28): T056 behavior and traceability are complete. All 14 listed requirements have typed Baseline mappings and category-appropriate evidence; OD-003 is implemented as a caller-owned strictly increasing timestamp sequence. Exact-head PR CI run 40670555546 passed for be90b8548b9a37a6c6ed183660d68a7b2651a41c in 17m31s with no failed jobs; CodeQL, zizmor, and SonarCloud also passed. The Baseline claim remains evidence_incomplete for T036 fixture blockers, and no OASIS conformance claim is made. T026 and T043 remain open.
+
+- Current closeout (2026-10-30): T026 is complete for this feature PR's implementation and configuration scope, as specified in its checked task. Its eligible protected-release evidence run remains a post-integration gate; a `pull_request` run correctly skips that job and cannot establish profile readiness. T057 is complete: the temporary coverage exception no longer names this branch, only the still-active KMIPKIT-0043 branch; exact-head CI run `40992530906` passed the normative-generator coverage, selected-scope coverage, and aggregate gates with 35 jobs successful, 3 intentionally skipped, and 0 failed. Baseline remains `evidence_incomplete`; no profile-support claim is made.
