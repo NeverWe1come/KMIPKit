@@ -1462,6 +1462,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and row["packageId"] == "rust-kmipkit-protocol"
             and row["exportName"].startswith(prefix)
         }
+        unresolved_concrete = {
+            row["exportName"]
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0007"
+            and row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"].startswith("kmipkit_protocol::DiscoverVersions")
+        }
         exclusions = [
             row
             for row in self.checked_in_manifest["approvedExclusions"]
@@ -1475,8 +1482,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if row["packageId"] == "rust-kmipkit-protocol"
             and row["exportName"].startswith("kmipkit_protocol::DiscoverVersions")
         }
+        expected_direct_declarations = {
+            "kmipkit_protocol::DiscoverVersionsRequest",
+            "kmipkit_protocol::DiscoverVersionsRequest::new",
+            "kmipkit_protocol::DiscoverVersionsResponse",
+            "kmipkit_protocol::DiscoverVersionsResponse::result",
+            "kmipkit_protocol::DiscoverVersionsResponse::supported_versions",
+        }
 
-        self.assertEqual(16, len(direct_declarations))
+        self.assertEqual(expected_direct_declarations, direct_declarations)
         self.assertFalse(
             direct_declarations & exclusion_names,
             "concrete Discover Versions API declarations must remain individually inventoried",
@@ -1485,6 +1499,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             unresolved,
             "Discover Versions types, variants, fields, and methods remain inventoried; "
             f"only standard-trait paths may be excluded: {sorted(unresolved)[:5]}",
+        )
+        self.assertFalse(
+            unresolved_concrete,
+            "concrete Discover Versions declarations must be mapped or excluded: "
+            f"{sorted(unresolved_concrete)}",
         )
         self.assertEqual(65, len(exclusions))
         self.assertEqual(65, len(exclusion_names))
@@ -1507,6 +1526,138 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0007-FR-002", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 if "DiscoverVersionsError" in exclusion["exportName"]:
+                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+
+    def test_t091_discover_versions_concrete_api_maps_to_four_language_operation(self) -> None:
+        expected_mappings = {
+            "kmipkit_protocol::DiscoverVersionsRequest": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::DiscoverVersionsRequest"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_discover_versions"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItem.discoverVersions"),
+                "python": ("python-kmipkit", "kmipkit.extensions.client_batch_item_discover_versions"),
+            },
+            "kmipkit_protocol::DiscoverVersionsRequest::new": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::DiscoverVersionsRequest::new"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_discover_versions"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItem.discoverVersions"),
+                "python": ("python-kmipkit", "kmipkit.extensions.client_batch_item_discover_versions"),
+            },
+            "kmipkit_protocol::DiscoverVersionsResponse": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::DiscoverVersionsResponse"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_response_t"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult"),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemResult"),
+            },
+            "kmipkit_protocol::DiscoverVersionsResponse::result": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::DiscoverVersionsResponse::result"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_metadata_v2_t"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemMetadataV2"),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemMetadataV2"),
+            },
+            "kmipkit_protocol::DiscoverVersionsResponse::supported_versions": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::DiscoverVersionsResponse::supported_versions"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_response_discover_versions_supported_versions"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.supportedVersions"),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemResult.supported_versions"),
+            },
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS"
+        )
+        requirement_ids = {
+            "KMIPKIT-0007-FR-002",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+        }
+
+        self.assertEqual("verified", operation["apiState"])
+        for export_name, mappings in expected_mappings.items():
+            declaration = declarations[export_name]
+            with self.subTest(export=export_name):
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
+                    declaration["capabilityId"],
+                )
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertTrue(requirement_ids.issubset(declaration["requirementIds"]))
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/007-client-execution/spec.md",
+                        "status": "Approved",
+                    },
+                    {
+                        key: declaration["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertEqual(
+                    {
+                        language: {"packageId": package_id, "name": name}
+                        for language, (package_id, name) in mappings.items()
+                    },
+                    declaration["languageMappings"],
+                )
+                self.assertEqual(
+                    declaration["packageId"],
+                    declaration["languageMappings"]["rust"]["packageId"],
+                )
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+                self.assertTrue(
+                    set(operation["parityEvidenceIds"]).issubset(
+                        set(declaration["parityEvidenceIds"])
+                    )
+                )
+
+    def test_t091_discover_versions_rust_helpers_and_error_details_have_exact_exclusions(self) -> None:
+        expected_exclusions = {
+            "kmipkit_protocol::DiscoverVersionsRequest::protocol_versions",
+            "kmipkit_protocol::DiscoverVersionsRequest::to_ttlv_payload",
+            "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item",
+            "kmipkit_protocol::DiscoverVersionsError",
+            "kmipkit_protocol::DiscoverVersionsError::UnexpectedOperation",
+            "kmipkit_protocol::DiscoverVersionsError::MissingResultStatus",
+            "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult",
+            "kmipkit_protocol::DiscoverVersionsError::MissingSuccessPayload",
+            "kmipkit_protocol::DiscoverVersionsError::MalformedProtocolVersion",
+            "kmipkit_protocol::DiscoverVersionsError::UnofferedProtocolVersion",
+            "kmipkit_protocol::DiscoverVersionsError::InvalidOperationResult::0",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"].startswith("kmipkit_protocol::DiscoverVersions")
+        }
+
+        self.assertEqual(expected_exclusions, set(exclusions))
+        for export_name, exclusion in exclusions.items():
+            with self.subTest(export=export_name):
+                self.assertTrue(exclusion["reason"])
+                self.assertTrue(exclusion["evidence"])
+                self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0007-FR-002", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-010", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/007-client-execution/spec.md",
+                        "status": "Approved",
+                    },
+                    {
+                        key: exclusion["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                if "DiscoverVersionsError" in export_name:
                     self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
 
     def test_t091_client_execution_candidate_exports_are_reconciled(self) -> None:
