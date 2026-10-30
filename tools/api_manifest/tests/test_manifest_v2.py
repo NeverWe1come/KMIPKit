@@ -1466,6 +1466,46 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"{len(unresolved)} remain, including {unresolved[:10]}",
         )
 
+    def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
+        declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == declaration_id
+        )
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-CHECK"
+        )
+
+        self.assertEqual("kmipkit::ClientRequest::Check", declaration["exportName"])
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit",
+                    "name": "kmipkit::ClientRequest::Check",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_check",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.check",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.client_batch_item_check",
+                },
+            },
+            declaration["languageMappings"],
+        )
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
@@ -1886,8 +1926,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9680)
-        self.assertEqual(len(exclusions), 774)
+        self.assertEqual(len(declarations), 9673)
+        self.assertEqual(len(exclusions), 784)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -2171,7 +2211,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if item["approvalSource"]["path"] == "specs/003-core-types-errors/spec.md"
         ]
         self.assertEqual(len(t087_exclusions), 217)
-        self.assertEqual(len(rust_exclusions), 116 + len(t087_exclusions))
+        self.assertEqual(len(rust_exclusions), 126 + len(t087_exclusions))
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -2189,6 +2229,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/010-profile-conformance/spec.md",
                 "specs/003-core-types-errors/spec.md",
                 "specs/006-message-batch-model/spec.md",
+                "specs/043-public-api-bindings/spec.md",
             },
         )
 
@@ -2352,7 +2393,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 845)
+        self.assertEqual(len(declarations), 939)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -2694,7 +2735,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 823)
+        self.assertEqual(len(declarations), 907)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
