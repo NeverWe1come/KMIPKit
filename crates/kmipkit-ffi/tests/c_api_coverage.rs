@@ -832,6 +832,306 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
 }
 
 #[test]
+// OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157.
+// Keep the TLS peer, certificate files, argv, and C ABI call in one runtime test.
+#[allow(clippy::too_many_lines)]
+fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.split-key.request-response.v1")
+        .expect("Create Split Key fixture case exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let pending_expected = &expected["pendingMetadata"];
+    assert_eq!(input["operation"], "Create Split Key");
+    assert_eq!(input["attributesPresent"], true);
+    assert_eq!(input["protectionStorageMasks"]["present"], true);
+    assert_eq!(expected["primeFieldSizePresent"], false);
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let response_identifiers = expected["responseUniqueIdentifiersInWireOrder"]
+        .as_array()
+        .expect("fixture response identifiers are an array")
+        .iter()
+        .map(|identifier| match identifier["wireType"].as_str() {
+            Some("TextString") => ttlv_item(
+                0x0042_0094,
+                0x07,
+                identifier["text"]
+                    .as_str()
+                    .expect("TextString fixture identifier has text")
+                    .as_bytes(),
+            ),
+            Some("Enumeration") => enumeration(
+                0x0042_0094,
+                u32::try_from(
+                    identifier["enumeration"]
+                        .as_u64()
+                        .expect("Enumeration fixture identifier is U32"),
+                )
+                .expect("fixture identifier fits Enumeration"),
+            ),
+            Some("Integer") => integer(
+                0x0042_0094,
+                i32::try_from(
+                    identifier["integer"]
+                        .as_i64()
+                        .expect("Integer fixture identifier is signed"),
+                )
+                .expect("fixture identifier fits Integer"),
+            ),
+            other => panic!("unsupported fixture identifier type {other:?}"),
+        })
+        .collect::<Vec<_>>();
+    let pending_response_identifiers = expected["pendingResponseUniqueIdentifiersInWireOrder"]
+        .as_array()
+        .expect("fixture Pending response identifiers are an array")
+        .iter()
+        .map(|identifier| match identifier["wireType"].as_str() {
+            Some("TextString") => ttlv_item(
+                0x0042_0094,
+                0x07,
+                identifier["text"]
+                    .as_str()
+                    .expect("TextString fixture identifier has text")
+                    .as_bytes(),
+            ),
+            Some("Enumeration") => enumeration(
+                0x0042_0094,
+                u32::try_from(
+                    identifier["enumeration"]
+                        .as_u64()
+                        .expect("Enumeration fixture identifier is U32"),
+                )
+                .expect("fixture identifier fits Enumeration"),
+            ),
+            Some("Integer") => integer(
+                0x0042_0094,
+                i32::try_from(
+                    identifier["integer"]
+                        .as_i64()
+                        .expect("Integer fixture identifier is signed"),
+                )
+                .expect("fixture identifier fits Integer"),
+            ),
+            other => panic!("unsupported fixture Pending identifier type {other:?}"),
+        })
+        .collect::<Vec<_>>();
+    let success_payload = structure(0x0042_007c, response_identifiers);
+    let success_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 40),
+            ttlv_item(0x0042_0093, 0x08, b"split-success"),
+            enumeration(
+                0x0042_007f,
+                u32::try_from(
+                    expected["resultStatus"]
+                        .as_u64()
+                        .expect("fixture success status is U32"),
+                )
+                .expect("status fits U32"),
+            ),
+            success_payload,
+        ],
+    );
+    let correlation = decode_fixture_hex(
+        pending_expected["correlationValueHex"]
+            .as_str()
+            .expect("fixture pending correlation is hexadecimal"),
+    );
+    let pending_item = structure(
+        0x0042_000f,
+        [
+            enumeration(
+                0x0042_005c,
+                u32::try_from(
+                    pending_expected["sourceOperation"]
+                        .as_u64()
+                        .expect("fixture operation is U32"),
+                )
+                .expect("operation fits U32"),
+            ),
+            ttlv_item(0x0042_0093, 0x08, b"split-pending"),
+            enumeration(
+                0x0042_007f,
+                u32::try_from(
+                    pending_expected["status"]
+                        .as_u64()
+                        .expect("fixture pending status is U32"),
+                )
+                .expect("status fits U32"),
+            ),
+            ttlv_item(0x0042_0006, 0x08, &correlation),
+            structure(0x0042_007c, pending_response_identifiers),
+        ],
+    );
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+    );
+    let header = structure(
+        0x0042_007a,
+        [version, date_time(0x0042_0092, 1), integer(0x0042_000d, 2)],
+    );
+    let response = structure(0x0042_007b, [header, success_item, pending_item]);
+
+    let object_type = u32::try_from(
+        input["objectType"]
+            .as_u64()
+            .expect("fixture Object Type is U32"),
+    )
+    .expect("Object Type fits U32");
+    let unique_identifier = i32::try_from(
+        input["uniqueIdentifier"]["integer"]
+            .as_i64()
+            .expect("fixture Unique Identifier is Integer"),
+    )
+    .expect("Unique Identifier fits Integer");
+    let split_key_parts = i32::try_from(
+        input["splitKeyParts"]
+            .as_i64()
+            .expect("fixture parts are Integer"),
+    )
+    .expect("parts fit Integer");
+    let split_key_threshold = i32::try_from(
+        input["splitKeyThreshold"]
+            .as_i64()
+            .expect("fixture threshold is Integer"),
+    )
+    .expect("threshold fits Integer");
+    let split_key_method = u32::try_from(
+        input["splitKeyMethod"]
+            .as_u64()
+            .expect("fixture method is Enumeration"),
+    )
+    .expect("method fits Enumeration");
+    let expected_request_payload = structure(
+        0x0042_0079,
+        [
+            enumeration(0x0042_0057, object_type),
+            integer(0x0042_0094, unique_identifier),
+            integer(0x0042_008b, split_key_parts),
+            integer(0x0042_008c, split_key_threshold),
+            enumeration(0x0042_008a, split_key_method),
+            structure(0x0042_0125, []),
+            structure(0x0042_015f, []),
+        ],
+    );
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        listener
+            .set_nonblocking(true)
+            .expect("fixture peer can bound its accept wait");
+        let accept_deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(connection) => break connection,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    assert!(
+                        std::time::Instant::now() < accept_deadline,
+                        "the compiled C consumer connects to the fixture peer before timeout"
+                    );
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) => panic!("fixture peer accept failed: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("accepted fixture connection uses blocking reads");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("the C batch request arrives");
+        let occurrences = request
+            .windows(expected_request_payload.len())
+            .filter(|window| *window == expected_request_payload)
+            .count();
+        assert_eq!(
+            occurrences, 2,
+            "the C request contains two exact fixture-shaped Create Split Key payloads"
+        );
+        tls.write_all(&response)
+            .expect("the fixture success and Pending results are written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_split_key_fixture_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let mode = CString::new("create-split-key-fixture").expect("fixture mode has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+        mode.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Create Split Key mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the C ABI preserves fixture identifiers and Pending metadata over mTLS"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/fixtures/api/shared-capability-parity.json"
