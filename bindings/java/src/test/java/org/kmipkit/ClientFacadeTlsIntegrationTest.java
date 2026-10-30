@@ -2089,6 +2089,8 @@ final class ClientFacadeTlsIntegrationTest {
         String input = SharedCapabilityParityFixtureTest.objectField(splitCase, "input");
         String expected = SharedCapabilityParityFixtureTest.objectField(splitCase, "expectedOutput");
         String pendingExpected = SharedCapabilityParityFixtureTest.objectField(expected, "pendingMetadata");
+        List<String> uniqueBatchItemIds = SharedCapabilityParityFixtureTest
+                .stringArrayField(expected, "uniqueBatchItemIds");
         long objectType = SharedCapabilityParityFixtureTest.numberField(input, "objectType");
         int splitKeyParts = Math.toIntExact(
                 SharedCapabilityParityFixtureTest.numberField(input, "splitKeyParts"));
@@ -2147,14 +2149,14 @@ final class ClientFacadeTlsIntegrationTest {
                 responseIdentifiers.toArray(byte[][]::new));
         byte[] successItem = structure(0x42000f,
                 enumeration(0x42005c, 0x28),
-                item(0x420093, 8, "split-success".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420093, 8, uniqueBatchItemIds.get(0).getBytes(StandardCharsets.US_ASCII)),
                 enumeration(0x42007f, Math.toIntExact(
                         SharedCapabilityParityFixtureTest.numberField(expected, "resultStatus"))),
                 successPayload);
         byte[] pendingItem = structure(0x42000f,
                 enumeration(0x42005c, Math.toIntExact(
                         SharedCapabilityParityFixtureTest.numberField(pendingExpected, "sourceOperation"))),
-                item(0x420093, 8, "split-pending".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420093, 8, uniqueBatchItemIds.get(1).getBytes(StandardCharsets.US_ASCII)),
                 enumeration(0x42007f, Math.toIntExact(
                         SharedCapabilityParityFixtureTest.numberField(pendingExpected, "status"))),
                 item(0x420006, 8, correlation),
@@ -2218,17 +2220,21 @@ final class ClientFacadeTlsIntegrationTest {
                             UniqueIdentifier.integer(Math.toIntExact(
                                     SharedCapabilityParityFixtureTest.numberField(uniqueIdentifier, "integer"))),
                             splitKeyParts, splitKeyThreshold, splitKeyMethod, null, attributes, masks)
-                            .withUniqueBatchItemId("split-success".getBytes(StandardCharsets.US_ASCII)))
+                            .withUniqueBatchItemId(uniqueBatchItemIds.get(0).getBytes(StandardCharsets.US_ASCII)))
                     .add(ClientBatchItem.createSplitKey(objectType,
                             UniqueIdentifier.integer(Math.toIntExact(
                                     SharedCapabilityParityFixtureTest.numberField(uniqueIdentifier, "integer"))),
                             splitKeyParts, splitKeyThreshold, splitKeyMethod, null, attributes, masks)
-                            .withUniqueBatchItemId("split-pending".getBytes(StandardCharsets.US_ASCII)));
+                            .withUniqueBatchItemId(uniqueBatchItemIds.get(1).getBytes(StandardCharsets.US_ASCII)));
 
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult completed = response.itemAt(0);
                     ClientBatchItemResult pending = response.itemAt(1)) {
                 assertEquals(2, response.itemCount());
+                assertArrayEquals(uniqueBatchItemIds.get(0).getBytes(StandardCharsets.US_ASCII),
+                        completed.uniqueBatchItemId().orElseThrow());
+                assertArrayEquals(uniqueBatchItemIds.get(1).getBytes(StandardCharsets.US_ASCII),
+                        pending.uniqueBatchItemId().orElseThrow());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.resultMessage().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());

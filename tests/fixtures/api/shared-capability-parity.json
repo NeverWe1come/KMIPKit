@@ -853,7 +853,8 @@
           {"wireType": "TextString", "text": "pending-part"}
         ],
         "automaticFollowUp": false,
-        "transportExchangeCount": 1
+        "transportExchangeCount": 1,
+        "uniqueBatchItemIds": ["split-success", "split-pending"]
       },
       "javaObservedOutput": {
         "requestObjectType": 4026531840,
@@ -887,7 +888,8 @@
           {"wireType": "TextString", "text": "pending-part"}
         ],
         "automaticFollowUp": false,
-        "transportExchangeCount": 1
+        "transportExchangeCount": 1,
+        "uniqueBatchItemIds": ["split-success", "split-pending"]
       },
       "errorCategory": null,
       "cleanup": [

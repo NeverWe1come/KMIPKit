@@ -190,7 +190,7 @@ fn fixture_identifier_payload(identifiers: &[UniqueIdentifier]) -> Structure {
     }))
 }
 
-fn assert_fixture_split_key_request(request: &[u8]) {
+fn assert_fixture_split_key_request(request: &[u8], unique_batch_item_ids: &[String]) {
     let decoded = decode_with_limits(request, &CodecLimits::defaults())
         .expect("captured Create Split Key request decodes under default limits");
     decoded.with_value(|value| {
@@ -208,11 +208,9 @@ fn assert_fixture_split_key_request(request: &[u8]) {
                 let ValueView::Structure(batch_item) = value else {
                     panic!("captured batch item is a Structure");
                 };
-                let expected_id: &[u8] = if index == 0 {
-                    b"split-success"
-                } else {
-                    b"split-pending"
-                };
+                let expected_id = unique_batch_item_ids
+                    .get(index)
+                    .expect("fixture provides an ID for each split-key request");
                 assert_eq!(
                     batch_item
                         .children()
@@ -229,7 +227,7 @@ fn assert_fixture_split_key_request(request: &[u8]) {
                 });
                 assert!(batch_item.children()[1].with_value(|value| matches!(
                     value,
-                    ValueView::ByteString(value) if value == expected_id
+                    ValueView::ByteString(value) if value == expected_id.as_bytes()
                 )));
                 batch_item.children()[2].with_value(|value| {
                     let ValueView::Structure(payload) = value else {
@@ -775,6 +773,18 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     let input = &case["input"];
     let expected = &case["expectedOutput"];
     let pending_expected = &expected["pendingMetadata"];
+    let unique_batch_item_ids = expected["uniqueBatchItemIds"]
+        .as_array()
+        .expect("fixture batch item IDs are an array")
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .expect("fixture batch item ID is text")
+                .to_owned()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(unique_batch_item_ids.len(), 2);
 
     assert_eq!(input["operation"], "Create Split Key");
     assert_eq!(input["attributesPresent"], true);
@@ -842,7 +852,7 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     assert_eq!(pending_expected["correlationValueHex"], "00ff80");
     let response = response_bytes([
         response_batch_item(
-            Some(b"split-success"),
+            Some(unique_batch_item_ids[0].as_bytes()),
             successful_status,
             None,
             None,
@@ -850,7 +860,7 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
             Some(payload),
         ),
         response_batch_item(
-            Some(b"split-pending"),
+            Some(unique_batch_item_ids[1].as_bytes()),
             pending_status,
             None,
             None,
@@ -863,17 +873,21 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     let mut batch = ClientBatch::empty().with_asynchronous_indicator(2);
     batch.push(
         ClientBatchItem::new(ClientRequest::CreateSplitKey(request()))
-            .with_unique_batch_item_id(b"split-success".to_vec()),
+            .with_unique_batch_item_id(unique_batch_item_ids[0].as_bytes().to_vec()),
     );
     batch.push(
         ClientBatchItem::new(ClientRequest::CreateSplitKey(request()))
-            .with_unique_batch_item_id(b"split-pending".to_vec()),
+            .with_unique_batch_item_id(unique_batch_item_ids[1].as_bytes().to_vec()),
     );
 
     let result = client
         .execute(batch, &CodecLimits::defaults())
         .expect("Create Split Key success and Pending outcomes are returned explicitly");
     let successful = result.get(0).expect("success result is present");
+    assert_eq!(
+        successful.unique_batch_item_id(),
+        Some(unique_batch_item_ids[0].as_bytes())
+    );
     let ClientBatchOutcome::CreateSplitKeyCompleted(success_response) = successful.outcome() else {
         panic!("successful Create Split Key response remains typed");
     };
@@ -891,6 +905,10 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
     assert_eq!(success_response.unique_identifiers(), identifiers);
 
     let pending_result = result.get(1).expect("Pending result is present");
+    assert_eq!(
+        pending_result.unique_batch_item_id(),
+        Some(unique_batch_item_ids[1].as_bytes())
+    );
     let ClientBatchOutcome::Pending(pending) = pending_result.outcome() else {
         panic!("Operation Pending remains an explicit Pending outcome");
     };
@@ -923,6 +941,7 @@ fn create_split_key_maps_shared_fixture_success_and_pending_outcomes() {
             .captured_request
             .as_deref()
             .expect("fake transport captured the complete request"),
+        &unique_batch_item_ids,
     );
     assert_eq!(capture.exchange_count, 1);
 }

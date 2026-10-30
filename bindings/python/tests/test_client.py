@@ -1796,16 +1796,18 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     assert expected["resultMessagePresencePreserved"] is True
     assert expected["automaticFollowUp"] is False
     assert expected["transportExchangeCount"] == 1
-    assert expected["uniqueBatchItemIds"] == ["split-success", "split-pending"]
+    unique_batch_item_ids = expected["uniqueBatchItemIds"]
+    assert unique_batch_item_ids == ["split-success", "split-pending"]
     assert pending_response_identifiers == [
         {"wireType": "TextString", "text": "pending-part"}
     ]
 
     attributes = ttlv.ttlv_structure_create()
     masks = ttlv.ttlv_structure_create()
-    split_request = None
+    split_requests: list[extensions.ClientBatchItem] = []
     native_make_handle = extensions._make_handle
     captured_request_arguments: list[tuple[object, ...]] = []
+    captured_batch_item_ids: list[bytes] = []
 
     def capture_split_key_builder(
         c_type: str,
@@ -1816,39 +1818,51 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     ) -> object:
         if function_name == "kmipkit_client_batch_item_create_split_key":
             captured_request_arguments.append(arguments)
+        elif function_name == "kmipkit_client_batch_item_with_unique_batch_item_id":
+            captured_batch_item_ids.append(
+                bytes(extensions.ffi.buffer(arguments[1], int(arguments[2])))
+            )
         return native_make_handle(c_type, function_name, arguments, out_index, consumed_indices)
 
     monkeypatch.setattr(extensions, "_make_handle", capture_split_key_builder)
     try:
-        split_request = extensions.client_batch_item_create_split_key(
-            request["objectType"],
-            request["splitKeyParts"],
-            request["splitKeyThreshold"],
-            request["splitKeyMethod"],
-            attributes,
-            unique_identifier=extensions.UniqueIdentifier.integer(
-                request["uniqueIdentifier"]["integer"]
-            ),
-            prime_field_size=None,
-            protection_storage_masks=masks,
-        )
-        assert split_request is not None
-        assert len(captured_request_arguments) == 1
-        builder_arguments = captured_request_arguments[0]
-        assert builder_arguments[0] == request["objectType"]
-        identifier_argument = builder_arguments[1]
-        assert identifier_argument.kind == int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
-        assert identifier_argument.integer_value == request["uniqueIdentifier"]["integer"]  # type: ignore[attr-defined]
-        assert builder_arguments[2:5] == (
-            request["splitKeyParts"],
-            request["splitKeyThreshold"],
-            request["splitKeyMethod"],
-        )
-        assert builder_arguments[5] == 0
-        assert builder_arguments[6] == client.ffi.NULL
-        assert builder_arguments[7] == 0
-        assert builder_arguments[8] != client.ffi.NULL
-        assert builder_arguments[9] != client.ffi.NULL
+        for batch_item_id in unique_batch_item_ids:
+            split_item = extensions.client_batch_item_create_split_key(
+                request["objectType"],
+                request["splitKeyParts"],
+                request["splitKeyThreshold"],
+                request["splitKeyMethod"],
+                attributes,
+                unique_identifier=extensions.UniqueIdentifier.integer(
+                    request["uniqueIdentifier"]["integer"]
+                ),
+                prime_field_size=None,
+                protection_storage_masks=masks,
+            )
+            split_requests.append(
+                extensions.with_unique_batch_item_id(
+                    split_item, batch_item_id.encode("ascii")
+                )
+            )
+        assert len(captured_request_arguments) == len(unique_batch_item_ids) == 2
+        assert captured_batch_item_ids == [
+            batch_item_id.encode("ascii") for batch_item_id in unique_batch_item_ids
+        ]
+        for builder_arguments in captured_request_arguments:
+            assert builder_arguments[0] == request["objectType"]
+            identifier_argument = builder_arguments[1]
+            assert identifier_argument.kind == int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+            assert identifier_argument.integer_value == request["uniqueIdentifier"]["integer"]  # type: ignore[attr-defined]
+            assert builder_arguments[2:5] == (
+                request["splitKeyParts"],
+                request["splitKeyThreshold"],
+                request["splitKeyMethod"],
+            )
+            assert builder_arguments[5] == 0
+            assert builder_arguments[6] == client.ffi.NULL
+            assert builder_arguments[7] == 0
+            assert builder_arguments[8] != client.ffi.NULL
+            assert builder_arguments[9] != client.ffi.NULL
     finally:
         attributes.close()
         masks.close()
@@ -1861,6 +1875,7 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     correlation_bytes = bytes.fromhex(pending_expected["correlationValueHex"])
     correlation = client.ffi.new("uint8_t[]", correlation_bytes)
     identifier_storage: list[object] = []
+    batch_item_id_storage: list[object] = []
     released: list[str] = []
 
     def item_index(item: object) -> int:
@@ -1905,6 +1920,15 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         value.length = 0  # type: ignore[attr-defined]
         return 0
 
+    def batch_item_id(item: object, present: object, value: object) -> int:
+        data = unique_batch_item_ids[item_index(item)].encode("ascii")
+        storage = client.ffi.new("uint8_t[]", data)
+        batch_item_id_storage.append(storage)
+        present[0] = 1  # type: ignore[index]
+        value.data = storage  # type: ignore[attr-defined]
+        value.length = len(data)  # type: ignore[attr-defined]
+        return 0
+
     def pending_correlation(item: object, present: object, value: object) -> int:
         if item_index(item) == 1:
             present[0] = 1  # type: ignore[index]
@@ -1945,12 +1969,27 @@ def test_create_split_key_fixture_success_and_pending_metadata(
     handle = _wrap_owned_handle(client.Client, client_pointer)
     batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
+    native_client_library = client.lib
     batch_items: list[object] = []
+    owned_batch_items: list[object] = []
     execution_calls: list[bool] = []
+    asynchronous_indicators: list[int] = []
+
+    def release_batch_items() -> None:
+        while owned_batch_items:
+            native_client_library.kmipkit_client_batch_item_release(owned_batch_items.pop())
+
+    def release_batch(_batch: object) -> None:
+        release_batch_items()
 
     def add_item(_batch: object, item_slot: object) -> int:
         batch_items.append(item_slot[0])  # type: ignore[index]
+        owned_batch_items.append(item_slot[0])  # type: ignore[index]
         item_slot[0] = client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    def set_asynchronous_indicator(_batch: object, value: int) -> int:
+        asynchronous_indicators.append(int(value))
         return 0
 
     def execute(
@@ -1961,23 +2000,26 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         error_output: object,
     ) -> int:
         execution_calls.append(True)
-        assert len(batch_items) == 1
+        assert len(batch_items) == len(unique_batch_item_ids) == 2
+        assert asynchronous_indicators == [2]
         batch_slot[0] = client.ffi.NULL  # type: ignore[index]
         output[0] = response_pointer  # type: ignore[index]
         assert error_output[0] == client.ffi.NULL  # type: ignore[index]
+        release_batch_items()
         return 0
 
     fake = SimpleNamespace(
         kmipkit_client_release=lambda _client: None,
-        kmipkit_client_batch_release=lambda _batch: None,
+        kmipkit_client_batch_release=release_batch,
         kmipkit_client_batch_add_item=add_item,
+        kmipkit_client_batch_set_asynchronous_indicator=set_asynchronous_indicator,
         kmipkit_client_execute_with_error_ttlv_v1=execute,
         kmipkit_client_batch_response_release=lambda _response: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _item: released.append("item"),
         kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 2) or 0,
         kmipkit_client_batch_response_item_at=item_at,
         kmipkit_client_batch_item_response_metadata_v2=metadata,
-        kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
+        kmipkit_client_batch_item_response_unique_batch_item_id=batch_item_id,
         kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
         **creation_symbols,
@@ -1986,8 +2028,9 @@ def test_create_split_key_fixture_success_and_pending_metadata(
 
     result = None
     try:
-        assert split_request is not None
-        batch.add_item(split_request)
+        batch.set_asynchronous_indicator(2)
+        for split_request in split_requests:
+            batch.add_item(split_request)
         result = handle.execute(batch, limits)
         assert len(result.items) == 2
         completed, pending = result.items
@@ -1996,6 +2039,7 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         assert completed.result_status == expected["resultStatus"]
         assert completed.result_reason is None
         assert completed.result_message is expected["resultMessage"]
+        assert completed.unique_batch_item_id == unique_batch_item_ids[0].encode("ascii")
         expected_identifiers = tuple(
             {
                 "TextString": extensions.UniqueIdentifier.text_string,
@@ -2016,15 +2060,17 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         assert pending.result_status == pending_expected["status"]
         assert pending.result_reason is None
         assert pending.result_message is pending_expected["resultMessage"]
+        assert pending.unique_batch_item_id == unique_batch_item_ids[1].encode("ascii")
         assert pending.pending_correlation_value == correlation_bytes
         assert pending.split_key_unique_identifiers == expected_pending_identifiers
         assert pending_expected["correlationValueHex"] == "00ff80"
-        assert len(batch_items) == 1
+        assert len(batch_items) == len(unique_batch_item_ids) == 2
+        assert asynchronous_indicators == [2]
         assert len(execution_calls) == expected["transportExchangeCount"]
     finally:
         if result is not None:
             result.close()
-        if split_request is not None:
+        for split_request in split_requests:
             split_request.close()
         batch.close()
         handle.close()
