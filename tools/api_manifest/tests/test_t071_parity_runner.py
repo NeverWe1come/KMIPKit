@@ -22,6 +22,7 @@ CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 BATCH_MIXED_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
+SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -202,6 +203,68 @@ class T071ParityRunnerTests(unittest.TestCase):
             consumers["python"]["command"][-1],
             "bindings/python/tests/test_extension_registry.py::ExtensionRegistryTests::"
             "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
+        )
+
+    def test_schema_redaction_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                SCHEMA_REDACTION_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], SCHEMA_REDACTION_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        rust = consumers["rust"]
+        self.assertEqual(
+            rust["testFile"],
+            "crates/kmipkit-protocol/tests/extension_redaction.rs",
+        )
+        self.assertEqual(
+            rust["test"],
+            "schema_error_debug_display_and_source_chain_redact_payload_secrets",
+        )
+        self.assertEqual(
+            rust["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-protocol",
+                "--test",
+                "extension_redaction",
+                "schema_error_debug_display_and_source_chain_redact_payload_secrets",
+                "--",
+                "--exact",
+            ],
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.ExtensionRegistryTest.invalidSchemaErrorsAndValidatedValueFormattingRedactPayloadText",
+        )
+        self.assertEqual(
+            consumers["python"]["test"],
+            "test_failure_and_default_diagnostics_redact_secret_fixture_values",
+        )
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_extension_registry.py::ExtensionRegistryTests::"
+            "test_failure_and_default_diagnostics_redact_secret_fixture_values",
         )
 
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
