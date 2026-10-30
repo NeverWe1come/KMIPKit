@@ -39,6 +39,7 @@ use crate::{
     kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
     kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
     kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
     kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
     kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
     kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
@@ -67,10 +68,11 @@ use kmipkit_protocol::{
     ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
     OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
     QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest, SetConstraintsRequest,
-    SetDefaultsRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, UniqueIdentifier, ValidateRequest,
+    RekeyKeyPairRequest, RekeyRequest, ResponseMessage, ResultStatus, RevocationReason,
+    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{ProfileObjectState, ProfileValidationContext, ProfileValidationSelection};
@@ -363,6 +365,9 @@ enum Kind {
     RequestMessage,
     RequestHeaderView,
     RequestBatchItemView,
+    ResponseMessage,
+    ResponseHeaderView,
+    ResponseBatchItemView,
     MessageValidationError,
     TransportConfig,
     Client,
@@ -417,6 +422,12 @@ enum HandleValue {
     RequestHeaderView(Arc<RequestMessage>),
     RequestBatchItemView {
         message: Arc<RequestMessage>,
+        index: usize,
+    },
+    ResponseMessage(Arc<ResponseMessage>),
+    ResponseHeaderView(Arc<ResponseMessage>),
+    ResponseBatchItemView {
+        message: Arc<ResponseMessage>,
         index: usize,
     },
     MessageValidationError(MessageValidationError),
@@ -1615,6 +1626,31 @@ pub extern "C" fn kmipkit_request_batch_item_release(
 ) {
     ffi_entrypoint(|| {
         release(handle, Kind::RequestBatchItemView);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_release(handle: *mut kmipkit_response_message_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ResponseMessage);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_release(
+    handle: *mut kmipkit_response_header_view_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ResponseHeaderView);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_release(
+    handle: *mut kmipkit_response_batch_item_view_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ResponseBatchItemView);
     });
 }
 
@@ -6862,6 +6898,262 @@ pub extern "C" fn kmipkit_request_batch_item_view_operation(
         if let Some(operation) = operation {
             *present = 1;
             *operation_out = operation;
+        }
+        SUCCESS
+    })
+}
+
+/// Consumes a generic TTLV structure and validates it as a KMIP Response Message.
+///
+/// The original ordered TTLV tree is retained. On structural validation failure,
+/// `out_validation_error` receives a payload-free error handle with a stable kind and optional
+/// numeric indexes. The input structure is consumed on success and failure. Output slots must be
+/// disjoint; overlap is rejected before the input handle is consumed.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_message: *mut *mut kmipkit_response_message_t,
+    out_validation_error: *mut *mut kmipkit_message_validation_error_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (
+                out_message.cast(),
+                std::mem::size_of::<*mut kmipkit_response_message_t>(),
+            ),
+            (
+                out_validation_error.cast(),
+                std::mem::size_of::<*mut kmipkit_message_validation_error_t>(),
+            ),
+        ]));
+        let out_message = out_slot!(out_message);
+        let out_validation_error = out_slot!(out_validation_error);
+        let structure = try_ffi!(owned_payload(structure, Kind::Structure));
+        let HandleValue::Structure(structure) = structure else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        match ResponseMessage::try_from_ttlv(structure) {
+            Ok(message) => {
+                *out_message = try_ffi!(try_make_handle(
+                    Kind::ResponseMessage,
+                    HandleValue::ResponseMessage(Arc::new(message)),
+                ));
+                SUCCESS
+            }
+            Err(error) => {
+                *out_validation_error = try_ffi!(try_make_handle(
+                    Kind::MessageValidationError,
+                    HandleValue::MessageValidationError(error),
+                ));
+                record_ffi_error(ERROR_PROTOCOL)
+            }
+        }
+    })
+}
+
+/// Returns an owned copy of the validated response's original ordered TTLV tree.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_ttlv(
+    message: *mut kmipkit_response_message_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let message = read_handle!(message, ResponseMessage);
+        let HandleValue::ResponseMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(message.with_ttlv(|tree| clone_structure_view(&tree)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns a retained typed view of the validated Response Header.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_header(
+    message: *mut kmipkit_response_message_t,
+    out_header: *mut *mut kmipkit_response_header_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_header);
+        let message = read_handle!(message, ResponseMessage);
+        let HandleValue::ResponseMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::ResponseHeaderView,
+            HandleValue::ResponseHeaderView(Arc::clone(message)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies the response's exact signed Protocol Version pair into `out_version`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_protocol_version(
+    header: *mut kmipkit_response_header_view_t,
+    out_version: *mut crate::kmipkit_protocol_version_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_version);
+        let header = read_handle!(header, ResponseHeaderView);
+        let HandleValue::ResponseHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = message.header().protocol_version();
+        *out = crate::kmipkit_protocol_version_v1_t {
+            major: version.major(),
+            minor: version.minor(),
+        };
+        SUCCESS
+    })
+}
+
+/// Returns the validated Response Header Date-Time unchanged.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_time_stamp(
+    header: *mut kmipkit_response_header_view_t,
+    out_time_stamp: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_time_stamp);
+        let header = read_handle!(header, ResponseHeaderView);
+        let HandleValue::ResponseHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = message.header().time_stamp();
+        SUCCESS
+    })
+}
+
+/// Returns the validated positive Response Header Batch Count.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_batch_count(
+    header: *mut kmipkit_response_header_view_t,
+    out_count: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let header = read_handle!(header, ResponseHeaderView);
+        let HandleValue::ResponseHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = message.header().batch_count();
+        SUCCESS
+    })
+}
+
+/// Returns the number of validated Response Batch Items in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_batch_item_count(
+    message: *mut kmipkit_response_message_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        let message = read_handle!(message, ResponseMessage);
+        let HandleValue::ResponseMessage(message) = &message.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out =
+            try_ffi!(u64::try_from(message.batch_items().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Returns a retained view of the indexed Response Batch Item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_message_batch_item_at(
+    message: *mut kmipkit_response_message_t,
+    index: u64,
+    out_item: *mut *mut kmipkit_response_batch_item_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
+        let message_handle = read_handle!(message, ResponseMessage);
+        let HandleValue::ResponseMessage(message) = &message_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if index >= message.batch_items().len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::ResponseBatchItemView,
+            HandleValue::ResponseBatchItemView {
+                message: Arc::clone(message),
+                index,
+            },
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns the raw Operation Enumeration without narrowing unknown values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_view_operation(
+    item: *mut kmipkit_response_batch_item_view_t,
+    out_present: *mut u8,
+    out_operation: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_operation.cast(), std::mem::size_of::<u32>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let operation_out = scalar_out!(out_operation);
+        *present = 0;
+        *operation_out = 0;
+        let item = read_handle!(item, ResponseBatchItemView);
+        let HandleValue::ResponseBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let operation = message
+            .batch_items()
+            .nth(*index)
+            .and_then(kmipkit_protocol::ResponseBatchItemView::operation);
+        if let Some(operation) = operation {
+            *present = 1;
+            *operation_out = operation;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns the exact raw Result Status Enumeration without narrowing unknown values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_view_result_status(
+    item: *mut kmipkit_response_batch_item_view_t,
+    out_present: *mut u8,
+    out_status: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        try_ffi!(validate_output_regions(&[
+            (out_present.cast(), std::mem::size_of::<u8>()),
+            (out_status.cast(), std::mem::size_of::<u32>()),
+        ]));
+        let present = scalar_out!(out_present);
+        let status_out = scalar_out!(out_status);
+        *present = 0;
+        *status_out = 0;
+        let item = read_handle!(item, ResponseBatchItemView);
+        let HandleValue::ResponseBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let status = message
+            .batch_items()
+            .nth(*index)
+            .and_then(kmipkit_protocol::ResponseBatchItemView::result_status)
+            .map(ResultStatus::raw);
+        if let Some(status) = status {
+            *present = 1;
+            *status_out = status;
         }
         SUCCESS
     })

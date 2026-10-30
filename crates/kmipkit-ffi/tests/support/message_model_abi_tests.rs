@@ -90,7 +90,7 @@ fn valid_pending_response_message_tree() -> Structure {
         message_item(BATCH_COUNT_TAG, Value::integer(1)),
     ]);
     let batch = message_structure([
-        message_item(OPERATION_TAG, Value::enumeration(0xF123_4567)),
+        message_item(OPERATION_TAG, Value::enumeration(0x0000_001A)),
         message_item(RESULT_STATUS_TAG, Value::enumeration(2)),
         message_item(
             ASYNC_CORRELATION_VALUE_TAG,
@@ -316,11 +316,7 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
     let mut validation_error = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_response_message_from_ttlv(
-            structure,
-            &raw mut message,
-            &raw mut validation_error,
-        ),
+        kmipkit_response_message_from_ttlv(structure, &raw mut message, &raw mut validation_error,),
         SUCCESS
     );
     assert!(!message.is_null());
@@ -336,7 +332,10 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
         kmipkit_response_header_view_protocol_version(header, &raw mut version),
         SUCCESS
     );
-    assert_eq!(version, kmipkit_protocol_version_v1_t { major: 2, minor: 1 });
+    assert_eq!(
+        version,
+        kmipkit_protocol_version_v1_t { major: 2, minor: 1 }
+    );
 
     let mut time_stamp = 0_i64;
     assert_eq!(
