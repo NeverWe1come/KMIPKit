@@ -517,7 +517,7 @@ fn validate_protocol_version(
 fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
-    batch_count: i32,
+    _batch_count: i32,
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
     validate_fields(
         view.children(),
@@ -530,13 +530,6 @@ fn validate_request_batch_item(
         .iter()
         .find(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
         .and_then(byte_string_value);
-    if batch_count > 1 && id.is_none() {
-        return Err(error(
-            MessageValidationErrorKind::MissingRequiredField,
-            Some(top_index),
-            None,
-        ));
-    }
     for (index, child) in view.children().iter().enumerate() {
         if child.tag().raw() == MESSAGE_EXTENSION {
             with_structure(child, top_index, Some(index), |view| {

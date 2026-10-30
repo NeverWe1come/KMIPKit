@@ -388,7 +388,7 @@ mod tests {
     }
 
     #[test]
-    fn request_batch_validation_covers_required_fields_ids_and_extensions() {
+    fn request_batch_validation_covers_required_fields_optional_ids_and_extensions() {
         let valid = request_batch();
         assert_eq!(
             validate_request_batch_item(&valid.view(), 1, 1).expect("batch valid"),
@@ -419,9 +419,11 @@ mod tests {
             item(OPERATION, Value::enumeration(1)),
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
-        assert_kind(
-            validate_request_batch_item(&missing_id.view(), 1, 2),
-            MessageValidationErrorKind::MissingRequiredField,
+        // KMIP Specification v2.1 §9.21 makes Unique Batch Item ID optional.
+        assert_eq!(
+            validate_request_batch_item(&missing_id.view(), 1, 2)
+                .expect("a request batch item may omit its optional ID"),
+            None
         );
         let wrong_id = structure([
             item(OPERATION, Value::enumeration(1)),
