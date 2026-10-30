@@ -6987,3 +6987,10 @@ The global T091 reconciliation test still fails while candidates remain: 1,351 a
 | Refactor/evidence — synchronize the pinned shared-inventory baseline | this commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_shared_rust_inventory`; three focused Discover Versions manifest contracts; shared Rust inventory audit `--check`; generator `--check`; `git diff --check` | Pass: all 16 shared inventory tests and all three Discover Versions mapping/exclusion contracts pass. The generator verifies all 12 outputs, and the shared inventory report is current at 435 mapped shared declarations, 931 exact exclusions, 22 approved Rust-only transport declarations, and two unrelated blocked namespaces. T091 still has 1,178 unresolved candidate declarations outside this slice. |
 
 The five mappings retain the Rust declarations in their owning `kmipkit-protocol` package and map their behavior to the existing C, Java, and Python client surfaces. The error exclusions retain only the sanitized cross-language error contract; no payload or per-variant error detail is exposed. T091 remains incomplete with 1,178 candidate declarations still unresolved outside this Discover Versions slice.
+
+
+### T091 facade batch-response mapping (2026-10-30)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require exact facade reexport mappings | this commit | `uv run --offline --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest -v tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_t091_facade_batch_response_reexports_map_to_existing_parity_surface` | Expected failure: the five public facade declarations remain blocked even though the client crate already has the declared C, Java, and Python batch-response surface. |

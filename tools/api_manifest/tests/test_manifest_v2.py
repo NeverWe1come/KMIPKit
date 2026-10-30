@@ -1660,6 +1660,45 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 if "DiscoverVersionsError" in export_name:
                     self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
 
+    def test_t091_facade_batch_response_reexports_map_to_existing_parity_surface(self) -> None:
+        expected_sources = {
+            "kmipkit::ClientBatchResponse": "kmipkit_client::ClientBatchResponse",
+            "kmipkit::ClientBatchResponse::len": "kmipkit_client::ClientBatchResponse::len",
+            "kmipkit::ClientBatchResponse::is_empty": "kmipkit_client::ClientBatchResponse::len",
+            "kmipkit::ClientBatchResponse::get": "kmipkit_client::ClientBatchResponse::get",
+            "kmipkit::ClientBatchResponse::iter": "kmipkit_client::ClientBatchResponse::get",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for facade_name, client_name in expected_sources.items():
+            facade = declarations[facade_name]
+            client = declarations[client_name]
+            with self.subTest(export=facade_name):
+                self.assertEqual("declared", facade["declarationState"])
+                self.assertEqual("client_execution", facade["capabilityId"])
+                self.assertNotIn("candidateSpecId", facade)
+                self.assertEqual(client["requirementIds"], facade["requirementIds"])
+                self.assertEqual(client["approvalSource"], facade["approvalSource"])
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in client["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": "rust-kmipkit",
+                    "name": facade_name,
+                }
+                self.assertEqual(expected_mappings, facade["languageMappings"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_client_execution_candidate_exports_are_reconciled(self) -> None:
         unresolved = [
             row["exportName"]
