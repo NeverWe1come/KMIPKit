@@ -2421,6 +2421,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientOperation::Pkcs11",
     ),
     (
+        "rust-observed-8a97c84f665c60d4b3c4",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::Check",
+    ),
+    (
         "rust-observed-f64599d7d04fbe0202f8",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Pkcs11",

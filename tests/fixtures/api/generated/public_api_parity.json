@@ -54900,7 +54900,8 @@
           "rust-observed-3b942de7e654e6442cae",
           "rust-observed-503ffe823ed9d9d46964",
           "rust-observed-d94f87ac743f24345f2e",
-          "rust-observed-f729e1072f0b7754dc97"
+          "rust-observed-f729e1072f0b7754dc97",
+          "rust-observed-8a97c84f665c60d4b3c4"
         ]
       },
       "featureSpecId": "KMIPKIT-0036",
@@ -100679,6 +100680,66 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
+      "declarationId": "rust-observed-8a97c84f665c60d4b3c4",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientRequest::Check",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_check",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.check",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_check",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::Check",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.7-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-003",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.7-005"
       ]
     },
     {
