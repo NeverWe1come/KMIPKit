@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable, Iterable
+from pathlib import Path
 
 import pytest
 from kmipkit import messages, ttlv
@@ -30,6 +32,20 @@ _VENDOR_IDENTIFICATION = 0x0042_009D
 _CRITICALITY_INDICATOR = 0x0042_0026
 _VENDOR_EXTENSION = 0x0042_009C
 _SERVER_HASHED_PASSWORD = 0x0042_0155
+_ROOT = Path(__file__).resolve().parents[3]
+_SHARED_PARITY_FIXTURE = _ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+_TYPED_MESSAGE_CASE_ID = "typed-message.ordered-open-values-and-lifetime.v1"
+
+
+def test_typed_message_model_is_declared_as_a_shared_four_language_fixture() -> None:
+    fixture = json.loads(_SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+    case = next(
+        (item for item in fixture["cases"] if item["id"] == _TYPED_MESSAGE_CASE_ID),
+        None,
+    )
+
+    assert case is not None
+    assert set(case["consumerTests"]) == {"rust", "c", "java", "python"}
 
 
 def _item(raw_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:

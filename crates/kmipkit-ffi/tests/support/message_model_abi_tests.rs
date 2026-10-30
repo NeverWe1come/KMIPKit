@@ -1,6 +1,9 @@
 use super::*;
 use crate::kmipkit_protocol_version_v1_t;
 
+const SHARED_PARITY_FIXTURE: &str =
+    include_str!("../../../../tests/fixtures/api/shared-capability-parity.json");
+
 #[link(name = "kmipkit_message_model_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_message_model_c_consumer_validate_request(
@@ -47,6 +50,13 @@ fn message_structure(items: impl IntoIterator<Item = Item>) -> Structure {
             .expect("the fixture stays within TTLV limits");
     }
     structure
+}
+
+#[test]
+fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
+    assert!(SHARED_PARITY_FIXTURE.contains(
+        "\"id\": \"typed-message.ordered-open-values-and-lifetime.v1\""
+    ));
 }
 
 fn assert_structure_tags(

@@ -61,6 +61,12 @@ final class SharedCapabilityParityFixtureTest {
     }
 
     @Test
+    void typedMessageModelFixtureIsPresentForCrossLanguageConsumers() throws IOException {
+        String fixture = Files.readString(sharedFixturePath());
+        assertTrue(caseIds(fixture).contains("typed-message.ordered-open-values-and-lifetime.v1"));
+    }
+
+    @Test
     void everyAvailableJavaFixtureMappingHasAnAdvertisedNativeCapability() throws IOException {
         String fixture = Files.readString(sharedFixturePath());
         for (String id : caseIds(fixture)) {
