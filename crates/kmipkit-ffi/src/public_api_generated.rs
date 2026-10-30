@@ -2390,6 +2390,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::RequestOptions",
     ),
     (
+        "rust-observed-0af220bf3522b70202d8",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchResponse",
+    ),
+    (
         "rust-observed-22976759b915f2710e42",
         "rust-kmipkit",
         "kmipkit::RequestOptions",
@@ -2413,6 +2418,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-fae93329ebba67388cb9",
         "rust-kmipkit",
         "kmipkit::ClientBatchItem::query",
+    ),
+    (
+        "rust-observed-b97437899f24653db40c",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchResponse::len",
+    ),
+    (
+        "rust-observed-5cc28344b96fd4d29787",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchResponse::is_empty",
+    ),
+    (
+        "rust-observed-49eb8d88b4c32c4c4a2f",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchResponse::get",
+    ),
+    (
+        "rust-observed-5d6de06013f3e62645a1",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchResponse::iter",
     ),
     (
         "rust-observed-29383d8d0499ca959dc8",

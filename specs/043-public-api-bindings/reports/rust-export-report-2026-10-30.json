@@ -277377,7 +277377,7 @@
         "kmipkit::ClientBatchResponse",
         "kmipkit_client::ClientBatchResponse"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -277400,7 +277400,7 @@
         "kmipkit::ClientBatchResponse::get",
         "kmipkit_client::ClientBatchResponse::get"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -277423,7 +277423,7 @@
         "kmipkit::ClientBatchResponse::is_empty",
         "kmipkit_client::ClientBatchResponse::is_empty"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -277446,7 +277446,7 @@
         "kmipkit::ClientBatchResponse::iter",
         "kmipkit_client::ClientBatchResponse::iter"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -277469,7 +277469,7 @@
         "kmipkit::ClientBatchResponse::len",
         "kmipkit_client::ClientBatchResponse::len"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
