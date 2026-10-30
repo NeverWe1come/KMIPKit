@@ -86,6 +86,10 @@ use kmipkit_ttlv::codec::{CodecLimits, DecodeErrorKind, decode_with_limits};
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::time::Duration;
 
+const REQUEST_HEADER_TAG_RAW: u32 = 0x0042_0077;
+const RESPONSE_HEADER_TAG_RAW: u32 = 0x0042_007A;
+const BATCH_ITEM_TAG_RAW: u32 = 0x0042_000F;
+
 #[cfg(test)]
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
@@ -1293,6 +1297,48 @@ fn clone_structure_view(structure: &kmipkit_ttlv::StructureView<'_>) -> FfiResul
         clone.try_push(clone_item(item)?).map_err(model_status)?;
     }
     Ok(clone)
+}
+
+fn clone_root_structure_field(
+    tree: &kmipkit_ttlv::StructureView<'_>,
+    tag: u32,
+) -> FfiResult<Structure> {
+    let cloned = tree
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == tag)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                ValueView::Structure(structure) => Some(clone_structure_view(&structure)),
+                _ => None,
+            })
+        });
+    match cloned {
+        Some(result) => result,
+        None => Err(ERROR_PROTOCOL),
+    }
+}
+
+fn clone_nth_root_structure_field(
+    tree: &kmipkit_ttlv::StructureView<'_>,
+    tag: u32,
+    index: usize,
+) -> FfiResult<Structure> {
+    let cloned = tree
+        .children()
+        .iter()
+        .filter(|item| item.tag().raw() == tag)
+        .nth(index)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                ValueView::Structure(structure) => Some(clone_structure_view(&structure)),
+                _ => None,
+            })
+        });
+    match cloned {
+        Some(result) => result,
+        None => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 fn derive_key_parameters_from_handle(
@@ -6806,6 +6852,29 @@ pub extern "C" fn kmipkit_request_message_header(
     })
 }
 
+/// Returns an owned generic TTLV copy of the complete Request Header in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_header_view_ttlv(
+    header: *mut kmipkit_request_header_view_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let header = read_handle!(header, RequestHeaderView);
+        let HandleValue::RequestHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(
+            message.with_ttlv(|tree| { clone_root_structure_field(&tree, REQUEST_HEADER_TAG_RAW) })
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        SUCCESS
+    })
+}
+
 /// Copies the request's exact signed Protocol Version pair into `out_version`.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_request_header_view_protocol_version(
@@ -6885,6 +6954,29 @@ pub extern "C" fn kmipkit_request_message_batch_item_at(
                 message: Arc::clone(message),
                 index,
             },
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns an owned generic TTLV copy of one Request Batch Item in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_request_batch_item_view_ttlv(
+    item: *mut kmipkit_request_batch_item_view_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let item = read_handle!(item, RequestBatchItemView);
+        let HandleValue::RequestBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(message.with_ttlv(|tree| {
+            clone_nth_root_structure_field(&tree, BATCH_ITEM_TAG_RAW, *index)
+        }));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
         ));
         SUCCESS
     })
@@ -7014,6 +7106,30 @@ pub extern "C" fn kmipkit_response_message_header(
     })
 }
 
+/// Returns an owned generic TTLV copy of the complete Response Header in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_header_view_ttlv(
+    header: *mut kmipkit_response_header_view_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let header = read_handle!(header, ResponseHeaderView);
+        let HandleValue::ResponseHeaderView(message) = &header.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(
+            message
+                .with_ttlv(|tree| { clone_root_structure_field(&tree, RESPONSE_HEADER_TAG_RAW) })
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        SUCCESS
+    })
+}
+
 /// Copies the response's exact signed Protocol Version pair into `out_version`.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_response_header_view_protocol_version(
@@ -7110,6 +7226,29 @@ pub extern "C" fn kmipkit_response_message_batch_item_at(
                 message: Arc::clone(message),
                 index,
             },
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns an owned generic TTLV copy of one Response Batch Item in source order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_response_batch_item_view_ttlv(
+    item: *mut kmipkit_response_batch_item_view_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let item = read_handle!(item, ResponseBatchItemView);
+        let HandleValue::ResponseBatchItemView { message, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let structure = try_ffi!(message.with_ttlv(|tree| {
+            clone_nth_root_structure_field(&tree, BATCH_ITEM_TAG_RAW, *index)
+        }));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
         ));
         SUCCESS
     })

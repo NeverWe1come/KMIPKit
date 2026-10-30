@@ -39,6 +39,71 @@ fn message_structure(items: impl IntoIterator<Item = Item>) -> Structure {
     structure
 }
 
+fn assert_structure_tags(
+    handle: *mut crate::kmipkit_ttlv_structure_t,
+    expected_tags: &[u32],
+) -> Arc<Handle> {
+    let structure_handle =
+        reference_handle(handle, Kind::Structure).expect("the accessor returns a Structure");
+    let HandleValue::Structure(structure) = &structure_handle.value else {
+        panic!("the accessor returns a Structure");
+    };
+    assert_eq!(
+        structure
+            .view()
+            .children()
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        expected_tags
+    );
+    structure_handle
+}
+
+fn assert_response_extension_is_lossless(
+    batch_item: *mut crate::kmipkit_response_batch_item_view_t,
+) {
+    let mut extension_count = 0_u64;
+    assert_eq!(
+        kmipkit_response_batch_item_extension_count(batch_item, &raw mut extension_count),
+        SUCCESS
+    );
+    assert_eq!(extension_count, 1);
+    let mut extension_view: *mut crate::kmipkit_message_extension_view_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_response_batch_item_extension_at(batch_item, 0, &raw mut extension_view),
+        SUCCESS
+    );
+    let mut extension_ttlv: *mut crate::kmipkit_ttlv_structure_t = ptr::null_mut();
+    assert_eq!(
+        kmipkit_message_extension_view_ttlv(extension_view, &raw mut extension_ttlv),
+        SUCCESS
+    );
+    let extension_handle = assert_structure_tags(
+        extension_ttlv,
+        &[
+            VENDOR_IDENTIFICATION_TAG,
+            CRITICALITY_INDICATOR_TAG,
+            VENDOR_EXTENSION_TAG,
+        ],
+    );
+    let HandleValue::Structure(extension_tree) = &extension_handle.value else {
+        panic!("the extension TTLV accessor returns a Structure");
+    };
+    let vendor_value = extension_tree.view().children()[2].with_value(|value| match value {
+        ValueView::Structure(vendor_extension) => {
+            vendor_extension.children()[0].with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                _ => None,
+            })
+        }
+        _ => None,
+    });
+    assert_eq!(vendor_value, Some(vec![0x00, 0xFE, 0x80]));
+    kmipkit_ttlv_structure_release(extension_ttlv);
+    kmipkit_message_extension_view_release(extension_view);
+}
+
 fn valid_request_message_tree() -> Structure {
     let version = message_structure([
         message_item(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
@@ -159,20 +224,7 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
         kmipkit_request_header_view_ttlv(header, &raw mut header_ttlv),
         SUCCESS
     );
-    let header_tree = reference_handle(header_ttlv, Kind::Structure)
-        .expect("the request header accessor returns an owned generic Structure");
-    let HandleValue::Structure(header_tree) = &header_tree.value else {
-        panic!("the request header accessor returns a Structure");
-    };
-    assert_eq!(
-        header_tree
-            .view()
-            .children()
-            .iter()
-            .map(|item| item.tag().raw())
-            .collect::<Vec<_>>(),
-        [PROTOCOL_VERSION_TAG, BATCH_COUNT_TAG]
-    );
+    let _header_tree = assert_structure_tags(header_ttlv, &[PROTOCOL_VERSION_TAG, BATCH_COUNT_TAG]);
     kmipkit_ttlv_structure_release(header_ttlv);
 
     let mut batch_count = 0_i32;
@@ -199,20 +251,7 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
         kmipkit_request_batch_item_view_ttlv(batch_item, &raw mut batch_item_ttlv),
         SUCCESS
     );
-    let batch_tree = reference_handle(batch_item_ttlv, Kind::Structure)
-        .expect("the request item accessor returns an owned generic Structure");
-    let HandleValue::Structure(batch_tree) = &batch_tree.value else {
-        panic!("the request item accessor returns a Structure");
-    };
-    assert_eq!(
-        batch_tree
-            .view()
-            .children()
-            .iter()
-            .map(|item| item.tag().raw())
-            .collect::<Vec<_>>(),
-        [OPERATION_TAG, REQUEST_PAYLOAD_TAG]
-    );
+    let _batch_tree = assert_structure_tags(batch_item_ttlv, &[OPERATION_TAG, REQUEST_PAYLOAD_TAG]);
     kmipkit_ttlv_structure_release(batch_item_ttlv);
     let mut has_operation = u8::MAX;
     let mut operation = 0;
@@ -232,20 +271,13 @@ fn request_message_handle_exposes_validated_header_and_open_operation() {
         kmipkit_request_message_ttlv(message, &raw mut original_ttlv),
         SUCCESS
     );
-    let original_ttlv_handle = reference_handle(original_ttlv, Kind::Structure)
-        .expect("the message TTLV copy is an owned generic Structure");
+    let original_ttlv_handle =
+        assert_structure_tags(original_ttlv, &[REQUEST_HEADER_TAG, BATCH_ITEM_TAG]);
     let HandleValue::Structure(original_tree) = &original_ttlv_handle.value else {
         panic!("the message TTLV accessor returns a Structure");
     };
     let original_view = original_tree.view();
     let root_items = original_view.children();
-    assert_eq!(
-        root_items
-            .iter()
-            .map(|item| item.tag().raw())
-            .collect::<Vec<_>>(),
-        [REQUEST_HEADER_TAG, BATCH_ITEM_TAG]
-    );
     let raw_operation = root_items[1].with_value(|batch| match batch {
         ValueView::Structure(batch) => {
             batch.children()[0].with_value(|operation| match operation {
@@ -401,19 +433,9 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
         kmipkit_response_header_view_ttlv(header, &raw mut header_ttlv),
         SUCCESS
     );
-    let response_header_tree = reference_handle(header_ttlv, Kind::Structure)
-        .expect("the response header accessor returns an owned generic Structure");
-    let HandleValue::Structure(response_header_tree) = &response_header_tree.value else {
-        panic!("the response header accessor returns a Structure");
-    };
-    assert_eq!(
-        response_header_tree
-            .view()
-            .children()
-            .iter()
-            .map(|item| item.tag().raw())
-            .collect::<Vec<_>>(),
-        [PROTOCOL_VERSION_TAG, TIME_STAMP_TAG, BATCH_COUNT_TAG]
+    let _response_header_tree = assert_structure_tags(
+        header_ttlv,
+        &[PROTOCOL_VERSION_TAG, TIME_STAMP_TAG, BATCH_COUNT_TAG],
     );
     kmipkit_ttlv_structure_release(header_ttlv);
 
@@ -441,24 +463,14 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
         kmipkit_response_batch_item_view_ttlv(batch_item, &raw mut batch_item_ttlv),
         SUCCESS
     );
-    let response_batch_tree = reference_handle(batch_item_ttlv, Kind::Structure)
-        .expect("the response item accessor returns an owned generic Structure");
-    let HandleValue::Structure(response_batch_tree) = &response_batch_tree.value else {
-        panic!("the response item accessor returns a Structure");
-    };
-    assert_eq!(
-        response_batch_tree
-            .view()
-            .children()
-            .iter()
-            .map(|item| item.tag().raw())
-            .collect::<Vec<_>>(),
-        [
+    let _response_batch_tree = assert_structure_tags(
+        batch_item_ttlv,
+        &[
             OPERATION_TAG,
             RESULT_STATUS_TAG,
             ASYNC_CORRELATION_VALUE_TAG,
-            MESSAGE_EXTENSION_TAG
-        ]
+            MESSAGE_EXTENSION_TAG,
+        ],
     );
     kmipkit_ttlv_structure_release(batch_item_ttlv);
     let mut has_status = u8::MAX;
@@ -474,40 +486,7 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
     assert_eq!(has_status, 1);
     assert_eq!(raw_status, 2);
 
-    let mut extension_count = 0_u64;
-    assert_eq!(
-        kmipkit_response_batch_item_extension_count(batch_item, &raw mut extension_count),
-        SUCCESS
-    );
-    assert_eq!(extension_count, 1);
-    let mut extension_view: *mut crate::kmipkit_message_extension_view_t = ptr::null_mut();
-    assert_eq!(
-        kmipkit_response_batch_item_extension_at(batch_item, 0, &raw mut extension_view),
-        SUCCESS
-    );
-    let mut extension_ttlv: *mut crate::kmipkit_ttlv_structure_t = ptr::null_mut();
-    assert_eq!(
-        kmipkit_message_extension_view_ttlv(extension_view, &raw mut extension_ttlv),
-        SUCCESS
-    );
-    let extension_handle = reference_handle(extension_ttlv, Kind::Structure)
-        .expect("the extension TTLV accessor returns an owned generic Structure");
-    let HandleValue::Structure(extension_tree) = &extension_handle.value else {
-        panic!("the extension TTLV accessor returns a Structure");
-    };
-    let vendor_value = extension_tree.view().children()[2].with_value(|value| match value {
-        ValueView::Structure(vendor_extension) => {
-            vendor_extension.children()[0].with_value(|value| match value {
-                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
-                _ => None,
-            })
-        }
-        _ => None,
-    });
-    assert_eq!(vendor_value, Some(vec![0x00, 0xFE, 0x80]));
-
-    kmipkit_ttlv_structure_release(extension_ttlv);
-    kmipkit_message_extension_view_release(extension_view);
+    assert_response_extension_is_lossless(batch_item);
     kmipkit_response_batch_item_release(batch_item);
     kmipkit_response_header_view_release(header);
     kmipkit_response_message_release(message);
