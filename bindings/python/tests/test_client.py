@@ -1552,6 +1552,34 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
         create_attributes.close()
         create_masks.close()
 
+    key_pair_case = next(
+        case for case in fixture_cases if case["id"] == "creation.key-pair.request-response.v1"
+    )
+    key_pair_input = key_pair_case["input"]
+    assert key_pair_input["effectiveTable191ValuesEqual"] is True
+    key_pair_structures = [
+        _fixture_attribute_structure(key_pair_input[group]["attributeTagsInOrder"])
+        for group in ("commonAttributes", "privateKeyAttributes", "publicKeyAttributes")
+    ]
+    key_pair_common_masks = ttlv.ttlv_structure_create()
+    key_pair_public_masks = ttlv.ttlv_structure_create()
+    key_pair_request = None
+    try:
+        key_pair_request = extensions.client_batch_item_create_key_pair(
+            *key_pair_structures,
+            key_pair_common_masks,
+            None,
+            key_pair_public_masks,
+        )
+        assert key_pair_request is not None
+    finally:
+        if key_pair_request is not None:
+            key_pair_request.close()
+        for structure in key_pair_structures:
+            structure.close()
+        key_pair_common_masks.close()
+        key_pair_public_masks.close()
+
     fixtures = {
         case["id"]: case["expectedOutput"]
         for case in fixture_cases
@@ -1690,12 +1718,16 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
 
         key_pair_expected = fixtures["creation.key-pair.request-response.v1"]
         key_pair_item = result.items[2]
+        assert key_pair_item.result_status == key_pair_expected["resultStatus"]
+        assert key_pair_item.result_message is key_pair_expected["resultMessage"]
         assert key_pair_item.private_key_unique_identifier == extensions.UniqueIdentifier.enumeration(
             key_pair_expected["privateUniqueIdentifier"]["enumeration"]
         )
+        assert key_pair_expected["privateUniqueIdentifier"]["wireType"] == "Enumeration"
         assert key_pair_item.public_key_unique_identifier == extensions.UniqueIdentifier.text_string(
             key_pair_expected["publicUniqueIdentifier"]["text"]
         )
+        assert key_pair_expected["publicUniqueIdentifier"]["wireType"] == "TextString"
 
         split_expected = fixtures["creation.split-key.request-response.v1"]
         split_item = result.items[3]
@@ -1710,6 +1742,37 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
         )
     finally:
         result.close()
+
+
+def _fixture_attribute_structure(tags: list[str]) -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+    structure = ttlv.ttlv_structure_create()
+    try:
+        for raw_tag in tags:
+            unvalidated_tag = ttlv.raw_tag_from_raw(int(raw_tag, 16))
+            tag = None
+            value = None
+            item = None
+            try:
+                tag = ttlv.raw_tag_try_checked(unvalidated_tag)
+                value = ttlv.ttlv_value_enumeration(0xDEADBEEF)
+                item = ttlv.ttlv_item_create(tag, value, limits)
+                structure = ttlv.ttlv_structure_with_item(structure, item, limits)
+            finally:
+                if item is not None:
+                    item.close()
+                if value is not None:
+                    value.close()
+                if tag is not None:
+                    tag.close()
+                unvalidated_tag.close()
+        result = structure
+        structure = None
+        return result
+    finally:
+        if structure is not None:
+            structure.close()
+        limits.close()
 
     assert released == ["item", "item", "item", "item", "response"]
 

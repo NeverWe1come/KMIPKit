@@ -762,8 +762,8 @@
       "consumerTests": {
         "rust": {
           "status": "available",
-          "testFile": "crates/kmipkit-client/tests/creation_parity_tests.rs",
-          "test": "create_key_pair_request_and_result_match_shared_creation_fixture"
+          "testFile": "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs",
+          "test": "create_key_pair_maps_shared_fixture_over_one_exchange"
         },
         "c": {
           "status": "available",
@@ -773,21 +773,22 @@
           {
             "language": "rust",
             "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-            "test": "generated_public_client_abi_consumer_compiles_and_runs",
+            "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
             "assertions": [
-              "create-key-pair-constructor-callable"
+              "fixture-key-pair-request-preserves-attribute-groups-and-mask-absence",
+              "fixture-key-pair-response-preserves-enumeration-and-text-identifiers"
             ]
           }
         ]
         },
         "java": {
           "status": "available",
-          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#creationKeyPairMatchesSharedFixture"
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange"
         },
         "python": {
           "status": "available",
-          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
-          "test": "test_creation_key_pair_matches_shared_fixture"
+          "testFile": "bindings/python/tests/test_client.py",
+          "test": "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message"
         }
       }
     },

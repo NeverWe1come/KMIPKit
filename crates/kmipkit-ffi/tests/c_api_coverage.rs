@@ -926,6 +926,20 @@ fn run_generated_public_client_abi_consumer(
         .iter()
         .find(|case| case["id"] == "creation.create.request-response.v1")
         .expect("the Create fixture case exists");
+    let create_key_pair_case = fixture["cases"]
+        .as_array()
+        .expect("the shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "creation.key-pair.request-response.v1")
+        .expect("the Create Key Pair fixture case exists");
+    let create_key_pair_expected = &create_key_pair_case["expectedOutput"];
+    assert_eq!(create_key_pair_expected["resultStatus"].as_u64(), Some(0));
+    assert!(create_key_pair_expected["resultMessage"].is_null());
+    assert!(
+        create_key_pair_expected["resultMessagePresencePreserved"]
+            .as_bool()
+            .expect("fixture result-message presence is Boolean")
+    );
     let create_input = create_case["input"].clone();
     let creation_failure_case = creation_failure_case_override;
     let server_result_message = CString::new(
@@ -1053,6 +1067,8 @@ fn run_generated_public_client_abi_consumer(
         fixture_versions.clone(),
         server_result_message.as_bytes().to_vec(),
         create_input,
+        create_key_pair_case["input"].clone(),
+        create_key_pair_expected.clone(),
     );
 
     let executable = CString::new("kmipkit_public_client_consumer")
@@ -1151,6 +1167,8 @@ fn spawn_public_client_batch_peer(
     fixture_versions: Vec<(i32, i32)>,
     failure_message: Vec<u8>,
     create_input: serde_json::Value,
+    create_key_pair_input: serde_json::Value,
+    create_key_pair_expected: serde_json::Value,
 ) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         let (stream, _) = listener
@@ -1171,6 +1189,10 @@ fn spawn_public_client_batch_peer(
         assert!(
             c_request_contains_create_fixture(&request, &create_input),
             "compiled C consumer must transmit the Create request represented by the shared fixture"
+        );
+        assert!(
+            c_request_contains_create_key_pair_fixture(&request, &create_key_pair_input),
+            "compiled C consumer must transmit the Create Key Pair request represented by the shared fixture"
         );
         assert!(
             c_request_contains_large_query(&request),
@@ -1207,10 +1229,143 @@ fn spawn_public_client_batch_peer(
         tls.write_all(&mixed_discover_versions_response(
             &fixture_versions,
             &failure_message,
+            &create_key_pair_expected,
         ))
         .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
+    })
+}
+
+fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const CREATE_KEY_PAIR: u32 = 2;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
+    const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
+    const COMMON_MASKS: u32 = 0x0042_0163;
+    const PRIVATE_MASKS: u32 = 0x0042_0164;
+    const PUBLIC_MASKS: u32 = 0x0042_0165;
+
+    fn fixture_tags(input: &serde_json::Value, field: &str) -> Option<Vec<u32>> {
+        input[field]["attributeTagsInOrder"]
+            .as_array()?
+            .iter()
+            .map(|tag| u32::from_str_radix(tag.as_str()?.strip_prefix("0x")?, 16).ok())
+            .collect()
+    }
+
+    if input["operation"] != "Create Key Pair"
+        || input["effectiveTable191ValuesEqual"].as_bool() != Some(true)
+    {
+        return false;
+    }
+    let Some(common_tags) = fixture_tags(input, "commonAttributes") else {
+        return false;
+    };
+    let Some(private_tags) = fixture_tags(input, "privateKeyAttributes") else {
+        return false;
+    };
+    let Some(public_tags) = fixture_tags(input, "publicKeyAttributes") else {
+        return false;
+    };
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut matching = message.children().iter().filter(|item| {
+            item.tag().raw() == BATCH_ITEM
+                && item.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return false;
+                    };
+                    batch_item.children().iter().any(|field| {
+                        field.tag().raw() == OPERATION
+                            && field.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == CREATE_KEY_PAIR)
+                            })
+                    })
+                })
+        });
+        let Some(batch_item) = matching.next() else {
+            return false;
+        };
+        if matching.next().is_some() {
+            return false;
+        }
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let Some(payload) = batch_item.children().iter().find(|field| {
+                field.tag().raw() == REQUEST_PAYLOAD
+            }) else {
+                return false;
+            };
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return false;
+                };
+                let expected = [
+                    (COMMON_ATTRIBUTES, Some(common_tags.as_slice())),
+                    (PRIVATE_KEY_ATTRIBUTES, Some(private_tags.as_slice())),
+                    (PUBLIC_KEY_ATTRIBUTES, Some(public_tags.as_slice())),
+                    (
+                        COMMON_MASKS,
+                        input["protectionStorageMasks"]["commonPresent"]
+                            .as_bool()
+                            .filter(|present| *present)
+                            .map(|_| [].as_slice()),
+                    ),
+                    (
+                        PRIVATE_MASKS,
+                        input["protectionStorageMasks"]["privatePresent"]
+                            .as_bool()
+                            .filter(|present| *present)
+                            .map(|_| [].as_slice()),
+                    ),
+                    (
+                        PUBLIC_MASKS,
+                        input["protectionStorageMasks"]["publicPresent"]
+                            .as_bool()
+                            .filter(|present| *present)
+                            .map(|_| [].as_slice()),
+                    ),
+                ]
+                .into_iter()
+                .filter_map(|(tag, child_tags)| child_tags.map(|child_tags| (tag, child_tags)))
+                .collect::<Vec<_>>();
+                payload.children().len() == expected.len()
+                    && payload
+                        .children()
+                        .iter()
+                        .zip(expected)
+                        .all(|(actual, (tag, child_tags))| {
+                            actual.tag().raw() == tag
+                                && actual.with_value(|value| {
+                                    let ValueView::Structure(actual_group) = value else {
+                                        return false;
+                                    };
+                                    actual_group
+                                        .children()
+                                        .iter()
+                                        .map(|child| child.tag().raw())
+                                        .eq(child_tags.iter().copied())
+                                        && (child_tags.is_empty()
+                                            || actual_group.children().iter().all(|child| {
+                                                child.with_value(|value| {
+                                                    matches!(value, ValueView::Enumeration(raw) if *raw == 0xdead_beef)
+                                                })
+                                            }))
+                                })
+                        })
+            })
+        })
     })
 }
 
@@ -2610,6 +2765,7 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 fn mixed_discover_versions_response(
     fixture_versions: &[(i32, i32)],
     failure_message: &[u8],
+    create_key_pair_expected: &serde_json::Value,
 ) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -2637,7 +2793,10 @@ fn mixed_discover_versions_response(
         0x0042_007B,
         std::iter::once(header)
             .chain(discover_version_response_items(response_payload))
-            .chain(creation_response_items(failure_message))
+            .chain(creation_response_items(
+                failure_message,
+                create_key_pair_expected,
+            ))
             .chain(cryptographic_response_items())
             .chain([
                 derive_key_response_item(),
@@ -3048,16 +3207,30 @@ fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
     ]
 }
 
-fn creation_response_items(failure_message: &[u8]) -> [Vec<u8>; 4] {
+fn creation_response_items(
+    failure_message: &[u8],
+    create_key_pair_expected: &serde_json::Value,
+) -> [Vec<u8>; 4] {
     let create_payload = structure(
         0x0042_007C,
         [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
     );
+    let private_identifier = &create_key_pair_expected["privateUniqueIdentifier"];
+    assert_eq!(private_identifier["wireType"], "Enumeration");
+    let private_enumeration = private_identifier["enumeration"]
+        .as_u64()
+        .and_then(|value| u32::try_from(value).ok())
+        .expect("fixture private key identifier is a U32 Enumeration");
+    let public_identifier = &create_key_pair_expected["publicUniqueIdentifier"];
+    assert_eq!(public_identifier["wireType"], "TextString");
+    let public_text = public_identifier["text"]
+        .as_str()
+        .expect("fixture public key identifier is a TextString");
     let create_key_pair_payload = structure(
         0x0042_007C,
         [
-            enumeration(0x0042_0066, u32::MAX),
-            ttlv_item(0x0042_006F, 0x07, "public-key-α".as_bytes()),
+            enumeration(0x0042_0066, private_enumeration),
+            ttlv_item(0x0042_006F, 0x07, public_text.as_bytes()),
         ],
     );
     let create_split_key_payload = structure(

@@ -1033,6 +1033,34 @@ final class ClientFacadeTlsIntegrationTest {
         String createExpected = SharedCapabilityParityFixtureTest.objectField(createCase, "expectedOutput");
         String createIdentifier = SharedCapabilityParityFixtureTest.objectField(createExpected, "uniqueIdentifier");
         long createObjectType = SharedCapabilityParityFixtureTest.numberField(createInput, "objectType");
+        String keyPairCase = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "creation.key-pair.request-response.v1");
+        String keyPairInput = SharedCapabilityParityFixtureTest.objectField(keyPairCase, "input");
+        String keyPairExpected = SharedCapabilityParityFixtureTest.objectField(keyPairCase, "expectedOutput");
+        String keyPairPrivateIdentifier = SharedCapabilityParityFixtureTest.objectField(
+                keyPairExpected, "privateUniqueIdentifier");
+        String keyPairPublicIdentifier = SharedCapabilityParityFixtureTest.objectField(
+                keyPairExpected, "publicUniqueIdentifier");
+        List<String> keyPairCommonTags = SharedCapabilityParityFixtureTest.stringArrayField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "commonAttributes"),
+                "attributeTagsInOrder");
+        List<String> keyPairPrivateTags = SharedCapabilityParityFixtureTest.stringArrayField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "privateKeyAttributes"),
+                "attributeTagsInOrder");
+        List<String> keyPairPublicTags = SharedCapabilityParityFixtureTest.stringArrayField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "publicKeyAttributes"),
+                "attributeTagsInOrder");
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                keyPairInput, "effectiveTable191ValuesEqual")));
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "protectionStorageMasks"),
+                "commonPresent")));
+        assertFalse(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "protectionStorageMasks"),
+                "privatePresent")));
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                SharedCapabilityParityFixtureTest.objectField(keyPairInput, "protectionStorageMasks"),
+                "publicPresent")));
         assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
                 createInput, "attributesPresent")));
         assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
@@ -1112,9 +1140,11 @@ final class ClientFacadeTlsIntegrationTest {
                 Client client = Client.create(extensions, transport);
                 TtlvStructure createAttributes = TtlvStructure.create();
                 TtlvStructure createMasks = TtlvStructure.create();
-                TtlvStructure commonAttributes = TtlvStructure.create();
-                TtlvStructure privateAttributes = TtlvStructure.create();
-                TtlvStructure publicAttributes = TtlvStructure.create();
+                TtlvStructure commonAttributes = fixtureAttributeStructure(keyPairCommonTags);
+                TtlvStructure privateAttributes = fixtureAttributeStructure(keyPairPrivateTags);
+                TtlvStructure publicAttributes = fixtureAttributeStructure(keyPairPublicTags);
+                TtlvStructure commonMasks = TtlvStructure.create();
+                TtlvStructure publicMasks = TtlvStructure.create();
                 TtlvStructure splitAttributes = TtlvStructure.create();
                 TtlvStructure delegatedLoginRights = TtlvStructure.create();
                 TtlvStructure derivationParameters = TtlvStructure.create();
@@ -1146,7 +1176,7 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.create(7, createAttributes, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(5)))
                     .add(ClientBatchItem.createKeyPair(commonAttributes, privateAttributes,
-                                    publicAttributes, null, null, null)
+                                    publicAttributes, commonMasks, null, publicMasks)
                             .withUniqueBatchItemId(uniqueBatchItemId(6)))
                     .add(ClientBatchItem.createSplitKey(7, UniqueIdentifier.integer(-7), -3, 2,
                                     3, new byte[] {0, 0, 0, 0, 0, 0, 0, 17}, splitAttributes, null)
@@ -1307,12 +1337,25 @@ final class ClientFacadeTlsIntegrationTest {
 
                 ClientBatchItemResult.CreateKeyPairResponse keyPairResponse =
                         keyPair.createKeyPairResponse().orElseThrow();
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(keyPairExpected, "resultStatus"),
+                        keyPair.resultStatus());
                 assertEquals(UniqueIdentifier.Kind.ENUMERATION,
                         keyPairResponse.privateKeyUniqueIdentifier().kind());
-                assertEquals(0xffff_ffffL, keyPairResponse.privateKeyUniqueIdentifier().number());
+                assertEquals(SharedCapabilityParityFixtureTest.stringField(
+                                keyPairPrivateIdentifier, "wireType"), "Enumeration");
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                                keyPairPrivateIdentifier, "enumeration"),
+                        keyPairResponse.privateKeyUniqueIdentifier().number());
                 assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
                         keyPairResponse.publicKeyUniqueIdentifier().kind());
-                assertEquals("public-key-α", keyPairResponse.publicKeyUniqueIdentifier().text());
+                assertEquals(SharedCapabilityParityFixtureTest.stringField(
+                                keyPairPublicIdentifier, "wireType"), "TextString");
+                assertEquals(SharedCapabilityParityFixtureTest.stringField(
+                                keyPairPublicIdentifier, "text"),
+                        keyPairResponse.publicKeyUniqueIdentifier().text());
+                assertTrue(keyPair.resultMessage().isEmpty());
+                assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                        keyPairExpected, "resultMessagePresencePreserved")));
                 assertFalse(keyPairResponse.toString().contains("public-key-α"));
 
                 List<UniqueIdentifier> splitIdentifiers =
@@ -1566,6 +1609,15 @@ final class ClientFacadeTlsIntegrationTest {
             });
             assertContains(request, new byte[] {0x42, 0x01, 0x25, 0x01, 0x00, 0x00, 0x00, 0x00});
             assertContains(request, new byte[] {0x42, 0x01, 0x5f, 0x01, 0x00, 0x00, 0x00, 0x00});
+            assertContains(request, structure(0x420126,
+                    enumeration(0x540001, 0xdead_beef), enumeration(0x540001, 0xdead_beef)));
+            assertContains(request, structure(0x420127,
+                    enumeration(0x420028, 0xdead_beef),
+                    enumeration(0x540002, 0xdead_beef), enumeration(0x540002, 0xdead_beef)));
+            assertContains(request, structure(0x420128,
+                    enumeration(0x420028, 0xdead_beef), enumeration(0x540003, 0xdead_beef)));
+            assertContains(request, structure(0x420163));
+            assertContains(request, structure(0x420165));
             assertTrue(containsOrderedDeriveKeyIdentifiersInBatchItem(request,
                     item(0x420094, 7, "source-key".getBytes(StandardCharsets.UTF_8)),
                     enumeration(0x420094, (int) 0xfedc_ba98L),
@@ -4011,6 +4063,26 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvValue length = TtlvValue.Integer(128);
                 TtlvItem item = TtlvItem.create(tag, length, limits)) {
             return TtlvStructure.withItem(attributes, item, limits);
+        }
+    }
+
+    private static TtlvStructure fixtureAttributeStructure(List<String> fixtureTags) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure attributes = TtlvStructure.create();
+        try {
+            for (String fixtureTag : fixtureTags) {
+                int rawTag = Integer.parseInt(fixtureTag.substring(2), 16);
+                try (RawTag raw = RawTag.fromRaw(rawTag);
+                        Tag tag = raw.checked();
+                        TtlvValue value = TtlvValue.Enumeration(0xdead_beefL);
+                        TtlvItem item = TtlvItem.create(tag, value, limits)) {
+                    attributes = TtlvStructure.withItem(attributes, item, limits);
+                }
+            }
+            return attributes;
+        } catch (RuntimeException failure) {
+            attributes.close();
+            throw failure;
         }
     }
 

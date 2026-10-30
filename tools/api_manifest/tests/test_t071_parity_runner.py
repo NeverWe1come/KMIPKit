@@ -513,8 +513,6 @@ class T071ParityRunnerTests(unittest.TestCase):
                 "kmipkit-client",
                 "--lib",
                 "create_key_pair_maps_shared_fixture_over_one_exchange",
-                "--",
-                "--exact",
             ],
         )
         self.assertEqual(
@@ -524,7 +522,7 @@ class T071ParityRunnerTests(unittest.TestCase):
         self.assertIn("coverage-c-consumer", consumers["c"]["command"])
         self.assertEqual(
             consumers["java"]["test"],
-            "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest.executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         )
         self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
         self.assertEqual(
