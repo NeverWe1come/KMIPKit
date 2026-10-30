@@ -1645,6 +1645,43 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 )
                 self.assertIn(declaration_id, operations[operation_id]["declarations"]["rust"])
 
+    def test_obtain_lease_function_contract_uses_obtain_lease_models(self) -> None:
+        functions = {
+            row["id"]: row for row in self.checked_in_manifest["functions"]
+        }
+
+        self.assertEqual(
+            {
+                "request": "ObtainLeaseRequest",
+                "response": "ObtainLeaseResponse",
+            },
+            {
+                "request": functions["client_batch_item_obtain_lease"]["rust"][
+                    "parameters"
+                ][0]["type"],
+                "response": functions["client_batch_item_response_obtain_lease"][
+                    "rust"
+                ]["returnType"],
+            },
+        )
+
+    def test_optional_unique_identifier_is_nullable_in_java_function_mappings(self) -> None:
+        functions = {
+            row["id"]: row for row in self.checked_in_manifest["functions"]
+        }
+        for function_id in (
+            "client_batch_item_get_usage_allocation",
+            "client_batch_item_obtain_lease",
+        ):
+            with self.subTest(function=function_id):
+                parameters = functions[function_id]["java"]["parameters"]
+                unique_identifier = next(
+                    parameter
+                    for parameter in parameters
+                    if parameter["name"] == "uniqueIdentifier"
+                )
+                self.assertIs(unique_identifier.get("nullable"), True)
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
