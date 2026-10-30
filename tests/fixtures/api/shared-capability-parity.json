@@ -895,7 +895,17 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-          "test": "creation_create_split_key_matches_shared_fixture"
+        "test": "creation_create_split_key_matches_shared_fixture",
+        "supportingTests": [
+          {
+            "language": "rust",
+            "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "test": "generated_public_client_abi_consumer_compiles_and_runs",
+            "assertions": [
+              "split-key-constructor-callable"
+            ]
+          }
+        ]
         },
         "java": {
           "status": "available",
