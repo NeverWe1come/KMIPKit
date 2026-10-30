@@ -333,7 +333,8 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create()) {
-            ClientBatchItem addAttribute = ClientBatchItem.addAttribute(newAttribute);
+            ClientBatchItem addAttribute = ClientBatchItem.addAttribute(
+                    UniqueIdentifier.textString("object-7"), newAttribute);
             assertTrue(newAttribute.nativeHandleOwner().get() != 0,
                     "Add Attribute borrows its New Attribute input");
             batch.add(addAttribute);
@@ -358,9 +359,8 @@ final class ClientFacadeTlsIntegrationTest {
                         enumeration(0x4200a6, 1)));
         assertContains(request, enumeration(0x42005c, 0x0d));
         assertContains(request, expectedNewAttribute);
-        assertFalse(containsTtlvItem(request,
-                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8))),
-                "an omitted Unique Identifier stays absent from the request");
+        assertContains(request,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
         assertTrue(peer.isDone());
     }
 
@@ -597,7 +597,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
-    void getAttributesRoundTripPreservesReferencesAndRepeatedValuesOverMutualTls()
+    void getAttributesRoundTripPreservesReferencesAndAttributesOverMutualTls()
             throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
@@ -768,7 +768,8 @@ final class ClientFacadeTlsIntegrationTest {
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create()) {
             ClientBatchItem adjustAttribute = ClientBatchItem.adjustAttribute(
-                    null, AttributeReference.tag(0x42000aL), 1L, adjustmentValue);
+                    UniqueIdentifier.textString("object-7"),
+                    AttributeReference.tag(0x42000aL), 1L, adjustmentValue);
             assertTrue(adjustmentValue.handle() != 0,
                     "Adjust Attribute borrows its generic Adjustment Value");
             batch.add(adjustAttribute);
@@ -790,9 +791,7 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, enumeration(0x42013b, 0x42000a));
         assertContains(request, enumeration(0x420158, 1));
         assertContains(request, item(0x420162, 2, integer(5)));
-        assertFalse(containsTtlvItem(request,
-                item(0x420094, 7, "adjusted-object-1".getBytes(StandardCharsets.UTF_8))),
-                "an omitted Unique Identifier stays absent from the request");
+        assertContains(request, item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)));
         assertTrue(peer.isDone());
     }
 
@@ -1905,10 +1904,9 @@ final class ClientFacadeTlsIntegrationTest {
                         assertEquals(0, result.resultStatus());
                         Object typedResponse = cryptoTypedResponse(cryptoOperationName(operation), result);
                         if (includeOptionalResponseFields) {
-                            boolean validityIndicatorPresent = !cryptoOperationName(operation).endsWith("Verify");
                             invokeCryptoFixture(null, "assertSuccessfulOutput",
                                     new Class<?>[] {operation.getClass(), Object.class, boolean.class},
-                                    operation, typedResponse, validityIndicatorPresent);
+                                    operation, typedResponse, true);
                         } else {
                             assertCryptoOptionalFieldsAbsent(cryptoOperationName(operation), typedResponse);
                         }
@@ -1954,7 +1952,7 @@ final class ClientFacadeTlsIntegrationTest {
             case "macVerify" -> {
                 ClientBatchItemResult.MacVerifyResponse macVerify =
                         (ClientBatchItemResult.MacVerifyResponse) response;
-                assertTrue(macVerify.validityIndicatorRaw().isEmpty());
+                assertTrue(macVerify.validityIndicatorRaw().isPresent());
                 assertTrue(macVerify.correlationValue().isEmpty());
             }
             case "sign" -> {
@@ -1965,7 +1963,7 @@ final class ClientFacadeTlsIntegrationTest {
             case "signatureVerify" -> {
                 ClientBatchItemResult.SignatureVerifyResponse signatureVerify =
                         (ClientBatchItemResult.SignatureVerifyResponse) response;
-                assertTrue(signatureVerify.validityIndicatorRaw().isEmpty());
+                assertTrue(signatureVerify.validityIndicatorRaw().isPresent());
                 assertTrue(signatureVerify.recoveredData().isPresent());
                 assertTrue(signatureVerify.correlationValue().isEmpty());
             }
@@ -4010,7 +4008,8 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatch batch = ClientBatch.create()) {
                 CodecLimits limits = CodecLimits.defaults();
                 try (TtlvValue macData = TtlvValue.ByteString(new byte[] {0x41, 0x42}, limits)) {
-                    batch.add(ClientBatchItem.mac(null, null, macData, null, null, null)
+                    batch.add(ClientBatchItem.mac(
+                                    UniqueIdentifier.textString("mac-key"), null, macData, null, null, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(0)));
                 }
 
@@ -4388,11 +4387,12 @@ final class ClientFacadeTlsIntegrationTest {
         String operationName = cryptoOperationName(operation);
         byte[] previousPartCorrelation = new byte[] {0x41, 0x00, (byte) 0xf2};
         if ("macVerify".equals(operationName)) {
-            return ClientBatchItem.macVerify(null, null, null, null,
+            return ClientBatchItem.macVerify(UniqueIdentifier.textString("mac-verify-key"), null, null, null,
                     previousPartCorrelation, Boolean.FALSE, Boolean.TRUE);
         }
         if ("signatureVerify".equals(operationName)) {
-            return ClientBatchItem.signatureVerify(null, null, null, null, null,
+            return ClientBatchItem.signatureVerify(UniqueIdentifier.textString("signature-verify-key"),
+                    null, null, null, null,
                     previousPartCorrelation, Boolean.FALSE, Boolean.TRUE);
         }
         Class<?> valueKindType = Class.forName(
@@ -4408,12 +4408,13 @@ final class ClientFacadeTlsIntegrationTest {
             throw new AssertionError("crypto operation input fixture must expose BYTE_STRING");
         }
         Method factory = CryptoOperationsJavaFacadeTest.class.getDeclaredMethod(
-                "newItem", operation.getClass(), valueKindType, boolean.class, boolean.class);
+                "newItem", operation.getClass(), valueKindType,
+                boolean.class, boolean.class, boolean.class);
         if (!factory.trySetAccessible()) {
             throw new AssertionError("crypto operation item fixture must remain accessible to TLS tests");
         }
         return (ClientBatchItem) invokeCryptoFixture(null, factory,
-                operation, byteStringKind, false, true);
+                operation, byteStringKind, false, true, true);
     }
 
     private static byte[] cryptoOperationResponseMessage(List<?> operations) throws Exception {
@@ -4436,7 +4437,7 @@ final class ClientFacadeTlsIntegrationTest {
                 throw new AssertionError("crypto success response fixture must remain accessible to TLS tests");
             }
             responseItems.add((byte[]) invokeCryptoFixture(
-                    fixture, successResponse, operation, index, false, includeOptionalResponseFields));
+                    fixture, successResponse, operation, index, true, includeOptionalResponseFields));
         }
         List<byte[]> messageItems = new ArrayList<>();
         messageItems.add(header);
@@ -5360,7 +5361,8 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] header = structure(0x42007a, version,
                 item(0x420092, 9, longInteger(1)), item(0x42000d, 2, integer(1)));
         byte[] attributes = structure(0x420125,
-                item(0x42002f, 9, longInteger(7)), item(0x42002f, 9, longInteger(19)));
+                item(0x42002f, 9, longInteger(19)),
+                item(0x4200fd, 7, "KMIPKit comment".getBytes(StandardCharsets.UTF_8)));
         byte[] payload = structure(0x42007c,
                 item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)), attributes);
         byte[] responseItem = structure(0x42000f,

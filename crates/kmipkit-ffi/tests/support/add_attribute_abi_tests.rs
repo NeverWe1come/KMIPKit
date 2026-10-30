@@ -82,7 +82,7 @@ fn compiled_c_consumer_builds_add_attribute_and_preserves_the_borrowed_item() {
 fn add_attribute_response_copies_success_identifier_and_hides_failure_payload() {
     let request = || {
         ClientRequest::AddAttribute(AddAttributeRequest::new(
-            None,
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
             NewAttribute::new(add_attribute_name_item()),
         ))
     };

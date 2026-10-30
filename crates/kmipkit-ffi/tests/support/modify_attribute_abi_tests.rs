@@ -189,7 +189,7 @@ fn modify_attribute_response_copies_success_identifier_and_hides_failure_fields(
         let attribute = Item::new(tag, Value::text_string("replacement".to_owned()))
             .expect("test attribute is valid");
         ClientRequest::ModifyAttribute(ModifyAttributeRequest::new(
-            None,
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
             None,
             NewAttribute::new(attribute),
         ))

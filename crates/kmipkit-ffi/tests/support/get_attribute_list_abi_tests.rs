@@ -75,7 +75,11 @@ fn get_attribute_list_constructor_preserves_text_identifier() {
 
 #[test]
 fn get_attribute_list_response_ttlv_is_success_only_and_c_owned() {
-    let request = || ClientRequest::get_attribute_list(GetAttributeListRequest::new(None));
+    let request = || {
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        )))
+    };
     let success = successful_cryptographic_item(
         request(),
         0x0c,
@@ -135,7 +139,11 @@ fn compiled_c_consumer_builds_get_attribute_list() {
 
 #[test]
 fn compiled_c_consumer_reads_successful_response_payload_and_hides_failure_payload() {
-    let request = || ClientRequest::get_attribute_list(GetAttributeListRequest::new(None));
+    let request = || {
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        )))
+    };
     let success = successful_cryptographic_item(
         request(),
         0x0c,
@@ -168,7 +176,9 @@ fn compiled_c_consumer_reads_successful_response_payload_and_hides_failure_paylo
 #[test]
 fn get_attribute_list_uid_span_remains_readable_while_response_is_open() {
     let success = successful_cryptographic_item(
-        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        ))),
         0x0c,
         b"attribute-list-uid-span",
         vec![
@@ -226,7 +236,9 @@ fn typed_get_attribute_list_response_preserves_unknown_tags_and_duplicate_name_o
         ],
     );
     let success = successful_cryptographic_item(
-        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        ))),
         0x0c,
         b"attribute-list-typed-success",
         vec![
@@ -328,7 +340,9 @@ fn unique_identifier_text(identifier: &kmipkit_unique_identifier_v1_t) -> Vec<u8
 #[test]
 fn typed_get_attribute_list_rejects_short_capacity_and_bad_output_versions() {
     let success = successful_cryptographic_item(
-        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        ))),
         0x0c,
         b"attribute-list-invalid-output",
         vec![
@@ -397,7 +411,9 @@ fn typed_get_attribute_list_rejects_short_capacity_and_bad_output_versions() {
 #[test]
 fn typed_get_attribute_list_hides_operation_fields_for_failure() {
     let failure = failed_cryptographic_item(
-        ClientRequest::get_attribute_list(GetAttributeListRequest::new(None)),
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            RESPONSE_FIXTURE_UID.to_owned(),
+        ))),
         0x0c,
         b"attribute-list-typed-failure",
     );

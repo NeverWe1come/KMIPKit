@@ -55,7 +55,7 @@ fn compiled_c_consumer_copies_adjust_attribute_value_and_preserves_field_order()
 fn compiled_c_consumer_reads_adjust_attribute_identifier_and_hides_failure_payload() {
     let request = || {
         ClientRequest::AdjustAttribute(AdjustAttributeRequest::new(
-            None,
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
             AttributeReference::tag(0x0042_000a),
             AdjustmentType::from_raw(1),
             None,

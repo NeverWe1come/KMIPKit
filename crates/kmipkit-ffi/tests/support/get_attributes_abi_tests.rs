@@ -114,8 +114,14 @@ fn get_attributes_constructor_preserves_reference_order_and_optional_identifier(
 fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
     let request = || {
         ClientRequest::get_attributes(
-            GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_002f)])
-                .expect("the request reference is unique"),
+            GetAttributesRequest::try_new(
+                Some(RESPONSE_FIXTURE_UID.to_owned()),
+                [
+                    AttributeReference::tag(0x0042_002f),
+                    AttributeReference::tag(0x0042_0001),
+                ],
+            )
+            .expect("the request reference is unique"),
         )
     };
     let success = successful_cryptographic_item(
@@ -128,7 +134,7 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
                 0x0042_0125,
                 [
                     ttlv_item(0x0042_002f, 0x09, &7_i64.to_be_bytes()),
-                    ttlv_item(0x0042_002f, 0x09, &19_i64.to_be_bytes()),
+                    ttlv_item(0x0042_0001, 0x09, &19_i64.to_be_bytes()),
                 ],
             ),
         ],
@@ -214,8 +220,11 @@ fn get_attributes_response_returns_owned_attributes_and_hides_failure_fields() {
 fn get_attributes_response_preserves_success_with_identifier_only_payload() {
     let request = || {
         ClientRequest::get_attributes(
-            GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_002f)])
-                .expect("the request reference is unique"),
+            GetAttributesRequest::try_new(
+                Some(RESPONSE_FIXTURE_UID.to_owned()),
+                [AttributeReference::tag(0x0042_002f)],
+            )
+            .expect("the request reference is unique"),
         )
     };
     let success = successful_cryptographic_item(
@@ -276,8 +285,11 @@ fn get_attributes_response_preserves_success_with_identifier_only_payload() {
 #[test]
 fn get_attributes_response_preserves_present_empty_attributes_for_c_consumers() {
     let request = ClientRequest::get_attributes(
-        GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_002f)])
-            .expect("the request reference is unique"),
+        GetAttributesRequest::try_new(
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
+            [AttributeReference::tag(0x0042_002f)],
+        )
+        .expect("the request reference is unique"),
     );
     let success = successful_cryptographic_item(
         request,

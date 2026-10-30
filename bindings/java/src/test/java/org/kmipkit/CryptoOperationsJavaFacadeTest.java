@@ -93,8 +93,8 @@ final class CryptoOperationsJavaFacadeTest {
             assertEquals(2L, indicatorCount,
                     operation.name() + " Init and Final Indicators must distinguish absent from false");
 
-            try (ClientBatchItem omitted = newItem(operation, TtlvValueKind.NONE, false, false);
-                    ClientBatchItem present = newItem(operation, TtlvValueKind.BYTE_STRING, true, false)) {
+            try (ClientBatchItem omitted = newItem(operation, TtlvValueKind.NONE, false, false, false);
+                    ClientBatchItem present = newItem(operation, TtlvValueKind.BYTE_STRING, true, false, false)) {
                 assertNotNull(omitted);
                 assertNotNull(present);
                 assertFalse(present.toString().contains(new String(SECRET_MARKER, StandardCharsets.UTF_8)),
@@ -103,7 +103,7 @@ final class CryptoOperationsJavaFacadeTest {
 
             for (TtlvValueKind dataKind : List.of(
                     TtlvValueKind.BYTE_STRING, TtlvValueKind.ENUMERATION, TtlvValueKind.INTEGER)) {
-                try (ClientBatchItem item = newItem(operation, dataKind, false, false)) {
+                try (ClientBatchItem item = newItem(operation, dataKind, false, false, false)) {
                     assertNotNull(item, operation.name() + " must accept Data as " + dataKind);
                 }
             }
@@ -167,7 +167,7 @@ final class CryptoOperationsJavaFacadeTest {
             int index = 0;
             for (Operation operation : OPERATIONS) {
                 for (int outcome = 0; outcome < 3; outcome++) {
-                    ClientBatchItem item = newItem(operation, TtlvValueKind.BYTE_STRING, false, true)
+                    ClientBatchItem item = newItem(operation, TtlvValueKind.BYTE_STRING, false, true, true)
                             .withUniqueBatchItemId(uniqueBatchItemId(index));
                     batch.add(item);
                     index++;
@@ -205,7 +205,11 @@ final class CryptoOperationsJavaFacadeTest {
     }
 
     private static ClientBatchItem newItem(
-            Operation operation, TtlvValueKind dataKind, boolean includeOptionalSpans, boolean validSinglePart)
+            Operation operation,
+            TtlvValueKind dataKind,
+            boolean includeOptionalSpans,
+            boolean includeUniqueIdentifier,
+            boolean validSinglePart)
             throws Exception {
         Method factory = operationFactory(operation);
         Object[] arguments = new Object[factory.getParameterCount()];
@@ -215,7 +219,7 @@ final class CryptoOperationsJavaFacadeTest {
             Class<?>[] parameterTypes = factory.getParameterTypes();
             for (int index = 0; index < parameterTypes.length; index++) {
                 Class<?> type = parameterTypes[index];
-                if (type == UniqueIdentifier.class && operation.name().matches("encrypt|decrypt")) {
+                if (type == UniqueIdentifier.class && includeUniqueIdentifier) {
                     arguments[index] = UniqueIdentifier.textString(operation.name() + "-key");
                 } else if (type == TtlvStructure.class && operation.name().equals("hash")) {
                     parameters = hashParameters();
@@ -475,7 +479,7 @@ final class CryptoOperationsJavaFacadeTest {
             case "macVerify" -> {
                 if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
             }
-            case "sign" -> fields.add(ttlvItem(0x4200c7, 8, SECRET_MARKER));
+            case "sign" -> fields.add(ttlvItem(0x4200c3, 8, SECRET_MARKER));
             case "signatureVerify" -> {
                 if (includeValidityIndicator) fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));

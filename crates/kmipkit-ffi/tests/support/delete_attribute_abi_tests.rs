@@ -64,7 +64,13 @@ fn compiled_c_consumer_builds_delete_attribute_with_omitted_selectors() {
 
 #[test]
 fn delete_attribute_response_copies_success_identifier_and_hides_failure_payload() {
-    let request = || ClientRequest::DeleteAttribute(DeleteAttributeRequest::new(None, None, None));
+    let request = || {
+        ClientRequest::DeleteAttribute(DeleteAttributeRequest::new(
+            Some(RESPONSE_FIXTURE_UID.to_owned()),
+            None,
+            None,
+        ))
+    };
     let success = successful_cryptographic_item(
         request(),
         0x0f,

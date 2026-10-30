@@ -131,7 +131,9 @@ def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
             client.Client.create(configuration, mtls_transport_config(port, _TLS_FIXTURES)) as kmip,
         ):
             batch = client.Batch.create()
-            request_item = extensions.client_batch_item_add_attribute(None, new_attribute)
+            request_item = extensions.client_batch_item_add_attribute(
+                extensions.UniqueIdentifier.text_string("object-7"), new_attribute
+            )
             assert new_attribute._pointer() != extensions.ffi.NULL
             batch.add_item(
                 extensions.with_unique_batch_item_id(request_item, _ADD_ATTRIBUTE_ID)
@@ -151,7 +153,7 @@ def test_add_attribute_executes_once_and_preserves_the_new_attribute_item():
         assert len(received) == 1
         assert ttlv_enumeration(0x42005C, 0x0D) in received[0]
         assert expected_new_attribute in received[0]
-        assert b"\x42\x00\x94" not in received[0], "omitted Unique Identifier must stay absent"
+        assert ttlv_item(0x420094, 7, b"object-7") in received[0]
         assert batch_result is not None and len(batch_result.items) == 1
         response = batch_result.items[0].add_attribute_response
         assert response is not None
@@ -193,7 +195,7 @@ def test_adjust_attribute_preserves_reference_value_and_maps_typed_response():
         ):
             batch = client.Batch.create()
             request_item = extensions.client_batch_item_adjust_attribute(
-                None,
+                extensions.UniqueIdentifier.text_string("object-7"),
                 extensions.AttributeReference.name("KMIPKit", "Counter"),
                 1,
                 adjustment_value,
@@ -215,7 +217,7 @@ def test_adjust_attribute_preserves_reference_value_and_maps_typed_response():
         ) in received[0]
         assert ttlv_enumeration(0x0042_0158, 1) in received[0]
         assert ttlv_item(0x0042_0162, 2, b"\x00\x00\x00\x05") in received[0]
-        assert b"\x42\x00\x94" not in received[0], "omitted Unique Identifier must stay absent"
+        assert ttlv_item(0x420094, 7, b"object-7") in received[0]
         assert batch_result is not None and len(batch_result.items) == 1
         response = batch_result.items[0].adjust_attribute_response
         assert response is not None

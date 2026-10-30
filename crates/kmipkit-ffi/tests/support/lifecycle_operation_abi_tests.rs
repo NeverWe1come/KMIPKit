@@ -146,22 +146,22 @@ macro_rules! assert_successful_lifecycle_response {
 #[test]
 fn lifecycle_response_accessors_return_identifier_only_for_success() {
     assert_successful_lifecycle_response!(
-        ClientRequest::Activate(ActivateRequest::new(None)),
+        ClientRequest::Activate(ActivateRequest::new(Some(response_fixture_uid()))),
         0x12,
         kmipkit_client_batch_item_response_activate
     );
     assert_successful_lifecycle_response!(
-        ClientRequest::Archive(ArchiveRequest::new(None)),
+        ClientRequest::Archive(ArchiveRequest::new(Some(response_fixture_uid()))),
         0x15,
         kmipkit_client_batch_item_response_archive
     );
     assert_successful_lifecycle_response!(
-        ClientRequest::Destroy(DestroyRequest::new(None)),
+        ClientRequest::Destroy(DestroyRequest::new(Some(response_fixture_uid()))),
         0x14,
         kmipkit_client_batch_item_response_destroy
     );
     assert_successful_lifecycle_response!(
-        ClientRequest::Recover(RecoverRequest::new(None)),
+        ClientRequest::Recover(RecoverRequest::new(Some(response_fixture_uid()))),
         0x16,
         kmipkit_client_batch_item_response_recover
     );
@@ -170,7 +170,7 @@ fn lifecycle_response_accessors_return_identifier_only_for_success() {
 #[test]
 fn lifecycle_response_accessors_clear_identifier_for_failure() {
     let response_item = failed_cryptographic_item(
-        ClientRequest::Recover(RecoverRequest::new(None)),
+        ClientRequest::Recover(RecoverRequest::new(Some(response_fixture_uid()))),
         0x16,
         b"lifecycle-batch-item",
     );

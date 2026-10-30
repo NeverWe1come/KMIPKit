@@ -22,7 +22,10 @@ fn set_attribute_request() -> ClientRequest {
         .expect("Comment is assigned");
     let item = Item::new(tag, Value::text_string("updated comment".to_owned()))
         .expect("attribute Item is valid");
-    ClientRequest::SetAttribute(SetAttributeRequest::new(None, NewAttribute::new(item)))
+    ClientRequest::SetAttribute(SetAttributeRequest::new(
+        Some(RESPONSE_FIXTURE_UID.to_owned()),
+        NewAttribute::new(item),
+    ))
 }
 
 #[test]

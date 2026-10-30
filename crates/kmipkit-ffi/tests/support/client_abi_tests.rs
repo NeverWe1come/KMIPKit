@@ -67,6 +67,11 @@ const INPUT_FILE: u32 = 2;
 const ENCODING_PEM: u32 = 1;
 const ENCODING_DER: u32 = 2;
 const MAX_TEST_TTLV_BODY_BYTES: usize = 1_048_576;
+const RESPONSE_FIXTURE_UID: &str = "ffi-response-fixture";
+
+fn response_fixture_uid() -> UniqueIdentifier {
+    UniqueIdentifier::TextString(RESPONSE_FIXTURE_UID.to_owned())
+}
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 fn byte_span(bytes: &[u8]) -> kmipkit_byte_span_v1_t {
@@ -1454,9 +1459,13 @@ fn ffi_successful_mac_response_getter_returns_typed_fields() {
     let correlation = [0x41, 0x00, 0x42];
     let response_identifier = b"response-id";
     let mac = successful_cryptographic_item(
-        ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
-            SecretBytes::new(b"request-mac-data".to_vec()),
-        ))),
+        ClientRequest::Mac(
+            MacRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"request-mac-data".to_vec(),
+                ))),
+        ),
         0x23,
         b"mac-success",
         vec![
@@ -1502,7 +1511,9 @@ fn ffi_successful_mac_verify_response_getter_returns_typed_fields() {
     let response_identifier = b"response-id";
     let mac_verify = successful_cryptographic_item(
         ClientRequest::MacVerify(
-            MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"request-mac".to_vec())),
+            MacVerifyRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_mac_data(SecretBytes::new(b"request-mac".to_vec())),
         ),
         0x24,
         b"mac-verify-success",
@@ -1547,14 +1558,18 @@ fn ffi_successful_sign_response_getter_returns_typed_fields() {
     let correlation = [0x41, 0x00, 0x42];
     let response_identifier = b"response-id";
     let sign = successful_cryptographic_item(
-        ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
-            SecretBytes::new(b"request-sign-data".to_vec()),
-        ))),
+        ClientRequest::Sign(
+            SignRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"request-sign-data".to_vec(),
+                ))),
+        ),
         0x21,
         b"sign-success",
         vec![
             ttlv_item(0x0042_0094, 0x07, response_identifier),
-            ttlv_item(0x0042_00c7, 0x08, b"signature-response-data"),
+            ttlv_item(0x0042_00c3, 0x08, b"signature-response-data"),
             ttlv_item(0x0042_00d6, 0x08, &correlation),
         ],
     );
@@ -1599,6 +1614,7 @@ fn ffi_successful_signature_verify_response_getter_returns_typed_fields() {
     let signature_verify = successful_cryptographic_item(
         ClientRequest::SignatureVerify(
             SignatureVerifyRequest::new()
+                .with_unique_identifier(response_fixture_uid())
                 .with_signature_data(SecretBytes::new(b"request-signature".to_vec())),
         ),
         0x22,
@@ -2930,9 +2946,13 @@ fn ffi_check_getters_reject_inconsistent_response_item_handles() {
 #[test]
 fn ffi_mac_response_getters_do_not_report_failed_payloads_as_present() {
     let mac = failed_cryptographic_item(
-        ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
-            SecretBytes::new(b"failure-test-data".to_vec()),
-        ))),
+        ClientRequest::Mac(
+            MacRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"failure-test-data".to_vec(),
+                ))),
+        ),
         0x23,
         b"mac-failure",
     );
@@ -2968,7 +2988,9 @@ fn ffi_mac_response_getters_do_not_report_failed_payloads_as_present() {
 fn ffi_mac_verify_response_getters_do_not_report_failed_payloads_as_present() {
     let mac_verify = failed_cryptographic_item(
         ClientRequest::MacVerify(
-            MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"failure-test-mac".to_vec())),
+            MacVerifyRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_mac_data(SecretBytes::new(b"failure-test-mac".to_vec())),
         ),
         0x24,
         b"mac-verify-failure",
@@ -3004,9 +3026,13 @@ fn ffi_mac_verify_response_getters_do_not_report_failed_payloads_as_present() {
 #[test]
 fn ffi_sign_response_getters_do_not_report_failed_payloads_as_present() {
     let sign = failed_cryptographic_item(
-        ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
-            SecretBytes::new(b"failure-test-data".to_vec()),
-        ))),
+        ClientRequest::Sign(
+            SignRequest::new()
+                .with_unique_identifier(response_fixture_uid())
+                .with_data(OperationData::ByteString(SecretBytes::new(
+                    b"failure-test-data".to_vec(),
+                ))),
+        ),
         0x21,
         b"sign-failure",
     );
@@ -3043,6 +3069,7 @@ fn ffi_signature_verify_response_getters_do_not_report_failed_payloads_as_presen
     let signature_verify = failed_cryptographic_item(
         ClientRequest::SignatureVerify(
             SignatureVerifyRequest::new()
+                .with_unique_identifier(response_fixture_uid())
                 .with_signature_data(SecretBytes::new(b"failure-test-signature".to_vec())),
         ),
         0x22,
@@ -3821,7 +3848,7 @@ fn ffi_export_response_preserves_success_fields_and_owned_ttlv() {
         )],
     );
     let successful_item = successful_cryptographic_item(
-        ClientRequest::export(ExportRequest::new()),
+        ClientRequest::export(ExportRequest::new().with_unique_identifier(response_fixture_uid())),
         0x2b,
         b"export-success",
         vec![
@@ -3887,7 +3914,7 @@ fn ffi_export_response_preserves_success_fields_and_owned_ttlv() {
 #[test]
 fn ffi_export_failure_has_no_typed_payload_and_preserves_response_ttlv() {
     let failed_item = failed_cryptographic_item(
-        ClientRequest::export(ExportRequest::new()),
+        ClientRequest::export(ExportRequest::new().with_unique_identifier(response_fixture_uid())),
         0x2b,
         b"export-failure",
     );
@@ -4505,7 +4532,7 @@ fn ffi_get_response_copies_the_secret_any_object() {
         )],
     );
     let item = successful_cryptographic_item(
-        ClientRequest::Get(GetRequest::new()),
+        ClientRequest::Get(GetRequest::new().with_unique_identifier(response_fixture_uid())),
         0x0a,
         b"get-success",
         vec![
@@ -4645,8 +4672,11 @@ fn ffi_locate_response_preserves_repeated_identifiers_and_empty_success_payloads
 
 #[test]
 fn ffi_get_response_clears_payload_for_failure_and_wrong_operation() {
-    let failed =
-        failed_cryptographic_item(ClientRequest::Get(GetRequest::new()), 0x0a, b"get-failed");
+    let failed = failed_cryptographic_item(
+        ClientRequest::Get(GetRequest::new().with_unique_identifier(response_fixture_uid())),
+        0x0a,
+        b"get-failed",
+    );
     let mut present = u8::MAX;
     let mut payload_present = u8::MAX;
     let mut object_type = u32::MAX;
@@ -4729,7 +4759,7 @@ fn ffi_locate_response_clears_payload_for_failure_and_wrong_operation() {
     kmipkit_client_batch_item_response_release(failed);
 
     let get = successful_cryptographic_item(
-        ClientRequest::Get(GetRequest::new()),
+        ClientRequest::Get(GetRequest::new().with_unique_identifier(response_fixture_uid())),
         0x0a,
         b"get-for-locate",
         vec![
@@ -4816,7 +4846,7 @@ fn ffi_export_response_getters_reject_inconsistent_internal_handles() {
     kmipkit_client_batch_item_response_release(wrong_variant);
 
     let valid_item = failed_cryptographic_item(
-        ClientRequest::export(ExportRequest::new()),
+        ClientRequest::export(ExportRequest::new().with_unique_identifier(response_fixture_uid())),
         0x2b,
         b"export-invalid-index",
     );
@@ -4902,7 +4932,9 @@ fn assert_register_getters_reject_handle(
 fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_failure() {
     let response_identifier = b"allocation-object";
     let successful_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, response_identifier)],
@@ -4950,7 +4982,9 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
     kmipkit_client_batch_item_response_release(successful_item);
 
     let failed_item = failed_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-allocation-failure",
     );
@@ -4975,7 +5009,9 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
 #[test]
 fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses() {
     let successful_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -4995,7 +5031,9 @@ fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses()
     kmipkit_ttlv_structure_release(response_ttlv);
 
     let failed_item = failed_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-allocation-failure",
     );
@@ -5016,7 +5054,9 @@ fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses()
 #[test]
 fn ffi_usage_allocation_context_copies_successful_response_metadata() {
     let response_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(12).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-context",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -5065,7 +5105,9 @@ fn ffi_usage_allocation_context_copies_successful_response_metadata() {
 #[test]
 fn ffi_usage_allocation_context_rejects_non_success_and_nonpositive_counts() {
     let failed_item = failed_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(12).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-context-failure",
     );
@@ -5078,7 +5120,9 @@ fn ffi_usage_allocation_context_rejects_non_success_and_nonpositive_counts() {
     kmipkit_client_batch_item_response_release(failed_item);
 
     let successful_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(12).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-context-nonpositive",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -5183,7 +5227,9 @@ fn ffi_usage_allocation_identifier_getter_rejects_an_invalid_output_record() {
 #[test]
 fn ffi_guarded_execution_rejects_empty_slots_and_validation_without_transport() {
     let allocation_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"guarded-validation-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -5272,7 +5318,9 @@ fn ffi_guarded_execution_rejects_empty_slots_and_validation_without_transport() 
 #[test]
 fn ffi_guarded_execution_rejects_wrong_handle_kinds_without_consuming_the_item() {
     let allocation_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"guarded-handle-kind-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -5344,7 +5392,9 @@ fn ffi_guarded_execution_rejects_wrong_handle_kinds_without_consuming_the_item()
     assert!(response.is_null());
 
     let wrong_item = failed_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"not-a-batch-request-item",
     );
@@ -5374,7 +5424,9 @@ fn ffi_guarded_execution_rejects_wrong_handle_kinds_without_consuming_the_item()
 #[test]
 fn ffi_guarded_execution_rejects_a_retained_item_owner_before_transport() {
     let allocation_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"guarded-owner-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -7005,7 +7057,9 @@ fn ffi_reprovision_pending_exposes_neither_success_identifier_nor_ttlv() {
 fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     let unknown_value = [0xde, 0xad, 0x00, 0xff];
     let item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-allocation",
         vec![
@@ -7041,7 +7095,9 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
 #[test]
 fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
     let item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(12).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"usage-context-c-consumer",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
@@ -7199,7 +7255,9 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
 #[test]
 fn ffi_guarded_encrypt_pending_retains_context_and_returns_pending_metadata() {
     let allocation_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        ClientRequest::GetUsageAllocation(
+            GetUsageAllocationRequest::new(5).with_unique_identifier(response_fixture_uid()),
+        ),
         0x11,
         b"guarded-pending-allocation",
         vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],

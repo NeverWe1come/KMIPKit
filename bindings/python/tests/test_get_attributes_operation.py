@@ -28,8 +28,8 @@ def _get_attributes_response_message() -> bytes:
             ttlv_item(0x0042_0094, 7, b"object-7"),
             ttlv_structure(
                 0x0042_0125,
-                ttlv_item(0x0042_002F, 9, struct.pack(">q", 7)),
                 ttlv_item(0x0042_002F, 9, struct.pack(">q", 19)),
+                ttlv_item(0x0042_00FD, 7, b"KMIPKit comment"),
             ),
         ),
     )
@@ -76,7 +76,7 @@ def test_get_attributes_builder_preserves_identifier_and_reference_order(monkeyp
     ]
 
 
-def test_get_attributes_executes_once_and_preserves_repeated_attribute_values():
+def test_get_attributes_executes_once_and_preserves_requested_attributes():
     received: list[bytes] = []
 
     def handle(stream: ssl.SSLSocket) -> None:

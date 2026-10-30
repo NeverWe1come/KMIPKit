@@ -168,7 +168,10 @@ def test_set_attribute_executes_once_maps_only_successful_results_and_borrows_it
             )
             request_items[-1] = None
             request_items.append(
-                extensions.client_batch_item_set_attribute(None, attributes[1])
+                extensions.client_batch_item_set_attribute(
+                    extensions.UniqueIdentifier.text_string("request-object-4"),
+                    attributes[1],
+                )
             )
             assert attributes[1]._pointer() != extensions.ffi.NULL
             batch.add_item(
@@ -189,9 +192,8 @@ def test_set_attribute_executes_once_maps_only_successful_results_and_borrows_it
         assert received[0].count(ttlv_enumeration(0x42005C, 0x31)) == 2
         assert ttlv_enumeration(0x42005C, 0x3B) in received[0]
         assert ttlv_item(0x420094, 7, b"request-object-3") in received[0]
-        assert received[0].count(b"\x42\x00\x94") == 1, (
-            "the omitted Set Attribute Unique Identifier must stay absent"
-        )
+        assert ttlv_item(0x420094, 7, b"request-object-4") in received[0]
+        assert received[0].count(b"\x42\x00\x94") == 2
         assert ttlv_structure(
             0x0042_013D, ttlv_item(0x0042_00FD, 7, b"first comment")
         ) in received[0]
