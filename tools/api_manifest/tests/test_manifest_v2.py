@@ -2373,6 +2373,38 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         else:
                             self.assertTrue(operation["declarations"][language])
 
+    def test_t091_set_constraints_client_method_maps_to_matching_operation_constructor(self) -> None:
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] == "kmipkit_client::Client::set_constraints"
+        )
+
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", declaration["capabilityId"])
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::Client::set_constraints",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_set_constraints",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.setConstraints",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.client_batch_item_set_constraints",
+                },
+            },
+            declaration["languageMappings"],
+        )
+
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
         declaration = next(
