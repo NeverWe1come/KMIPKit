@@ -669,7 +669,7 @@
               "assertions": [
                 "create-operation-constructor",
                 "open-object-type-accepted",
-                "attributes-and-protection-masks-present"
+                "attributes-and-protection-masks-provided"
               ]
             }
           ]
