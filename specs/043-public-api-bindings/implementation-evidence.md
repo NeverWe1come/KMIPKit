@@ -6486,6 +6486,10 @@ The runner now accepts `client-configuration.registry-isolation.v1` and resolves
 
 The runtime command executes one selected test for each language and does not execute the full 13-case corpus. T071 remains open.
 
+### T071 Java selector review follow-up
+
+The case-4 review noted that the plan test checked the Java method metadata but not the generated Gradle selector. The Java execution contract now checks `--rerun-tasks`, `--tests`, and exact selector equality for all four currently supported cases. The T071 runner test suite passes with 11 tests; this closes a command-selection assertion gap only and does not add runtime or Java 17 evidence.
+
 ### T071 schema-redaction parity case 4 of 13 (2026-10-30)
 
 The runner now accepts `errors.schema-redaction.v1` and selects its exact Rust protocol integration target, compiled C ABI harness, Java registry test, and Python registry method. Rust package selection is derived from the reviewed crate test path; a direct `tests/<name>.rs` selects `--test <name>`, while nested `tests/unit/...` remains `--lib`. The plan contract asserts the Rust package/target and the class-qualified Python selector. This is case 4 of 13; T071 remains open and complete-surface parity is not claimed.

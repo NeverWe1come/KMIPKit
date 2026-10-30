@@ -279,7 +279,12 @@ class T071ParityRunnerTests(unittest.TestCase):
         )
 
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
-        for case_id in (DISCOVER_VERSIONS_CASE, BATCH_MIXED_OUTCOMES_CASE):
+        for case_id in (
+            DISCOVER_VERSIONS_CASE,
+            BATCH_MIXED_OUTCOMES_CASE,
+            REGISTRY_ISOLATION_CASE,
+            SCHEMA_REDACTION_CASE,
+        ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
                     consumer
@@ -287,6 +292,8 @@ class T071ParityRunnerTests(unittest.TestCase):
                     if consumer["language"] == "java"
                 )
                 self.assertIn("--rerun-tasks", java_consumer["command"])
+                self.assertIn("--tests", java_consumer["command"])
+                self.assertEqual(java_consumer["command"][-1], java_consumer["test"])
 
     def test_python_runner_uses_the_current_pytest_interpreter(self) -> None:
         python_consumer = next(
