@@ -14475,6 +14475,570 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationError>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationError>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::From<kmipkit_protocol::message::validation::MessageValidationError>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::cause",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::description",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::provide",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::source",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::From<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13",
         "kind": "feature-specification",
         "path": "specs/029-opaque-object-context/spec.md",
@@ -15600,6 +16164,546 @@
       "exportName": "<kmipkit_protocol::ProtocolErrorKind as core::fmt::Display>::fmt",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit product capability; the corresponding result or safe error behavior is exposed through the four-language client execution contract."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::Owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::clone_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::to_owned",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::Borrow<kmipkit_protocol::message::version::ProtocolVersion>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::BorrowMut<kmipkit_protocol::message::version::ProtocolVersion>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::CloneToUninit>::clone_to_uninit",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::eq",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::ne",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::From<kmipkit_protocol::message::version::ProtocolVersion>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash_slice",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::Borrow<kmipkit_protocol::message::RequestMessage>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::BorrowMut<kmipkit_protocol::message::RequestMessage>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::From<kmipkit_protocol::message::RequestMessage>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as alloc::string::ToString>::to_string",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::Borrow<kmipkit_protocol::message::ResponseMessage>>::borrow",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::BorrowMut<kmipkit_protocol::message::ResponseMessage>>::borrow_mut",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::From<kmipkit_protocol::message::ResponseMessage>>::from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Debug>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Display>::fmt",
+      "packageId": "rust-kmipkit-protocol",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
     },
     {
       "approvalSource": {

@@ -34,6 +34,7 @@
     "KMIPKIT-0005-FR-010",
     "KMIPKIT-0005-FR-011",
     "KMIPKIT-0005-FR-012",
+    "KMIPKIT-0006-FR-001",
     "KMIPKIT-0006-FR-005",
     "KMIPKIT-0006-FR-006",
     "KMIPKIT-0006-FR-007",
@@ -43,6 +44,7 @@
     "KMIPKIT-0006-FR-012",
     "KMIPKIT-0006-FR-014",
     "KMIPKIT-0006-FR-015",
+    "KMIPKIT-0006-FR-016",
     "KMIPKIT-0007-FR-001",
     "KMIPKIT-0007-FR-002",
     "KMIPKIT-0007-FR-003",
@@ -178311,844 +178313,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-7818aee77920e48143b3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4261e8e75affd87a17ca",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d5041e0b21ba38a29e32",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c43e2168310829281578",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-13409e244bc411bdf29f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-55ce05dc7f97677a940d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationError>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-fab41ad866fd7fdfadda",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationError>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-25ceb69cd3129275bf60",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e4ed133b81c405f0bd27",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ca391f7c6cdfd16decd6",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e14b9953a50eee2c5904",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-19459ea0830edb80f5de",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-869bed4bdc060d9de5ff",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-6a13effa01986d831352",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::From<kmipkit_protocol::message::validation::MessageValidationError>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-cc905864f557d8524572",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-7e6cc4e4cae9c7428a56",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-e908e623186401bc668a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-45724c413b14680077d4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-49a2958127c28cf0f0e1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationError"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-cc98434fe70289b9f080",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::cause",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-41c79dcbbdf63baa6e49",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::description",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-74267710249c34ea09c3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::provide",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-0a77c97d21daeabbc9de",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::source",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d7242d4b6ac7143af1cb",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-19a36795ab73d1013550",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2f13ea65f1ec895e9c9d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5403715bd5bcab8b41f5",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-78d3dc0d62db59476023",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-07a98903363fde78b4e1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-aeaed9cc9ce7174e19e4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-515da6e6afce8c235322",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f2cdfe0d8c2a80560ca1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f2ea8a8037a87fc0f028",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-6f79f83d24d019162d43",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-621b586e7ba25b3acb76",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-203cc9562c7970608dcd",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-db3baff532b9bbe700ea",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d7026938196bd2cfe3a3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e387fbdf75623501b556",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7f4304652cd087fd0b9b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::From<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-41b85d1ae7d0d1c5c7a1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-1feaca89844e957bb96b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-9fe665cae474082937e2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-83864d4bd84c69a9345c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-89224bddd7cdac7bce36",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::validation::MessageValidationErrorKind"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-2e2d3678209e09a4c2ae",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-a4e51a33b9f566eb9694",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-14a15b6e056ff5fd8c20",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -186247,390 +185411,6 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
-    },
-    {
-      "declarationId": "rust-observed-fcf5956087c16a29ba6a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::Owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-fd0f329c06f4b319ac58",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::clone_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8b95df4fc6ee26d5b9c1",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::to_owned",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f8df02ea6370ff31fc8a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b199a3a2c33ffe4119a0",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::Borrow<kmipkit_protocol::message::version::ProtocolVersion>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b31fc74fc3218b54cbd2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::BorrowMut<kmipkit_protocol::message::version::ProtocolVersion>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-46cbac7752408433004d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-cba80bf9295ed8079cca",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-bcd2aef6871519a8f30b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::CloneToUninit>::clone_to_uninit",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e5475ab2c8dbd88150c4",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::Eq>::assert_receiver_is_total_eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-87b09b4dbe4f877c6e5e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::eq",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-77d446dc457eb3bba52a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::ne",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-4ac7bab51a674652007d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::From<kmipkit_protocol::message::version::ProtocolVersion>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-7985c6260307b58122ad",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::version::ProtocolVersion"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3af3427a00569b6c044a",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::version::ProtocolVersion"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-262219c7b7d893bde61c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::version::ProtocolVersion"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0d87be0de4d035ba56a9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::version::ProtocolVersion"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-bea865c14fdedc3ff465",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::version::ProtocolVersion"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d182cf2f8a7ffaaafe53",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-e2ff3cc2226dd4c822f8",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-ace34fa2a7b81ef21c3f",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash_slice",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-dabf1ba8ffa7d683baba",
@@ -195054,264 +193834,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-a77a1bdb56c61af3818b",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-3cba4631d33d56b8b487",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d4e0c04bde8cffd65298",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::Borrow<kmipkit_protocol::message::RequestMessage>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2a7a3c510befcaff875e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::BorrowMut<kmipkit_protocol::message::RequestMessage>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d44e470ba36f7740af3d",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::From<kmipkit_protocol::message::RequestMessage>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-53b734b44bf36d681728",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::RequestMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-67d1d52cedf49d5e206e",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::RequestMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-54a8799242c584e0b245",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::RequestMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-44855f88d6e85cf1b256",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::RequestMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-3de92a57961cf36cdcd2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::RequestMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-06678da792a77d694e21",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d069ff87e19e83755481",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-e3de2bb98479c7c29389",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
@@ -195956,264 +194478,6 @@
         ],
         "subjectBindings": {}
       }
-    },
-    {
-      "declarationId": "rust-observed-606f462a133f6a3485b3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as alloc::string::ToString>::to_string",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-951f489a762765511894",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::any::Any>::type_id",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-d93293a6ad0f24b62661",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::Borrow<kmipkit_protocol::message::ResponseMessage>>::borrow",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2360ae4ca7ffab04d3d9",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::BorrowMut<kmipkit_protocol::message::ResponseMessage>>::borrow_mut",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-f43c60d6f9ae62c7e0d3",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::From<kmipkit_protocol::message::ResponseMessage>>::from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-30efcaccc77efa67b809",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::Into<U>>::into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::ResponseMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "From"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-eb03832dde98cc5166c2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::ResponseMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-0ec9f0e859bf65c0694c",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::try_from",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::ResponseMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "Into"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-728be305db0482146f36",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::Error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::ResponseMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-d1d02e6df81744568068",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::try_into",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest.",
-      "condition": {
-        "predicates": [
-          {
-            "arguments": [
-              "kmipkit_protocol::message::ResponseMessage"
-            ],
-            "kind": "traitBound",
-            "modifier": "none",
-            "subject": "U",
-            "traitPath": [
-              "core",
-              "convert",
-              "TryFrom"
-            ]
-          }
-        ],
-        "subjectBindings": {}
-      }
-    },
-    {
-      "declarationId": "rust-observed-cd31d75e46da7f50ca65",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Debug>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-c953d206dacb75cf40f2",
-      "packageId": "rust-kmipkit-protocol",
-      "kind": "associated-item",
-      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Display>::fmt",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-b46d5f3872def1fd23ba",
@@ -347795,6 +346059,570 @@
     },
     {
       "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::Owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::clone_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::borrow::ToOwned>::to_owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as alloc::string::ToString>::to_string",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::any::Any>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationError>>::borrow",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationError>>::borrow_mut",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::Clone>::clone_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::cmp::PartialEq>::ne",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::From<kmipkit_protocol::message::validation::MessageValidationError>>::from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::Into<U>>::into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryFrom<U>>::try_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::convert::TryInto<U>>::try_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::cause",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::description",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::provide",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::source",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::error::Error>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Debug>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationError as core::fmt::Display>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades. Error formatting remains payload-free as required by KMIPKIT-0006-FR-014."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::Owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::clone_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::borrow::ToOwned>::to_owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as alloc::string::ToString>::to_string",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::any::Any>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::Borrow<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::borrow::BorrowMut<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::borrow_mut",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::Clone>::clone_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::cmp::PartialEq>::ne",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::From<kmipkit_protocol::message::validation::MessageValidationErrorKind>>::from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::Into<U>>::into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryFrom<U>>::try_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::convert::TryInto<U>>::try_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Debug>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::MessageValidationErrorKind as core::fmt::Display>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
       "exportName": "<kmipkit_protocol::OpaqueObjectContext as alloc::borrow::ToOwned>::Owned",
       "reason": "Standard and blanket Rust trait implementations are language-level facilities, not separate KMIPKit facade operations. The OpaqueObjectContext type and its two variants carry the four-language capability; this feature does not add parallel C, Java, or Python methods for Rust core trait paths.",
       "approvalSource": {
@@ -348920,6 +347748,546 @@
         "evidence": "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
       },
       "evidence": "KMIPKIT-0003-FR-001, KMIPKIT-0003-FR-005, KMIPKIT-0003-FR-006; the export is a compiler-visible Rust trait implementation, while the stable result/error semantics are represented by mapped response metadata or error categories under KMIPKIT-0043-FR-013/017/021."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::Owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::clone_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as alloc::borrow::ToOwned>::to_owned",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::any::Any>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::Borrow<kmipkit_protocol::message::version::ProtocolVersion>>::borrow",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::borrow::BorrowMut<kmipkit_protocol::message::version::ProtocolVersion>>::borrow_mut",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::Clone>::clone_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::clone::CloneToUninit>::clone_to_uninit",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::Eq>::assert_receiver_is_total_eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::eq",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::cmp::PartialEq>::ne",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::From<kmipkit_protocol::message::version::ProtocolVersion>>::from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::Into<U>>::into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryFrom<U>>::try_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::convert::TryInto<U>>::try_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::fmt::Debug>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ProtocolVersion as core::hash::Hash>::hash_slice",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as alloc::string::ToString>::to_string",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::any::Any>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::Borrow<kmipkit_protocol::message::RequestMessage>>::borrow",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::borrow::BorrowMut<kmipkit_protocol::message::RequestMessage>>::borrow_mut",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::From<kmipkit_protocol::message::RequestMessage>>::from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::Into<U>>::into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryFrom<U>>::try_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::convert::TryInto<U>>::try_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Debug>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::RequestMessage as core::fmt::Display>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as alloc::string::ToString>::to_string",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::any::Any>::type_id",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::Borrow<kmipkit_protocol::message::ResponseMessage>>::borrow",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::borrow::BorrowMut<kmipkit_protocol::message::ResponseMessage>>::borrow_mut",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::From<kmipkit_protocol::message::ResponseMessage>>::from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::Into<U>>::into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryFrom<U>>::try_from",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::Error",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::convert::TryInto<U>>::try_into",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Debug>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
+    },
+    {
+      "packageId": "rust-kmipkit-protocol",
+      "exportName": "<kmipkit_protocol::ResponseMessage as core::fmt::Display>::fmt",
+      "reason": "The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "evidence": "KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-016, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021; The exact Rust standard-trait implementation is language-level value behavior, not a separate KMIPKit protocol capability. The named typed message, version, and validation APIs remain inventoried individually; their semantic capability must be mapped through the supported facades."
     },
     {
       "packageId": "rust-kmipkit-protocol",
