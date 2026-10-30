@@ -2235,9 +2235,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchResponse::len",
     ),
     (
+        "rust-observed-e7d41a3e86cf30881a7e",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::is_empty",
+    ),
+    (
         "rust-observed-c5801bf699e48dbcf6bf",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchResponse::get",
+    ),
+    (
+        "rust-observed-0b46ac635a5005a4290f",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchResponse::iter",
     ),
     (
         "rust-observed-e3630e76e3c2013468dd",

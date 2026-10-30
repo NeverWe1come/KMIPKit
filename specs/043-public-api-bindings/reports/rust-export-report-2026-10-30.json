@@ -307724,7 +307724,7 @@
         "kmipkit::ClientBatchResponse::is_empty",
         "kmipkit_client::ClientBatchResponse::is_empty"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -307747,7 +307747,7 @@
         "kmipkit::ClientBatchResponse::iter",
         "kmipkit_client::ClientBatchResponse::iter"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
