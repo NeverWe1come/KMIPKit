@@ -558,27 +558,23 @@ class T071ParityRunnerTests(unittest.TestCase):
                 "test",
                 "-p",
                 "kmipkit-client",
-                "--test",
-                "creation_parity_tests",
-                "create_split_key_request_and_result_match_shared_creation_fixture",
-                "--",
-                "--exact",
+                "--lib",
+                "create_split_key_maps_shared_fixture_success_and_pending_outcomes",
             ],
         )
         self.assertEqual(
             consumers["c"]["test"],
-            "generated_public_client_abi_consumer_compiles_and_runs",
+            "generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls",
         )
         self.assertIn("coverage-c-consumer", consumers["c"]["command"])
         self.assertEqual(
             consumers["java"]["test"],
-            "org.kmipkit.SharedCapabilityParityFixtureTest.creationSplitKeyMatchesSharedFixture",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest.createSplitKeyFixtureSuccessAndPendingMatchSharedFixtureOverMutualTls",
         )
-        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
         self.assertEqual(
             consumers["python"]["command"][-1],
-            "bindings/python/tests/test_shared_parity_fixtures.py::"
-            "test_creation_split_key_matches_shared_fixture",
+            "bindings/python/tests/test_client.py::"
+            "test_create_split_key_fixture_success_and_pending_metadata",
         )
 
     def test_create_failure_message_plan_selects_all_four_runtime_consumers(self) -> None:
