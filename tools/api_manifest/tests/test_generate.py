@@ -529,6 +529,76 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             header,
         )
 
+    def test_declared_c_symbol_signature_is_emitted_from_its_declaration(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declaration = copy.deepcopy(
+            next(
+                row
+                for row in manifest["publicDeclarations"]
+                if row.get("declarationId") == "T037:attribute-reference-kind-tag:c"
+            )
+        )
+        declaration.update(
+            {
+                "declarationId": "test-public-c-function",
+                "kind": "c-symbol",
+                "exportName": "kmipkit_test_public_declaration",
+                "cSignature": {
+                    "parameters": [
+                        {"name": "value", "kind": "scalar", "type": "uint32_t"},
+                        {
+                            "name": "out_value",
+                            "kind": "output-scalar-pointer",
+                            "type": "uint32_t *",
+                            "valueType": "uint32_t",
+                            "ownership": "none",
+                        },
+                    ],
+                    "returnType": "int32_t",
+                    "errorCategories": ["invalid_input"],
+                },
+            }
+        )
+        declaration.pop("cValue")
+        declaration.pop("cValueType")
+        manifest["publicDeclarations"].append(declaration)
+
+        header = generate.render_c_header(manifest)
+
+        self.assertIn(
+            "int32_t kmipkit_test_public_declaration(uint32_t value, uint32_t * out_value);",
+            header,
+        )
+
+    def test_blocked_c_symbol_signature_is_not_emitted(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declaration = copy.deepcopy(
+            next(
+                row
+                for row in manifest["publicDeclarations"]
+                if row.get("declarationId") == "T037:attribute-reference-kind-tag:c"
+            )
+        )
+        declaration.update(
+            {
+                "declarationId": "test-blocked-c-function",
+                "kind": "c-symbol",
+                "exportName": "kmipkit_test_blocked_declaration",
+                "declarationState": "blocked",
+                "cSignature": {
+                    "parameters": [],
+                    "returnType": "int32_t",
+                    "errorCategories": ["invalid_input"],
+                },
+            }
+        )
+        declaration.pop("cValue")
+        declaration.pop("cValueType")
+        manifest["publicDeclarations"].append(declaration)
+
+        with self.assertRaises(generate.ManifestError):
+            generate._validate_references(manifest)
+
     def test_declared_c_macro_value_must_fit_its_fixed_width_type(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         declaration = copy.deepcopy(
