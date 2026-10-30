@@ -1453,6 +1453,62 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0006-FR-001", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_t091_discover_versions_rust_trait_exports_have_exact_owner_exclusions(self) -> None:
+        prefix = "<kmipkit_protocol::DiscoverVersions"
+        unresolved = {
+            row["exportName"]
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0007"
+            and row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"].startswith(prefix)
+        }
+        exclusions = [
+            row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"].startswith(prefix)
+        ]
+        exclusion_names = {row["exportName"] for row in exclusions}
+        direct_declarations = {
+            row["exportName"]
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"].startswith("kmipkit_protocol::DiscoverVersions")
+        }
+
+        self.assertEqual(16, len(direct_declarations))
+        self.assertFalse(
+            direct_declarations & exclusion_names,
+            "concrete Discover Versions API declarations must remain individually inventoried",
+        )
+        self.assertFalse(
+            unresolved,
+            "Discover Versions types, variants, fields, and methods remain inventoried; "
+            f"only standard-trait paths may be excluded: {sorted(unresolved)[:5]}",
+        )
+        self.assertEqual(65, len(exclusions))
+        self.assertEqual(65, len(exclusion_names))
+        for exclusion in exclusions:
+            with self.subTest(export=exclusion["exportName"]):
+                self.assertIn("standard-trait implementation", exclusion["reason"])
+                self.assertIn("separately inventoried", exclusion["reason"])
+                self.assertEqual(
+                    {
+                        "kind": "feature-specification",
+                        "path": "specs/007-client-execution/spec.md",
+                        "status": "Approved",
+                    },
+                    {
+                        key: exclusion["approvalSource"][key]
+                        for key in ("kind", "path", "status")
+                    },
+                )
+                self.assertIn("KMIPKIT-0007-FR-001", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0007-FR-002", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if "DiscoverVersionsError" in exclusion["exportName"]:
+                    self.assertIn("KMIPKIT-0007-FR-013", exclusion["evidence"])
+
     def test_t091_client_execution_candidate_exports_are_reconciled(self) -> None:
         unresolved = [
             row["exportName"]
