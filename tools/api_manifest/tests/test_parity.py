@@ -462,6 +462,33 @@ class PublicApiParityTests(unittest.TestCase):
             set(case["expectedOutput"]), {"request", "response", "validation", "lifetime"}
         )
 
+    def test_t104_message_model_declarations_are_mapped_and_public_in_c(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = [
+            declaration
+            for declaration in manifest["publicDeclarations"]
+            if declaration["declarationId"].startswith("T104:")
+        ]
+        self.assertEqual(len(declarations), 42)
+        self.assertTrue(
+            all(
+                declaration["declarationState"] in {"declared", "verified"}
+                and declaration["capabilityId"] == "typed_message_model"
+                and set(declaration.get("languageMappings", {})) == set(SHARED_PARITY_LANGUAGES)
+                for declaration in declarations
+            ),
+            "T104 C declarations must have approved four-language mappings before promotion",
+        )
+        public_header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
+            encoding="utf-8"
+        )
+        missing_symbols = [
+            declaration["exportName"]
+            for declaration in declarations
+            if declaration["exportName"] not in public_header
+        ]
+        self.assertEqual(missing_symbols, [])
+
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
         case = next(
