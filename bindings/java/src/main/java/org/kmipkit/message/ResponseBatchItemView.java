@@ -1,7 +1,7 @@
 package org.kmipkit.message;
 
-import java.util.OptionalLong;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.function.Function;
 
 import org.kmipkit.NativeExtensionRegistry;

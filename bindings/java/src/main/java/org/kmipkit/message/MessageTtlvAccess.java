@@ -48,12 +48,12 @@ final class MessageTtlvAccess {
 
     static Optional<String> textString(TtlvStructure structure, int rawTag) {
         return find(structure, rawTag, value -> value.itemType() == TtlvItemType.TextString
-                ? decodeText(copyBytes(value)) : null);
+                ? decodeText(copyByteString(value)) : null);
     }
 
     static Optional<byte[]> byteString(TtlvStructure structure, int rawTag) {
         return find(structure, rawTag, value -> value.itemType() == TtlvItemType.ByteString
-                ? copyBytes(value) : null);
+                ? copyByteString(value) : null);
     }
 
     static List<Long> repeatedEnumerations(TtlvStructure structure, int rawTag) {
@@ -102,7 +102,7 @@ final class MessageTtlvAccess {
             if (value.itemType() != TtlvItemType.ByteString) {
                 return null;
             }
-            byte[] copy = copyBytes(value);
+            byte[] copy = copyByteString(value);
             try {
                 return callback.apply(copy);
             } finally {
@@ -128,7 +128,7 @@ final class MessageTtlvAccess {
         return Optional.empty();
     }
 
-    private static byte[] copyBytes(TtlvValueView value) {
+    private static byte[] copyByteString(TtlvValueView value) {
         long length = value.byteLength();
         if (length < 0 || length > Integer.MAX_VALUE) {
             throw new ResourceLimitException("KMIP message field exceeds Java array limits");
