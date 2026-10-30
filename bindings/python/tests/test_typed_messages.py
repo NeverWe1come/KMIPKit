@@ -46,6 +46,9 @@ def test_typed_message_model_is_declared_as_a_shared_four_language_fixture() -> 
 
     assert case is not None
     assert set(case["consumerTests"]) == {"rust", "c", "java", "python"}
+    assert set(case["input"]) == {"request", "response", "invalidRequest"}
+    assert set(case["expectedOutput"]) == {"request", "response", "validation", "lifetime"}
+    assert case["consumerTests"]["python"]["status"] == "available"
 
 
 def _item(raw_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:

@@ -63,7 +63,17 @@ final class SharedCapabilityParityFixtureTest {
     @Test
     void typedMessageModelFixtureIsPresentForCrossLanguageConsumers() throws IOException {
         String fixture = Files.readString(sharedFixturePath());
-        assertTrue(caseIds(fixture).contains("typed-message.ordered-open-values-and-lifetime.v1"));
+        String typedMessage = caseById(
+                fixture, "typed-message.ordered-open-values-and-lifetime.v1");
+        assertEquals(List.of("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-011",
+                        "KMIPKIT-0043-FR-013", "KMIPKIT-0043-FR-017",
+                        "KMIPKIT-0043-FR-018", "KMIPKIT-0043-FR-022"),
+                stringArrayField(typedMessage, "requirementIds"));
+        assertTrue(objectField(typedMessage, "request").contains("batchItems"));
+        assertTrue(objectField(typedMessage, "response").contains("batchItem"));
+        assertTrue(objectField(typedMessage, "invalidRequest").contains("payloadMarker"));
+        assertTrue(objectField(typedMessage, "lifetime").contains("viewSurvivesParentClose"));
+        assertTrue(typedMessage.contains("\"status\": \"available\""));
     }
 
     @Test

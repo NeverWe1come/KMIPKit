@@ -71,6 +71,7 @@ SHARED_PARITY_CASES = {
     "creation.result-message-on-failure.v1",
     "codec-limits.defaults-and-ranges.v1",
     "usage-allocation.guard-accounting.v1",
+    "typed-message.ordered-open-values-and-lifetime.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
 T029_CORE_FIXTURE_ASSERTIONS = {
@@ -433,6 +434,32 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
         self.assertTrue(
             all(mapping["status"] == "available" for mapping in case["consumerTests"].values())
+        )
+
+    def test_typed_message_fixture_covers_all_four_language_consumers(self) -> None:
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        case = next(
+            item
+            for item in fixtures["cases"]
+            if item["id"] == "typed-message.ordered-open-values-and-lifetime.v1"
+        )
+        self.assertEqual(
+            case["requirementIds"],
+            [
+                "KMIPKIT-0043-FR-010",
+                "KMIPKIT-0043-FR-011",
+                "KMIPKIT-0043-FR-013",
+                "KMIPKIT-0043-FR-017",
+                "KMIPKIT-0043-FR-018",
+                "KMIPKIT-0043-FR-022",
+            ],
+        )
+        self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
+        self.assertTrue(
+            all(mapping["status"] == "available" for mapping in case["consumerTests"].values())
+        )
+        self.assertEqual(
+            set(case["expectedOutput"]), {"request", "response", "validation", "lifetime"}
         )
 
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:

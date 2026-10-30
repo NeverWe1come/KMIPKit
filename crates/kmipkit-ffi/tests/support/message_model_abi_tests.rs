@@ -54,10 +54,35 @@ fn message_structure(items: impl IntoIterator<Item = Item>) -> Structure {
 
 #[test]
 fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
-    assert!(
-        SHARED_PARITY_FIXTURE
-            .contains("\"id\": \"typed-message.ordered-open-values-and-lifetime.v1\"")
+    let fixture: serde_json::Value = serde_json::from_str(SHARED_PARITY_FIXTURE)
+        .expect("the shared fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("the shared fixture has cases")
+        .iter()
+        .find(|case| {
+            case["id"] == "typed-message.ordered-open-values-and-lifetime.v1"
+        })
+        .expect("the typed message parity case is shared with Rust and C");
+    assert_eq!(
+        case["requirementIds"],
+        serde_json::json!([
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-011",
+            "KMIPKIT-0043-FR-013",
+            "KMIPKIT-0043-FR-017",
+            "KMIPKIT-0043-FR-018",
+            "KMIPKIT-0043-FR-022"
+        ])
     );
+    assert_eq!(case["consumerTests"]["rust"]["status"], "available");
+    assert_eq!(case["consumerTests"]["c"]["status"], "available");
+    assert!(case["input"]["request"].is_object());
+    assert!(case["input"]["response"].is_object());
+    assert!(case["input"]["invalidRequest"].is_object());
+    assert!(case["expectedOutput"]["request"].is_object());
+    assert!(case["expectedOutput"]["response"].is_object());
+    assert!(case["expectedOutput"]["validation"].is_object());
 }
 
 fn assert_structure_tags(
