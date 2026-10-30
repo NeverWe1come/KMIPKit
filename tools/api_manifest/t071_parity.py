@@ -111,6 +111,25 @@ class ParityRunnerError(ValueError):
     """Raised when a fixture does not have a supported executable consumer set."""
 
 
+def _rust_package_and_target(expected_path: str) -> tuple[str, list[str], list[str]]:
+    test_path = PurePosixPath(expected_path)
+    parts = test_path.parts
+    package_name = parts[1] if len(parts) > 1 else ""
+    if (
+        test_path.is_absolute()
+        or len(parts) < 4
+        or parts[0] != "crates"
+        or parts[2] != "tests"
+        or test_path.suffix != ".rs"
+        or any(part in {".", ".."} for part in parts)
+        or re.fullmatch(r"[a-z][a-z0-9_-]*", package_name) is None
+    ):
+        raise ParityRunnerError("Rust fixture test path is not a safe crate test path")
+    if len(parts) == 4:
+        return package_name, ["--test", test_path.stem], ["--", "--exact"]
+    return package_name, ["--lib"], []
+
+
 def _fixture_case(case_id: str) -> dict[str, Any]:
     if case_id not in CASE_TESTS:
         raise ParityRunnerError(f"unsupported T071 parity case: {case_id}")
@@ -198,25 +217,7 @@ def _consumer_command(
             raise ParityRunnerError(f"{language} fixture consumer does not match its reviewed test")
         if language == "rust":
             test_name = expected_test.rsplit("::", maxsplit=1)[-1]
-            test_path = PurePosixPath(expected_path)
-            parts = test_path.parts
-            package_name = parts[1] if len(parts) > 1 else ""
-            if (
-                test_path.is_absolute()
-                or len(parts) < 4
-                or parts[0] != "crates"
-                or parts[2] != "tests"
-                or test_path.suffix != ".rs"
-                or any(part in {".", ".."} for part in parts)
-                or re.fullmatch(r"[a-z][a-z0-9_-]*", package_name) is None
-            ):
-                raise ParityRunnerError("Rust fixture test path is not a safe crate test path")
-            if len(parts) == 4:
-                target = ["--test", test_path.stem]
-                exact_filter = ["--", "--exact"]
-            else:
-                target = ["--lib"]
-                exact_filter = []
+            package_name, target, exact_filter = _rust_package_and_target(expected_path)
             command = [
                 "cargo",
                 "test",

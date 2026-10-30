@@ -6485,3 +6485,15 @@ The runner now accepts `client-configuration.registry-isolation.v1` and resolves
 | Refactor | this evidence commit | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -q`; Python 3.12.14: `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case client-configuration.registry-isolation.v1`; `git diff --check` | Pass: all 10 runner contract tests and the selected Rust integration, compiled C, Java, and Python tests passed. The Python runtime was 3.12.14. The Java test ran with the available JDK 21.0.12; Java 17 was not available on this host and is not verified by this run. Windows aws-lc compiler-probe/NASM and linker warnings appeared, but the selected tests passed. No generated output or T071 task status changed. |
 
 The runtime command executes one selected test for each language and does not execute the full 13-case corpus. T071 remains open.
+
+### T071 schema-redaction parity case 4 of 13 (2026-10-30)
+
+The runner now accepts `errors.schema-redaction.v1` and selects its exact Rust protocol integration target, compiled C ABI harness, Java registry test, and Python registry method. Rust package selection is derived from the reviewed crate test path; a direct `tests/<name>.rs` selects `--test <name>`, while nested `tests/unit/...` remains `--lib`. The plan contract asserts the Rust package/target and the class-qualified Python selector. This is case 4 of 13; T071 remains open and complete-surface parity is not claimed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `3e7225f7d` | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner.T071ParityRunnerTests.test_schema_redaction_plan_selects_all_four_runtime_consumers -v` | Expected failure: the runner returned exit code 2 with `unsupported T071 parity case: errors.schema-redaction.v1`. |
+| Green | `90e9aaf49` | The same plan test; `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v` | Pass: the plan selected `kmipkit-protocol --test extension_redaction`, the compiled C harness, the Java method, and the class-qualified Python method; all 11 runner contract tests passed. |
+| Refactor | this evidence commit | `py -3 -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v`; Python 3.12.14: `& 'C:\Users\ramp1953\AppData\Local\Temp\kmipkit-0043-pytest-venv\Scripts\python.exe' -B tools/api_manifest/t071_parity.py --case errors.schema-redaction.v1`; `git diff --check` | Pass: all 11 runner contract tests and the selected Rust, compiled C, Java, and Python consumers passed; no whitespace errors. Python ran on 3.12.14. The Java test ran on the available JDK 21.0.12; Java 17 was unavailable and is not verified by this run. Windows aws-lc-sys compiler-probe/NASM and linker warnings appeared, but all selected tests passed. No generated output or T071 task status changed. |
+
+The runtime command executes one selected test for each language and does not execute the full 13-case corpus. T071 remains open.

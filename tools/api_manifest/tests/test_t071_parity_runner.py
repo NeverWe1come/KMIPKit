@@ -86,6 +86,17 @@ class T071ParityRunnerTests(unittest.TestCase):
             "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
         )
         self.assertEqual(
+            consumers["rust"]["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-client",
+                "--lib",
+                "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
+            ],
+        )
+        self.assertEqual(
             consumers["c"]["test"],
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         )
