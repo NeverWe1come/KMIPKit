@@ -1548,6 +1548,50 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertIn(declaration_id, operation["declarations"]["rust"])
 
+    def test_t091_get_usage_allocation_facade_maps_to_verified_operation(self) -> None:
+        declaration_id = "rust-observed-15202a6508bea1672eae"
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == declaration_id
+        )
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+        )
+
+        self.assertEqual(
+            "kmipkit::ClientRequest::get_usage_allocation", declaration["exportName"]
+        )
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual(
+            "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", declaration["capabilityId"]
+        )
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit",
+                    "name": "kmipkit::ClientRequest::get_usage_allocation",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_get_usage_allocation",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+                },
+            },
+            declaration["languageMappings"],
+        )
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
