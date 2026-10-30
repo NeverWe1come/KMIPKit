@@ -61,6 +61,28 @@ def test_transport_configuration_keeps_endpoint_trust_and_timeout_choices_explic
     assert configuration.connect_timeout == client.TimeoutLimit.bounded(3, 250_000_000)
 
 
+@pytest.mark.parametrize(
+    ("major", "minor"),
+    [
+        (-(2**31) - 1, 1),
+        (2**31, 1),
+        (2, -(2**31) - 1),
+        (2, 2**31),
+    ],
+)
+def test_protocol_version_rejects_components_outside_signed_ttlv_integer_range(
+    major: int, minor: int
+) -> None:
+    with pytest.raises(ValueError, match="signed 32-bit"):
+        client.ProtocolVersion(major, minor)
+
+
+@pytest.mark.parametrize("value", [True, 2.1, "2", None])
+def test_protocol_version_rejects_non_integer_components(value: object) -> None:
+    with pytest.raises(TypeError, match="must be an integer"):
+        client.ProtocolVersion(value, 1)  # type: ignore[arg-type]
+
+
 def test_transport_config_rejects_file_backed_revocation_lists_without_echoing_path() -> None:
     path = Path("revocation-list-not-read.der")
 
