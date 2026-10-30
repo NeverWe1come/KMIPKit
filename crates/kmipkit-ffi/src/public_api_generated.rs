@@ -2616,6 +2616,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::certify",
     ),
     (
+        "rust-observed-88587ed0c8f26b4fe362",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::certify_with_options",
+    ),
+    (
+        "rust-observed-7da0265a86b0aaaa0e43",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::check",
+    ),
+    (
+        "rust-observed-08b1b13b97c0d8bcb4b7",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::check_with_options",
+    ),
+    (
         "rust-observed-4bb888b1c681b20dd34d",
         "rust-kmipkit-client",
         "kmipkit_client::Client::derive_key",

@@ -301343,7 +301343,7 @@
         "kmipkit::Client::certify_with_options",
         "kmipkit_client::Client::certify_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -301366,7 +301366,7 @@
         "kmipkit::Client::check",
         "kmipkit_client::Client::check"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -301389,7 +301389,7 @@
         "kmipkit::Client::check_with_options",
         "kmipkit_client::Client::check_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
