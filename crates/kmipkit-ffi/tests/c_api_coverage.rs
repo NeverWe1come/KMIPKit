@@ -884,6 +884,11 @@ enum CreationResultMessageExpectation {
     RejectsDivergence,
 }
 
+struct CreateKeyPairParityFixture {
+    input: serde_json::Value,
+    expected_output: serde_json::Value,
+}
+
 fn creation_result_message_fixture_case() -> serde_json::Value {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/fixtures/api/shared-capability-parity.json"
@@ -1067,8 +1072,10 @@ fn run_generated_public_client_abi_consumer(
         fixture_versions.clone(),
         server_result_message.as_bytes().to_vec(),
         create_input,
-        create_key_pair_case["input"].clone(),
-        create_key_pair_expected.clone(),
+        CreateKeyPairParityFixture {
+            input: create_key_pair_case["input"].clone(),
+            expected_output: create_key_pair_expected.clone(),
+        },
     );
 
     let executable = CString::new("kmipkit_public_client_consumer")
@@ -1167,8 +1174,7 @@ fn spawn_public_client_batch_peer(
     fixture_versions: Vec<(i32, i32)>,
     failure_message: Vec<u8>,
     create_input: serde_json::Value,
-    create_key_pair_input: serde_json::Value,
-    create_key_pair_expected: serde_json::Value,
+    create_key_pair: CreateKeyPairParityFixture,
 ) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         let (stream, _) = listener
@@ -1191,7 +1197,7 @@ fn spawn_public_client_batch_peer(
             "compiled C consumer must transmit the Create request represented by the shared fixture"
         );
         assert!(
-            c_request_contains_create_key_pair_fixture(&request, &create_key_pair_input),
+            c_request_contains_create_key_pair_fixture(&request, &create_key_pair.input),
             "compiled C consumer must transmit the Create Key Pair request represented by the shared fixture"
         );
         assert!(
@@ -1229,7 +1235,7 @@ fn spawn_public_client_batch_peer(
         tls.write_all(&mixed_discover_versions_response(
             &fixture_versions,
             &failure_message,
-            &create_key_pair_expected,
+            &create_key_pair.expected_output,
         ))
         .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -1237,11 +1243,19 @@ fn spawn_public_client_batch_peer(
     })
 }
 
-fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
-    const BATCH_ITEM: u32 = 0x0042_000f;
-    const OPERATION: u32 = 0x0042_005c;
-    const CREATE_KEY_PAIR: u32 = 2;
-    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+struct CreateKeyPairRequestShape {
+    groups: Vec<(u32, Vec<u32>)>,
+}
+
+fn fixture_attribute_tags(input: &serde_json::Value, field: &str) -> Option<Vec<u32>> {
+    input[field]["attributeTagsInOrder"]
+        .as_array()?
+        .iter()
+        .map(|tag| u32::from_str_radix(tag.as_str()?.strip_prefix("0x")?, 16).ok())
+        .collect()
+}
+
+fn create_key_pair_request_shape(input: &serde_json::Value) -> Option<CreateKeyPairRequestShape> {
     const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
     const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
     const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
@@ -1249,26 +1263,56 @@ fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json
     const PRIVATE_MASKS: u32 = 0x0042_0164;
     const PUBLIC_MASKS: u32 = 0x0042_0165;
 
-    fn fixture_tags(input: &serde_json::Value, field: &str) -> Option<Vec<u32>> {
-        input[field]["attributeTagsInOrder"]
-            .as_array()?
-            .iter()
-            .map(|tag| u32::from_str_radix(tag.as_str()?.strip_prefix("0x")?, 16).ok())
-            .collect()
-    }
-
     if input["operation"] != "Create Key Pair"
         || input["effectiveTable191ValuesEqual"].as_bool() != Some(true)
     {
-        return false;
+        return None;
     }
-    let Some(common_tags) = fixture_tags(input, "commonAttributes") else {
-        return false;
-    };
-    let Some(private_tags) = fixture_tags(input, "privateKeyAttributes") else {
-        return false;
-    };
-    let Some(public_tags) = fixture_tags(input, "publicKeyAttributes") else {
+    let common_tags = fixture_attribute_tags(input, "commonAttributes")?;
+    let private_tags = fixture_attribute_tags(input, "privateKeyAttributes")?;
+    let public_tags = fixture_attribute_tags(input, "publicKeyAttributes")?;
+    let mask_presence = [
+        (
+            COMMON_MASKS,
+            input["protectionStorageMasks"]["commonPresent"].as_bool()?,
+        ),
+        (
+            PRIVATE_MASKS,
+            input["protectionStorageMasks"]["privatePresent"].as_bool()?,
+        ),
+        (
+            PUBLIC_MASKS,
+            input["protectionStorageMasks"]["publicPresent"].as_bool()?,
+        ),
+    ];
+    if [
+        "commonAttributes",
+        "privateKeyAttributes",
+        "publicKeyAttributes",
+    ]
+    .into_iter()
+    .any(|group| input[group]["present"].as_bool() != Some(true))
+    {
+        return None;
+    }
+    let mut groups = vec![
+        (COMMON_ATTRIBUTES, common_tags),
+        (PRIVATE_KEY_ATTRIBUTES, private_tags),
+        (PUBLIC_KEY_ATTRIBUTES, public_tags),
+    ];
+    groups.extend(
+        mask_presence
+            .into_iter()
+            .filter_map(|(tag, present)| present.then_some((tag, Vec::new()))),
+    );
+    Some(CreateKeyPairRequestShape { groups })
+}
+
+fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const CREATE_KEY_PAIR: u32 = 2;
+
+    let Some(shape) = create_key_pair_request_shape(input) else {
         return false;
     };
     let Some(root) = decode_test_request(encoded) else {
@@ -1279,94 +1323,77 @@ fn c_request_contains_create_key_pair_fixture(encoded: &[u8], input: &serde_json
             return false;
         };
         let mut matching = message.children().iter().filter(|item| {
-            item.tag().raw() == BATCH_ITEM
-                && item.with_value(|value| {
-                    let ValueView::Structure(batch_item) = value else {
-                        return false;
-                    };
-                    batch_item.children().iter().any(|field| {
-                        field.tag().raw() == OPERATION
-                            && field.with_value(|value| {
-                                matches!(value, ValueView::Enumeration(actual) if *actual == CREATE_KEY_PAIR)
-                            })
-                    })
-                })
+            item.tag().raw() == BATCH_ITEM && c_batch_item_has_operation(item, CREATE_KEY_PAIR)
         });
         let Some(batch_item) = matching.next() else {
             return false;
         };
-        if matching.next().is_some() {
-            return false;
-        }
-        batch_item.with_value(|value| {
-            let ValueView::Structure(batch_item) = value else {
-                return false;
-            };
-            let Some(payload) = batch_item.children().iter().find(|field| {
-                field.tag().raw() == REQUEST_PAYLOAD
-            }) else {
-                return false;
-            };
-            payload.with_value(|value| {
-                let ValueView::Structure(payload) = value else {
+        matching.next().is_none()
+            && batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
                     return false;
                 };
-                let expected = [
-                    (COMMON_ATTRIBUTES, Some(common_tags.as_slice())),
-                    (PRIVATE_KEY_ATTRIBUTES, Some(private_tags.as_slice())),
-                    (PUBLIC_KEY_ATTRIBUTES, Some(public_tags.as_slice())),
-                    (
-                        COMMON_MASKS,
-                        input["protectionStorageMasks"]["commonPresent"]
-                            .as_bool()
-                            .filter(|present| *present)
-                            .map(|_| [].as_slice()),
-                    ),
-                    (
-                        PRIVATE_MASKS,
-                        input["protectionStorageMasks"]["privatePresent"]
-                            .as_bool()
-                            .filter(|present| *present)
-                            .map(|_| [].as_slice()),
-                    ),
-                    (
-                        PUBLIC_MASKS,
-                        input["protectionStorageMasks"]["publicPresent"]
-                            .as_bool()
-                            .filter(|present| *present)
-                            .map(|_| [].as_slice()),
-                    ),
-                ]
-                .into_iter()
-                .filter_map(|(tag, child_tags)| child_tags.map(|child_tags| (tag, child_tags)))
-                .collect::<Vec<_>>();
-                payload.children().len() == expected.len()
-                    && payload
-                        .children()
-                        .iter()
-                        .zip(expected)
-                        .all(|(actual, (tag, child_tags))| {
-                            actual.tag().raw() == tag
-                                && actual.with_value(|value| {
-                                    let ValueView::Structure(actual_group) = value else {
-                                        return false;
-                                    };
-                                    actual_group
-                                        .children()
-                                        .iter()
-                                        .map(|child| child.tag().raw())
-                                        .eq(child_tags.iter().copied())
-                                        && (child_tags.is_empty()
-                                            || actual_group.children().iter().all(|child| {
-                                                child.with_value(|value| {
-                                                    matches!(value, ValueView::Enumeration(raw) if *raw == 0xdead_beef)
-                                                })
-                                            }))
-                                })
-                        })
+                c_create_key_pair_payload_matches(&batch_item, &shape)
             })
+    })
+}
+
+fn c_batch_item_has_operation(item: &Item, operation: u32) -> bool {
+    const OPERATION: u32 = 0x0042_005c;
+
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        c_unique_child_index(&batch_item, OPERATION).is_some_and(|index| {
+            batch_item.children()[index].with_value(
+                |value| matches!(value, ValueView::Enumeration(actual) if *actual == operation),
+            )
         })
     })
+}
+
+fn c_create_key_pair_payload_matches(
+    batch_item: &kmipkit_ttlv::StructureView<'_>,
+    shape: &CreateKeyPairRequestShape,
+) -> bool {
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+
+    c_unique_child_index(batch_item, REQUEST_PAYLOAD).is_some_and(|index| {
+        batch_item.children()[index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            payload.children().len() == shape.groups.len()
+                && payload
+                    .children()
+                    .iter()
+                    .zip(&shape.groups)
+                    .all(|(item, (tag, child_tags))| {
+                        c_attribute_group_matches(item, *tag, child_tags)
+                    })
+        })
+    })
+}
+
+fn c_attribute_group_matches(item: &Item, expected_tag: u32, child_tags: &[u32]) -> bool {
+    item.tag().raw() == expected_tag
+        && item.with_value(|value| {
+            let ValueView::Structure(group) = value else {
+                return false;
+            };
+            group.children().len() == child_tags.len()
+                && group
+                    .children()
+                    .iter()
+                    .zip(child_tags)
+                    .all(|(child, expected_child_tag)| {
+                        child.tag().raw() == *expected_child_tag
+                            && child.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(raw) if *raw == 0xdead_beef)
+                            })
+                    })
+        })
 }
 
 fn c_request_contains_create_fixture(encoded: &[u8], input: &serde_json::Value) -> bool {
