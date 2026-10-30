@@ -1612,6 +1612,9 @@ class T076ClientMappingTests(unittest.TestCase):
         profile_validation_context_readback = {
             "kmipkit.client.ProfileValidationContext.object_states"
         }
+        profile_readback_declarations = (
+            profile_object_state_readbacks | profile_validation_context_readback
+        )
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1646,10 +1649,14 @@ class T076ClientMappingTests(unittest.TestCase):
             | async_outcome_lifecycle_exclusions
             | profile_model_dataclass_exclusions
             | profile_validation_selection_repr_exclusion
-            | profile_object_state_readbacks
-            | profile_validation_context_readback
             | {"kmipkit.metadata.Version.__init__"}
         )
+        for path in sorted(profile_readback_declarations):
+            with self.subTest(profile_readback=path):
+                self.assertIn(path, observed)
+                self.assertIn(path, declarations)
+                self.assertNotIn(path, exclusions)
+
         for path in sorted(exact_exclusions):
             with self.subTest(excluded_export=path):
                 self.assertIn(path, observed)

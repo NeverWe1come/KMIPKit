@@ -645,7 +645,7 @@ class PublicApiParityTests(unittest.TestCase):
         for export in expected:
             with self.subTest(export=export):
                 row = exclusions[export]
-                self.assertIn("internal JNI bridge", row["reason"])
+                self.assertIn("JNI bridge plumbing", row["reason"])
                 self.assertEqual("specs/043-public-api-bindings/spec.md", row["approvalSource"]["path"])
 
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:

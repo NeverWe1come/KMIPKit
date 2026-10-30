@@ -7796,102 +7796,6 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.original_creation_date_present",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.protection_use_started",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.unique_identifier",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_count",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_present",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. This value is supplied by the caller when creating the state model.",
-      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_total",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileObjectState readback repeats caller-known constructor inputs; the mapped model and builder methods represent the four-language capability, so the readback is not a separate KMIP behavior."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped.",
       "exportName": "kmipkit.client.ProfileValidationContext.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -7992,18 +7896,6 @@
       "exportName": "kmipkit.client.ProfileValidationContext.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact ProfileValidationContext member is dataclass-generated Python introspection or storage metadata, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0010-FR-005, FR-012, FR-013, FR-014, and FR-019 for T036; the type, construction, builder, and per-exchange execution capabilities are separately mapped. Entries are immutable caller-supplied context inputs, not fetched or inferred.",
-      "exportName": "kmipkit.client.ProfileValidationContext.object_states",
-      "packageId": "python-kmipkit",
-      "reason": "This exact ProfileValidationContext readback exposes caller-supplied immutable context inputs; context construction and per-exchange execution are mapped, so it is not a separate KMIP behavior."
     },
     {
       "approvalSource": {
@@ -21468,6 +21360,558 @@
       "exportName": "org.kmipkit.message.ProtocolVersion.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java record method is compiler-provided value boilerplate, not a separate KMIPKit protocol capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.equals",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.hashCode",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.equals",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.hashCode",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.equals",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.hashCode",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection.equals",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection.hashCode",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "evidence": "Reviewed against KMIPKIT-0010-FR-005/012/013/014/019 and KMIPKIT-0043-FR-021. Java record equality, hashCode, and toString are language-level value behavior; the public profile types and supported construction/exchange capabilities are represented by mapped declarations.",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This Java record method provides generic value equality or diagnostic formatting, not a separate KMIPKit profile-validation capability. The profile model and functional fields are mapped separately; the record toString implementations redact caller-supplied object state."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.MESSAGE_EXTENSION_VIEW",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_BATCH_ITEM_VIEW",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_HEADER_VIEW",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REQUEST_MESSAGE",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RESPONSE_BATCH_ITEM_VIEW",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RESPONSE_HEADER_VIEW",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.RESPONSE_MESSAGE",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.messageExtensionViewTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestBatchItemExtensionAt",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestBatchItemExtensionCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestBatchItemViewOperation",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestBatchItemViewTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestHeaderViewBatchCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestHeaderViewProtocolVersion",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestHeaderViewTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestMessageBatchItemAt",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestMessageBatchItemCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestMessageFromTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestMessageHeader",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.requestMessageTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseBatchItemExtensionAt",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseBatchItemExtensionCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewOperation",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewResultStatus",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseBatchItemViewTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseHeaderViewBatchCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseHeaderViewProtocolVersion",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseHeaderViewTimeStamp",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseHeaderViewTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageBatchItemAt",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageBatchItemCount",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageFromTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageHeader",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/010/021/022. NativeExtensionRegistry is documented as an internal JNI bridge; the typed message classes are the supported Java capability and are mapped in the public API manifest.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.responseMessageTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This public static member is internal raw-handle JNI bridge plumbing for the typed message model. Applications use the mapped org.kmipkit.message facade; the bridge path has no independent product-level capability."
     }
   ],
   "capabilities": [
@@ -23370,7 +23814,9 @@
           "kmipkit_client_execute_with_profiles_and_context_and_options_v1",
           "kmipkit_client_execute_with_profiles_and_options_v1",
           "kmipkit_profile_object_state_v1_t",
+          "kmipkit_profile_object_state_v1_t.batch_item_index",
           "kmipkit_profile_validation_context_v1_t",
+          "kmipkit_profile_validation_context_v1_t.object_states",
           "kmipkit_profile_validation_selection_v1_t"
         ],
         "java": [
@@ -23379,6 +23825,15 @@
           "org.kmipkit.extensions.Client.executeWithProfilesAndContextAndOptions",
           "org.kmipkit.extensions.Client.executeWithProfilesAndOptions",
           "org.kmipkit.extensions.ProfileObjectState",
+          "org.kmipkit.extensions.ProfileObjectState.<init>",
+          "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+          "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+          "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+          "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+          "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+          "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
           "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationChangedCount",
           "org.kmipkit.extensions.ProfileObjectState.withGetUsageAllocationPerformed",
           "org.kmipkit.extensions.ProfileObjectState.withOriginalCreationDatePresent",
@@ -23387,8 +23842,15 @@
           "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsPresent",
           "org.kmipkit.extensions.ProfileObjectState.withUsageLimitsTotal",
           "org.kmipkit.extensions.ProfileValidationContext",
+          "org.kmipkit.extensions.ProfileValidationContext.<init>",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
+          "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
+          "org.kmipkit.extensions.ProfileValidationContext.objectStates",
           "org.kmipkit.extensions.ProfileValidationContext.withObjectState",
           "org.kmipkit.extensions.ProfileValidationSelection",
+          "org.kmipkit.extensions.ProfileValidationSelection.<init>",
           "org.kmipkit.extensions.ProfileValidationSelection.profileIds"
         ],
         "python": [
@@ -23397,6 +23859,14 @@
           "kmipkit.client.Client.execute_with_profiles_and_context_and_options",
           "kmipkit.client.Client.execute_with_profiles_and_options",
           "kmipkit.client.ProfileObjectState",
+          "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+          "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+          "kmipkit.client.ProfileObjectState.original_creation_date_present",
+          "kmipkit.client.ProfileObjectState.protection_use_started",
+          "kmipkit.client.ProfileObjectState.unique_identifier",
+          "kmipkit.client.ProfileObjectState.usage_limits_count",
+          "kmipkit.client.ProfileObjectState.usage_limits_present",
+          "kmipkit.client.ProfileObjectState.usage_limits_total",
           "kmipkit.client.ProfileObjectState.with_get_usage_allocation_changed_count",
           "kmipkit.client.ProfileObjectState.with_get_usage_allocation_performed",
           "kmipkit.client.ProfileObjectState.with_original_creation_date_present",
@@ -23405,6 +23875,7 @@
           "kmipkit.client.ProfileObjectState.with_usage_limits_present",
           "kmipkit.client.ProfileObjectState.with_usage_limits_total",
           "kmipkit.client.ProfileValidationContext",
+          "kmipkit.client.ProfileValidationContext.object_states",
           "kmipkit.client.ProfileValidationContext.with_object_state",
           "kmipkit.client.ProfileValidationSelection",
           "kmipkit.client.ProfileValidationSelection.profile_ids"
@@ -192844,7 +193315,7 @@
       "declarationId": "T036:python:kmipkit_client_ProfileValidationSelection_profile_ids",
       "declarationState": "declared",
       "exportName": "kmipkit.client.ProfileValidationSelection.profile_ids",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_profile_validation_selection_v1_t",
@@ -206993,6 +207464,1039 @@
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:75e76739f6b3e73366ce",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationSelection.<init>",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_selection_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationSelection.<init>",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationSelection",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationSelection::new",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:b1a6936c5e8c25b32634",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:dd674bdbd0dcf504f8c1",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.original_creation_date_present",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:901053ff199bca1a1b5d",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_present",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:341492c34c827abf044a",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.protection_use_started",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:17cfbcc60d899bac0b3a",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:6f16d6dbd13e11da31aa",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:7ec4a4cb436547ded1db",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_total",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:e4c99a7250fef4043473",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:42a87f182654e2235e86",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileObjectState.<init>",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ProfileObjectState(java.lang.String)",
+        "public org.kmipkit.extensions.ProfileObjectState(java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Long, java.lang.Long)"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.<init>",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState::new",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:57aa827867c107b074d4",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.<init>",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ProfileValidationContext()",
+        "public org.kmipkit.extensions.ProfileValidationContext(java.util.List<org.kmipkit.extensions.ProfileValidationContext$Entry>)"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_context_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.<init>",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext::new",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:895f0534160aeacb65ce",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.objectStates",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_context_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.objectStates",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext.object_states",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:d179f9000c50c2c28ef0",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_context_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.Entry",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:78f2a7717dd46ff95ad3",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_context_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.Entry.<init>",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext.with_object_state",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext::with_object_state",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:297df73dace2a9f2f052",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t.batch_item_index",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.Entry.batchItemIndex",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext.object_states",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext::with_object_state",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:java:f4316e03e3a877bb432f",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.Entry.state",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:2fa0db0edd44879832dd",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.unique_identifier",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:41f7756fafe9a2e75e9f",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.original_creation_date_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.originalCreationDatePresent",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.original_creation_date_present",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:fc27ed312047a72c4551",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_present",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsPresent",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_present",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:9bd7bcd940fc938e16bf",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.protection_use_started",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.protectionUseStarted",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.protection_use_started",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:b533dccca3f07a3f3b66",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationPerformed",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.get_usage_allocation_performed",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:97a5b33a8ad48a238ba4",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.getUsageAllocationChangedCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.get_usage_allocation_changed_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:e84e7bc2134cb5502bf8",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_total",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsTotal",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_total",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:7c052a763610f70ee404",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileObjectState.usage_limits_count",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_object_state_v1_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileObjectState.usageLimitsCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileObjectState.usage_limits_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileObjectState",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed.",
+        "kind": "feature-specification",
+        "path": "specs/010-profile-conformance/spec.md",
+        "status": "Accepted"
+      },
+      "capabilityId": "client_profile_validation",
+      "declarationId": "T036:python:354a99dfa877ae238a9f",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.ProfileValidationContext.object_states",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_profile_validation_context_v1_t.object_states",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ProfileValidationContext.objectStates",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ProfileValidationContext.object_states",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ProfileValidationContext",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0010-FR-005",
+        "KMIPKIT-0010-FR-012",
+        "KMIPKIT-0010-FR-013",
+        "KMIPKIT-0010-FR-014",
+        "KMIPKIT-0010-FR-019",
+        "KMIPKIT-0043-FR-021"
       ]
     }
   ],
