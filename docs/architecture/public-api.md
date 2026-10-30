@@ -220,6 +220,14 @@ or automatically Poll, Cancel, wait, or retry. See the
 [Spanish message-model guide](../user-guide/es/modelo-mensaje.md) for the
 application-facing behavior.
 
+The Rust, C, Java, and Python message-model consumers are checked against the
+same executable parity fixture. It covers source order, unknown operation and
+result values, unknown bit-mask bits and extension tags, field presence and
+effective defaults, batch-item association, payload-free validation metadata,
+and retained-view lifetime after owner release. This verifies shared API
+behavior; it does not claim that a server accepts a particular operation or
+extension.
+
 ## Builder policy
 
 Builders use ordinary strongly typed state and return detailed validation

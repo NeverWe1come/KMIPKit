@@ -195,3 +195,10 @@ fast on ABI mismatch.
 A 1.0 feature is complete only when Rust, C, Java, and Python expose equivalent
 high level, typed, and generic TTLV capability with tests and documentation.
 Language APIs remain idiomatic; parity concerns semantics rather than spelling.
+Typed request and response messages use one checked-in executable fixture
+consumed by Rust, a compiled C caller, Java 17/JNI, and Python 3.12/CFFI. It
+asserts the same ordered fields, open raw values and bit-mask bits, omitted
+versus effective defaults, batch association, extension contents, safe
+validation kind/index and redaction, and owner/view release behavior in each
+consumer. The fixture is a library-surface contract, not KMIP server
+interoperability evidence.

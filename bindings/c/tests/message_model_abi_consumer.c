@@ -3,8 +3,8 @@
 
 #include "kmipkit.h"
 
-/* Private prototypes for KMIPKIT-0006 declarations withheld from the public header until
- * Java and Python parity is complete. The manifest-generated internal header will replace these. */
+/* Private prototypes let this compiled consumer exercise the accepted typed-message C ABI while
+ * its public declarations remain blocked in the manifest pending T104 promotion and audit. */
 struct kmipkit_request_message_t;
 struct kmipkit_request_header_view_t;
 struct kmipkit_request_batch_item_view_t;
