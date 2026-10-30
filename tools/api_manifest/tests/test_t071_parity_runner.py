@@ -706,7 +706,19 @@ class T071ParityRunnerTests(unittest.TestCase):
             consumers["c"]["test"],
             "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
         )
-        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["c"]["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-ffi",
+                "--features",
+                "coverage-c-consumer",
+                "--lib",
+                "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+            ],
+        )
         self.assertEqual(
             consumers["java"]["test"],
             "org.kmipkit.ClientFacadeTlsIntegrationTest."
