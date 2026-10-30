@@ -227,20 +227,20 @@ CASE_TESTS = {
     },
     CREATE_FAILURE_MESSAGE_CASE: {
         "rust": (
-            "crates/kmipkit-client/tests/creation_parity_tests.rs",
-            "creation_result_message_fixture_is_limited_to_operation_failure",
+            "crates/kmipkit-client/tests/unit/create_execution_tests.rs",
+            "create_failure_preserves_result_and_does_not_retry",
         ),
         "c": (
             "crates/kmipkit-ffi/tests/c_api_coverage.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
-            "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
-            "org.kmipkit.extensions.CreationResultValueTest#failureResultMessageMatchesTheSharedFixture",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         ),
         "python": (
-            "bindings/python/tests/test_shared_parity_fixtures.py",
-            "test_creation_result_message_matches_failure_fixture",
+            "bindings/python/tests/test_client.py",
+            "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
         ),
     },
     CODEC_LIMITS_CASE: {

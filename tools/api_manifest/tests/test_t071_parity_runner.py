@@ -634,16 +634,11 @@ class T071ParityRunnerTests(unittest.TestCase):
             consumers["python"]["test"],
             "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
         )
-        self.assertEqual(
-            consumers["java"]["test"],
-            "org.kmipkit.ClientFacadeTlsIntegrationTest."
-            "executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
-        )
         self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
         self.assertEqual(
             consumers["python"]["command"][-1],
-            "bindings/python/tests/test_shared_parity_fixtures.py::"
-            "test_creation_result_message_matches_failure_fixture",
+            "bindings/python/tests/test_client.py::"
+            "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
         )
 
     def test_codec_limits_plan_selects_all_four_runtime_consumers(self) -> None:

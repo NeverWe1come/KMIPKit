@@ -1033,6 +1033,12 @@ final class ClientFacadeTlsIntegrationTest {
         String createExpected = SharedCapabilityParityFixtureTest.objectField(createCase, "expectedOutput");
         String createIdentifier = SharedCapabilityParityFixtureTest.objectField(createExpected, "uniqueIdentifier");
         long createObjectType = SharedCapabilityParityFixtureTest.numberField(createInput, "objectType");
+        String creationFailureCase = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "creation.result-message-on-failure.v1");
+        String creationFailureExpected = SharedCapabilityParityFixtureTest.objectField(
+                creationFailureCase, "expectedOutput");
+        String creationFailureMessage = SharedCapabilityParityFixtureTest.stringField(
+                creationFailureExpected, "resultMessage");
         String keyPairCase = SharedCapabilityParityFixtureTest.caseById(fixture,
                 "creation.key-pair.request-response.v1");
         String keyPairInput = SharedCapabilityParityFixtureTest.objectField(keyPairCase, "input");
@@ -1120,7 +1126,8 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setSoTimeout(10_000);
         FutureTask<byte[]> peer = new FutureTask<>(
                 () -> serveOneResponse(listener,
-                        mixedResponseMessage(requestIds, expectedCorrelation, expectedSupportedVersions)));
+                        mixedResponseMessage(requestIds, expectedCorrelation, expectedSupportedVersions,
+                                creationFailureMessage)));
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -1326,10 +1333,13 @@ final class ClientFacadeTlsIntegrationTest {
                 assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
                         createExpected, "resultMessagePresencePreserved")));
 
-                assertEquals(1, creationFailed.resultStatus());
-                assertEquals(5, creationFailed.resultReason().orElseThrow());
-                assertEquals(1, creationFailed.operation());
-                assertEquals(java.util.Optional.of("création refusée ✓"), creationFailed.resultMessage());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                        creationFailureExpected, "resultStatus"), creationFailed.resultStatus());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                        creationFailureExpected, "resultReason"), creationFailed.resultReason().orElseThrow());
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(
+                        creationFailureExpected, "operation"), creationFailed.operation());
+                assertEquals(java.util.Optional.of(creationFailureMessage), creationFailed.resultMessage());
                 assertTrue(creationFailed.createResponse().isEmpty());
                 assertTrue(creationFailed.createKeyPairResponse().isEmpty());
                 assertTrue(creationFailed.createSplitKeyUniqueIdentifiers().isEmpty());
@@ -4904,6 +4914,12 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] mixedResponseMessage(List<byte[]> fixtureItemIds, byte[] correlation,
             List<ProtocolVersion> supportedVersions) throws Exception {
+        return mixedResponseMessage(fixtureItemIds, correlation, supportedVersions,
+                "création refusée ✓");
+    }
+
+    private static byte[] mixedResponseMessage(List<byte[]> fixtureItemIds, byte[] correlation,
+            List<ProtocolVersion> supportedVersions, String creationFailureMessage) throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
@@ -4941,7 +4957,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] createFailure = structure(0x42000f,
                 enumeration(0x42005c, 1), item(0x420093, 8, uniqueBatchItemId(5)),
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5),
-                item(0x42007d, 7, "création refusée ✓".getBytes(StandardCharsets.UTF_8)));
+                item(0x42007d, 7, creationFailureMessage.getBytes(StandardCharsets.UTF_8)));
         byte[] createKeyPairPayload = structure(0x42007c,
                 enumeration(0x420066, 0xffff_ffff),
                 item(0x42006f, 7, "public-key-α".getBytes(StandardCharsets.UTF_8)));

@@ -42,7 +42,6 @@ const RESULT_MESSAGE: u32 = 0x0042_007d;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const SUCCESS: u32 = 0;
-const OPERATION_FAILED: u32 = 1;
 const OPERATION_PENDING: u32 = 2;
 const SECRET_SENTINEL: &[u8] = b"KMIP_CREATE_SECRET_SENTINEL_2391";
 const RESULT_MESSAGE_TEXT: &str = "création refusée ✓";
@@ -104,15 +103,19 @@ fn success_payload(identifier: &str) -> Structure {
 }
 
 fn create_fixture_case() -> serde_json::Value {
+    shared_fixture_case("creation.create.request-response.v1")
+}
+
+fn shared_fixture_case(id: &str) -> serde_json::Value {
     let fixture: serde_json::Value = serde_json::from_str(SHARED_API_PARITY_FIXTURE)
         .expect("shared API parity fixture is valid JSON");
     fixture["cases"]
         .as_array()
         .expect("shared API parity fixture contains cases")
         .iter()
-        .find(|case| case["id"] == "creation.create.request-response.v1")
+        .find(|case| case["id"] == id)
         .cloned()
-        .expect("shared Create parity case exists")
+        .unwrap_or_else(|| panic!("shared API parity case {id} exists"))
 }
 
 fn create_fixture_response_payload(case: &serde_json::Value) -> Structure {
@@ -372,11 +375,28 @@ fn create_convenience_method_maps_shared_fixture_over_one_exchange() {
 
 #[test]
 fn create_failure_preserves_result_and_does_not_retry() {
+    let case = shared_fixture_case("creation.result-message-on-failure.v1");
+    let expected = &case["expectedOutput"];
+    let expected_status = u32::try_from(
+        expected["resultStatus"]
+            .as_u64()
+            .expect("fixture result status is unsigned"),
+    )
+    .expect("fixture result status fits u32");
+    let expected_reason = u32::try_from(
+        expected["resultReason"]
+            .as_u64()
+            .expect("fixture result reason is unsigned"),
+    )
+    .expect("fixture result reason fits u32");
+    let expected_message = expected["resultMessage"]
+        .as_str()
+        .expect("fixture failure Result Message is text");
     let response = response_bytes([response_batch_item(
         Some(b"create-failure"),
-        OPERATION_FAILED,
-        Some(5),
-        Some(RESULT_MESSAGE_TEXT),
+        expected_status,
+        Some(expected_reason),
+        Some(expected_message),
         None,
         None,
     )]);
@@ -392,22 +412,23 @@ fn create_failure_preserves_result_and_does_not_retry() {
     let ClientBatchOutcome::CreateCompleted(response) = result.get(0).unwrap().outcome() else {
         panic!("server Failure is a completed Create result");
     };
-    assert_eq!(response.result().status().raw(), OPERATION_FAILED);
+    assert_eq!(response.result().status().raw(), expected_status);
     assert_eq!(
         response
             .result()
             .reason()
             .map(kmipkit_protocol::ResultReason::raw),
-        Some(5)
+        Some(expected_reason)
     );
     assert_eq!(
         response
             .result()
             .message()
             .map(kmipkit_protocol::ResultMessage::as_str),
-        Some(RESULT_MESSAGE_TEXT)
+        Some(expected_message)
     );
-    assert!(!format!("{response:?}").contains(RESULT_MESSAGE_TEXT));
+    assert!(response.unique_identifier().is_none());
+    assert!(!format!("{response:?}").contains(expected_message));
     assert!(!format!("{result:?}").contains(RESULT_MESSAGE_TEXT));
     assert!(
         result

@@ -3492,7 +3492,7 @@ fn cryptographic_response_items() -> [Vec<u8>; 6] {
                     0x0042_007C,
                     [
                         ttlv_item(0x0042_0094, 0x07, response_identifier),
-                        ttlv_item(0x0042_00C7, 0x08, b"signature-response-data"),
+                        ttlv_item(0x0042_00C3, 0x08, b"signature-response-data"),
                         ttlv_item(0x0042_00D6, 0x08, &correlation),
                     ],
                 ),
