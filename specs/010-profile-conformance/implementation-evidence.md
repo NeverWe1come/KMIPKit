@@ -8668,3 +8668,15 @@ protected-release run remains a post-integration gate, and Baseline remains
 ## T057 coverage restoration follow-up (2026-10-30)
 
 Red: PR CI run [40983437373, attempt 1](https://github.com/NeverWe1come/KMIPKit/actions/runs/40983437373) on `137fbaaa05bd7295d47dceee85daf29c42c12d0f` failed its restored changed-Rust threshold at 7,623/8,113 executable lines (93.96%). The gate requires at least 7,708 covered lines, so the baseline was short by 85. This is the required Red evidence for the T057 coverage closeout; no threshold or CI exception was changed.
+
+Coverage tests now exercise the Usage Limits wrapper and reference forms, contextual state rules, nested wrong-type values and a non-Long Integer Total; Original Creation Date state; malformed Query Profile Information; wrong-type Message Extension contents; and timestamp-sequence Debug redaction. The added response-correlation case covers a response with no Operation. KMIP test cases cite Specification v2.1 §§4.38, 4.59, 5.5, 6.1.40, 9.13, and 11.56. No production behavior, catalog input, generated output, or threshold changed.
+
+Green local verification:
+
+- `cargo test -p kmipkit-protocol --all-features --quiet` — PASS: 1,233 unit tests and all protocol integration suites and doctests.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` — PASS.
+- `cargo fmt --all --check` and `git diff --check` — PASS.
+- `cargo llvm-cov -p kmipkit-protocol --all-features --json --output-path <temporary report> --quiet` — PASS: instrumented package tests ran and the report was generated. This Windows report is diagnostic only and does not substitute for the hosted changed-Rust threshold.
+- The Linux Java/JNI job that aborted with glibc heap corruption on attempt 1 passed when that single job was rerun as attempt 2 (job `123840857573`) on the same source head. The exact updated PR head still needs CI verification.
+
+The exact-head changed-Rust coverage gate, normative-generator line coverage, selected-scope gate, and workspace aggregate gate remain pending. T057 stays open until hosted CI passes them. T026 is complete at its implementation/configuration boundary; its protected-push aggregate is the separate post-integration release gate. Baseline remains `evidence_incomplete` with no profile-support claim.

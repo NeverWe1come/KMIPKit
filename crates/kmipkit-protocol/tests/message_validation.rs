@@ -342,6 +342,24 @@ fn malformed_request_message_extension_is_rejected() {
         item(CRITICALITY_INDICATOR, Value::boolean(false)),
         item(VENDOR_EXTENSION, Value::structure(Structure::new())),
     ]);
+    let wrong_vendor_extension_type = structure([
+        item(
+            VENDOR_IDENTIFICATION,
+            Value::text_string("Vendor".to_owned()),
+        ),
+        item(CRITICALITY_INDICATOR, Value::boolean(false)),
+        item(
+            VENDOR_EXTENSION,
+            Value::text_string("extension contents must be a structure".to_owned()),
+        ),
+    ]);
+    let wrong_type_error =
+        RequestMessage::try_from_ttlv(request_with_extensions([wrong_vendor_extension_type]))
+            .expect_err("§9.13 requires vendor-extension contents to be structurally represented");
+    assert_eq!(
+        wrong_type_error.kind(),
+        MessageValidationErrorKind::WrongItemType
+    );
     let error = RequestMessage::try_from_ttlv(request_with_extensions([empty_vendor_extension]))
         .expect_err("§9.13 and §11.56 require vendor-specific extension data");
     assert_eq!(error.kind(), MessageValidationErrorKind::InvalidFieldValue);

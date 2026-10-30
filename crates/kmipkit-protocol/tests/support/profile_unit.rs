@@ -5,7 +5,7 @@ use super::{
     CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
-    TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation, bound_object_state,
     client_add_attribute_random_number_generator_is_well_formed,
     client_can_include_optional_locate_maximum_items,
     client_can_include_optional_locate_offset_items,
@@ -19,7 +19,7 @@ use super::{
     client_key_wrapping_data_is_absent_or_has_required_key_information,
     client_key_wrapping_data_is_only_present_for_wrapped_key_value,
     client_no_encoding_excludes_key_value_attributes,
-    client_opaque_object_context_custom_attributes,
+    client_obtain_lease_response_values_are_typed, client_opaque_object_context_custom_attributes,
     client_optional_wrapping_specification_is_structure,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
@@ -29,12 +29,14 @@ use super::{
     client_understands_response_operations, client_wrapped_key_value_requires_key_wrapping_data,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
-    protocol_version_is_kmip_2_1, reconcile_effective_state,
-    type_specific_parameters_do_not_infer_remote_object_type, validate_mapping,
-    validate_selection_with_registry,
+    protocol_version_is_kmip_2_1, reconcile_effective_state, reference_targets_attribute,
+    request_usage_total_mutation, type_specific_parameters_do_not_infer_remote_object_type,
+    usage_limits_count_in_wrapper, usage_total_in_wrapper, usage_total_is_changed,
+    validate_mapping, validate_original_creation_date_context, validate_selection_with_registry,
 };
 use crate::profiles_generated::{
-    GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
+    GeneratedClientProfile, GeneratedClientRequirement, GeneratedProfileScopeBlocker,
+    GeneratedVerificationCategory,
 };
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
@@ -15788,6 +15790,27 @@ fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() 
         ProfileValidationErrorCode::MissingRequirementMetadata,
         dependency_error.code()
     );
+
+    let unresolved_scope_profiles = [GeneratedClientProfile {
+        unresolved_scope_obligations: &[GeneratedProfileScopeBlocker {
+            requirement_id: "TEST-REQ",
+            source_clause_id: "TEST-CLAUSE",
+            scope_state: "profile_conditional",
+        }],
+        ..profile("SCOPE-BLOCKED", &["TEST-REQ"], &[])
+    }];
+    let unresolved_scope = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["SCOPE-BLOCKED"]),
+        &unresolved_scope_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("an unresolved applicability obligation blocks explicit selection");
+    assert_eq!(
+        ProfileValidationErrorCode::UnresolvedRequirementScope,
+        unresolved_scope.code()
+    );
+    assert_eq!(Some("TEST-REQ"), unresolved_scope.requirement_id());
 }
 
 #[test]

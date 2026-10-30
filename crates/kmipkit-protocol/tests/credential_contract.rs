@@ -691,6 +691,16 @@ fn hashed_password_timestamp_sequences_are_independent() {
 }
 
 #[test]
+fn hashed_password_timestamp_sequence_debug_redacts_the_recorded_value() {
+    let timestamp = 1_800_000_001_i64;
+    let sequence = HashedPasswordTimestampSequence::new(Some(timestamp));
+    let debug = format!("{sequence:?}");
+
+    assert!(debug.contains("has_previous_timestamp: true"));
+    assert!(!debug.contains(&timestamp.to_string()));
+}
+
+#[test]
 fn nonce_requires_byte_string_id_and_value_and_preserves_exact_server_bytes() {
     let nonce_id = vec![0x00, 0x80, 0xFE];
     let nonce_value = vec![0xFF, 0x00, 0x7F, 0x81];

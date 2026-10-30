@@ -536,6 +536,8 @@ mod tests {
     }
 
     #[test]
+    // One matrix covers the extension structure's ordering, required fields, and value types.
+    #[allow(clippy::too_many_lines)]
     fn message_extension_validation_checks_required_fields_order_and_values() {
         // KMIP Specification v2.1 §§9.13 and 11.56 require vendor-specific extension data.
         let valid = structure([
@@ -635,6 +637,22 @@ mod tests {
         assert_kind(
             validate_message_extension(&invalid_characters.view()),
             MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        let wrong_extension_type = structure([
+            item(
+                VENDOR_IDENTIFICATION,
+                Value::text_string("Vendor_1".to_owned()),
+            ),
+            item(CRITICALITY_INDICATOR, Value::boolean(false)),
+            item(
+                VENDOR_EXTENSION,
+                Value::text_string("extension data must be a structure".to_owned()),
+            ),
+        ]);
+        assert_kind(
+            validate_message_extension(&wrong_extension_type.view()),
+            MessageValidationErrorKind::WrongItemType,
         );
     }
 
