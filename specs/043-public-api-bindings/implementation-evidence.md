@@ -6455,3 +6455,7 @@ The shared parity fixture contains 13 cases, each currently declaring Rust, comp
 | Refactor | this evidence commit | Python 3.12: `python -B tools/api_manifest/t071_parity.py --case discover-versions.supported-versions.v1`; `git diff --check` | Pass: the selected Rust client test, compiled C ABI consumer, Java 17 test, and Python test each ran and passed (one test per language); no whitespace errors. |
 
 The workflow change wires runner-contract tests into Script Contracts; it does not execute the cross-language corpus in CI. The parity-runner execution is an explicit local command until a CI job with all four language toolchains is configured. T071 remains open: the runner must cover the remaining fixture cases and satisfy the task's complete-surface, negative-input, unknown-value, asynchronous, Usage Allocation, ownership, and redaction evidence before this task can be checked.
+
+### T071 workflow-contract review follow-up
+
+The first review noted that the workflow assertion searched the entire YAML text and could pass if the runner suite were listed under another job. The assertion now extracts the `script-contracts` job and its `Run Python contracts` step; a negative fixture verifies that an invocation in an unrelated job is rejected. Verification after this correction: 8 T071 runner tests, 55 workflow tests, and `git diff --check` passed. This improves CI-wiring evidence only and does not expand the one-case runtime result or close T071.

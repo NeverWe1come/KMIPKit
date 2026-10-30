@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import io
+import re
 import subprocess
 import sys
 import tempfile
@@ -21,9 +22,34 @@ CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 
 
+def _script_contract_python_step(workflow: str) -> str:
+    job = re.search(r"(?ms)^  script-contracts:\n(.*?)(?=^  [a-z][\w-]*:|\Z)", workflow)
+    if job is None:
+        return ""
+    step = re.search(
+        r"(?ms)^      - name: Run Python contracts\n(.*?)(?=^      - name: |\Z)",
+        job.group(1),
+    )
+    return step.group(1) if step is not None else ""
+
+
 class T071ParityRunnerTests(unittest.TestCase):
+    def test_t071_runner_contract_is_not_satisfied_by_another_job(self) -> None:
+        workflow = """
+  unrelated-job:
+    run: |
+      & $python -B -m unittest tools.api_manifest.tests.test_t071_parity_runner -v
+  script-contracts:
+    steps:
+      - name: Run Python contracts
+        run: |
+          & $python -B -m unittest tools.api_manifest.tests.test_parity -v
+"""
+
+        self.assertNotIn("test_t071_parity_runner", _script_contract_python_step(workflow))
+
     def test_t071_runner_contracts_are_part_of_script_contract_ci(self) -> None:
-        workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+        workflow = _script_contract_python_step(CI_WORKFLOW.read_text(encoding="utf-8"))
 
         self.assertRegex(
             workflow,
