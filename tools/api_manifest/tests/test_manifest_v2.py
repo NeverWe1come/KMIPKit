@@ -2091,6 +2091,74 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 client_execution["mappings"][language],
             )
 
+    def test_t091_client_operation_options_methods_map_to_shared_execute_options(self) -> None:
+        cases = (
+            (
+                "rust-observed-88587ed0c8f26b4fe362",
+                "kmipkit_client::Client::certify_with_options",
+                "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+            ),
+            (
+                "rust-observed-08b1b13b97c0d8bcb4b7",
+                "kmipkit_client::Client::check_with_options",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
+            ),
+        )
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for declaration_id, export_name, operation_id in cases:
+            with self.subTest(export=export_name):
+                declaration = next(
+                    row
+                    for row in self.checked_in_manifest["publicDeclarations"]
+                    if row["declarationId"] == declaration_id
+                )
+                operation = next(
+                    row
+                    for row in self.checked_in_manifest["operations"]
+                    if row["operationId"] == operation_id
+                )
+
+                self.assertEqual(export_name, declaration["exportName"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(
+                    {
+                        "rust": {
+                            "packageId": "rust-kmipkit-client",
+                            "name": export_name,
+                        },
+                        "c": {
+                            "packageId": "c-kmipkit",
+                            "name": "kmipkit_client_execute_with_options_v1",
+                        },
+                        "java": {
+                            "packageId": "java-kmipkit",
+                            "name": "org.kmipkit.extensions.Client.executeWithOptions",
+                        },
+                        "python": {
+                            "packageId": "python-kmipkit",
+                            "name": "kmipkit.client.Client.execute_with_options",
+                        },
+                    },
+                    declaration["languageMappings"],
+                )
+                self.assertEqual(
+                    operation["approvalEvidence"]["path"],
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertIn(declaration_id, operation["declarations"]["rust"])
+                for language in ("c", "java", "python"):
+                    self.assertIn(
+                        declaration["languageMappings"][language]["name"],
+                        client_execution["mappings"][language],
+                    )
+
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
         declaration = next(
