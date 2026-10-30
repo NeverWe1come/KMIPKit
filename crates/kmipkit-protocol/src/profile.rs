@@ -8,6 +8,7 @@
 //! prerequisite is KMIP Specification v2.1 §14.1; Baseline Client's inherited
 //! profile closure follows KMIP Profiles v2.1 §6.1.
 
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -23,7 +24,8 @@ use crate::{AttributeReference, CredentialType, RequestMessage, ResponseMessage}
 
 #[cfg(test)]
 std::thread_local! {
-    static PROFILE_CONTEXT_LOOKUP_STEPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    // Counts index comparisons so tests can distinguish logarithmic from linear lookup.
+    static PROFILE_CONTEXT_INDEX_COMPARISONS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 /// Stable reason that explicit profile validation could not be prepared.
@@ -234,7 +236,32 @@ impl fmt::Debug for ProfileObjectState {
 /// entries fail closed when a rule needs them.
 #[derive(Clone, Default, Eq, PartialEq)]
 pub struct ProfileValidationContext {
-    object_states: BTreeMap<usize, ProfileObjectStateEntry>,
+    object_states: BTreeMap<ProfileBatchItemIndex, ProfileObjectStateEntry>,
+}
+
+#[derive(Clone, Copy, Debug, Eq)]
+struct ProfileBatchItemIndex(usize);
+
+impl PartialEq for ProfileBatchItemIndex {
+    fn eq(&self, other: &Self) -> bool {
+        #[cfg(test)]
+        PROFILE_CONTEXT_INDEX_COMPARISONS.with(|count| count.set(count.get() + 1));
+        self.0 == other.0
+    }
+}
+
+impl PartialOrd for ProfileBatchItemIndex {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ProfileBatchItemIndex {
+    fn cmp(&self, other: &Self) -> Ordering {
+        #[cfg(test)]
+        PROFILE_CONTEXT_INDEX_COMPARISONS.with(|count| count.set(count.get() + 1));
+        self.0.cmp(&other.0)
+    }
 }
 
 #[derive(Clone, Eq, PartialEq)]
@@ -255,7 +282,10 @@ impl ProfileValidationContext {
     /// Adds caller-attested state for one zero-based request batch item.
     #[must_use]
     pub fn with_object_state(mut self, batch_item_index: usize, state: ProfileObjectState) -> Self {
-        match self.object_states.entry(batch_item_index) {
+        match self
+            .object_states
+            .entry(ProfileBatchItemIndex(batch_item_index))
+        {
             std::collections::btree_map::Entry::Vacant(entry) => {
                 entry.insert(ProfileObjectStateEntry::Unique(state));
             }
@@ -271,7 +301,10 @@ impl ProfileValidationContext {
         batch_item_index: usize,
         unique_identifier: &str,
     ) -> Result<&ProfileObjectState, StateBinding> {
-        match self.object_states.get(&batch_item_index) {
+        match self
+            .object_states
+            .get(&ProfileBatchItemIndex(batch_item_index))
+        {
             None => Err(StateBinding::Missing),
             Some(ProfileObjectStateEntry::Duplicate) => Err(StateBinding::Duplicate),
             Some(ProfileObjectStateEntry::Unique(state))

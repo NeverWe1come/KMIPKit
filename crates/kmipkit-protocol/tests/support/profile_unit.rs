@@ -2,12 +2,12 @@ use std::fmt;
 use std::fmt::Write as _;
 
 use super::{
-    CLIENT_REQUIREMENTS, PROFILE_CONTEXT_LOOKUP_STEPS, ProfileEvidenceRecord, ProfileObjectState,
-    ProfileReadiness, ProfileReadinessBlocker, ProfileTransport, ProfileValidationContext,
-    ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
-    TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation, bound_object_state,
-    client_add_attribute_random_number_generator_is_well_formed,
+    CLIENT_REQUIREMENTS, PROFILE_CONTEXT_INDEX_COMPARISONS, ProfileEvidenceRecord,
+    ProfileObjectState, ProfileReadiness, ProfileReadinessBlocker, ProfileTransport,
+    ProfileValidationContext, ProfileValidationError, ProfileValidationErrorCode,
+    ProfileValidationResult, ProfileValidationSelection, RuleConstraint, RuleEvaluator,
+    RuleTestEvidence, RuleTestKind, TYPED_RULE_MAPPINGS, TypedRuleMapping, UsageTotalMutation,
+    bound_object_state, client_add_attribute_random_number_generator_is_well_formed,
     client_can_include_optional_locate_maximum_items,
     client_can_include_optional_locate_offset_items,
     client_check_optional_cryptographic_usage_mask_is_integer,
@@ -26499,16 +26499,17 @@ fn profile_state_context_lookup_work_is_bounded_for_large_contexts() {
         context = context.with_object_state(index, ProfileObjectState::new(index.to_string()));
     }
 
-    PROFILE_CONTEXT_LOOKUP_STEPS.with(|steps| steps.set(0));
+    PROFILE_CONTEXT_INDEX_COMPARISONS.with(|steps| steps.set(0));
     for index in (0..ENTRY_COUNT).rev() {
         let identifier = index.to_string();
         assert!(context.state_for(index, &identifier).is_ok());
     }
-    let lookup_steps = PROFILE_CONTEXT_LOOKUP_STEPS.with(std::cell::Cell::get);
+    let lookup_steps = PROFILE_CONTEXT_INDEX_COMPARISONS.with(std::cell::Cell::get);
 
+    assert!(lookup_steps > 0, "index comparison accounting must be active");
     assert!(
         lookup_steps <= ENTRY_COUNT * 32,
-        "profile context lookup scanned {lookup_steps} entries for {ENTRY_COUNT} states"
+        "profile context lookup used {lookup_steps} index comparisons for {ENTRY_COUNT} states"
     );
 }
 
