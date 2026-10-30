@@ -232,6 +232,18 @@ fn client_response_operation_matches_the_operation_it_was_sent_for() {
     ));
     assert!(super::client_understands_response_operations(None, None));
 
+    let single_request = request_message_with_operation_payload(FIRST_OPERATION, Structure::new());
+    let single_response = response_message_with_operation_status(
+        Some(FIRST_OPERATION),
+        0,
+        None,
+        Some(Structure::new()),
+    );
+    assert!(super::client_understands_response_operations(
+        None,
+        Some((&single_request, &single_response))
+    ));
+
     let mismatched_operation = response_message_with_success_batch_payloads([
         (SECOND_OPERATION, b"first-item".to_vec(), Structure::new()),
         (FIRST_OPERATION, b"second-item".to_vec(), Structure::new()),

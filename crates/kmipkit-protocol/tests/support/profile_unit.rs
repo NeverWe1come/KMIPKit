@@ -23626,7 +23626,7 @@ fn profile_accepts_get_attributes_rng_parameters() {
 }
 
 #[test]
-// KMIP Specification v2.1 §§9.8 and 9.21: a response ID cannot be attached to a request without one.
+// Profile association policy rejects a response ID that cannot match a supplied request ID.
 fn profile_rejects_get_attributes_rng_response_id_for_single_request_without_id() {
     let request = request_message_with_operation_payload(
         GET_ATTRIBUTES_OPERATION,

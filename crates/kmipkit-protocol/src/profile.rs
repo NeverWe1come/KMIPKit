@@ -4785,7 +4785,7 @@ fn client_understands_response_operations(
         }
     }
 
-    for (response_index, response_item) in response_items.iter().copied().enumerate() {
+    for response_item in response_items.iter().copied() {
         let Some(response_operation) = response_item.operation() else {
             return false;
         };
@@ -4808,16 +4808,9 @@ fn client_understands_response_operations(
                 .is_none()
         {
             0
-        } else if request.header().effective_batch_order_option() {
-            let request_item = request_items[response_index];
-            if request_item
-                .with_unique_batch_item_id(<[u8]>::to_vec)
-                .is_some()
-            {
-                return false;
-            }
-            response_index
         } else {
+            // §8.3 Table 396 requires IDs for multi-item requests; execution
+            // order cannot substitute for a missing correlation ID.
             return false;
         };
 
@@ -4981,7 +4974,7 @@ fn client_accepts_rng_seed_zero_data_length(
     let response_items = response.batch_items().collect::<Vec<_>>();
     let mut consumed_responses = vec![false; response_items.len()];
 
-    for (request_index, request_item) in request_items.iter().copied().enumerate() {
+    for request_item in request_items.iter().copied() {
         if request_item.operation() != Some(RNG_SEED_OPERATION) {
             continue;
         }
@@ -5004,11 +4997,8 @@ fn client_accepts_rng_seed_zero_data_length(
                     [index] => *index,
                     _ => return false,
                 }
-            } else if request.header().effective_batch_order_option() {
-                if request_index >= response_items.len() {
-                    continue;
-                }
-                request_index
+            } else if request_items.len() == 1 && response_items.len() == 1 {
+                0
             } else {
                 return false;
             };
@@ -7596,7 +7586,7 @@ fn client_get_attributes_rng_response_is_well_formed(
     }
 
     let mut consumed_responses = vec![false; response_items.len()];
-    for (request_index, request_item) in request_items.iter().copied().enumerate() {
+    for request_item in request_items.iter().copied() {
         if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
             continue;
         }
@@ -7615,15 +7605,9 @@ fn client_get_attributes_rng_response_is_well_formed(
                 return false;
             }
             0
-        } else if request.header().effective_batch_order_option() {
-            if response_items[request_index]
-                .with_unique_batch_item_id(|_| ())
-                .is_some()
-            {
-                return false;
-            }
-            request_index
         } else {
+            // §8.3 Table 396 requires IDs for multi-item requests; Batch Order
+            // Option controls execution order but does not replace correlation.
             return false;
         };
 
