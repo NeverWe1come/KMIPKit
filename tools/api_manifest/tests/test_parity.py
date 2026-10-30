@@ -202,6 +202,17 @@ class PublicApiParityTests(unittest.TestCase):
             SHARED_PARITY_CASES,
         )
 
+    def test_ttlv_decoder_root_fixture_is_tracked_as_shared_parity_case(self) -> None:
+        decoder_case_id = "ttlv.decoder-root-structure.v1"
+        self.assertIn(decoder_case_id, SHARED_PARITY_CASES)
+
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        case = next(item for item in fixtures["cases"] if item["id"] == decoder_case_id)
+        self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
+        self.assertTrue(
+            all(mapping["status"] == "available" for mapping in case["consumerTests"].values())
+        )
+
         available_languages: set[str] = set()
         for case in cases:
             with self.subTest(fixture=case["id"]):
