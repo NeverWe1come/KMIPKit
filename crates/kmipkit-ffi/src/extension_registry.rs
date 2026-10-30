@@ -7348,12 +7348,14 @@ pub extern "C" fn kmipkit_request_batch_item_extension_at(
     extension_index: u64,
     out_extension: *mut *mut kmipkit_message_extension_view_t,
 ) -> i32 {
-    message_extension_at(
-        item.cast(),
-        extension_index,
-        out_extension,
-        Kind::RequestBatchItemView,
-    )
+    ffi_entrypoint(|| {
+        message_extension_at(
+            item.cast(),
+            extension_index,
+            out_extension,
+            Kind::RequestBatchItemView,
+        )
+    })
 }
 
 /// Returns the number of Message Extension Structures in a response batch item.
@@ -7385,12 +7387,14 @@ pub extern "C" fn kmipkit_response_batch_item_extension_at(
     extension_index: u64,
     out_extension: *mut *mut kmipkit_message_extension_view_t,
 ) -> i32 {
-    message_extension_at(
-        item.cast(),
-        extension_index,
-        out_extension,
-        Kind::ResponseBatchItemView,
-    )
+    ffi_entrypoint(|| {
+        message_extension_at(
+            item.cast(),
+            extension_index,
+            out_extension,
+            Kind::ResponseBatchItemView,
+        )
+    })
 }
 
 fn message_extension_at(
@@ -7399,47 +7403,45 @@ fn message_extension_at(
     out_extension: *mut *mut kmipkit_message_extension_view_t,
     expected_kind: Kind,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let out = out_slot!(out_extension);
-        let extension_index =
-            try_ffi!(usize::try_from(extension_index).map_err(|_| ERROR_INVALID_INPUT));
-        let item = try_ffi!(reference_handle(item, expected_kind));
-        let (owner, batch_index, extension_count) = match &item.value {
-            HandleValue::RequestBatchItemView { message, index } => {
-                let Some(item) = message.batch_items().nth(*index) else {
-                    return record_ffi_error(ERROR_INVALID_INPUT);
-                };
-                (
-                    MessageExtensionOwner::Request(Arc::clone(message)),
-                    *index,
-                    item.message_extension_count(),
-                )
-            }
-            HandleValue::ResponseBatchItemView { message, index } => {
-                let Some(item) = message.batch_items().nth(*index) else {
-                    return record_ffi_error(ERROR_INVALID_INPUT);
-                };
-                (
-                    MessageExtensionOwner::Response(Arc::clone(message)),
-                    *index,
-                    item.message_extension_count(),
-                )
-            }
-            _ => return record_ffi_error(ERROR_INVALID_INPUT),
-        };
-        if extension_index >= extension_count {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+    let out = out_slot!(out_extension);
+    let extension_index =
+        try_ffi!(usize::try_from(extension_index).map_err(|_| ERROR_INVALID_INPUT));
+    let item = try_ffi!(reference_handle(item, expected_kind));
+    let (owner, batch_index, extension_count) = match &item.value {
+        HandleValue::RequestBatchItemView { message, index } => {
+            let Some(item) = message.batch_items().nth(*index) else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            (
+                MessageExtensionOwner::Request(Arc::clone(message)),
+                *index,
+                item.message_extension_count(),
+            )
         }
-        *out = try_ffi!(try_make_handle(
-            Kind::MessageExtensionView,
-            HandleValue::MessageExtensionView {
-                owner,
-                batch_index,
-                extension_index,
-            },
-        ));
-        SUCCESS
-    })
+        HandleValue::ResponseBatchItemView { message, index } => {
+            let Some(item) = message.batch_items().nth(*index) else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            (
+                MessageExtensionOwner::Response(Arc::clone(message)),
+                *index,
+                item.message_extension_count(),
+            )
+        }
+        _ => return record_ffi_error(ERROR_INVALID_INPUT),
+    };
+    if extension_index >= extension_count {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    *out = try_ffi!(try_make_handle(
+        Kind::MessageExtensionView,
+        HandleValue::MessageExtensionView {
+            owner,
+            batch_index,
+            extension_index,
+        },
+    ));
+    SUCCESS
 }
 
 /// Returns an owned, order-preserving generic TTLV Structure for a Message Extension.
@@ -7509,12 +7511,14 @@ pub extern "C" fn kmipkit_message_validation_error_structure_index(
     out_present: *mut u8,
     out_index: *mut u64,
 ) -> i32 {
-    message_validation_error_index(
-        error,
-        out_present,
-        out_index,
-        MessageValidationError::structure_index,
-    )
+    ffi_entrypoint(|| {
+        message_validation_error_index(
+            error,
+            out_present,
+            out_index,
+            MessageValidationError::structure_index,
+        )
+    })
 }
 
 /// Returns whether the validation error has a field index within its Structure.
@@ -7526,12 +7530,14 @@ pub extern "C" fn kmipkit_message_validation_error_field_index(
     out_present: *mut u8,
     out_index: *mut u64,
 ) -> i32 {
-    message_validation_error_index(
-        error,
-        out_present,
-        out_index,
-        MessageValidationError::field_index,
-    )
+    ffi_entrypoint(|| {
+        message_validation_error_index(
+            error,
+            out_present,
+            out_index,
+            MessageValidationError::field_index,
+        )
+    })
 }
 
 fn message_validation_error_index(
@@ -7540,26 +7546,24 @@ fn message_validation_error_index(
     out_index: *mut u64,
     select_index: fn(MessageValidationError) -> Option<usize>,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        try_ffi!(validate_output_regions(&[
-            (out_present.cast(), std::mem::size_of::<u8>()),
-            (out_index.cast(), std::mem::size_of::<u64>()),
-        ]));
-        let present = scalar_out!(out_present);
-        let index_out = scalar_out!(out_index);
-        *present = 0;
-        *index_out = 0;
-        let error = read_handle!(error, MessageValidationError);
-        let HandleValue::MessageValidationError(error) = error.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        try_ffi!(write_optional_message_index(
-            present,
-            index_out,
-            select_index(error)
-        ));
-        SUCCESS
-    })
+    try_ffi!(validate_output_regions(&[
+        (out_present.cast(), std::mem::size_of::<u8>()),
+        (out_index.cast(), std::mem::size_of::<u64>()),
+    ]));
+    let present = scalar_out!(out_present);
+    let index_out = scalar_out!(out_index);
+    *present = 0;
+    *index_out = 0;
+    let error = read_handle!(error, MessageValidationError);
+    let HandleValue::MessageValidationError(error) = error.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    try_ffi!(write_optional_message_index(
+        present,
+        index_out,
+        select_index(error)
+    ));
+    SUCCESS
 }
 
 fn write_optional_message_index(
