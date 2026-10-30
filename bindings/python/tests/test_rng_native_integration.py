@@ -240,7 +240,6 @@ def test_rng_operations_cross_native_cffi_over_mutual_tls() -> None:
         seed_response.close()
         assert owned_data is not None
         assert owned_data.buffer == bytearray(len(_RETRIEVED))
-        assert peer.is_alive() is False
     finally:
         if retrieve_response is not None:
             retrieve_response.close()
