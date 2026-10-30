@@ -120776,14 +120776,69 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::certify",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.6-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIPKIT-REQ-SPEC-6.1.6-007"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::certify"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-88587ed0c8f26b4fe362",
@@ -364567,6 +364622,7 @@
       "declarations": {
         "rust": [
           "rust-observed-9576a7e0dbcd07375fe4",
+          "rust-observed-05c7d86aafdeccc15e11",
           "rust-observed-33d82d2c459bc6c85f9c",
           "rust-observed-78a9021054f86abbe4fb",
           "rust-observed-56ad3a13e32dcb72173b",

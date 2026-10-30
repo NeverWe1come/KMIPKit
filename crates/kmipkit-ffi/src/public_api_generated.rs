@@ -2611,6 +2611,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "<kmipkit_client::RequestOptions as core::default::Default>::default",
     ),
     (
+        "rust-observed-05c7d86aafdeccc15e11",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::certify",
+    ),
+    (
         "rust-observed-4bb888b1c681b20dd34d",
         "rust-kmipkit-client",
         "kmipkit_client::Client::derive_key",

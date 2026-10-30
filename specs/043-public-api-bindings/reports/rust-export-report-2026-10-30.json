@@ -301320,7 +301320,7 @@
         "kmipkit::Client::certify",
         "kmipkit_client::Client::certify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
