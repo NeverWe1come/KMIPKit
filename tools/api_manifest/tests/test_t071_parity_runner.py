@@ -65,6 +65,25 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_discover_versions_response_mapping_matches_shared_fixture",
         )
 
+    def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
+        java_consumer = next(
+            consumer
+            for consumer in t071_parity.build_plan(DISCOVER_VERSIONS_CASE)["consumers"]
+            if consumer["language"] == "java"
+        )
+        self.assertIn("--rerun-tasks", java_consumer["command"])
+
+    def test_python_runner_uses_the_current_pytest_interpreter(self) -> None:
+        python_consumer = next(
+            consumer
+            for consumer in t071_parity.build_plan(DISCOVER_VERSIONS_CASE)["consumers"]
+            if consumer["language"] == "python"
+        )
+        self.assertEqual(
+            python_consumer["command"][:3],
+            [sys.executable, "-m", "pytest"],
+        )
+
     def test_runner_rejects_a_successful_command_that_runs_no_test(self) -> None:
         completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
         error_output = io.StringIO()
@@ -100,6 +119,33 @@ class T071ParityRunnerTests(unittest.TestCase):
 
         self.assertNotEqual(status, 0)
         self.assertIn("did not run the expected test", error_output.getvalue())
+
+    def test_gradle_report_with_junit_method_suffix_counts_as_the_expected_test(self) -> None:
+        java_consumer = next(
+            consumer
+            for consumer in t071_parity.build_plan(DISCOVER_VERSIONS_CASE)["consumers"]
+            if consumer["language"] == "java"
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            report = (
+                root
+                / "bindings"
+                / "java"
+                / "build"
+                / "test-results"
+                / "test"
+                / "TEST-org.kmipkit.ClientFacadeTlsIntegrationTest.xml"
+            )
+            report.parent.mkdir(parents=True)
+            report.write_text(
+                '<testsuite tests="1" failures="0" errors="0" skipped="0">'
+                '<testcase name="executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange()"/>'
+                "</testsuite>",
+                encoding="utf-8",
+            )
+            with patch.object(t071_parity, "ROOT", root):
+                self.assertTrue(t071_parity._expected_test_ran(java_consumer, "BUILD SUCCESSFUL"))
 
 
 if __name__ == "__main__":
