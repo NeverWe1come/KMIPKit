@@ -1,6 +1,16 @@
 use super::*;
 use crate::kmipkit_protocol_version_v1_t;
 
+#[link(name = "kmipkit_message_model_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_message_model_c_consumer_validate_request(
+        structure: *mut crate::kmipkit_ttlv_structure_t,
+    ) -> i32;
+    fn kmipkit_message_model_c_consumer_validate_response(
+        structure: *mut crate::kmipkit_ttlv_structure_t,
+    ) -> i32;
+}
+
 const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
@@ -490,4 +500,30 @@ fn response_message_handle_exposes_typed_header_and_raw_result_status() {
     kmipkit_response_batch_item_release(batch_item);
     kmipkit_response_header_view_release(header);
     kmipkit_response_message_release(message);
+}
+
+#[test]
+fn compiled_c_consumer_uses_request_and_response_message_abi() {
+    let request = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(valid_request_message_tree()),
+    )
+    .expect("the request TTLV handle is allocated");
+    let response = try_make_handle(
+        Kind::Structure,
+        HandleValue::Structure(valid_pending_response_message_tree()),
+    )
+    .expect("the response TTLV handle is allocated");
+
+    // SAFETY: Both pointers refer to live Structure handles. The compiled C consumer passes each
+    // to the corresponding constructor, which consumes the handle exactly once.
+    assert_eq!(
+        unsafe { kmipkit_message_model_c_consumer_validate_request(request,) },
+        0
+    );
+    // SAFETY: The response handle is live and is consumed once by the response constructor.
+    assert_eq!(
+        unsafe { kmipkit_message_model_c_consumer_validate_response(response,) },
+        0
+    );
 }
