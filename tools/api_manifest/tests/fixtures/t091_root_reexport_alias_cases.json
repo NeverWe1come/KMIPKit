@@ -732,7 +732,9 @@
       "rootExportName": "kmipkit::ClientRequest::rng_seed",
       "canonicalPackageId": "rust-kmipkit-client",
       "canonicalExportName": "kmipkit_client::ClientRequest::rng_seed"
-    },
+    }
+  ],
+  "excludedAliases": [
     {
       "rootDeclarationId": "rust-observed-fe77dd29ab23c017d35f",
       "rootExportName": "kmipkit::RequestDeliveryState",
