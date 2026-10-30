@@ -21,6 +21,7 @@ RUNNER = ROOT / "tools" / "api_manifest" / "t071_parity.py"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 BATCH_MIXED_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
+REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -139,6 +140,63 @@ class T071ParityRunnerTests(unittest.TestCase):
         self.assertEqual(
             consumers["python"]["test"],
             "test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once",
+        )
+
+    def test_registry_isolation_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                REGISTRY_ISOLATION_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], REGISTRY_ISOLATION_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        rust = consumers["rust"]
+        self.assertEqual(
+            rust["testFile"],
+            "crates/kmipkit-client/tests/extension_registry.rs",
+        )
+        self.assertEqual(
+            rust["test"],
+            "client_configurations_own_isolated_immutable_registries",
+        )
+        self.assertEqual(
+            rust["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-client",
+                "--test",
+                "extension_registry",
+                "client_configurations_own_isolated_immutable_registries",
+                "--",
+                "--exact",
+            ],
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "c_abi_consumer_matches_shared_registry_cleanup_fixture",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.ExtensionRegistryTest.clientConfigurationsOwnImmutableIsolatedRegistrySnapshots",
+        )
+        self.assertEqual(
+            consumers["python"]["test"],
+            "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
         )
 
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
