@@ -2041,6 +2041,56 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 client_execution["mappings"][language],
             )
 
+    def test_t091_client_check_convenience_maps_to_verified_operation_and_shared_execute(self) -> None:
+        declaration_id = "rust-observed-7da0265a86b0aaaa0e43"
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == declaration_id
+        )
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-CHECK"
+        )
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        self.assertEqual("kmipkit_client::Client::check", declaration["exportName"])
+        self.assertEqual("verified", declaration["declarationState"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit-client",
+                    "name": "kmipkit_client::Client::check",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_execute",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.Client.execute",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.client.Client.execute",
+                },
+            },
+            declaration["languageMappings"],
+        )
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+        for language in ("c", "java", "python"):
+            self.assertIn(
+                declaration["languageMappings"][language]["name"],
+                client_execution["mappings"][language],
+            )
+
     def test_t091_check_request_variant_maps_to_verified_check_operation(self) -> None:
         declaration_id = "rust-observed-8a97c84f665c60d4b3c4"
         declaration = next(
