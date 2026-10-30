@@ -12,6 +12,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
+const OPERATION_PENDING: u32 = 2;
 
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -34,6 +35,7 @@ const RESULT_STATUS: u32 = 0x0042_007f;
 const RESULT_REASON: u32 = 0x0042_007e;
 const RESULT_MESSAGE: u32 = 0x0042_007d;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007c;
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 
 const TABLE_195_REASONS: &[u32] = &[
     0x0000_0024, // Bad Cryptographic Parameters
@@ -131,6 +133,12 @@ fn response_message(
     }
     if let Some(message) = result_message {
         fields.push(item(RESULT_MESSAGE, Value::text_string(message.to_owned())));
+    }
+    if status == OPERATION_PENDING {
+        fields.push(item(
+            ASYNCHRONOUS_CORRELATION_VALUE,
+            Value::byte_string(b"pending-correlation".to_vec()),
+        ));
     }
     if let Some(payload) = response_payload {
         fields.push(item(RESPONSE_PAYLOAD, Value::structure(payload)));
@@ -368,6 +376,26 @@ fn successful_response_requires_identifiers_and_rejects_wrong_identifier_types()
         .expect_err("Unique Identifier does not accept Byte String in Table 194");
     assert!(!format!("{error:?}").contains("invalid-identifier"));
     assert!(!error.to_string().contains("invalid-identifier"));
+}
+
+#[test]
+fn pending_response_requires_and_preserves_its_non_failure_payload() {
+    let response = response_message(
+        OPERATION_PENDING,
+        None,
+        None,
+        Some(structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("pending-part".to_owned()),
+        )])),
+    );
+    let typed = decode_response(&response).expect("Pending retains its required Table 194 payload");
+
+    assert_eq!(typed.result().status().raw(), OPERATION_PENDING);
+    assert_eq!(
+        typed.unique_identifiers(),
+        &[UniqueIdentifier::TextString("pending-part".to_owned())]
+    );
 }
 
 #[test]
