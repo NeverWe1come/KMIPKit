@@ -1419,6 +1419,33 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     },
                 )
 
+    def test_t090_message_model_rust_trait_exports_have_exact_owner_exclusions(self) -> None:
+        candidates = {
+            row["exportName"]
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0006"
+            and row["exportName"].startswith("<kmipkit_protocol::")
+        }
+        self.assertEqual(len(candidates), 92)
+
+        exclusions = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["approvedExclusions"]
+            if row["packageId"] == "rust-kmipkit-protocol"
+            and row["exportName"] in candidates
+        }
+        self.assertEqual(set(exclusions), candidates)
+        for export_name, exclusion in exclusions.items():
+            with self.subTest(export=export_name):
+                self.assertTrue(exclusion["reason"])
+                self.assertTrue(exclusion["evidence"])
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/006-message-batch-model/spec.md",
+                )
+                self.assertIn("KMIPKIT-0006-FR-001", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
