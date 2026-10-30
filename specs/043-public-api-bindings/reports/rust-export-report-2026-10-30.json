@@ -301573,7 +301573,7 @@
         "kmipkit::Client::derive_key_with_options",
         "kmipkit_client::Client::derive_key_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302079,7 +302079,7 @@
         "kmipkit::Client::export_with_options",
         "kmipkit_client::Client::export_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302309,7 +302309,7 @@
         "kmipkit::Client::join_split_key_with_options",
         "kmipkit_client::Client::join_split_key_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302493,7 +302493,7 @@
         "kmipkit::Client::obtain_lease_with_options",
         "kmipkit_client::Client::obtain_lease_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302677,7 +302677,7 @@
         "kmipkit::Client::recertify_with_options",
         "kmipkit_client::Client::recertify_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302769,7 +302769,7 @@
         "kmipkit::Client::register_with_options",
         "kmipkit_client::Client::register_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302838,7 +302838,7 @@
         "kmipkit::Client::rekey_key_pair_with_options",
         "kmipkit_client::Client::rekey_key_pair_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302861,7 +302861,7 @@
         "kmipkit::Client::rekey_with_options",
         "kmipkit_client::Client::rekey_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -302953,7 +302953,7 @@
         "kmipkit::Client::revoke_with_options",
         "kmipkit_client::Client::revoke_with_options"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
