@@ -1564,8 +1564,6 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and row["approvalSource"]["path"] == "specs/007-client-execution/spec.md"
             and row["exportName"].startswith("<")
         }
-        self.assertEqual(466, len(exclusions))
-        missing = sorted(exclusions.keys() - observed_traits)
         unresolved = sorted(
             (row["packageId"], row["exportName"])
             for row in self.checked_in_manifest["publicDeclarations"]
@@ -1574,9 +1572,15 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and row["exportName"].startswith("<")
         )
         self.assertFalse(
-            missing or unresolved,
+            unresolved,
             "KMIPKIT-0007 standard traits require exact exclusions while direct types "
-            f"stay inventoried; not observed={missing[:5]}, unresolved={unresolved[:5]}",
+            f"stay inventoried; unresolved={unresolved[:5]}",
+        )
+        self.assertEqual(466, len(exclusions))
+        missing = sorted(exclusions.keys() - observed_traits)
+        self.assertFalse(
+            missing,
+            f"standard-trait exclusions must match observed exports exactly: {missing[:5]}",
         )
 
         direct_exports = {
