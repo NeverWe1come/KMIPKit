@@ -27,6 +27,7 @@ EXTENSION_RECOGNITION_CASE = "extensions.recognition-and-generic-preservation.v1
 CREATE_REQUEST_CASE = "creation.create.request-response.v1"
 CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 CREATE_SPLIT_KEY_CASE = "creation.split-key.request-response.v1"
+CREATE_FAILURE_MESSAGE_CASE = "creation.result-message-on-failure.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -220,6 +221,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_shared_parity_fixtures.py",
             "test_creation_split_key_matches_shared_fixture",
+        ),
+    },
+    CREATE_FAILURE_MESSAGE_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/creation_parity_tests.rs",
+            "creation_result_message_fixture_is_limited_to_operation_failure",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/extensions/CreationResultValueTest.java",
+            "org.kmipkit.extensions.CreationResultValueTest#failureResultMessageMatchesTheSharedFixture",
+        ),
+        "python": (
+            "bindings/python/tests/test_shared_parity_fixtures.py",
+            "test_creation_result_message_matches_failure_fixture",
         ),
     },
 }
