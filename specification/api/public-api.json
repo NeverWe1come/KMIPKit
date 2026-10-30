@@ -85156,34 +85156,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-91869078e3b0e6ac0d7c",
-      "packageId": "rust-kmipkit-client",
-      "kind": "type",
-      "exportName": "kmipkit_client::ClientErrorResponseTtlv",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-5d327f9dd10f45bb53f6",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-f6e4d4378e1f420ba0e1",
       "packageId": "rust-kmipkit-client",
       "kind": "type",
@@ -364276,6 +364248,30 @@
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
       },
       "evidence": "KMIPKIT-0007-FR-001, KMIPKIT-0043-FR-021; this exact compiler-visible standard-trait implementation is excluded from cross-language product parity while its concrete type, variants, fields, and methods remain individually inventoried."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv",
+      "reason": "This exact Rust response-TTLV wrapper is an implementation representation for the dedicated four-language crypto_response_ttlv accessor, not a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved"
+      },
+      "evidence": "KMIPKIT-0021-FR-015; KMIPKIT-0007-FR-013; KMIPKIT-0043-FR-021. The approved retained response access remains mapped only for missing, repeated, or malformed required Unique Identifier in successful MAC, MAC Verify, Sign, and Signature Verify responses; other protocol, validation, and transport errors expose no response TTLV."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
+      "reason": "This exact Rust response-TTLV wrapper is an implementation representation for the dedicated four-language crypto_response_ttlv accessor, not a separate four-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved"
+      },
+      "evidence": "KMIPKIT-0021-FR-015; KMIPKIT-0007-FR-013; KMIPKIT-0043-FR-021. The approved retained response access remains mapped only for missing, repeated, or malformed required Unique Identifier in successful MAC, MAC Verify, Sign, and Signature Verify responses; other protocol, validation, and transport errors expose no response TTLV."
     }
   ],
   "apiLevels": [

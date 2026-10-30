@@ -29268,6 +29268,30 @@
       "exportName": "<kmipkit_client::PendingOutcome as core::fmt::Debug>::fmt",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior of a Rust value, not a separate KMIPKit client capability. The concrete declaration remains separately inventoried under its approved API mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0021-FR-015; KMIPKIT-0007-FR-013; KMIPKIT-0043-FR-021. The approved retained response access remains mapped only for missing, repeated, or malformed required Unique Identifier in successful MAC, MAC Verify, Sign, and Signature Verify responses; other protocol, validation, and transport errors expose no response TTLV.",
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust response-TTLV wrapper is an implementation representation for the dedicated four-language crypto_response_ttlv accessor, not a separate four-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0021-FR-015; KMIPKIT-0007-FR-013; KMIPKIT-0043-FR-021. The approved retained response access remains mapped only for missing, repeated, or malformed required Unique Identifier in successful MAC, MAC Verify, Sign, and Signature Verify responses; other protocol, validation, and transport errors expose no response TTLV.",
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust response-TTLV wrapper is an implementation representation for the dedicated four-language crypto_response_ttlv accessor, not a separate four-language capability."
     }
   ],
   "capabilities": [

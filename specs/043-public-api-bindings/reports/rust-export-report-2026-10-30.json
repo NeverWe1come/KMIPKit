@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 1397,
+    "excluded": 1399,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 9060,
-    "matched": 9060,
+    "manifest": 9058,
+    "matched": 9058,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10457
@@ -241763,6 +241763,48 @@
     },
     {
       "aliases": [
+        "kmipkit_client::ClientErrorResponseTtlv"
+      ],
+      "exportLocations": [
+        {
+          "column": 72,
+          "line": 286,
+          "path": "crates/kmipkit-client/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv",
+      "identity": "[\"kmipkit_client\",{\"column\":1,\"line\":18,\"path\":\"crates/kmipkit-client/src/error.rs\"},\"struct\",[\"kmipkit_client\",\"error\",\"ClientErrorResponseTtlv\"]]",
+      "kind": "type",
+      "location": {
+        "column": 1,
+        "line": 18,
+        "path": "crates/kmipkit-client/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-client"
+    },
+    {
+      "aliases": [
+        "kmipkit_client::ClientErrorResponseTtlv::with_ttlv"
+      ],
+      "exportLocations": [
+        {
+          "column": 72,
+          "line": 286,
+          "path": "crates/kmipkit-client/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
+      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":33,\"path\":\"crates/kmipkit-client/src/error.rs\"},\"function\",[\"kmipkit_client\",\"error\",\"ClientErrorResponseTtlv\",\"with_ttlv\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 33,
+        "path": "crates/kmipkit-client/src/error.rs"
+      },
+      "packageId": "rust-kmipkit-client"
+    },
+    {
+      "aliases": [
         "kmipkit::ProfileValidationSelection::for_test",
         "kmipkit_client::ProfileValidationSelection::for_test",
         "kmipkit_protocol::ProfileValidationSelection::for_test"
@@ -308284,50 +308326,6 @@
       "location": {
         "column": 5,
         "line": 68,
-        "path": "crates/kmipkit-client/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-client"
-    },
-    {
-      "aliases": [
-        "kmipkit_client::ClientErrorResponseTtlv"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 72,
-          "line": 286,
-          "path": "crates/kmipkit-client/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_client::ClientErrorResponseTtlv",
-      "identity": "[\"kmipkit_client\",{\"column\":1,\"line\":18,\"path\":\"crates/kmipkit-client/src/error.rs\"},\"struct\",[\"kmipkit_client\",\"error\",\"ClientErrorResponseTtlv\"]]",
-      "kind": "type",
-      "location": {
-        "column": 1,
-        "line": 18,
-        "path": "crates/kmipkit-client/src/error.rs"
-      },
-      "packageId": "rust-kmipkit-client"
-    },
-    {
-      "aliases": [
-        "kmipkit_client::ClientErrorResponseTtlv::with_ttlv"
-      ],
-      "declarationState": "blocked",
-      "exportLocations": [
-        {
-          "column": 72,
-          "line": 286,
-          "path": "crates/kmipkit-client/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
-      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":33,\"path\":\"crates/kmipkit-client/src/error.rs\"},\"function\",[\"kmipkit_client\",\"error\",\"ClientErrorResponseTtlv\",\"with_ttlv\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 33,
         "path": "crates/kmipkit-client/src/error.rs"
       },
       "packageId": "rust-kmipkit-client"
