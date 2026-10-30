@@ -8597,3 +8597,5 @@ Focused Green verification:
 Full protocol-suite and exact-head hosted coverage results remain pending; T057 stays open until its configured thresholds pass.
 
 Refactor: removed the now-unused batch-count argument from `validate_request_batch_item` and its call sites; request message validation remains responsible for the header Batch Count and item-count match. `cargo fmt --all --check`, `git diff --check`, and the focused request-validation and positional-correlation tests passed after the refactor.
+
+The first full `cargo test -p kmipkit-protocol --all-features` run exposed the stale integration assertion `every_multi_item_request_requires_an_id`. It failed because the now-correct validator accepts the optional ID. The test was replaced with an assertion that a multi-item message preserves one present ID and one omitted ID; `cargo test -p kmipkit-protocol --all-features --test message_validation` then passed all 15 tests. Duplicate present IDs remain rejected by a separate integration test.

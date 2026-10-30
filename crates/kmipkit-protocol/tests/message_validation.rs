@@ -223,10 +223,19 @@ fn a_single_item_request_may_omit_its_unique_id() {
 }
 
 #[test]
-fn every_multi_item_request_requires_an_id() {
+fn multi_item_request_may_omit_one_optional_batch_item_id() {
+    // KMIP Specification v2.1 §9.21, KMIPKIT-REQ-SPEC-9.21-001-001.
     let message = request_optional_ids([Some(vec![0x01]), None]);
+    let message = RequestMessage::try_from_ttlv(message)
+        .expect("Unique Batch Item ID is optional on each request batch item");
 
-    assert!(RequestMessage::try_from_ttlv(message).is_err());
+    let items: Vec<_> = message.batch_items().collect();
+    assert_eq!(items.len(), 2);
+    assert_eq!(
+        items[0].with_unique_batch_item_id(<[u8]>::to_vec),
+        Some(vec![0x01])
+    );
+    assert_eq!(items[1].with_unique_batch_item_id(<[u8]>::to_vec), None);
 }
 
 #[derive(Clone, Debug)]
