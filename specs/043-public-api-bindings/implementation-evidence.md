@@ -6734,3 +6734,15 @@ An audit found follow-up gaps after PR #90 merged: the compliance guide and both
 | Refactor/evidence | this commit | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-features`; `python -B tools/api_manifest/generate.py --repo-root . --check`; `python -B -m unittest tools.api_manifest.tests.test_t036_profile_mapping -v`; `git diff --check` | All checks pass on Windows; generator outputs are unchanged (12/12), and the focused documentation contract passes (3 tests). Coverage thresholds remain temporarily waived for PR #90/#104 as previously directed. |
 
 The independent security review validated one low-severity CWE-400 candidate in the pre-fix T036 change: large caller-built batches and contexts could cause quadratic local preflight work. The BTreeMap follow-up fixes that path. This is a local-input resource issue; a remote KMIP peer does not directly control the caller-owned batch or context.
+
+### T036 cross-platform export audit correction (2026-10-30)
+
+The first full CI run after the KMIPKIT-0010 merge, run `41037448584` on the then-published PR head, failed the Python export audit on Ubuntu. The OASIS profile-validation work introduced Python dataclass-generated members and immutable readbacks which were present in the package export inventory but had not yet been classified by T076. The failure was reproducible on Ubuntu and was not a Git merge conflict. The same job cancelled its Windows and macOS matrix legs after Ubuntu failed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — exact export accounting | `101fd3676` | Ubuntu CI `41037448584`, `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected failure on the pre-Green head: profile-validation Python exports remained unclassified. The contract requires every observed export to have a mapping or exact exclusion. |
+| Green — classify generated exports | `ba930f8ab` | `wsl.exe -d Ubuntu-26.04 -- bash -lc "cd '/mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0043-104-ci-fix/KMIPKit' && uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v"` | Pass: 37 exact exclusions were added to the source manifest for generated dataclass mechanics and caller-supplied/read-only fields; the pinned generator refreshed all 12 generated outputs. The Windows related suite passed 111 tests and the generator check passed. |
+| Refactor/evidence | this commit | `python -B tools/api_manifest/generate.py --check`; related T036/T042/T073/operation-readiness/T076 suite; `git diff --check` | Evidence and task traceability are recorded separately. No protocol behavior or profile-support claim changed; Baseline remains `evidence_incomplete`. |
+
+The corrected contract passes on both Windows and Ubuntu 26.04 with Python 3.12. This resolves the known cause of the failed CI run; a new exact-head GitHub Actions run is still required to establish remote CI status.
