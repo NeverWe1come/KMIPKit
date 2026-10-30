@@ -1,13 +1,22 @@
 package org.kmipkit.message;
 
 import java.util.OptionalLong;
+import java.util.Optional;
+import java.util.function.Function;
 
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 
 /** Read-only response batch item view that retains its message owner. */
 public final class ResponseBatchItemView implements AutoCloseable {
+    private static final int ASYNCHRONOUS_CORRELATION_VALUE = 0x420006;
+    private static final int RESPONSE_PAYLOAD = 0x42007C;
+    private static final int RESULT_MESSAGE = 0x42007D;
+    private static final int RESULT_REASON = 0x42007E;
+    private static final int UNIQUE_BATCH_ITEM_ID = 0x420093;
+
     private final NativeHandle handle;
     private final ResponseMessage owner;
 
@@ -26,6 +35,41 @@ public final class ResponseBatchItemView implements AutoCloseable {
     public OptionalLong resultStatus() {
         return MessageNative.optionalRaw(
                 handle.withValue(NativeExtensionRegistry::responseBatchItemViewResultStatus));
+    }
+
+    /** Returns the optional echoed Unique Batch Item ID as an owned byte copy. */
+    public Optional<byte[]> uniqueBatchItemId() {
+        try (TtlvStructure value = ttlv()) {
+            return MessageTtlvAccess.byteString(value, UNIQUE_BATCH_ITEM_ID);
+        }
+    }
+
+    /** Returns the optional raw Result Reason Enumeration. */
+    public OptionalLong resultReason() {
+        try (TtlvStructure value = ttlv()) {
+            return MessageTtlvAccess.enumeration(value, RESULT_REASON);
+        }
+    }
+
+    /** Returns the optional Result Message text. */
+    public Optional<String> resultMessage() {
+        try (TtlvStructure value = ttlv()) {
+            return MessageTtlvAccess.textString(value, RESULT_MESSAGE);
+        }
+    }
+
+    /** Returns the optional asynchronous correlation bytes as an owned copy. */
+    public Optional<byte[]> asynchronousCorrelationValue() {
+        try (TtlvStructure value = ttlv()) {
+            return MessageTtlvAccess.byteString(value, ASYNCHRONOUS_CORRELATION_VALUE);
+        }
+    }
+
+    /** Invokes the callback with the optional Response Payload Structure. */
+    public <T> Optional<T> withResponsePayload(Function<TtlvStructureView, T> callback) {
+        try (TtlvStructure value = ttlv()) {
+            return MessageTtlvAccess.withStructure(value, RESPONSE_PAYLOAD, callback);
+        }
     }
 
     /** Returns the complete generic batch item in source order. */
