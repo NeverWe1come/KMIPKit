@@ -598,17 +598,22 @@ class T071ParityRunnerTests(unittest.TestCase):
         consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
         self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
         self.assertEqual(
+            consumers["rust"]["testFile"],
+            "crates/kmipkit-client/tests/unit/create_execution_tests.rs",
+        )
+        self.assertEqual(
+            consumers["rust"]["test"],
+            "create_failure_preserves_result_and_does_not_retry",
+        )
+        self.assertEqual(
             consumers["rust"]["command"],
             [
                 "cargo",
                 "test",
                 "-p",
                 "kmipkit-client",
-                "--test",
-                "creation_parity_tests",
-                "creation_result_message_fixture_is_limited_to_operation_failure",
-                "--",
-                "--exact",
+                "--lib",
+                "create_failure_preserves_result_and_does_not_retry",
             ],
         )
         self.assertEqual(
@@ -618,8 +623,21 @@ class T071ParityRunnerTests(unittest.TestCase):
         self.assertIn("coverage-c-consumer", consumers["c"]["command"])
         self.assertEqual(
             consumers["java"]["test"],
-            "org.kmipkit.extensions.CreationResultValueTest."
-            "failureResultMessageMatchesTheSharedFixture",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest."
+            "executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
+        )
+        self.assertEqual(
+            consumers["python"]["testFile"],
+            "bindings/python/tests/test_client.py",
+        )
+        self.assertEqual(
+            consumers["python"]["test"],
+            "test_creation_response_mapping_preserves_wire_identifiers_and_failure_message",
+        )
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.ClientFacadeTlsIntegrationTest."
+            "executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange",
         )
         self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
         self.assertEqual(
