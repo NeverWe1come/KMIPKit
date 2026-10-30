@@ -427,7 +427,7 @@ def build_inventory(
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json",
+        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-30.json",
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "scope": "approved-shared-rust-api",
-  "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json",
+  "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-30.json",
   "observedRustDeclarationCount": 10457,
   "directRustDeclarationCount": 8414,
   "conditionalRustDeclarationCount": 2043,
