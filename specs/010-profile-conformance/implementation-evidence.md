@@ -8664,3 +8664,7 @@ open until exact-head selected-scope and aggregate coverage checks pass. T026
 is complete at its implementation/configuration boundary; its eligible
 protected-release run remains a post-integration gate, and Baseline remains
 `evidence_incomplete` with no support claim.
+
+## T057 coverage restoration follow-up (2026-10-30)
+
+Red: PR CI run [40983437373, attempt 1](https://github.com/NeverWe1come/KMIPKit/actions/runs/40983437373) on `137fbaaa05bd7295d47dceee85daf29c42c12d0f` failed its restored changed-Rust threshold at 7,623/8,113 executable lines (93.96%). The gate requires at least 7,708 covered lines, so the baseline was short by 85. This is the required Red evidence for the T057 coverage closeout; no threshold or CI exception was changed.
