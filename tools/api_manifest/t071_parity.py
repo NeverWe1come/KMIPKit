@@ -21,6 +21,7 @@ DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
+API_LEVELS_CASE = "api-levels.shared.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -102,6 +103,24 @@ CASE_TESTS = {
         "python": (
             "bindings/python/tests/test_extension_registry.py",
             "test_failure_and_default_diagnostics_redact_secret_fixture_values",
+        ),
+    },
+    API_LEVELS_CASE: {
+        "rust": (
+            "crates/kmipkit/tests/api_levels.rs",
+            "api_levels_match_the_shared_fixture_without_network_calls",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "generated_public_client_abi_consumer_compiles_and_runs",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/SharedCapabilityParityFixtureTest.java",
+            "org.kmipkit.SharedCapabilityParityFixtureTest#apiLevelQueryMatchesSharedFixtureLocally",
+        ),
+        "python": (
+            "bindings/python/tests/test_shared_parity_fixtures.py",
+            "test_api_level_query_matches_shared_fixture_locally",
         ),
     },
 }
