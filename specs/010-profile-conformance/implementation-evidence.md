@@ -8680,3 +8680,5 @@ Green local verification:
 - The Linux Java/JNI job that aborted with glibc heap corruption on attempt 1 passed when that single job was rerun as attempt 2 (job `123840857573`) on the same source head. The exact updated PR head still needs CI verification.
 
 The exact-head changed-Rust coverage gate, normative-generator line coverage, selected-scope gate, and workspace aggregate gate remain pending. T057 stays open until hosted CI passes them. T026 is complete at its implementation/configuration boundary; its protected-push aggregate is the separate post-integration release gate. Baseline remains `evidence_incomplete` with no profile-support claim.
+
+Refactor: isolated nested wrong-type Usage Limits cases from the broader wrapper/reference matrix, keeping their assertions unchanged and making failures easier to localize. After the split, `cargo test -p kmipkit-protocol --all-features --quiet` passed 1,234 unit tests plus all protocol integration suites and doctests; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` passed.

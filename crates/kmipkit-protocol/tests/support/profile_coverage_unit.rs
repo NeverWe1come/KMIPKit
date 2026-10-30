@@ -607,21 +607,6 @@ fn usage_limits_helpers_cover_malformed_wrappers_and_reference_forms() {
     assert!(super::usage_total_in_wrapper(&wrong_wrapper.view(), NEW_ATTRIBUTE).is_err());
     assert!(super::usage_limits_count_in_wrapper(&wrong_wrapper.view(), NEW_ATTRIBUTE).is_err());
 
-    let wrong_usage_limits_value = structure([tagged(
-        NEW_ATTRIBUTE,
-        Value::structure(structure([tagged(
-            USAGE_LIMITS,
-            Value::text_string("not a Usage Limits structure".to_owned()),
-        )])),
-    )]);
-    assert!(
-        super::usage_total_in_wrapper(&wrong_usage_limits_value.view(), NEW_ATTRIBUTE).is_err()
-    );
-    assert!(
-        super::usage_limits_count_in_wrapper(&wrong_usage_limits_value.view(), NEW_ATTRIBUTE)
-            .is_err()
-    );
-
     let duplicate_wrapper = structure([
         tagged(NEW_ATTRIBUTE, Value::structure(Structure::new())),
         tagged(NEW_ATTRIBUTE, Value::structure(Structure::new())),
@@ -682,19 +667,6 @@ fn usage_limits_helpers_cover_malformed_wrappers_and_reference_forms() {
         )])),
     )]);
     assert!(super::usage_total_in_wrapper(&duplicate_total.view(), NEW_ATTRIBUTE).is_err());
-
-    let malformed_total = structure([tagged(
-        NEW_ATTRIBUTE,
-        Value::structure(structure([tagged(
-            USAGE_LIMITS,
-            Value::structure(structure([
-                tagged(TOTAL, Value::integer(40)),
-                tagged(COUNT, Value::long_integer(3)),
-                tagged(UNIT, Value::enumeration(1)),
-            ])),
-        )])),
-    )]);
-    assert!(super::usage_total_in_wrapper(&malformed_total.view(), NEW_ATTRIBUTE).is_err());
 
     let malformed_count = structure([tagged(
         NEW_ATTRIBUTE,
@@ -799,6 +771,44 @@ fn usage_limits_helpers_cover_malformed_wrappers_and_reference_forms() {
         super::request_usage_total_mutation(&empty.view(), 0xFFFF_FFFF),
         Ok(None)
     ));
+}
+
+#[test]
+// OASIS KMIP Specification v2.1 §4.59 Table 148.
+fn usage_limits_helpers_reject_wrong_nested_value_types() {
+    const USAGE_LIMITS: u32 = 0x0042_0095;
+    const TOTAL: u32 = 0x0042_0097;
+    const COUNT: u32 = 0x0042_0096;
+    const UNIT: u32 = 0x0042_0098;
+    const NEW_ATTRIBUTE: u32 = 0x0042_013D;
+
+    let wrong_usage_limits_value = structure([tagged(
+        NEW_ATTRIBUTE,
+        Value::structure(structure([tagged(
+            USAGE_LIMITS,
+            Value::text_string("not a Usage Limits structure".to_owned()),
+        )])),
+    )]);
+    assert!(
+        super::usage_total_in_wrapper(&wrong_usage_limits_value.view(), NEW_ATTRIBUTE).is_err()
+    );
+    assert!(
+        super::usage_limits_count_in_wrapper(&wrong_usage_limits_value.view(), NEW_ATTRIBUTE)
+            .is_err()
+    );
+
+    let malformed_total = structure([tagged(
+        NEW_ATTRIBUTE,
+        Value::structure(structure([tagged(
+            USAGE_LIMITS,
+            Value::structure(structure([
+                tagged(TOTAL, Value::integer(40)),
+                tagged(COUNT, Value::long_integer(3)),
+                tagged(UNIT, Value::enumeration(1)),
+            ])),
+        )])),
+    )]);
+    assert!(super::usage_total_in_wrapper(&malformed_total.view(), NEW_ATTRIBUTE).is_err());
 }
 
 #[test]
