@@ -331604,6 +331604,538 @@
           "name": "kmipkit.ttlv.ttlv_item_view_from_item"
         }
       }
+    },
+    {
+      "declarationId": "T104:kmipkit_message_extension_view_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_extension_view_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_message_extension_view_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_extension_view_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_message_validation_error_field_index:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_validation_error_field_index",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_message_validation_error_kind:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_validation_error_kind",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_message_validation_error_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_validation_error_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_message_validation_error_structure_index:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_message_validation_error_structure_index",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_batch_item_extension_at:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_batch_item_extension_at",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_batch_item_extension_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_batch_item_extension_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_batch_item_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_batch_item_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_batch_item_view_operation:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_batch_item_view_operation",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_batch_item_view_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_batch_item_view_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_batch_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_batch_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_protocol_version:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_protocol_version",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_header_view_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_header_view_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_batch_item_at:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_batch_item_at",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_batch_item_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_batch_item_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_from_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_from_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_header:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_header",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_request_message_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_request_message_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_extension_at:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_extension_at",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_extension_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_extension_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_view_operation:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_view_operation",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_view_result_status:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_view_result_status",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_batch_item_view_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_batch_item_view_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_header_view_batch_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_header_view_batch_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_header_view_protocol_version:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_header_view_protocol_version",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_header_view_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_header_view_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_header_view_time_stamp:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_header_view_time_stamp",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_header_view_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_header_view_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_batch_item_at:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_batch_item_at",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_batch_item_count:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_batch_item_count",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_from_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_from_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_header:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_header",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_release:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_release",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
+    },
+    {
+      "declarationId": "T104:kmipkit_response_message_ttlv:c-observed",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_response_message_ttlv",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0006",
+      "blockedReason": "The C message-model export awaits equivalent Java and Python bindings and a reviewed four-language declaration mapping."
     }
   ],
   "approvedExclusions": [

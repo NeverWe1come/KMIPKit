@@ -6808,3 +6808,17 @@ T103 is complete. `ProtocolVersion` in Python now rejects booleans and non-integ
 | Manifest and export reconciliation | `c592bf4d8` | `58899fdb3` | `58899fdb3` | `test_manifest_v2` passed 80/80; generator verified 12 files; Rust audit matched 9,680/9,680 declarations and 774 exclusions with zero missing, unobserved, kind, condition, or issue counts. |
 
 T090 remains incomplete: the audit found 74 direct typed request/response message, header, batch-item, extension-view, and validation-error declarations without equivalent C, Java, and Python APIs. They are assigned to T104–T107 in the convergence tasks; the typed model work must preserve unknown/raw values, ordered fields, safe lifetimes, payload-free errors, and four-language behavior before T090 can close.
+
+### T104 typed C message model (in progress, 2026-10-30)
+
+The implementation adds Rust-backed opaque C handles for validated request and response messages, their headers and batch items, message extensions, and payload-free validation errors. The accessors preserve raw operation/status values and the ordered generic TTLV representation. Aliased output slots are rejected before consuming input, and retained views own their backing message. A compiled C consumer exercises constructors, accessors, extension views, and releases. No raw request submission or transport injection was added.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — request message and view contract | `93c31135a` | `cargo test -p kmipkit-ffi --lib message_model_abi_tests` | Expected failure: the request-message C ABI and validated views were absent. |
+| Green — request message handles | `baa6f0375`, `0b7950dd4`, `15224b052`, `3f864d10a` | Focused message-model ABI tests | Pass: validated construction, payload-free error metadata, output-slot alias rejection, and lossless TTLV copies. |
+| Red/Green — response messages and extension views | `af8b106a8` / `f714b016f`; `b89e468f0` / `c789737cc`; `073644264` / `373483a6d` | Focused message-model ABI tests | Pass: response header/status access, safe extension views, and lossless header/item subviews. Unknown values and source order remain available through generic TTLV copies. |
+| Red/Green — compiled C consumer | `1eb1bf391` / `a5a6c804d` | `cargo test --locked --offline --all-features -p kmipkit-ffi --lib message_model_abi_tests` | Pass: 7 tests, including compilation and execution of `bindings/c/tests/message_model_abi_consumer.c`. |
+| Refactor/evidence | `ff9c06d84`, this documentation commit | `cargo clippy --locked --offline --all-features --no-deps -p kmipkit-ffi --all-targets -- -D warnings`; `python -B tools/api_manifest/generate.py --check`; `python -B -m unittest discover -s tools/api_manifest/tests -p test_manifest_v2.py -v`; same command with `test_binding_exports.py`; `git diff --check` | Pass: Clippy; 80 manifest tests; 46 binding-export tests; all 12 generated outputs current; clean diff. Windows emitted existing AWS-LC compiler-feature/NASM probe warnings, but the requested Rust commands succeeded. |
+
+This is a partial implementation, not T104 completion. The C symbols are recorded as blocked in the source manifest and are not exposed as ready public declarations until the Java and Python wrappers and four-language parity work in T105–T107 are complete. T104–T107 and T090 remain open; this evidence makes no conformance or profile-support claim.
