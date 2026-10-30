@@ -1094,15 +1094,31 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit.client.BatchItemMetadataV2.result_message",
             ),
         }
+        expected_owners = {
+            key: (
+                "client_execution",
+                "specs/007-client-execution/spec.md",
+                "KMIPKIT-0007-FR-001",
+            )
+            for key in expected_mappings
+        }
+        expected_owners[("rust-kmipkit", "kmipkit::KmipOperationResult::message")] = (
+            "server_generated_creation",
+            "specs/014-server-generated-creation/spec.md",
+            "KMIPKIT-0014-FR-008",
+        )
         declarations = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
         for key, targets in expected_mappings.items():
             declaration = declarations[key]
+            capability_id, approval_path, owner_requirement_id = expected_owners[key]
             self.assertEqual(declaration["declarationState"], "declared")
-            self.assertEqual(declaration["capabilityId"], "client_execution")
+            self.assertEqual(declaration["capabilityId"], capability_id)
+            self.assertEqual(declaration["approvalSource"]["path"], approval_path)
             self.assertIn("KMIPKIT-0003-FR-", " ".join(declaration["requirementIds"]))
+            self.assertIn(owner_requirement_id, declaration["requirementIds"])
             self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
             self.assertEqual(
                 [declaration["languageMappings"][language]["name"]
@@ -1123,7 +1139,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(owner_keys), 434)
         self.assertEqual(
             hashlib.sha256(("\n".join(owner_keys) + "\n").encode()).hexdigest(),
-            "4e572d2b7fb5676d5d371d31cdbb7cdb360420b324686f3ca37712b93b648542",
+            "0ab680a0592918b88cc098f7bd424ae6db4a6f94728078c51c9007c019c696cf",
         )
         for exclusion in owner_exclusions:
             self.assertRegex(exclusion["evidence"], r"KMIPKIT-0003-FR-00[1-8]")
@@ -1148,7 +1164,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(len(model_error_keys), 27)
         self.assertEqual(
             hashlib.sha256(("\n".join(model_error_keys) + "\n").encode()).hexdigest(),
-            "9b01ba331f49b2cfd4cbf754963746e674a29a5402128b524c1bc21cc5f55269",
+            "f604cdc7477795da34c3a100e1543d8d3481665462cbe53b3990c01386228f72",
         )
         for exclusion in model_error_exclusions:
             self.assertIn("KMIPKIT-0004-FR-013", exclusion["evidence"])
@@ -1644,8 +1660,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 10322)
-        self.assertEqual(len(exclusions), 132)
+        self.assertEqual(len(declarations), 9861)
+        self.assertEqual(len(exclusions), 593)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1924,7 +1940,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 24)
+        t087_exclusions = [
+            item for item in rust_exclusions
+            if item["approvalSource"]["path"] == "specs/003-core-types-errors/spec.md"
+        ]
+        self.assertEqual(len(t087_exclusions), 217)
+        self.assertEqual(len(rust_exclusions), 24 + len(t087_exclusions))
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -1940,6 +1961,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "docs/adr/0003-layered-cargo-workspace.md",
                 "specs/029-opaque-object-context/spec.md",
                 "specs/010-profile-conformance/spec.md",
+                "specs/003-core-types-errors/spec.md",
             },
         )
 
