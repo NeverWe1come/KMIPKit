@@ -38,6 +38,14 @@ impl<'a> RequestHeaderView<'a> {
             .with_root_item_structure(self.message.header_index(), callback)
     }
 
+    /// Lends the complete ordered Request Header TTLV for callback-scoped access.
+    ///
+    /// The view retains unknown fields and their source order. Copy it with
+    /// [`StructureView::try_clone`] if it must outlive this callback.
+    pub fn with_ttlv<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
+        self.with_header(callback)
+    }
+
     /// Returns the raw signed Protocol Version Major/Minor pair.
     #[must_use]
     pub fn protocol_version(self) -> super::ProtocolVersion {
@@ -160,6 +168,14 @@ impl<'a> ResponseHeaderView<'a> {
     fn with_header<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
         self.message
             .with_root_item_structure(self.message.header_index(), callback)
+    }
+
+    /// Lends the complete ordered Response Header TTLV for callback-scoped access.
+    ///
+    /// The view retains unknown fields and their source order. Copy it with
+    /// [`StructureView::try_clone`] if it must outlive this callback.
+    pub fn with_ttlv<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
+        self.with_header(callback)
     }
 
     /// Returns the raw signed Protocol Version Major/Minor pair.
