@@ -6681,3 +6681,16 @@ PR #90 is merged to `release/1.0.0`; the checked-in KMIPKIT-0010 specification i
 | Red | `97b9e4e77` | `python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v` | Expected failure: the regression required the accepted owner status, closed T026/T057 gates, and no stale Draft blocker, but the shared-dependency matrix still recorded KMIPKIT-0010 as Draft and T042 still depended on that status. |
 | Green | `e8abdd719` | The same focused T042 owner-readiness suite | Pass: the matrix now records KMIPKIT-0010 as Accepted, the task contract allows T036 mapping while preserving the evidence-incomplete claim gate, and T042 remains open for unfinished parity. |
 | Refactor | this evidence commit | `python -B -m unittest tools.api_manifest.tests.test_t042_owner_readiness_matrix -v`; `git diff --check` | Pass: all 3 owner-readiness tests pass and the diff is whitespace-clean. No generated API output or profile claim changed. |
+
+## PR #104 reconciliation after KMIPKIT-0010 merge (2026-10-30)
+
+The PR #90 merge was already incorporated into the #104 branch and GitHub reports the branch mergeable; `mergeStateStatus=BLOCKED` is caused by CI, not unresolved Git conflicts. The integration did leave stale test fixtures and lifecycle trace rows from the pre-merge branch. The failed exact-head run is retained as Red evidence; its failures do not justify weakening client preflight validation or changing the KMIP 2.1 source scope.
+
+| Phase | Commit or run | Verification | Result |
+|---|---|---|---|
+| Red | CI run `41020043210` on `16d3cc480eb7649459438246d0986daba0101a14`; `python -B -m unittest tools.normative_catalog.tests.test_object_lifecycle_traceability -v` | Expected failures after the release merge: 40 FFI tests, Java/Python request fixtures without a valid standalone Unique Identifier, a malformed Get Attributes fixture, and six lifecycle trace rows absent from the approved feature ledger. The repeated client failures are `InvalidInput` with `NotSent`, as required when an ID Placeholder has no earlier producer. SonarCloud also reported 3.0238% new-code duplication against a 3.0% limit. |
+| Green — traceability | Working-tree fix | The focused object-lifecycle traceability suite | Pass: removed six rows that release commit `e12b13de` had intentionally retired from the approved spec/catalog, restored the release-scoped `scoped_verified` wrapped-key evidence, and synchronized Re-Provision payload verification links with the current tests. |
+| Green — binding fixtures | Pending | Focused Rust FFI, Java, and Python runtime tests | In progress: give standalone test exchanges explicit identifiers and use valid direct object-attribute values; production preflight behavior remains unchanged. |
+| Refactor | Pending | Full required local checks, exact-head CI, SonarCloud quality gate, and `git diff --check` | Pending before the PR can be considered ready for human review. |
+
+No Git conflict markers or unmerged index entries remain. This reconciliation does not close T036/T042 or claim profile support; T042 remains open until the complete shared and operation mapping passes parity and traceability checks.
