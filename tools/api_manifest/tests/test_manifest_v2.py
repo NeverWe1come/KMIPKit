@@ -1699,6 +1699,42 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for language, mapping in expected_mappings.items():
                     self.assertIn(mapping["name"], capability["mappings"][language])
 
+    def test_t091_client_batch_response_iteration_maps_to_existing_parity_surface(self) -> None:
+        expected_facades = {
+            "kmipkit_client::ClientBatchResponse::is_empty": "kmipkit::ClientBatchResponse::is_empty",
+            "kmipkit_client::ClientBatchResponse::iter": "kmipkit::ClientBatchResponse::iter",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for client_name, facade_name in expected_facades.items():
+            client = declarations[client_name]
+            facade = declarations[facade_name]
+            with self.subTest(export=client_name):
+                self.assertEqual("declared", client["declarationState"])
+                self.assertEqual("client_execution", client["capabilityId"])
+                self.assertNotIn("candidateSpecId", client)
+                self.assertEqual(facade["requirementIds"], client["requirementIds"])
+                self.assertEqual(facade["approvalSource"], client["approvalSource"])
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in facade["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": "rust-kmipkit-client",
+                    "name": client_name,
+                }
+                self.assertEqual(expected_mappings, client["languageMappings"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_client_execution_candidate_exports_are_reconciled(self) -> None:
         unresolved = [
             row["exportName"]
