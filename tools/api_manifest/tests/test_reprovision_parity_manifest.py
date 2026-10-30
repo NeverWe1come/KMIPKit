@@ -123,7 +123,7 @@ class ReProvisionParityManifestTests(unittest.TestCase):
         expected_mappings = {
             "rust": {
                 "packageId": "rust-kmipkit-client",
-                "name": "kmipkit_client::Client::execute_with_options",
+                "name": "kmipkit_client::Client::reprovision_with_options",
             },
             "c": {
                 "packageId": "c-kmipkit",
