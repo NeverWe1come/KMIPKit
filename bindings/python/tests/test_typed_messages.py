@@ -31,6 +31,7 @@ _MESSAGE_EXTENSION = 0x0042_0051
 _VENDOR_IDENTIFICATION = 0x0042_009D
 _CRITICALITY_INDICATOR = 0x0042_0026
 _VENDOR_EXTENSION = 0x0042_009C
+_SERVER_HASHED_PASSWORD = 0x0042_0155
 
 
 def _item(raw_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
@@ -106,8 +107,8 @@ def _request_tree(
                 limits,
             ),
         ),
-        (_BATCH_COUNT, _integer(1)),
         *header_options,
+        (_BATCH_COUNT, _integer(1)),
     ]
     batch_fields: list[tuple[int, Callable[[], ttlv.Value]]] = [
         (
@@ -124,11 +125,14 @@ def _request_tree(
                 _MESSAGE_EXTENSION,
                 _nested(
                     [
-                        (_VENDOR_IDENTIFICATION, _text(b"KMIPKit-test", limits)),
+                        (_VENDOR_IDENTIFICATION, _text(b"Acme", limits)),
                         (_CRITICALITY_INDICATOR, _boolean(False)),
                         (
                             _VENDOR_EXTENSION,
-                            _nested([(0x0054_0001, _text(b"opaque", limits))], limits),
+                            _nested(
+                                [(0x0054_0001, _text(b"opaque vendor value", limits))],
+                                limits,
+                            ),
                         ),
                     ],
                     limits,
@@ -146,7 +150,11 @@ def _request_tree(
     return result
 
 
-def _response_tree(*, status: int = 0x8000_0001) -> ttlv.Structure:
+def _response_tree(
+    *,
+    status: int = 0x8000_0001,
+    header_options: tuple[tuple[int, Callable[[], ttlv.Value]], ...] = (),
+) -> ttlv.Structure:
     limits = _limits()
     result = _structure(
         [
@@ -165,6 +173,7 @@ def _response_tree(*, status: int = 0x8000_0001) -> ttlv.Structure:
                             ),
                         ),
                         (_TIME_STAMP, lambda: ttlv.ttlv_value_date_time(1_234_567)),
+                        *header_options,
                         (_BATCH_COUNT, _integer(1)),
                     ],
                     limits,
@@ -204,16 +213,17 @@ def test_request_message_preserves_unknown_operation_order_and_effective_default
     with messages.RequestMessage.from_ttlv(original) as request:
         assert original.closed
         assert request.batch_item_count == 1
-        assert request.header.protocol_version == (2, 1)
-        assert request.header.batch_count == 1
-        assert request.header.asynchronous_indicator is None
-        assert request.header.effective_asynchronous_indicator == 3
-        assert request.header.attestation_capable_indicator is None
-        assert request.header.effective_attestation_capable_indicator is False
-        assert request.header.batch_error_continuation_option is None
-        assert request.header.effective_batch_error_continuation_option == 2
-        assert request.header.batch_order_option is None
-        assert request.header.effective_batch_order_option is True
+        with request.header() as header:
+            assert (header.protocol_version.major, header.protocol_version.minor) == (2, 1)
+            assert header.batch_count == 1
+            assert header.asynchronous_indicator is None
+            assert header.effective_asynchronous_indicator == 3
+            assert header.attestation_capable_indicator is None
+            assert header.effective_attestation_capable_indicator is False
+            assert header.batch_error_continuation_option is None
+            assert header.effective_batch_error_continuation_option == 2
+            assert header.batch_order_option is None
+            assert header.effective_batch_order_option is True
 
         with request.batch_item_at(0) as item:
             assert item.operation == 0xF123_4567
@@ -232,8 +242,9 @@ def test_request_message_preserves_explicit_raw_header_option_values() -> None:
     )
 
     with messages.RequestMessage.from_ttlv(original) as request:
-        assert request.header.asynchronous_indicator == 0xF123_4567
-        assert request.header.effective_asynchronous_indicator == 0xF123_4567
+        with request.header() as header:
+            assert header.asynchronous_indicator == 0xF123_4567
+            assert header.effective_asynchronous_indicator == 0xF123_4567
 
 
 def test_response_message_preserves_raw_status_and_response_timestamp() -> None:
@@ -241,9 +252,10 @@ def test_response_message_preserves_raw_status_and_response_timestamp() -> None:
 
     with messages.ResponseMessage.from_ttlv(original) as response:
         assert original.closed
-        assert response.header.protocol_version == (2, 1)
-        assert response.header.time_stamp == 1_234_567
-        assert response.header.batch_count == 1
+        with response.header() as header:
+            assert (header.protocol_version.major, header.protocol_version.minor) == (2, 1)
+            assert header.time_stamp == 1_234_567
+            assert header.batch_count == 1
         with response.batch_item_at(0) as item:
             assert item.operation == 0x0000_000A
             assert item.result_status == 0x8000_0001
@@ -252,8 +264,27 @@ def test_response_message_preserves_raw_status_and_response_timestamp() -> None:
     copied_item.close()
 
 
+def test_response_header_preserves_server_hashed_password_bytes() -> None:
+    limits = _limits()
+    try:
+        original = _response_tree(
+            header_options=(
+                (
+                    _SERVER_HASHED_PASSWORD,
+                    lambda: ttlv.ttlv_value_byte_string(b"\x00\x80hash", limits),
+                ),
+            )
+        )
+    finally:
+        limits.close()
+
+    with messages.ResponseMessage.from_ttlv(original) as response:
+        with response.header() as header:
+            assert header.server_hashed_password == b"\x00\x80hash"
+
+
 def test_extension_view_survives_parent_close_and_returns_lossless_ttlv() -> None:
-    original = _request_tree(include_extension=True)
+    original = _request_tree(operation=0x0000_001E, include_extension=True)
     request = messages.RequestMessage.from_ttlv(original)
     item = request.batch_item_at(0)
     assert item.extension_count == 1
