@@ -1630,9 +1630,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for declaration_id, export_name, operation_id, c_name, java_name, python_name in cases:
             with self.subTest(export=export_name):
                 declaration = declarations[declaration_id]
+                operation = operations[operation_id]
                 self.assertEqual(export_name, declaration["exportName"])
                 self.assertEqual("verified", declaration["declarationState"])
-                self.assertTrue(declaration.get("parityEvidenceIds"))
+                self.assertTrue(
+                    set(operation["parityEvidenceIds"])
+                    <= set(declaration.get("parityEvidenceIds", []))
+                )
                 self.assertEqual(operation_id, declaration["capabilityId"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(
