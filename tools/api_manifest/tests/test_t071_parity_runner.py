@@ -24,6 +24,7 @@ BATCH_MIXED_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
 SCHEMA_REDACTION_CASE = "errors.schema-redaction.v1"
 API_LEVELS_CASE = "api-levels.shared.v1"
+OPEN_TTLV_VALUES_CASE = "ttlv.open-values-and-child-order.v1"
 
 
 def _script_contract_python_step(workflow: str) -> str:
@@ -329,6 +330,57 @@ class T071ParityRunnerTests(unittest.TestCase):
             "test_api_level_query_matches_shared_fixture_locally",
         )
 
+    def test_open_ttlv_values_plan_selects_all_four_runtime_consumers(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--case",
+                OPEN_TTLV_VALUES_CASE,
+                "--plan",
+            ],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertEqual(plan["caseId"], OPEN_TTLV_VALUES_CASE)
+        consumers = {consumer["language"]: consumer for consumer in plan["consumers"]}
+        self.assertEqual(set(consumers), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            consumers["rust"]["command"],
+            [
+                "cargo",
+                "test",
+                "-p",
+                "kmipkit-ttlv",
+                "--test",
+                "shared_api_parity",
+                "generic_ttlv_shared_fixture_preserves_open_values_and_child_order",
+                "--",
+                "--exact",
+            ],
+        )
+        self.assertEqual(
+            consumers["c"]["test"],
+            "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
+        )
+        self.assertIn("coverage-c-consumer", consumers["c"]["command"])
+        self.assertEqual(
+            consumers["java"]["test"],
+            "org.kmipkit.SharedCapabilityParityFixtureTest."
+            "genericTtlvFixturePreservesOpenEnumerationBytesOrderAndViewLifecycle",
+        )
+        self.assertEqual(consumers["java"]["workingDirectory"], "bindings/java")
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_shared_parity_fixtures.py::"
+            "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle",
+        )
+
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (
             DISCOVER_VERSIONS_CASE,
@@ -336,6 +388,7 @@ class T071ParityRunnerTests(unittest.TestCase):
             REGISTRY_ISOLATION_CASE,
             SCHEMA_REDACTION_CASE,
             API_LEVELS_CASE,
+            OPEN_TTLV_VALUES_CASE,
         ):
             with self.subTest(case_id=case_id):
                 java_consumer = next(
