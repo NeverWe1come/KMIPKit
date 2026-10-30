@@ -1506,6 +1506,48 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertIn(declaration_id, operation["declarations"]["rust"])
 
+    def test_t091_obtain_lease_facade_maps_to_verified_operation(self) -> None:
+        declaration_id = "rust-observed-6d4c2acdd725a6525a7b"
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == declaration_id
+        )
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+        )
+
+        self.assertEqual("kmipkit::ClientRequest::obtain_lease", declaration["exportName"])
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual(
+            "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", declaration["capabilityId"]
+        )
+        self.assertNotIn("candidateSpecId", declaration)
+        self.assertEqual(
+            {
+                "rust": {
+                    "packageId": "rust-kmipkit",
+                    "name": "kmipkit::ClientRequest::obtain_lease",
+                },
+                "c": {
+                    "packageId": "c-kmipkit",
+                    "name": "kmipkit_client_batch_item_obtain_lease",
+                },
+                "java": {
+                    "packageId": "java-kmipkit",
+                    "name": "org.kmipkit.extensions.ClientBatchItem.obtainLease",
+                },
+                "python": {
+                    "packageId": "python-kmipkit",
+                    "name": "kmipkit.extensions.client_batch_item_obtain_lease",
+                },
+            },
+            declaration["languageMappings"],
+        )
+        self.assertIn(declaration_id, operation["declarations"]["rust"])
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
