@@ -2377,6 +2377,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         methods = (
             ("get_attribute_list", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"),
             ("get_constraints", "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"),
+            ("reprovision", "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"),
             ("reprovision_with_options", "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"),
             ("rng_retrieve", "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"),
             ("rng_seed", "KMIPKIT-ELEM-OP-C2S-RNG-SEED"),
