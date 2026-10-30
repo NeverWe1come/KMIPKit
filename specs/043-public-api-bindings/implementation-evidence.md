@@ -6745,4 +6745,17 @@ The first full CI run after the KMIPKIT-0010 merge, run `41037448584` on the the
 | Green — classify generated exports | `ba930f8ab` | `wsl.exe -d Ubuntu-26.04 -- bash -lc "cd '/mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0043-104-ci-fix/KMIPKit' && uv run --python 3.12 --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v"` | Pass: 37 exact exclusions were added to the source manifest for generated dataclass mechanics and caller-supplied/read-only fields; the pinned generator refreshed all 12 generated outputs. The Windows related suite passed 111 tests and the generator check passed. |
 | Refactor/evidence | this commit | `python -B tools/api_manifest/generate.py --check`; related T036/T042/T073/operation-readiness/T076 suite; `git diff --check` | Evidence and task traceability are recorded separately. No protocol behavior or profile-support claim changed; Baseline remains `evidence_incomplete`. |
 
-The corrected contract passes on both Windows and Ubuntu 26.04 with Python 3.12. This resolves the known cause of the failed CI run; a new exact-head GitHub Actions run is still required to establish remote CI status.
+The corrected contract passes on both Windows and Ubuntu 26.04 with Python 3.12. This resolves the known cause of the failed CI run; exact-head GitHub Actions run `41039507430` subsequently passed on the implementation head before the evidence-only task closeout below.
+
+### T071 complete shared parity acceptance (2026-10-30)
+
+All 13 cases in `tests/fixtures/api/shared-capability-parity.json` have fixture-linked runtime consumers for Rust, compiled C, Java, and Python. Each selected consumer passed; the individual Red/Green/Refactor results are recorded in the case-specific sections above. The follow-ups close the earlier Create/Create Key Pair response gaps and Create Split Key Success/Pending gap. The suite covers the requested cross-language dimensions:
+
+| Cases | Shared behavior exercised |
+|---|---|
+| 1–3 | API-level discovery, immutable client configuration/registry isolation, and redacted schema errors. |
+| 4–7 | Ordered mixed outcomes including Pending, supported-version discovery, unknown TTLV values and child order with owner/view lifetime, and extension recognition with generic preservation. |
+| 8–11 | Fixture-shaped Create and Create Key Pair requests/responses, Create Split Key Success/Pending with exact batch-item correlation, and failed-operation Result Message mapping. |
+| 12–13 | Configurable codec limits and local Usage Allocation reservation/rejection/resource-release boundaries. |
+
+The operation-specific client mappings in T031–T069 were complete before this gate. Exact-head CI run `41039507430` on `fc68256f26974487a54bbabcd449b4da96a2ff7f` then passed the Rust workspace, compiled C ABI consumers, Java/JNI integration and coverage on JDK 17, Python 3.12 bindings, manifest/parity contracts, and the Ubuntu/Windows/macOS jobs. This supplies hosted Java 17 and full-suite evidence alongside the per-case four-language executions above. T071 is complete. These tests establish library API parity only; they do not claim OASIS conformance, server interoperability, profile support, or certification. T075 release inventory reconciliation and T085 coverage-gate restoration remain open.
