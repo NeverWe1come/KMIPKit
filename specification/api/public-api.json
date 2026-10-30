@@ -85459,14 +85459,50 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientRequest::hash",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-HASH",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-002",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0021",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::hash"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_hash"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.hash"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_hash"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-0c8369366007209bf817",
@@ -333669,6 +333705,7 @@
       "declarations": {
         "rust": [
           "rust-observed-1f74185ea31a6ad0dab4",
+          "rust-observed-7cc46b70a35514bf0bf6",
           "rust-observed-b11253d3bfaaba35e069",
           "rust-observed-517e07701c6572850a12",
           "rust-observed-3395a41417ca5bc4cb5d",

@@ -1723,6 +1723,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::SignatureVerify",
     ),
     (
+        "rust-observed-7cc46b70a35514bf0bf6",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::hash",
+    ),
+    (
         "rust-observed-7a1145fa083ea146a904",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::get_attributes",
