@@ -708,16 +708,21 @@ class PublicApiParityTests(unittest.TestCase):
                         assert support is not None
                         support_source = (ROOT / support["testFile"]).read_text(encoding="utf-8")
                         support_body = self._rust_test_body(support_source, rust_test)
-                        self.assertIn(case_id, support_body)
-                        self.assertIn('tests/fixtures/api/shared-capability-parity.json', support_body)
-                        self.assertIn(c_entry, support_body)
-                        self.assertRegex(support_body, r"\bassert(?:_eq|_ne)?!")
+                        fixture_body = support_body
+                        if case_id not in fixture_body:
+                            shared_runner = "run_generated_public_client_abi_consumer"
+                            self.assertIn(f"{shared_runner}(", support_body)
+                            fixture_body = self._rust_test_body(support_source, shared_runner)
+                        self.assertIn(case_id, fixture_body)
+                        self.assertIn('tests/fixtures/api/shared-capability-parity.json', fixture_body)
+                        self.assertIn(c_entry, fixture_body)
+                        self.assertRegex(fixture_body, r"\bassert(?:_eq|_ne)?!")
                         for field in fields:
                             if field in {"close-configuration-owned-native-handles-once",
                                          "release-returned-registry-views-once"}:
-                                self.assertIn(field, support_body, f"{case_id}/c harness must verify {field}")
+                                self.assertIn(field, fixture_body, f"{case_id}/c harness must verify {field}")
                             else:
-                                self.assertIn(field, support_body, f"{case_id}/c harness must pass {field}")
+                                self.assertIn(field, fixture_body, f"{case_id}/c harness must pass {field}")
 
     def _mapped_test_body(self, language: str, mapping: dict[str, Any]) -> str:
         if language == "java":
