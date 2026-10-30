@@ -1583,14 +1583,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             f"standard-trait exclusions must match observed exports exactly: {missing[:5]}",
         )
 
-        direct_exports = {
+        directly_accounted_types = {
             (row["packageId"], row["exportName"])
-            for row in self.checked_in_manifest["publicDeclarations"]
+            for row in (
+                self.checked_in_manifest["publicDeclarations"]
+                + self.checked_in_manifest["approvedExclusions"]
+            )
+            if not row["exportName"].startswith("<")
         }
         for package_id, export_name in observed_traits:
             type_name = export_name.split(" as ", 1)[0][1:].split("<", 1)[0]
             with self.subTest(type=type_name, package=package_id):
-                self.assertIn((package_id, type_name), direct_exports)
+                self.assertIn((package_id, type_name), directly_accounted_types)
 
         for key in sorted(exclusions):
             exclusion = exclusions[key]
