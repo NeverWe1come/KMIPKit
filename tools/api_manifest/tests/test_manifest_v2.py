@@ -1453,6 +1453,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0006-FR-001", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_t091_client_execution_candidate_exports_are_reconciled(self) -> None:
+        unresolved = [
+            row["exportName"]
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0007"
+        ]
+        self.assertEqual(
+            [],
+            unresolved,
+            "KMIPKIT-0007 candidate exports must be mapped or specifically excluded; "
+            f"{len(unresolved)} remain, including {unresolved[:10]}",
+        )
+
     def test_ttlv_decoder_python_exception_runtime_members_are_exactly_excluded(self) -> None:
         expected = {
             "kmipkit.errors.TtlvDecodeError.__init__",
