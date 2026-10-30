@@ -849,6 +849,19 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
     let input = &case["input"];
     let expected = &case["expectedOutput"];
     let pending_expected = &expected["pendingMetadata"];
+    let unique_batch_item_ids = expected["uniqueBatchItemIds"]
+        .as_array()
+        .expect("fixture batch item IDs are an array")
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .expect("fixture batch item ID is text")
+                .as_bytes()
+                .to_vec()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(unique_batch_item_ids.len(), 2);
     assert_eq!(input["operation"], "Create Split Key");
     assert_eq!(input["attributesPresent"], true);
     assert_eq!(input["protectionStorageMasks"]["present"], true);
@@ -928,7 +941,7 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
         0x0042_000f,
         [
             enumeration(0x0042_005c, 40),
-            ttlv_item(0x0042_0093, 0x08, b"split-success-red"),
+            ttlv_item(0x0042_0093, 0x08, &unique_batch_item_ids[0]),
             enumeration(
                 0x0042_007f,
                 u32::try_from(
@@ -958,7 +971,7 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
                 )
                 .expect("operation fits U32"),
             ),
-            ttlv_item(0x0042_0093, 0x08, b"split-pending"),
+            ttlv_item(0x0042_0093, 0x08, &unique_batch_item_ids[1]),
             enumeration(
                 0x0042_007f,
                 u32::try_from(
@@ -1042,6 +1055,7 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
     let server_config = mtls_server_config(&pki);
     let exchange_count = Arc::new(AtomicU64::new(0));
     let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer_batch_item_ids = unique_batch_item_ids.clone();
     let peer = thread::spawn(move || {
         listener
             .set_nonblocking(true)
@@ -1078,9 +1092,27 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
             .windows(expected_request_payload.len())
             .filter(|window| *window == expected_request_payload)
             .count();
+        let batch_item_id_fields = peer_batch_item_ids
+            .iter()
+            .map(|identifier| ttlv_item(0x0042_0093, 0x08, identifier))
+            .collect::<Vec<_>>();
+        let request_id_positions = batch_item_id_fields
+            .iter()
+            .map(|field| {
+                request
+                    .windows(field.len())
+                    .position(|window| window == field)
+                    .expect("the C request contains each fixture batch-item ID")
+            })
+            .collect::<Vec<_>>();
         assert_eq!(
             occurrences, 2,
             "the C request contains two exact fixture-shaped Create Split Key payloads"
+        );
+        assert_eq!(request_id_positions.len(), 2);
+        assert!(
+            request_id_positions[0] < request_id_positions[1],
+            "the C request keeps fixture batch-item IDs in request order"
         );
         tls.write_all(&response)
             .expect("the fixture success and Pending results are written");
@@ -1100,6 +1132,10 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
         .expect("temporary trust root path has no NUL byte");
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
     let mode = CString::new("create-split-key-fixture").expect("fixture mode has no NUL byte");
+    let success_batch_item_id = CString::new(unique_batch_item_ids[0].as_slice())
+        .expect("fixture success batch item ID has no NUL byte");
+    let pending_batch_item_id = CString::new(unique_batch_item_ids[1].as_slice())
+        .expect("fixture Pending batch item ID has no NUL byte");
     let mut arguments = vec![
         executable.as_ptr().cast_mut(),
         certificate.as_ptr().cast_mut(),
@@ -1108,6 +1144,8 @@ fn generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pendi
         trust_root.as_ptr().cast_mut(),
         port.as_ptr().cast_mut(),
         mode.as_ptr().cast_mut(),
+        success_batch_item_id.as_ptr().cast_mut(),
+        pending_batch_item_id.as_ptr().cast_mut(),
     ];
     let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
     let mut limits = std::ptr::null_mut();

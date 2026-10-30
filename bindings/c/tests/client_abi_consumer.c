@@ -3045,11 +3045,10 @@ cleanup:
 
 /* OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157. */
 static int create_split_key_fixture_response_matches(
-    kmipkit_client_batch_item_response_t *response_item, int pending) {
+    kmipkit_client_batch_item_response_t *response_item, int pending,
+    const uint8_t *expected_batch_item_id, uint64_t expected_batch_item_id_length) {
     static const uint8_t expected_text[] = "part-a";
     static const uint8_t expected_pending_text[] = "pending-part";
-    static const uint8_t expected_success_batch_item_id[] = "split-success";
-    static const uint8_t expected_pending_batch_item_id[] = "split-pending";
     static const uint8_t expected_correlation[] = {0x00, 0xff, 0x80};
     kmipkit_client_batch_item_metadata_v2_t metadata = {0};
     kmipkit_unique_identifier_v1_t identifier = {0};
@@ -3063,12 +3062,6 @@ static int create_split_key_fixture_response_matches(
     if (response_item == 0) return 0;
     metadata.struct_size = (uint32_t)sizeof(metadata);
     metadata.abi_version = 2;
-    const uint8_t *expected_batch_item_id = pending
-        ? expected_pending_batch_item_id
-        : expected_success_batch_item_id;
-    const uint64_t expected_batch_item_id_length = pending
-        ? sizeof(expected_pending_batch_item_id) - 1
-        : sizeof(expected_success_batch_item_id) - 1;
     if (kmipkit_client_batch_item_response_unique_batch_item_id(
             response_item, &batch_item_id_present, &batch_item_id) != 0 ||
         batch_item_id_present != 1 ||
@@ -3145,12 +3138,12 @@ static int create_split_key_fixture_response_matches(
 }
 
 static int execute_create_split_key_fixture_request_from_c(
-    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
-    static const uint8_t batch_item_ids[2][14] = {
-        {'s', 'p', 'l', 'i', 't', '-', 's', 'u', 'c', 'c', 'e', 's', 's', 0},
-        {'s', 'p', 'l', 'i', 't', '-', 'p', 'e', 'n', 'd', 'i', 'n', 'g'},
-    };
-    static const uint64_t batch_item_id_lengths[2] = {13, 13};
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits,
+    const uint8_t *success_batch_item_id, uint64_t success_batch_item_id_length,
+    const uint8_t *pending_batch_item_id, uint64_t pending_batch_item_id_length) {
+    const uint8_t *batch_item_ids[2] = {success_batch_item_id, pending_batch_item_id};
+    const uint64_t batch_item_id_lengths[2] = {
+        success_batch_item_id_length, pending_batch_item_id_length};
     kmipkit_ttlv_structure_t *attributes = 0;
     kmipkit_ttlv_structure_t *masks = 0;
     kmipkit_client_batch_t *batch = 0;
@@ -3162,7 +3155,9 @@ static int execute_create_split_key_fixture_request_from_c(
     uint64_t response_count = 0;
     int result = 1;
 
-    if (client == 0 || limits == 0 ||
+    if (client == 0 || limits == 0 || batch_item_ids[0] == 0 ||
+        batch_item_id_lengths[0] == 0 || batch_item_ids[1] == 0 ||
+        batch_item_id_lengths[1] == 0 ||
         kmipkit_ttlv_structure_create(&attributes) != 0 || attributes == 0 ||
         kmipkit_ttlv_structure_create(&masks) != 0 || masks == 0 ||
         kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
@@ -3196,14 +3191,16 @@ static int execute_create_split_key_fixture_request_from_c(
         goto cleanup;
     }
     if (kmipkit_client_batch_response_item_at(response, 0, &response_item) != 0 ||
-        response_item == 0 || !create_split_key_fixture_response_matches(response_item, 0)) {
+        response_item == 0 || !create_split_key_fixture_response_matches(
+            response_item, 0, success_batch_item_id, success_batch_item_id_length)) {
         goto cleanup;
     }
     kmipkit_client_batch_item_response_release(response_item);
     kmipkit_client_batch_item_release(identified_item);
     response_item = 0;
     if (kmipkit_client_batch_response_item_at(response, 1, &response_item) != 0 ||
-        response_item == 0 || !create_split_key_fixture_response_matches(response_item, 1)) {
+        response_item == 0 || !create_split_key_fixture_response_matches(
+            response_item, 1, pending_batch_item_id, pending_batch_item_id_length)) {
         goto cleanup;
     }
     result = 0;
@@ -3398,7 +3395,13 @@ static int execute_public_tls_request(
         goto cleanup;
     }
     if (create_split_key_fixture_only) {
-        result = execute_create_split_key_fixture_request_from_c(client, limits);
+        if (argc != 9 || argv[7] == 0 || argv[8] == 0) {
+            result = 2;
+            goto cleanup;
+        }
+        result = execute_create_split_key_fixture_request_from_c(
+            client, limits, (const uint8_t *)argv[7], (uint64_t)strlen(argv[7]),
+            (const uint8_t *)argv[8], (uint64_t)strlen(argv[8]));
         goto cleanup;
     }
     if (kmipkit_client_batch_create(&batch) != 0) {
@@ -6088,7 +6091,7 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     }
     if (argc == 7 && argv[6] != 0 && strcmp(argv[6], "rekey-key-pair") == 0) {
         rekey_key_pair_only = 1;
-    } else if (argc == 7 && argv[6] != 0 &&
+    } else if (argc == 9 && argv[6] != 0 && argv[7] != 0 && argv[8] != 0 &&
                strcmp(argv[6], "create-split-key-fixture") == 0) {
         create_split_key_fixture_only = 1;
     } else if (argc < 16) {
