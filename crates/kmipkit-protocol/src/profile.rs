@@ -8,7 +8,7 @@
 //! prerequisite is KMIP Specification v2.1 §14.1; Baseline Client's inherited
 //! profile closure follows KMIP Profiles v2.1 §6.1.
 
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 
@@ -234,13 +234,13 @@ impl fmt::Debug for ProfileObjectState {
 /// entries fail closed when a rule needs them.
 #[derive(Clone, Default, Eq, PartialEq)]
 pub struct ProfileValidationContext {
-    object_states: Vec<ProfileObjectStateEntry>,
+    object_states: BTreeMap<usize, ProfileObjectStateEntry>,
 }
 
 #[derive(Clone, Eq, PartialEq)]
-struct ProfileObjectStateEntry {
-    batch_item_index: usize,
-    state: ProfileObjectState,
+enum ProfileObjectStateEntry {
+    Unique(ProfileObjectState),
+    Duplicate,
 }
 
 impl ProfileValidationContext {
@@ -248,17 +248,21 @@ impl ProfileValidationContext {
     #[must_use]
     pub const fn new() -> Self {
         Self {
-            object_states: Vec::new(),
+            object_states: BTreeMap::new(),
         }
     }
 
     /// Adds caller-attested state for one zero-based request batch item.
     #[must_use]
     pub fn with_object_state(mut self, batch_item_index: usize, state: ProfileObjectState) -> Self {
-        self.object_states.push(ProfileObjectStateEntry {
-            batch_item_index,
-            state,
-        });
+        match self.object_states.entry(batch_item_index) {
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(ProfileObjectStateEntry::Unique(state));
+            }
+            std::collections::btree_map::Entry::Occupied(mut entry) => {
+                entry.insert(ProfileObjectStateEntry::Duplicate);
+            }
+        }
         self
     }
 
@@ -267,24 +271,16 @@ impl ProfileValidationContext {
         batch_item_index: usize,
         unique_identifier: &str,
     ) -> Result<&ProfileObjectState, StateBinding> {
-        let mut matching = self
-            .object_states
-            .iter()
-            .filter(|entry| {
-                #[cfg(test)]
-                PROFILE_CONTEXT_LOOKUP_STEPS.with(|steps| steps.set(steps.get() + 1));
-                entry.batch_item_index == batch_item_index
-            });
-        let Some(entry) = matching.next() else {
-            return Err(StateBinding::Missing);
-        };
-        if matching.next().is_some() {
-            return Err(StateBinding::Duplicate);
+        match self.object_states.get(&batch_item_index) {
+            None => Err(StateBinding::Missing),
+            Some(ProfileObjectStateEntry::Duplicate) => Err(StateBinding::Duplicate),
+            Some(ProfileObjectStateEntry::Unique(state))
+                if state.unique_identifier != unique_identifier =>
+            {
+                Err(StateBinding::Mismatch)
+            }
+            Some(ProfileObjectStateEntry::Unique(state)) => Ok(state),
         }
-        if entry.state.unique_identifier != unique_identifier {
-            return Err(StateBinding::Mismatch);
-        }
-        Ok(&entry.state)
     }
 }
 
