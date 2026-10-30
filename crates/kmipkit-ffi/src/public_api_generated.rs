@@ -2400,6 +2400,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::RequestOptions",
     ),
     (
+        "rust-observed-0ea966087301e239f7b7",
+        "rust-kmipkit",
+        "kmipkit::Client",
+    ),
+    (
         "rust-observed-0af220bf3522b70202d8",
         "rust-kmipkit",
         "kmipkit::ClientBatchResponse",
@@ -2415,9 +2420,39 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::KmipOperationResult",
     ),
     (
+        "rust-observed-97e18d663641bb8f79e5",
+        "rust-kmipkit",
+        "kmipkit::Client::new",
+    ),
+    (
+        "rust-observed-acca90059fbebb0cb374",
+        "rust-kmipkit",
+        "kmipkit::Client::execute",
+    ),
+    (
         "rust-observed-fa01f6842c586977f615",
         "rust-kmipkit",
         "kmipkit::Client::execute_with_options",
+    ),
+    (
+        "rust-observed-596932483e95d4d6fe07",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_poll",
+    ),
+    (
+        "rust-observed-eceabc2126cec64f924b",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_cancel",
+    ),
+    (
+        "rust-observed-f8ee4a2896aaa81c0b3f",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_process",
+    ),
+    (
+        "rust-observed-c42f04e1a7c526f1f259",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_query_async_requests",
     ),
     (
         "rust-observed-9b2c6e004c0df981f24a",

@@ -91018,14 +91018,41 @@
       "packageId": "rust-kmipkit",
       "kind": "type",
       "exportName": "kmipkit::Client",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-32311dd2ef639f8bca11",
@@ -91411,28 +91438,82 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.create"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-acca90059fbebb0cb374",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-fa01f6842c586977f615",
@@ -91871,14 +91952,43 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute_poll",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-003",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute_poll"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_poll"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executePoll"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_poll"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3e107e1dd858d441f204",
@@ -91899,14 +92009,43 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute_cancel",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute_cancel"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_cancel"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeCancel"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_cancel"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-49cc4b3450359bd25afa",
@@ -91927,14 +92066,43 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute_process",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-005",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute_process"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_process"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeProcess"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_process"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d41cf951c47b9bbb2a06",
@@ -91955,14 +92123,44 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::Client::execute_query_async_requests",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
+        "KMIPKIT-0009-FR-001",
+        "KMIPKIT-0009-FR-006",
+        "KMIPKIT-0009-FR-007",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0009-FR-010",
+        "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::Client::execute_query_async_requests"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_query_async_requests"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeQueryAsyncRequests"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_query_async_requests"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-2920ba6df5820571c0f6",
@@ -371175,7 +371373,10 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit::Client",
+          "kmipkit::Client::execute",
           "kmipkit::Client::execute_with_options",
+          "kmipkit::Client::new",
           "kmipkit::ClientBatchItemResponse::discover_versions_supported_versions",
           "kmipkit::ClientBatchResponse",
           "kmipkit::ClientBatchResponse::get",
@@ -371841,6 +372042,10 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit::Client::execute_cancel",
+          "kmipkit::Client::execute_poll",
+          "kmipkit::Client::execute_process",
+          "kmipkit::Client::execute_query_async_requests",
           "kmipkit_client::Client::execute_cancel",
           "kmipkit_client::Client::execute_poll",
           "kmipkit_client::Client::execute_process",
