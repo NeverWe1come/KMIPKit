@@ -1261,6 +1261,80 @@ cleanup:
     return result;
 }
 
+static int append_create_key_pair_fixture_attribute(
+    kmipkit_codec_limits_t *limits,
+    kmipkit_ttlv_structure_t **attributes,
+    uint32_t raw_tag_value) {
+    kmipkit_ttlv_value_t *value = 0;
+    if (kmipkit_ttlv_value_enumeration(UINT32_C(0xdeadbeef), &value) != 0) {
+        return 0;
+    }
+    if (!append_derive_key_parameter(limits, attributes, raw_tag_value, &value)) {
+        kmipkit_ttlv_value_release(value);
+        return 0;
+    }
+    return 1;
+}
+
+static int create_key_pair_fixture_item(
+    kmipkit_codec_limits_t *limits,
+    kmipkit_client_batch_item_t **out_item) {
+    kmipkit_ttlv_structure_t *common_attributes = 0;
+    kmipkit_ttlv_structure_t *private_attributes = 0;
+    kmipkit_ttlv_structure_t *public_attributes = 0;
+    kmipkit_ttlv_structure_t *common_masks = 0;
+    kmipkit_ttlv_structure_t *public_masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    if (limits == 0 || out_item == 0) {
+        return 0;
+    }
+    *out_item = 0;
+    if (kmipkit_ttlv_structure_create(&common_attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&private_attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&public_attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&common_masks) != 0 ||
+        kmipkit_ttlv_structure_create(&public_masks) != 0 ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &common_attributes, UINT32_C(0x540001)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &common_attributes, UINT32_C(0x540001)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &private_attributes, UINT32_C(0x420028)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &private_attributes, UINT32_C(0x540002)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &private_attributes, UINT32_C(0x540002)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &public_attributes, UINT32_C(0x420028)) ||
+        !append_create_key_pair_fixture_attribute(
+            limits, &public_attributes, UINT32_C(0x540003)) ||
+        kmipkit_client_batch_item_create_key_pair(
+            common_attributes,
+            private_attributes,
+            public_attributes,
+            common_masks,
+            0,
+            public_masks,
+            &item) != 0 ||
+        item == 0) {
+        goto cleanup;
+    }
+    *out_item = item;
+    item = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(public_masks);
+    kmipkit_ttlv_structure_release(common_masks);
+    kmipkit_ttlv_structure_release(public_attributes);
+    kmipkit_ttlv_structure_release(private_attributes);
+    kmipkit_ttlv_structure_release(common_attributes);
+    return result;
+}
+
 static int create_derive_key_request(
     kmipkit_codec_limits_t *limits, kmipkit_client_batch_item_t **out_item) {
     static const uint8_t source_identifier[] = "source-key";
@@ -2104,24 +2178,17 @@ static int get_usage_allocation_response_accessor_clears_outputs(void) {
 }
 
 static int creation_create_key_pair_matches_shared_fixture(void) {
-    kmipkit_ttlv_structure_t *groups[6] = {0};
+    kmipkit_codec_limits_t *limits = 0;
     kmipkit_client_batch_item_t *item = 0;
     int result = 0;
-    for (uint32_t index = 0; index < 6; ++index) {
-        if (kmipkit_ttlv_structure_create(&groups[index]) != 0) {
-            goto cleanup;
-        }
-    }
-    if (kmipkit_client_batch_item_create_key_pair(
-            groups[0], groups[1], groups[2], groups[3], groups[4], groups[5], &item) != 0) {
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        !create_key_pair_fixture_item(limits, &item)) {
         goto cleanup;
     }
     result = 1;
 cleanup:
     kmipkit_client_batch_item_release(item);
-    for (uint32_t index = 0; index < 6; ++index) {
-        kmipkit_ttlv_structure_release(groups[index]);
-    }
+    kmipkit_codec_limits_release(limits);
     return result;
 }
 
@@ -3177,8 +3244,7 @@ static int execute_public_tls_request(
             kmipkit_ttlv_structure_release(masks);
             kmipkit_ttlv_structure_release(attributes);
         } else if (index == 6) {
-            if (kmipkit_client_batch_item_create_key_pair(0, 0, 0, 0, 0, 0,
-                    &items[index]) != 0 || items[index] == 0) {
+            if (!create_key_pair_fixture_item(limits, &items[index])) {
                 result = 40 + (int)index;
                 goto cleanup;
             }
