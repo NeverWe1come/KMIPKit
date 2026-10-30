@@ -40,6 +40,7 @@
     "KMIPKIT-0006-FR-008",
     "KMIPKIT-0006-FR-009",
     "KMIPKIT-0006-FR-010",
+    "KMIPKIT-0006-FR-012",
     "KMIPKIT-0006-FR-014",
     "KMIPKIT-0006-FR-015",
     "KMIPKIT-0007-FR-001",
@@ -74421,42 +74422,120 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ProtocolVersion::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-012",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolVersion::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_protocol_version_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProtocolVersion.<init>"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProtocolVersion.__init__"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-4aa0aa4a0b916676c549",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ProtocolVersion::major",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-012",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolVersion::major"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_protocol_version_v1_t.major"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProtocolVersion.major"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProtocolVersion.major"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-0445b7174c526cdb8677",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ProtocolVersion::minor",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-012",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0006",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ProtocolVersion::minor"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_protocol_version_v1_t.minor"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ProtocolVersion.minor"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.ProtocolVersion.minor"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-28c76f2b453ad5a21441",
@@ -357698,7 +357777,10 @@
           "kmipkit_protocol::KmipOperationResult",
           "kmipkit_protocol::KmipOperationResult::reason",
           "kmipkit_protocol::KmipOperationResult::status",
-          "kmipkit_protocol::ProtocolVersion"
+          "kmipkit_protocol::ProtocolVersion",
+          "kmipkit_protocol::ProtocolVersion::from_raw",
+          "kmipkit_protocol::ProtocolVersion::major",
+          "kmipkit_protocol::ProtocolVersion::minor"
         ],
         "c": [
           "KMIPKIT_ERROR_PROTOCOL",
@@ -357722,7 +357804,9 @@
           "kmipkit_client_release",
           "kmipkit_client_t",
           "kmipkit_last_error_get",
-          "kmipkit_protocol_version_v1_t"
+          "kmipkit_protocol_version_v1_t",
+          "kmipkit_protocol_version_v1_t.major",
+          "kmipkit_protocol_version_v1_t.minor"
         ],
         "java": [
           "org.kmipkit.ClientOperationException",
@@ -357754,7 +357838,10 @@
           "org.kmipkit.extensions.ClientBatchResponse.close",
           "org.kmipkit.extensions.ClientBatchResponse.itemAt",
           "org.kmipkit.extensions.ClientBatchResponse.itemCount",
-          "org.kmipkit.extensions.ProtocolVersion"
+          "org.kmipkit.extensions.ProtocolVersion",
+          "org.kmipkit.extensions.ProtocolVersion.<init>",
+          "org.kmipkit.extensions.ProtocolVersion.major",
+          "org.kmipkit.extensions.ProtocolVersion.minor"
         ],
         "python": [
           "kmipkit.client.BatchItemResult",
@@ -357776,6 +357863,9 @@
           "kmipkit.client.Client.execute",
           "kmipkit.client.Client.execute_with_options",
           "kmipkit.client.ProtocolVersion",
+          "kmipkit.client.ProtocolVersion.__init__",
+          "kmipkit.client.ProtocolVersion.major",
+          "kmipkit.client.ProtocolVersion.minor",
           "kmipkit.errors.ClientErrorCategory",
           "kmipkit.errors.ClientErrorCategory.OTHER",
           "kmipkit.errors.ClientErrorCategory.PROTOCOL",

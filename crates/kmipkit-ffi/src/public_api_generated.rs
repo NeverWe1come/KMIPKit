@@ -1204,6 +1204,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::ProtocolVersion",
     ),
     (
+        "rust-observed-e7607322efd2a0f07957",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolVersion::from_raw",
+    ),
+    (
+        "rust-observed-4aa0aa4a0b916676c549",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolVersion::major",
+    ),
+    (
+        "rust-observed-0445b7174c526cdb8677",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolVersion::minor",
+    ),
+    (
         "rust-observed-35c06134bbda46f1d1d6",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::ModifyAttributeResponse",
