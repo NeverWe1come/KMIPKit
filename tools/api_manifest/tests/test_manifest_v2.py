@@ -1384,10 +1384,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for capability in self.checked_in_manifest["capabilities"]
             if capability["capabilityId"] == "client_execution"
         )
-        self.assertTrue(
-            set(expected).issubset(set(client_execution["mappings"]["rust"])),
-            "the owning capability inventory must list each newly mapped Rust export",
-        )
+        expected_capability_exports = {
+            "rust": set(expected),
+            "c": {targets[0] for targets in expected.values()},
+            "java": {targets[1] for targets in expected.values()},
+            "python": {targets[2] for targets in expected.values()},
+        }
+        for language, names in expected_capability_exports.items():
+            with self.subTest(capability_language=language):
+                self.assertTrue(
+                    names.issubset(set(client_execution["mappings"][language])),
+                    "the owning capability inventory must list each mapped export",
+                )
 
         for rust_name, (c_name, java_name, python_name) in expected.items():
             with self.subTest(export=rust_name):
