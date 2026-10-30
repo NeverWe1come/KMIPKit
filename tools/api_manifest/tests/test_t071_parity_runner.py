@@ -198,6 +198,11 @@ class T071ParityRunnerTests(unittest.TestCase):
             consumers["python"]["test"],
             "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
         )
+        self.assertEqual(
+            consumers["python"]["command"][-1],
+            "bindings/python/tests/test_extension_registry.py::ExtensionRegistryTests::"
+            "test_registry_registration_is_immutable_owned_by_configuration_and_isolated",
+        )
 
     def test_java_runner_forces_the_selected_test_to_execute(self) -> None:
         for case_id in (DISCOVER_VERSIONS_CASE, BATCH_MIXED_OUTCOMES_CASE):
