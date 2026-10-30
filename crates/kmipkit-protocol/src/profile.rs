@@ -21,6 +21,11 @@ use crate::profiles_generated::{
 };
 use crate::{AttributeReference, CredentialType, RequestMessage, ResponseMessage};
 
+#[cfg(test)]
+std::thread_local! {
+    static PROFILE_CONTEXT_LOOKUP_STEPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// Stable reason that explicit profile validation could not be prepared.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProfileValidationErrorCode {
@@ -265,7 +270,11 @@ impl ProfileValidationContext {
         let mut matching = self
             .object_states
             .iter()
-            .filter(|entry| entry.batch_item_index == batch_item_index);
+            .filter(|entry| {
+                #[cfg(test)]
+                PROFILE_CONTEXT_LOOKUP_STEPS.with(|steps| steps.set(steps.get() + 1));
+                entry.batch_item_index == batch_item_index
+            });
         let Some(entry) = matching.next() else {
             return Err(StateBinding::Missing);
         };
