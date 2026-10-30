@@ -29,6 +29,7 @@ CREATE_KEY_PAIR_CASE = "creation.key-pair.request-response.v1"
 CREATE_SPLIT_KEY_CASE = "creation.split-key.request-response.v1"
 CREATE_FAILURE_MESSAGE_CASE = "creation.result-message-on-failure.v1"
 CODEC_LIMITS_CASE = "codec-limits.defaults-and-ranges.v1"
+USAGE_ALLOCATION_CASE = "usage-allocation.guard-accounting.v1"
 PYTHON_TEST_CLASSES = {
     (
         "bindings/python/tests/test_extension_registry.py",
@@ -260,6 +261,24 @@ CASE_TESTS = {
             "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
         ),
     },
+    USAGE_ALLOCATION_CASE: {
+        "rust": (
+            "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs",
+            "fixture_usage_allocation_guard_matches_shared_accounting_contract",
+        ),
+        "c": (
+            "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+            "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+        ),
+        "java": (
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "org.kmipkit.ClientFacadeTlsIntegrationTest#usageAllocationContextGuardsJavaProtectionExecutionLocally",
+        ),
+        "python": (
+            "bindings/python/tests/test_usage_allocation_guard_native_integration.py",
+            "test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport",
+        ),
+    },
 }
 
 
@@ -332,18 +351,17 @@ def _consumer_command(
             raise ParityRunnerError("C fixture consumer does not name the compiled harness test")
         test_file = harness["testFile"]
         test_name = harness["test"]
+        package_name, target, exact_filter = _rust_package_and_target(test_file)
         command = [
             "cargo",
             "test",
             "-p",
-            "kmipkit-ffi",
+            package_name,
             "--features",
             "coverage-c-consumer",
-            "--test",
-            "c_api_coverage",
+            *target,
             test_name,
-            "--",
-            "--exact",
+            *exact_filter,
         ]
     elif language == "java":
         if consumer.get("test") != expected_test:
