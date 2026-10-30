@@ -531,6 +531,33 @@ class PublicApiParityTests(unittest.TestCase):
         )
         self.assertTrue(release_symbols <= t104_symbols)
 
+        capability = next(
+            (
+                record
+                for record in manifest["capabilities"]
+                if record["capabilityId"] == "typed_message_model"
+            ),
+            None,
+        )
+        self.assertIsNotNone(
+            capability,
+            "T104 typed message declarations must belong to a declared capability",
+        )
+        self.assertEqual(capability["capabilityState"], "declared")
+        for language in SHARED_PARITY_LANGUAGES:
+            with self.subTest(language=language):
+                mapped_declarations = {
+                    declaration["languageMappings"][language]["name"]
+                    for declaration in manifest["publicDeclarations"]
+                    if declaration.get("capabilityId") == "typed_message_model"
+                    and language in declaration.get("languageMappings", {})
+                }
+                self.assertEqual(
+                    set(capability["mappings"][language]),
+                    mapped_declarations,
+                    "capability mapping must exactly match its public declarations",
+                )
+
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
         case = next(
