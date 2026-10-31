@@ -115,6 +115,9 @@ mod message_model_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/credential_type_abi_tests.rs"]
+mod credential_type_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;

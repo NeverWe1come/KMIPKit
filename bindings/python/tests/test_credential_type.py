@@ -18,6 +18,10 @@ class CredentialTypeTests(unittest.TestCase):
         cases = (
             (1, "UsernameAndPassword"),
             (2, "Device"),
+            (3, "Attestation"),
+            (4, "OneTimePassword"),
+            (5, "HashedPassword"),
+            (6, "Ticket"),
             (0x8000_0009, "Extensions"),
             (7, "Unknown"),
             (0xFFFF_FFFF, "Unknown"),
