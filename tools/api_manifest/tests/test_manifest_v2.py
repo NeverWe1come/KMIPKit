@@ -2969,6 +2969,87 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 client_execution["mappings"][language],
             )
 
+    def test_t091_derive_key_request_and_outcome_payloads_map_to_approved_operation(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operation_id = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == operation_id
+        )
+        request_canonical = declarations["kmipkit.extensions.client_batch_item_derive_key"]
+        outcome_canonical = declarations[
+            "kmipkit_client::ClientBatchOutcome::DeriveKey"
+        ]
+        cases = (
+            (
+                "kmipkit_client::ClientRequest::DeriveKey",
+                "rust-kmipkit-client",
+                request_canonical,
+            ),
+            (
+                "kmipkit_client::ClientRequest::DeriveKey::0",
+                "rust-kmipkit-client",
+                request_canonical,
+            ),
+            (
+                "kmipkit_client::ClientRequest::derive_key",
+                "rust-kmipkit-client",
+                request_canonical,
+            ),
+            (
+                "kmipkit::ClientRequest::DeriveKey",
+                "rust-kmipkit",
+                request_canonical,
+            ),
+            (
+                "kmipkit::ClientRequest::DeriveKey::0",
+                "rust-kmipkit",
+                request_canonical,
+            ),
+            (
+                "kmipkit::ClientRequest::derive_key",
+                "rust-kmipkit",
+                request_canonical,
+            ),
+            (
+                "kmipkit_client::ClientBatchOutcome::DeriveKey::0",
+                "rust-kmipkit-client",
+                outcome_canonical,
+            ),
+            (
+                "kmipkit::ClientBatchOutcome::DeriveKey::0",
+                "rust-kmipkit",
+                outcome_canonical,
+            ),
+        )
+
+        for export_name, package_id, canonical in cases:
+            declaration = declarations[export_name]
+            expected_mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            expected_mappings["rust"] = {
+                "packageId": package_id,
+                "name": export_name,
+            }
+            with self.subTest(export=export_name):
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("KMIPKIT-0037", operation["featureSpecId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_verified_client_operations_map_options_to_shared_execute(self) -> None:
         cases = (
             (
