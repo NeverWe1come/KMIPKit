@@ -6427,9 +6427,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         # These four typed accessors return success data; their foreign accessor maps
         # retain the existing typed/TTLV ownership contract and operation status.
         for package_id in ("rust-kmipkit-client", "rust-kmipkit"):
-            prefix = package_id.removeprefix("rust-")
             for method in ("export", "get", "import", "locate"):
-                java_method = method[0].upper() + method[1:] + "Response"
+                java_method = method + "Response"
                 add_case(
                     f"ClientBatchOutcome::{method}_response",
                     f"org.kmipkit.extensions.ClientBatchItemResult.{java_method}",
@@ -6443,13 +6442,40 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if row["exportName"] in expected
         }
         self.assertEqual(set(expected), set(candidates))
+        self.assertFalse(
+            [
+                row["exportName"]
+                for row in self.checked_in_manifest["publicDeclarations"]
+                if row.get("candidateSpecId") == "KMIPKIT-0007"
+                and "ClientBatchOutcome" in row["exportName"]
+            ]
+        )
         capabilities = {
             row["capabilityId"]: row for row in self.checked_in_manifest["capabilities"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
         }
 
         for export_name, (canonical, mappings, requirement_ids) in expected.items():
             declaration = candidates[export_name]
             capability_id = canonical["capabilityId"]
+            if "::ClientBatchOutcome::Register" in export_name:
+                self.assertLessEqual(
+                    {
+                        *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 9))
+                    },
+                    set(canonical["requirementIds"]),
+                )
+            elif "::ClientBatchOutcome::Revoke" in export_name:
+                self.assertLessEqual(
+                    {
+                        *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 7)),
+                        "KMIPKIT-0036-FR-008",
+                    },
+                    set(canonical["requirementIds"]),
+                )
             if capability_id in operations:
                 owner = operations[capability_id]
                 self.assertEqual("approved", owner["ownerDependency"]["state"])
@@ -6468,13 +6494,23 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(requirement_ids, declaration["requirementIds"])
                 self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(mappings, declaration["languageMappings"])
-                for language, mapping in mappings.items():
-                    self.assertIn(mapping["name"], capabilities[capability_id]["mappings"][language])
                 if capability_id in operations:
+                    owner_declarations = operations[capability_id]["declarations"]
                     self.assertIn(
                         declaration["declarationId"],
-                        operations[capability_id]["declarations"]["rust"],
+                        owner_declarations["rust"],
                     )
+                    for language in ("c", "java", "python"):
+                        mapped_exports = {
+                            declarations_by_id[item]["languageMappings"][language]["name"]
+                            for item in owner_declarations[language]
+                        }
+                        self.assertIn(mappings[language]["name"], mapped_exports)
+                else:
+                    for language, mapping in mappings.items():
+                        self.assertIn(
+                            mapping["name"], capabilities[capability_id]["mappings"][language]
+                        )
                 if "parityEvidenceIds" in canonical:
                     self.assertEqual(
                         canonical["parityEvidenceIds"], declaration["parityEvidenceIds"]
