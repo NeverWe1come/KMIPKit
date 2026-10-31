@@ -6185,7 +6185,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 956)
+        self.assertEqual(len(declarations), 958)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -6210,6 +6210,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         ]
         self.assertEqual(response_extension_ttlv["kind"], "java-member")
         self.assertEqual(response_extension_ttlv["declarationState"], "declared")
+        async_extension_count = by_name[
+            "org.kmipkit.extensions.AsyncOperationOutcome.extensionCount"
+        ]
+        self.assertEqual(async_extension_count["kind"], "java-member")
+        self.assertEqual(async_extension_count["declarationState"], "declared")
+        async_extension_ttlv = by_name[
+            "org.kmipkit.extensions.AsyncOperationOutcome.extensionTtlvAt"
+        ]
+        self.assertEqual(async_extension_ttlv["kind"], "java-member")
+        self.assertEqual(async_extension_ttlv["declarationState"], "declared")
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
@@ -6547,7 +6557,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 924)
+        self.assertEqual(len(declarations), 926)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
@@ -6567,6 +6577,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         ]
         self.assertEqual(response_extension_ttlv["kind"], "python-export")
         self.assertEqual(response_extension_ttlv["declarationState"], "declared")
+        async_extension_count = by_name[
+            "kmipkit.client.AsyncOperationOutcome.extension_count"
+        ]
+        self.assertEqual(async_extension_count["kind"], "python-export")
+        self.assertEqual(async_extension_count["declarationState"], "declared")
+        async_extension_ttlv = by_name[
+            "kmipkit.client.AsyncOperationOutcome.extension_ttlv_at"
+        ]
+        self.assertEqual(async_extension_ttlv["kind"], "python-export")
+        self.assertEqual(async_extension_ttlv["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
