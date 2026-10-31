@@ -2225,9 +2225,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual("verified", declaration["declarationState"])
                     self.assertNotIn("candidateSpecId", declaration)
                     self.assertEqual(operation_id, declaration["capabilityId"])
+                    expected_requirements = set(
+                        constructor_declarations["c"]["requirementIds"]
+                    ) | required_facade_requirements
                     self.assertEqual(
-                        constructor_declarations["c"]["requirementIds"],
-                        declaration["requirementIds"],
+                        sorted(expected_requirements), declaration["requirementIds"]
                     )
                     self.assertEqual(
                         operation["approvalEvidence"], declaration["approvalSource"]
