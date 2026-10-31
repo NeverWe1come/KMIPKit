@@ -2225,6 +2225,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::signature_verify_response",
     ),
     (
+        "rust-observed-e4e5954fc170dd0aaf48",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::response",
+    ),
+    (
         "rust-observed-daa81eca15ee8bda9d25",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchResponse",
@@ -2713,6 +2718,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-d431931d71fc9d309360",
         "rust-kmipkit",
         "kmipkit::ClientBatchOutcome::signature_verify_response",
+    ),
+    (
+        "rust-observed-2afee8e8c9606e552d18",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchOutcome::response",
     ),
     (
         "rust-observed-b97437899f24653db40c",

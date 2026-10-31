@@ -30612,6 +30612,7 @@
           "kmipkit::ClientBatchItemResponse::outcome",
           "kmipkit::ClientBatchItemResponse::unique_batch_item_id",
           "kmipkit::ClientBatchOutcome::asynchronous_correlation_value",
+          "kmipkit::ClientBatchOutcome::response",
           "kmipkit::ClientBatchResponse",
           "kmipkit::ClientBatchResponse::get",
           "kmipkit::ClientBatchResponse::is_empty",
@@ -30640,6 +30641,7 @@
           "kmipkit_client::ClientBatchItemResponse::outcome",
           "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
           "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
+          "kmipkit_client::ClientBatchOutcome::response",
           "kmipkit_client::ClientBatchResponse",
           "kmipkit_client::ClientBatchResponse::get",
           "kmipkit_client::ClientBatchResponse::is_empty",
@@ -105535,6 +105537,48 @@
         "status": "Approved"
       },
       "capabilityId": "client_execution",
+      "declarationId": "rust-observed-e4e5954fc170dd0aaf48",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchOutcome::response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
       "declarationId": "rust-observed-daa81eca15ee8bda9d25",
       "declarationState": "declared",
       "exportName": "kmipkit_client::ClientBatchResponse",
@@ -110380,6 +110424,48 @@
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.56-001-001",
         "KMIPKIT-REQ-SPEC-6.1.56-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-2afee8e8c9606e552d18",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientBatchOutcome::response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientBatchOutcome::response",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-006",
+        "KMIPKIT-0007-FR-008",
+        "KMIPKIT-0043-FR-003",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
