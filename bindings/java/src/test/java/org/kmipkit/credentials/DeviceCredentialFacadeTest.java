@@ -17,6 +17,7 @@ import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 import org.junit.jupiter.api.Test;
 
 final class DeviceCredentialFacadeTest {
@@ -40,6 +41,7 @@ final class DeviceCredentialFacadeTest {
         assertEquals(expected, credential.withTtlv(view -> {
             borrowed.set(view);
             assertThrows(InvalidInputException.class, credential::intoTtlv);
+            assertTrue(deviceValuesMatch(view));
             return readTags(view);
         }));
         assertThrows(InvalidInputException.class, borrowed.get()::itemCount);
@@ -47,6 +49,7 @@ final class DeviceCredentialFacadeTest {
         TtlvStructure restored = credential.intoTtlv();
         try (TtlvStructureView view = restored.view()) {
             assertEquals(expected, readTags(view));
+            assertTrue(deviceValuesMatch(view));
         }
         assertThrows(InvalidInputException.class,
                 () -> credential.withTtlv(TtlvStructureView::itemCount));
@@ -67,6 +70,32 @@ final class DeviceCredentialFacadeTest {
             }
         }
         return List.copyOf(tags);
+    }
+
+    private static boolean deviceValuesMatch(TtlvStructureView view) {
+        byte[][] expectedText = {
+            "".getBytes(StandardCharsets.UTF_8),
+            "sensitive-sentinel".getBytes(StandardCharsets.UTF_8),
+            "device-id".getBytes(StandardCharsets.UTF_8),
+            "network-id".getBytes(StandardCharsets.UTF_8),
+            "machine-id".getBytes(StandardCharsets.UTF_8),
+            "media-id".getBytes(StandardCharsets.UTF_8)
+        };
+        for (int index = 0; index < expectedText.length; index++) {
+            try (TtlvItemView item = view.itemAt(index); TtlvValueView value = item.value()) {
+                if (value.itemType() != org.kmipkit.ttlv.TtlvItemType.TextString
+                        || value.byteLength() != expectedText[index].length) {
+                    return false;
+                }
+                for (int offset = 0; offset < expectedText[index].length; offset++) {
+                    if ((byte) value.byteAt(offset) != expectedText[index][offset]) return false;
+                }
+            }
+        }
+        try (TtlvItemView item = view.itemAt(6); TtlvValueView value = item.value()) {
+            return value.itemType() == org.kmipkit.ttlv.TtlvItemType.Integer
+                    && value.integer() == 7;
+        }
     }
 
     private static TtlvStructure deviceStructure(boolean includeIdentifiers) {

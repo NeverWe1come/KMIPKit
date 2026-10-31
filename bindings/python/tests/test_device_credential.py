@@ -84,6 +84,44 @@ def tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
     return tuple(result)
 
 
+def values_match(view: ttlv.TtlvStructureView) -> bool:
+    expected_text = (
+        b"",
+        b"sensitive-sentinel",
+        b"device-id",
+        b"network-id",
+        b"machine-id",
+        b"media-id",
+    )
+    for index, expected in enumerate(expected_text):
+        item = ttlv.ttlv_structure_view_item_at(view, index)
+        try:
+            with ttlv.ttlv_item_view_value(item) as value:
+                if ttlv.ttlv_value_view_type(value) is not ttlv.ItemType.TextString:
+                    return False
+                actual_length = ttlv.ttlv_value_view_byte_length(value)
+                if actual_length != len(expected):
+                    return False
+                actual = bytes(
+                    ttlv.ttlv_value_view_byte_at(value, offset)
+                    for offset in range(actual_length)
+                )
+                if actual != expected:
+                    return False
+        finally:
+            item.close()
+
+    item = ttlv.ttlv_structure_view_item_at(view, 6)
+    try:
+        with ttlv.ttlv_item_view_value(item) as value:
+            return (
+                ttlv.ttlv_value_view_type(value) is ttlv.ItemType.Integer
+                and ttlv.ttlv_value_view_integer(value) == 7
+            )
+    finally:
+        item.close()
+
+
 class DeviceCredentialTests(unittest.TestCase):
     def test_device_credential_preserves_table_412_fields_and_scoped_views(self) -> None:
         facade = getattr(kmipkit.credentials, "DeviceCredential", None)
@@ -109,6 +147,7 @@ class DeviceCredentialTests(unittest.TestCase):
             borrowed.append(view)
             with self.assertRaises(errors.InvalidInputError):
                 credential.into_ttlv()
+            self.assertTrue(values_match(view))
             return tags(view)
 
         expected = (
@@ -129,6 +168,7 @@ class DeviceCredentialTests(unittest.TestCase):
         view = ttlv.ttlv_structure_view(restored)
         try:
             self.assertEqual(expected, tags(view))
+            self.assertTrue(values_match(view))
         finally:
             view.close()
             restored.close()

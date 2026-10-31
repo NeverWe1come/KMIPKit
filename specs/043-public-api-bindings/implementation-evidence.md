@@ -7842,3 +7842,16 @@ The approved owner is `specs/008-credentials-attestation/spec.md` FR-005 / KMIPK
 | Refactor/evidence — refresh reports and record current traceability and remaining blockers | this commit | `cargo fmt --all --check`; `py -3 -B tools/api_manifest/generate.py --check`; Rust, shared-Rust, and binding export audits; 226 manifest, binding, shared-inventory, and T092 tests; `git diff --check` | All pass. The Rust audit observes 10,458 declarations, matches all 8,813 manifest entries, accounts for 1,645 exact exclusions, and reports zero issues. The shared Rust inventory maps 679 declarations, with 1,645 exclusions and two unrelated blocked namespace records. Binding audits have zero issues: C 625/625, Java 1,011/1,011, Python 993/993, with zero missing, unobserved, or kind-mismatched exports. All 12 generated outputs are current. |
 
 T092 now maps 41 of 96 functional declarations; 55 remain blocked under KMIPKIT-0008, so T092 remains open. The manifest continues to keep those blockers unavailable. This checkpoint does not establish profile conformance, interoperability, certification, or release readiness. Hosted CI must rerun on the pushed PR head.
+
+### T092 DeviceCredential value-readback QA follow-up (2026-11-01)
+
+QA noted that the DeviceCredential binding consumers checked field tags and order but not each field's value. The C consumer now compares all six text values and the extension integer on the source, typed view, and restored TTLV; Java and Python compare the six text values and extension integer through the typed view and after round-trip. Assertions expose only a boolean mismatch and do not print field bytes. The valid empty Serial Number remains accepted. No runtime API, generated output, or credential scope changed.
+
+| Verification | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_consumer_preserves_device_credential_fields_and_scoped_ownership -- --exact` | Passed: compiled C consumer. |
+| From `bindings/java`: `./gradlew.bat test --no-daemon --tests org.kmipkit.credentials.DeviceCredentialFacadeTest` | Passed: Java facade test. |
+| Python 3.12 isolated temporary environment with `KMIPKIT_NATIVE_LIBRARY` set to the current Windows debug ABI library; `python -m pytest -q tests/test_device_credential.py` | Passed: 2 tests. |
+| `git diff --check` | Passed. |
+
+The previously pushed exact-head CI run remains in progress on its Windows script-contract job; its result is not attributed to this local test-only follow-up.

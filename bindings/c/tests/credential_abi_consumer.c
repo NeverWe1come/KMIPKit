@@ -473,6 +473,65 @@ static int32_t device_tags_match(kmipkit_ttlv_structure_view_t *view) {
     return 0;
 }
 
+static int32_t device_text_value_matches(
+        kmipkit_ttlv_structure_view_t *view, uint64_t index,
+        const uint8_t *expected, uint64_t expected_length) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint8_t item_type = 0;
+    uint64_t actual_length = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, index, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_type(value, &item_type);
+    if (status == 0 && item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING) status = 1;
+    if (status == 0) status = kmipkit_ttlv_value_view_byte_length(value, &actual_length);
+    if (status == 0 && actual_length != expected_length) status = 1;
+    for (uint64_t offset = 0; status == 0 && offset < expected_length; offset++) {
+        uint8_t actual_byte = 0;
+        status = kmipkit_ttlv_value_view_byte_at(value, offset, &actual_byte);
+        if (status == 0 && actual_byte != expected[offset]) status = 1;
+    }
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
+static int32_t device_values_match(kmipkit_ttlv_structure_view_t *view) {
+    static const uint8_t serial_number[] = "";
+    static const uint8_t password[] = "sensitive-sentinel";
+    static const uint8_t device_identifier[] = "device-id";
+    static const uint8_t network_identifier[] = "network-id";
+    static const uint8_t machine_identifier[] = "machine-id";
+    static const uint8_t media_identifier[] = "media-id";
+    const uint8_t *expected[] = {
+        serial_number, password, device_identifier,
+        network_identifier, machine_identifier, media_identifier
+    };
+    const uint64_t lengths[] = {
+        sizeof(serial_number) - 1, sizeof(password) - 1, sizeof(device_identifier) - 1,
+        sizeof(network_identifier) - 1, sizeof(machine_identifier) - 1,
+        sizeof(media_identifier) - 1
+    };
+    for (uint64_t index = 0; index < 6; index++) {
+        int32_t status = device_text_value_matches(view, index, expected[index], lengths[index]);
+        if (status != 0) return status;
+    }
+
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint8_t item_type = 0;
+    int32_t integer = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_at(view, 6, &item);
+    if (status == 0) status = kmipkit_ttlv_item_view_value(item, &value);
+    if (status == 0) status = kmipkit_ttlv_value_view_type(value, &item_type);
+    if (status == 0 && item_type != KMIPKIT_TTLV_ITEM_TYPE_INTEGER) status = 1;
+    if (status == 0) status = kmipkit_ttlv_value_view_integer(value, &integer);
+    if (status == 0 && integer != 7) status = 1;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return status;
+}
+
 int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
     if (out_count == 0) return -1;
     kmipkit_ttlv_structure_t *structure = 0;
@@ -487,6 +546,7 @@ int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
     if (status == 0 && kmipkit_device_credential_from_ttlv(
             structure, &credential) != KMIPKIT_ERROR_SHARED_OWNER) status = 1;
     if (status == 0) status = device_tags_match(source_view);
+    if (status == 0) status = device_values_match(source_view);
     kmipkit_ttlv_structure_view_release(source_view);
     source_view = 0;
     if (status == 0) status = kmipkit_device_credential_from_ttlv(structure, &credential);
@@ -495,6 +555,7 @@ int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
         status = kmipkit_device_credential_ttlv_view(credential, &view);
     }
     if (status == 0) status = device_tags_match(view);
+    if (status == 0) status = device_values_match(view);
     if (status == 0) {
         int32_t shared_status = kmipkit_device_credential_into_ttlv(credential, &restored);
         if (shared_status != 4 || restored != 0) status = 2;
@@ -507,6 +568,7 @@ int32_t kmipkit_device_credential_c_consumer_round_trip(uint64_t *out_count) {
         status = kmipkit_ttlv_structure_view(restored, &restored_view);
     }
     if (status == 0) status = device_tags_match(restored_view);
+    if (status == 0) status = device_values_match(restored_view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(restored_view, &count);
     if (status == 0) *out_count = count;
     kmipkit_ttlv_structure_release(structure);
