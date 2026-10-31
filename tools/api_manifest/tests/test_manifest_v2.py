@@ -964,6 +964,38 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertIn("#define KMIPKIT_ERROR_INTERNAL ((int32_t)7)", header)
 
+    def test_shared_owner_status_identifies_a_non_consuming_ttlv_failure(self) -> None:
+        categories = {
+            category["id"]: category
+            for category in self.checked_in_manifest["errorCategories"]
+        }
+        shared_owner = categories["shared_owner"]
+        self.assertEqual(11, shared_owner["cValue"])
+        self.assertEqual("KMIPKIT_ERROR_SHARED_OWNER", shared_owner["cCode"])
+        self.assertEqual("org.kmipkit.InvalidInputException", shared_owner["javaException"])
+        self.assertEqual("kmipkit.errors.InvalidInputError", shared_owner["pythonException"])
+
+        functions = {
+            function["id"]: function for function in self.checked_in_manifest["functions"]
+        }
+        for function_id in ("nonce_from_ttlv", "credential_from_ttlv"):
+            for language in ("c", "java", "python"):
+                with self.subTest(function=function_id, language=language):
+                    self.assertIn(
+                        "shared_owner", functions[function_id][language]["errorCategories"]
+                    )
+
+        header = generate.render_c_header(self.checked_in_manifest)
+        self.assertIn("#define KMIPKIT_ERROR_SHARED_OWNER ((int32_t)11)", header)
+        declaration = next(
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["exportName"] == "KMIPKIT_ERROR_SHARED_OWNER"
+        )
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("c-only", declaration["parityScope"])
+        self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+
     def test_c_header_does_not_emit_unreleased_blocked_error_statuses(self) -> None:
         header = generate.render_c_header(self.checked_in_manifest)
         blocked_codes = {
