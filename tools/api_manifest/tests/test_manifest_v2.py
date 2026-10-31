@@ -3050,6 +3050,88 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_server_generated_creation_payloads_map_to_accepted_operations(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = []
+        for prefix, package_id in (
+            ("kmipkit_client", "rust-kmipkit-client"),
+            ("kmipkit", "rust-kmipkit"),
+        ):
+            for operation, variant, request_name, response_id in (
+                (
+                    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+                    "CreateKeyPairCompleted",
+                    "kmipkit.extensions.client_batch_item_create_key_pair",
+                    "T032:create-key-pair:response:client_batch_item_response_create_key_pair:rust",
+                ),
+                (
+                    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+                    "CreateSplitKeyCompleted",
+                    "kmipkit.extensions.client_batch_item_create_split_key",
+                    "T032:create-split-key:response:kmipkit_client_batch_item_response_create_split_key_count:rust",
+                ),
+            ):
+                cases.extend(
+                    (
+                        (
+                            f"{prefix}::ClientRequest::{variant.removesuffix('Completed')}::0",
+                            package_id,
+                            operation,
+                            declarations[request_name],
+                        ),
+                        (
+                            f"{prefix}::ClientBatchOutcome::{variant}",
+                            package_id,
+                            operation,
+                            declarations_by_id[response_id],
+                        ),
+                        (
+                            f"{prefix}::ClientBatchOutcome::{variant}::0",
+                            package_id,
+                            operation,
+                            declarations_by_id[response_id],
+                        ),
+                    )
+                )
+
+        self.assertEqual(12, len(cases))
+        for export_name, package_id, operation_id, canonical in cases:
+            declaration = declarations[export_name]
+            operation = operations[operation_id]
+            expected_mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            expected_mappings["rust"] = {
+                "packageId": package_id,
+                "name": export_name,
+            }
+            with self.subTest(export=export_name):
+                self.assertEqual("declared", operation["apiState"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
+                self.assertEqual("declared", canonical["declarationState"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertEqual(canonical["parityEvidenceIds"], declaration["parityEvidenceIds"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_interop_and_log_request_helpers_map_to_approved_operations(
         self,
     ) -> None:
