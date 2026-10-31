@@ -7155,3 +7155,10 @@ The five mappings retain the Rust declarations in their owning `kmipkit-protocol
 | Red correction — preserve Rust declaration identity while mapping foreign result access | `this commit` | Focused response-view test; direct `_validate_v2_manifest` diagnostic | Expected failure: the test still fails because both rows are blocked. Direct validation showed Rust mappings must retain the owner package (`declaration package differs from its owning language mapping`); the final test now requires the method's Rust path and uses the existing `KmipOperationResult` mapping only for C, Java, and Python. |
 | Green — map the generic response view and operation result access | `c5fe96631` | Focused response-view test; public API generator `--write` and `--check`; shared Rust inventory tests (16) and `--check` | Pass: the Rust view type maps to the existing response handle, and its `result()` method maps to the existing result model/metadata surfaces. Rust mappings retain their exact owner-package paths. Generated outputs are current; mapped Rust declarations are 514 and KMIPKIT-0007 candidates are 503. |
 | Refactor/evidence — verify mapping ownership and residual candidates | `this commit` | `git diff --check`; focused response-view test; generator `--check`; shared inventory tests and `--check` | Pass: all generated parity and inventory artifacts are current. The KMIPKIT-0007 closeout gate remains open with 503 candidates. |
+
+
+### T091 batch outcome generic response accessors (2026-10-31)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — require both client-crate and root `ClientBatchOutcome::response` methods to map to the existing four-language result handle | `this commit` | `bindings/python/.venv/Scripts/python.exe -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_t091_batch_outcome_response_accessors_map_to_four_language_result_handles` | Expected failure: both methods remain blocked KMIPKIT-0007 candidates although the generic response handle is already mapped in Rust, C, Java, and Python. |
