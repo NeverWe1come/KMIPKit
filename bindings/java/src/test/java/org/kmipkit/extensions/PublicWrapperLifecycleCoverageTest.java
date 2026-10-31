@@ -173,10 +173,23 @@ final class PublicWrapperLifecycleCoverageTest {
                                 ClientBatchItem baseItem = ClientBatchItem.discoverVersions()) {
                             ClientBatchItem itemWithExtension = baseItem.withExtension(requestExtension);
                             try (itemWithExtension;
-                                    ExtensionIdentity copiedIdentity = itemWithExtension.extensionIdentityAt(0)) {
+                                    ExtensionIdentity copiedIdentity = itemWithExtension.extensionIdentityAt(0);
+                                    ClientBatch batch = ClientBatch.create()) {
                                 assertEquals(1, itemWithExtension.extensionCount());
                                 assertTrue(itemWithExtension.extensionCriticalityIndicatorAt(0));
                                 assertEquals(identity, copiedIdentity);
+
+                                batch.add(itemWithExtension);
+                                try (ClientBatchItem readback = batch.itemAt(0)) {
+                                    batch.close();
+                                    assertEquals(1, readback.extensionCount());
+                                    assertTrue(readback.extensionCriticalityIndicatorAt(0));
+                                    try (ExtensionIdentity readbackIdentity = readback.extensionIdentityAt(0)) {
+                                        assertEquals(identity.vendorIdentifier(), readbackIdentity.vendorIdentifier());
+                                        assertEquals(identity.name(), readbackIdentity.name());
+                                        assertEquals(identity.version(), readbackIdentity.version());
+                                    }
+                                }
                             }
                         }
                     }

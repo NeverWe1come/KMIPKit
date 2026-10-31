@@ -79,6 +79,20 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void rejectedReadbackItemTransferKeepsTheReadOnlyViewUsable() {
+        byte[] identifier = new byte[] {0, (byte) 0xff};
+        try (ClientBatch source = ClientBatch.create();
+                ClientBatch destination = ClientBatch.create()) {
+            source.add(ClientBatchItem.ping().withUniqueBatchItemId(identifier));
+            ClientBatchItem item = source.itemAt(0);
+            try (item) {
+                assertThrows(InvalidInputException.class, () -> destination.add(item));
+                assertArrayEquals(identifier, item.uniqueBatchItemId().orElseThrow());
+            }
+        }
+    }
+
+    @Test
     void createFactoriesRejectMissingRequiredAttributesAndOutOfRangeUnsignedValues() {
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.create(7, null, null));
 

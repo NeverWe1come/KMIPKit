@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from kmipkit import errors, ttlv
+from kmipkit import client, errors, ttlv
 from kmipkit import extensions as registry_api
 
 
@@ -658,6 +658,7 @@ class ExtensionRegistryTests(unittest.TestCase):
             registry_api.default_extension_registry_limits(),
         )
         item = None
+        batch = None
         identities = []
         try:
             alpha_identity = registry_api.extension_definition_identity(
@@ -713,11 +714,35 @@ class ExtensionRegistryTests(unittest.TestCase):
                 registry_api.client_batch_item_extension_identity_at(item, 2)
             with self.assertRaises(errors.InvalidInputError):
                 registry_api.client_batch_item_extension_criticality_indicator_at(item, 2)
+
+            batch = client.Batch.create()
+            batch.add_item(item)
+            item = None
+            item = batch.item_at(0)
+            batch.close()
+            batch = None
+
+            self.assertEqual(registry_api.client_batch_item_extension_count(item), 2)
+            for index, expected in enumerate((alpha_identity, beta_identity)):
+                actual = registry_api.client_batch_item_extension_identity_at(item, index)
+                identities.append(actual)
+                self.assertEqual(
+                    (actual.vendor_identifier, actual.name, actual.version),
+                    (expected.vendor_identifier, expected.name, expected.version),
+                )
+                self.assertEqual(
+                    registry_api.client_batch_item_extension_criticality_indicator_at(
+                        item, index
+                    ),
+                    index == 1,
+                )
         finally:
             for identity in identities:
                 identity.close()
             if item is not None:
                 item.close()
+            if batch is not None:
+                batch.close()
             registry.close()
             limits.close()
 

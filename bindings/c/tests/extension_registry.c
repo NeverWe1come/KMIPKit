@@ -2404,12 +2404,16 @@ static bool test_identity_fields_and_batch_extension_order(void)
     kmipkit_extension_definition_t *beta_definition = NULL;
     kmipkit_extension_definition_t *definitions[2];
     kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_client_batch_t *batch = NULL;
     kmipkit_ttlv_structure_t *alpha_payload = NULL;
     kmipkit_ttlv_structure_t *beta_payload = NULL;
     kmipkit_registered_extension_value_t *registered = NULL;
     kmipkit_client_request_message_extension_t *extension = NULL;
     kmipkit_client_batch_item_t *batch_item = NULL;
     kmipkit_client_batch_item_t *updated_batch_item = NULL;
+    kmipkit_client_batch_item_t *readback_item = NULL;
+    kmipkit_extension_identity_t *readback_first_identity = NULL;
+    kmipkit_extension_identity_t *readback_second_identity = NULL;
     kmipkit_ttlv_value_t *field_value = NULL;
     kmipkit_extension_registry_limits_v1_t limits;
     uint64_t extension_count = 0U;
@@ -2541,6 +2545,35 @@ static bool test_identity_fields_and_batch_extension_order(void)
             UINT64_C(2), &criticality) != KMIPKIT_ERROR_INVALID_INPUT) {
         goto cleanup;
     }
+
+    failure_reason = "read extension metadata through an owned batch item view";
+    if (kmipkit_client_batch_create(&batch) != KMIPKIT_SUCCESS ||
+        kmipkit_client_batch_add_item(batch, &batch_item) != KMIPKIT_SUCCESS ||
+        batch_item != NULL ||
+        kmipkit_client_batch_item_count(batch, &extension_count) != KMIPKIT_SUCCESS ||
+        extension_count != UINT64_C(1) ||
+        kmipkit_client_batch_item_at(batch, UINT64_C(0), &readback_item) != KMIPKIT_SUCCESS ||
+        readback_item == NULL) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_release(batch);
+    batch = NULL;
+    if (kmipkit_client_batch_item_extension_count(readback_item,
+            &extension_count) != KMIPKIT_SUCCESS || extension_count != UINT64_C(2) ||
+        kmipkit_client_batch_item_extension_identity_at(readback_item, UINT64_C(0),
+            &readback_first_identity) != KMIPKIT_SUCCESS || readback_first_identity == NULL ||
+        kmipkit_client_batch_item_extension_identity_at(readback_item, UINT64_C(1),
+            &readback_second_identity) != KMIPKIT_SUCCESS || readback_second_identity == NULL ||
+        !identity_name_matches(readback_first_identity, alpha_name,
+            (uint64_t)(sizeof(alpha_name) - 1U)) ||
+        !identity_name_matches(readback_second_identity, beta_name,
+            (uint64_t)(sizeof(beta_name) - 1U)) ||
+        kmipkit_client_batch_item_extension_criticality_indicator_at(readback_item,
+            UINT64_C(0), &criticality) != KMIPKIT_SUCCESS || criticality != UINT8_C(1) ||
+        kmipkit_client_batch_item_extension_criticality_indicator_at(readback_item,
+            UINT64_C(1), &criticality) != KMIPKIT_SUCCESS || criticality != UINT8_C(0)) {
+        goto cleanup;
+    }
     succeeded = true;
 
 cleanup:
@@ -2548,11 +2581,15 @@ cleanup:
         fprintf(stderr, "FAIL %s: %s\n", __func__, failure_reason);
     }
     kmipkit_ttlv_value_release(field_value);
+    kmipkit_extension_identity_release(readback_first_identity);
+    kmipkit_extension_identity_release(readback_second_identity);
     kmipkit_extension_identity_release(first_identity);
     kmipkit_extension_identity_release(second_identity);
     kmipkit_extension_identity_release(missing_identity);
     kmipkit_client_batch_item_release(updated_batch_item);
+    kmipkit_client_batch_item_release(readback_item);
     kmipkit_client_batch_item_release(batch_item);
+    kmipkit_client_batch_release(batch);
     kmipkit_client_request_message_extension_release(extension);
     kmipkit_registered_extension_value_release(registered);
     kmipkit_ttlv_structure_release(alpha_payload);
