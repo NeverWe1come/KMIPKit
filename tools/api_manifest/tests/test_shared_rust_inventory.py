@@ -114,7 +114,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 10457)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 512)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 514)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
