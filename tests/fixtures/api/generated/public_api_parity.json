@@ -29388,6 +29388,246 @@
       "exportName": "kmipkit_client::ClientErrorResponseTtlv::with_ttlv",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust response-TTLV wrapper is an implementation representation for the dedicated four-language crypto_response_ttlv accessor, not a separate four-language capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::validation",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::protocol",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::transport",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::server_result",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::profile_validation",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::server_operation_result",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::server_status",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::Protocol::error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::ProtocolResponse::error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit_client::ClientError::ServerResult::0",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::validation",
+      "packageId": "rust-kmipkit",
+      "reason": "This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::protocol",
+      "packageId": "rust-kmipkit",
+      "reason": "This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::transport",
+      "packageId": "rust-kmipkit",
+      "reason": "This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::server_result",
+      "packageId": "rust-kmipkit",
+      "reason": "This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::profile_validation",
+      "packageId": "rust-kmipkit",
+      "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::server_operation_result",
+      "packageId": "rust-kmipkit",
+      "reason": "This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::server_status",
+      "packageId": "rust-kmipkit",
+      "reason": "This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::Protocol::error",
+      "packageId": "rust-kmipkit",
+      "reason": "This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::ProtocolResponse::error",
+      "packageId": "rust-kmipkit",
+      "reason": "This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015.",
+      "exportName": "kmipkit::ClientError::ServerResult::0",
+      "packageId": "rust-kmipkit",
+      "reason": "This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model."
     }
   ],
   "capabilities": [

@@ -86536,34 +86536,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-e074776eb2720a150e73",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::validation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-af41cbfd2874d13b50fb",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::protocol",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-0b6758f91df1cdb6feda",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -86601,34 +86573,6 @@
           "name": "kmipkit.errors.ClientExecutionError.response_ttlv"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-7bee36e0bd5946697dff",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::transport",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-04b20131b9465c1beddb",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::server_result",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-4b3b9b38d4ffdb14b383",
@@ -86761,34 +86705,6 @@
           "name": "kmipkit.errors.ClientExecutionError.delivery"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-e214869915f9642c34bc",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::server_operation_result",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-bac618d493488444a1f5",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::server_status",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-5cc94254240bb94bfddb",
@@ -101332,34 +101248,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-e316e619735b8058a984",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::validation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-8b7b5a8980c99ed60094",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::protocol",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-73fc6c917ef7f0a769a1",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -101397,34 +101285,6 @@
           "name": "kmipkit.errors.ClientExecutionError.response_ttlv"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-1c6ba06b9117f2b2a7b6",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::transport",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-2816d2766bc8cfbd4028",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::server_result",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-12d533cb20d997fef6d7",
@@ -101557,34 +101417,6 @@
           "name": "kmipkit.errors.ClientExecutionError.delivery"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-743d5e1b3e7202d1ff83",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::server_operation_result",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
-      "declarationId": "rust-observed-b9412685abe079d04252",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::server_status",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-87d0df742a114e9b7249",
@@ -128836,20 +128668,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-23759673e34ff9dac4ec",
-      "packageId": "rust-kmipkit",
-      "kind": "field",
-      "exportName": "kmipkit::ClientError::Protocol::error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-3eb4e7e39ac02d8525ce",
       "packageId": "rust-kmipkit",
       "kind": "field",
@@ -128912,20 +128730,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-5bb828c1ae45eb9236a6",
-      "packageId": "rust-kmipkit",
-      "kind": "field",
-      "exportName": "kmipkit::ClientError::ProtocolResponse::error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-b542bc0ee621649725e2",
       "packageId": "rust-kmipkit",
       "kind": "field",
@@ -128963,20 +128767,6 @@
           "name": "kmipkit.errors.ClientExecutionError.response_ttlv"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-2d5996e3cd24ee3e2d95",
-      "packageId": "rust-kmipkit",
-      "kind": "field",
-      "exportName": "kmipkit::ClientError::ServerResult::0",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-7a39b57c531026842040",
@@ -152321,20 +152111,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-e72e223f80c9e2a6123c",
-      "packageId": "rust-kmipkit-client",
-      "kind": "field",
-      "exportName": "kmipkit_client::ClientError::Protocol::error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-354ec4a9d7663f239a36",
       "packageId": "rust-kmipkit-client",
       "kind": "field",
@@ -152397,20 +152173,6 @@
       ]
     },
     {
-      "declarationId": "rust-observed-fb3edcbb4a734b86a394",
-      "packageId": "rust-kmipkit-client",
-      "kind": "field",
-      "exportName": "kmipkit_client::ClientError::ProtocolResponse::error",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-ebae376c3db55930fe72",
       "packageId": "rust-kmipkit-client",
       "kind": "field",
@@ -152448,20 +152210,6 @@
           "name": "kmipkit.errors.ClientExecutionError.response_ttlv"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-5942eb65191b452b43bc",
-      "packageId": "rust-kmipkit-client",
-      "kind": "field",
-      "exportName": "kmipkit_client::ClientError::ServerResult::0",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-04b366ae3bd610c5a9d2",
@@ -336817,20 +336565,6 @@
       }
     },
     {
-      "declarationId": "rust-observed-556748dd00378437b62c",
-      "packageId": "rust-kmipkit",
-      "kind": "associated-item",
-      "exportName": "kmipkit::ClientError::profile_validation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
-    },
-    {
       "declarationId": "rust-observed-607a7091a12e5e0818f9",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
@@ -340426,20 +340160,6 @@
           "name": "kmipkit.errors.ProfileValidationDetails"
         }
       }
-    },
-    {
-      "declarationId": "rust-observed-84ce36249a02fc46cd0e",
-      "packageId": "rust-kmipkit-client",
-      "kind": "associated-item",
-      "exportName": "kmipkit_client::ClientError::profile_validation",
-      "capabilityId": "public_binding_surface",
-      "requirementIds": [
-        "KMIPKIT-0043-FR-021"
-      ],
-      "declarationState": "blocked",
-      "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     },
     {
       "declarationId": "rust-observed-0763a2c5978cb8472541",
@@ -400862,6 +400582,246 @@
         "evidence": "**Status**: Approved"
       },
       "evidence": "KMIPKIT-0021-FR-015; KMIPKIT-0007-FR-013; KMIPKIT-0043-FR-021. The approved retained response access remains mapped only for missing, repeated, or malformed required Unique Identifier in successful MAC, MAC Verify, Sign, and Signature Verify responses; other protocol, validation, and transport errors expose no response TTLV."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::validation",
+      "reason": "This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::protocol",
+      "reason": "This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::transport",
+      "reason": "This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::server_result",
+      "reason": "This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::profile_validation",
+      "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::server_operation_result",
+      "reason": "This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::server_status",
+      "reason": "This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::Protocol::error",
+      "reason": "This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::ProtocolResponse::error",
+      "reason": "This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "kmipkit_client::ClientError::ServerResult::0",
+      "reason": "This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::validation",
+      "reason": "This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust validation error from a source value. C reads an existing execution-error snapshot, while Java and Python surface errors produced by client calls; none exposes an equivalent caller-facing Rust error constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::protocol",
+      "reason": "This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust protocol error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::transport",
+      "reason": "This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates a Rust transport error. Foreign client facades report safe execution metadata and do not offer a constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::server_result",
+      "reason": "This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor wraps a KMIP server operation result in the Rust ClientError enum. Foreign facades represent server results through typed batch response values, not a ClientError constructor. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::profile_validation",
+      "reason": "This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This constructor creates the Rust profile-validation ClientError variant. Foreign facades expose structured profile validation details from client execution, not a public constructor for this Rust error value. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::server_operation_result",
+      "reason": "This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor unwraps a KMIP server operation result from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::server_status",
+      "reason": "This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This accessor reads KMIP Result Status from a Rust ClientError. Foreign error status fields are KMIPKit execution codes; KMIP Result Status remains on the separately mapped typed batch response. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::Protocol::error",
+      "reason": "This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError payload and tag-path detail. Foreign error facades expose safe category, cause, and delivery metadata without this payload. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::ProtocolResponse::error",
+      "reason": "This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This field exposes the Rust ProtocolError attached to a response-validation error. General response-error payload access is outside foreign error facades; the separately scoped successful-crypto response-TTLV exception remains mapped under KMIPKIT-0021-FR-015. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
+    },
+    {
+      "packageId": "rust-kmipkit",
+      "exportName": "kmipkit::ClientError::ServerResult::0",
+      "reason": "This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "evidence": "Reviewed under KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0007-FR-013, and KMIPKIT-0043-FR-021. This tuple field exposes a KMIP operation result stored inside the Rust ClientError enum. Foreign facades expose the typed KMIP result only through the separately mapped batch response model. Error category, cause, delivery-state, and structured profile-detail surfaces remain separately inventoried; generic response TTLV remains limited to KMIPKIT-0021-FR-015."
     }
   ],
   "apiLevels": [
