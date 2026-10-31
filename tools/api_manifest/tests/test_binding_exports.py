@@ -695,6 +695,17 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponsePendingCorrelationValue",
             "clientBatchItemResponseDiscoverVersionsSupportedVersions",
             "clientBatchItemResponseUniqueBatchItemId",
+            "clientAsyncOperationOutcomeExtensionCount",
+            "clientAsyncOperationOutcomeExtensionTtlvAt",
+            "clientBatchItemAt",
+            "clientBatchItemResponseExtensionCount",
+            "clientBatchItemResponseExtensionTtlvAt",
+            "clientBatchItemUniqueBatchItemId",
+            "clientBatchRequestTimestamp",
+            "clientExecuteCancelWithOptions",
+            "clientExecutePollWithOptions",
+            "clientExecuteProcessWithOptions",
+            "clientExecuteQueryAsyncRequestsWithOptions",
             "REVOCATION_REASON", "REVOKE_REQUEST",
             "clientBatchItemReprovision", "clientBatchItemRevoke",
             "clientBatchItemSetConstraints", "clientBatchItemSetDefaults",
@@ -955,6 +966,19 @@ class BindingExportAuditTests(unittest.TestCase):
 
         self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
 
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["publicDeclarations"]
+        }
+        java_batch_item_count = declarations[
+            ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount")
+        ]
+        self.assertEqual(java_batch_item_count["declarationState"], "declared")
+        self.assertEqual(
+            java_batch_item_count["languageMappings"]["python"]["name"],
+            "kmipkit.client.Batch.item_count",
+        )
+
         python_response_ttlv = next(
             row for row in manifest["publicDeclarations"]
             if row["exportName"] == "kmipkit.errors.ClientExecutionError.response_ttlv"
@@ -962,7 +986,6 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(python_response_ttlv["kind"], "field")
 
         local_conveniences = {
-            ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount"),
             ("python-kmipkit", "kmipkit.client.Client.closed"),
             ("python-kmipkit", "kmipkit.client.Batch.closed"),
             ("python-kmipkit", "kmipkit.client.BatchResult.closed"),
@@ -971,6 +994,17 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertTrue(key in exclusions, f"missing exact exclusion {key}")
             self.assertIn("language-only convenience", exclusions[key]["reason"])
             self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
+    def test_request_timestamp_property_uses_python_export_kind(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        manifest = json.loads(
+            (repo_root / "specification/api/public-api.json").read_text(encoding="utf-8")
+        )
+        record = next(
+            row for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.client.Batch.request_timestamp"
+        )
+        self.assertEqual(record["kind"], "python-export")
+
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
         report_dir = repo_root / "specs/043-public-api-bindings/reports"
