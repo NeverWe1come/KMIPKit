@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import ExitStack
 from types import SimpleNamespace
 
 import pytest
@@ -154,31 +155,38 @@ def _outcome_stubs(
 
 
 def _cancel_response_payload(
-    correlation: bytes, limits: ttlv.CodecLimits
+    correlation: bytes, cancellation_result: int, limits: ttlv.CodecLimits
 ) -> ttlv.Structure:
-    raw_tag = ttlv.raw_tag_from_raw(0x0042_0006)
-    tag = ttlv.raw_tag_try_checked(raw_tag)
-    value = ttlv.ttlv_value_byte_string(correlation, limits)
-    item = ttlv.ttlv_item_create(tag, value, limits)
-    empty = ttlv.ttlv_structure_create()
-    try:
-        return ttlv.ttlv_structure_with_item(empty, item, limits)
-    finally:
-        raw_tag.close()
-        tag.close()
-        value.close()
-        item.close()
-        empty.close()
+    with ExitStack() as owners:
+        correlation_raw_tag = owners.enter_context(ttlv.raw_tag_from_raw(0x0042_0006))
+        correlation_tag = owners.enter_context(ttlv.raw_tag_try_checked(correlation_raw_tag))
+        correlation_value = owners.enter_context(
+            ttlv.ttlv_value_byte_string(correlation, limits)
+        )
+        correlation_item = owners.enter_context(
+            ttlv.ttlv_item_create(correlation_tag, correlation_value, limits)
+        )
+        structure = owners.enter_context(ttlv.ttlv_structure_create())
+        structure = owners.enter_context(
+            ttlv.ttlv_structure_with_item(structure, correlation_item, limits)
+        )
+
+        result_raw_tag = owners.enter_context(ttlv.raw_tag_from_raw(0x0042_0012))
+        result_tag = owners.enter_context(ttlv.raw_tag_try_checked(result_raw_tag))
+        result_value = owners.enter_context(ttlv.ttlv_value_enumeration(cancellation_result))
+        result_item = owners.enter_context(
+            ttlv.ttlv_item_create(result_tag, result_value, limits)
+        )
+        return ttlv.ttlv_structure_with_item(structure, result_item, limits)
 
 
 def test_cancel_preserves_exact_echo_in_response_payload(monkeypatch) -> None:
     expected = b"\x00\xff\x80\x12\x00"
-    echoed = b"\x80\x00\xfe"
-    cancellation_result = 0xF000_0001
+    cancellation_result = 1
     observed: list[bytes] = []
     released: list[object] = []
     limits = ttlv.codec_limits_create(16 * 1024 * 1024, 64, 100_000)
-    payload_structure = _cancel_response_payload(echoed, limits)
+    payload_structure = _cancel_response_payload(expected, cancellation_result, limits)
     # KMIP 2.1 section 11.36, Table 470 assigns Cancel the Operation value 0x19.
     stubs = _outcome_stubs(
         0x19,
@@ -226,10 +234,12 @@ def test_cancel_preserves_exact_echo_in_response_payload(monkeypatch) -> None:
                     )
                     with ttlv.ttlv_item_view_value(item_view) as value_view:
                         length = ttlv.ttlv_value_view_byte_length(value_view)
-                        observed_echo = bytes(
-                            ttlv.ttlv_value_view_byte_at(value_view, index)
-                            for index in range(length)
-                        )
+                        assert length == len(expected)
+                        for index in range(length):
+                            assert (
+                                ttlv.ttlv_value_view_byte_at(value_view, index)
+                                == expected[index]
+                            )
                 with ttlv.ttlv_structure_view_item_at(payload_view, 1) as item_view:
                     with ttlv.ttlv_item_view_tag(item_view) as tag:
                         assert ttlv.tag_value(tag) == 0x0042_0012
@@ -242,7 +252,6 @@ def test_cancel_preserves_exact_echo_in_response_payload(monkeypatch) -> None:
                             ttlv.ttlv_value_view_enumeration(value_view)
                             == cancellation_result
                         )
-            assert observed_echo == expected
         finally:
             outcome.close()
     finally:
