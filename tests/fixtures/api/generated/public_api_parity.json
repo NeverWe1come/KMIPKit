@@ -65243,7 +65243,11 @@
           "rust-observed-9506c397201ad35e1cdf",
           "rust-observed-f77605ce9bf403f13482",
           "rust-observed-828345bc89d8daa8a956",
-          "rust-observed-39b84982371eee3fc0c9"
+          "rust-observed-39b84982371eee3fc0c9",
+          "rust-observed-3d8c8e2b3d52e0f37200",
+          "rust-observed-9d173f98367972eb6192",
+          "rust-observed-8718ec966e0f3676c9b9",
+          "rust-observed-26eccca5c911784ffa6b"
         ]
       },
       "featureSpecId": "KMIPKIT-0021",
@@ -66887,7 +66891,11 @@
           "rust-observed-9421b49f3dd090b4e285",
           "rust-observed-02d1dd2f23cf3ce5d5ec",
           "rust-observed-6ed00d14aa4eaf9f3422",
-          "rust-observed-c69a90f8fee138816d2e"
+          "rust-observed-c69a90f8fee138816d2e",
+          "rust-observed-83fd393fa807e161de89",
+          "rust-observed-cf43d2c47dec82a09f84",
+          "rust-observed-3f848f63b1134ff85b69",
+          "rust-observed-90e9c71fa1dc589f36e2"
         ]
       },
       "featureSpecId": "KMIPKIT-0021",
@@ -111425,6 +111433,110 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+      "declarationId": "rust-observed-3d8c8e2b3d52e0f37200",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientRequest::mac_verify",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_mac_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.macVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_mac_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::mac_verify",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+      "declarationId": "rust-observed-83fd393fa807e161de89",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientRequest::signature_verify",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_signature_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.signatureVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_signature_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::signature_verify",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
         "kind": "feature-specification",
         "path": "specs/016-attribute-operations/traceability.md",
@@ -119652,6 +119764,110 @@
         "KMIPKIT-0007-FR-002",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+      "declarationId": "rust-observed-8718ec966e0f3676c9b9",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientRequest::mac_verify",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_mac_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.macVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_mac_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::mac_verify",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+      "declarationId": "rust-observed-3f848f63b1134ff85b69",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientRequest::signature_verify",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_signature_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.signatureVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_signature_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::signature_verify",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ]
     },
     {
@@ -134073,6 +134289,58 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+      "declarationId": "rust-observed-26eccca5c911784ffa6b",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientRequest::MacVerify::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_mac_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.macVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_mac_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::MacVerify::0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
         "kind": "feature-specification",
         "path": "specs/016-attribute-operations/traceability.md",
@@ -135795,6 +136063,58 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+      "declarationId": "rust-observed-90e9c71fa1dc589f36e2",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientRequest::SignatureVerify::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_signature_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.signatureVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_signature_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::SignatureVerify::0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ]
     },
     {
@@ -150739,6 +151059,58 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+      "declarationId": "rust-observed-9d173f98367972eb6192",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientRequest::MacVerify::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_mac_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.macVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_mac_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::MacVerify::0",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-006",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.33-001-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`",
         "kind": "feature-specification",
         "path": "specs/016-attribute-operations/traceability.md",
@@ -152461,6 +152833,58 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/021-hash-mac-signature-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+      "declarationId": "rust-observed-cf43d2c47dec82a09f84",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientRequest::SignatureVerify::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_signature_verify",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.signatureVerify",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_signature_verify",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::SignatureVerify::0",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0021-FR-001",
+        "KMIPKIT-0021-FR-005",
+        "KMIPKIT-0021-FR-007",
+        "KMIPKIT-0021-FR-009",
+        "KMIPKIT-0021-FR-010",
+        "KMIPKIT-0021-FR-011",
+        "KMIPKIT-0021-FR-012",
+        "KMIPKIT-0021-FR-013",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.56-002"
       ]
     },
     {

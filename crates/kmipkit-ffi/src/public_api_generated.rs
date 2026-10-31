@@ -2645,6 +2645,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::hash",
     ),
     (
+        "rust-observed-3d8c8e2b3d52e0f37200",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::mac_verify",
+    ),
+    (
+        "rust-observed-83fd393fa807e161de89",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::signature_verify",
+    ),
+    (
         "rust-observed-7a1145fa083ea146a904",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::get_attributes",
@@ -3463,6 +3473,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-83880d9e03bc61b56b86",
         "rust-kmipkit",
         "kmipkit::ClientRequest::discover_versions",
+    ),
+    (
+        "rust-observed-8718ec966e0f3676c9b9",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::mac_verify",
+    ),
+    (
+        "rust-observed-3f848f63b1134ff85b69",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::signature_verify",
     ),
     (
         "rust-observed-cd0eb3bf337403cfbe1f",
@@ -4616,6 +4636,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::Logout::0",
     ),
     (
+        "rust-observed-26eccca5c911784ffa6b",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::MacVerify::0",
+    ),
+    (
         "rust-observed-eba0f0428d3da925ac0a",
         "rust-kmipkit",
         "kmipkit::ClientRequest::ModifyAttribute::0",
@@ -4744,6 +4769,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-de3a339eea0b9c95e680",
         "rust-kmipkit",
         "kmipkit::ClientRequest::SetDefaults::0",
+    ),
+    (
+        "rust-observed-90e9c71fa1dc589f36e2",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::SignatureVerify::0",
     ),
     (
         "rust-observed-b8d7db04ddda455c0b37",
@@ -5896,6 +5926,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::Logout::0",
     ),
     (
+        "rust-observed-9d173f98367972eb6192",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::MacVerify::0",
+    ),
+    (
         "rust-observed-3b44bd63eb086a1844c7",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::ModifyAttribute::0",
@@ -6024,6 +6059,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-826c4fc328ce8c351762",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::SetDefaults::0",
+    ),
+    (
+        "rust-observed-cf43d2c47dec82a09f84",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::SignatureVerify::0",
     ),
     (
         "rust-observed-c09dc25a64f4a089b9dc",
