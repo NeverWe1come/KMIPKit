@@ -1625,6 +1625,22 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
             self.assertEqual(parity, expected)
 
+    def test_registry_projection_excludes_non_registry_async_client_accessors(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        full_function_ids = {function["id"] for function in manifest["functions"]}
+        projection = generate._registry_manifest_v2(manifest)
+        projected_function_ids = {function["id"] for function in projection["functions"]}
+
+        for function_id in (
+            "client_async_operation_outcome_extension_count",
+            "client_async_operation_outcome_extension_ttlv_at",
+        ):
+            with self.subTest(function_id=function_id):
+                self.assertIn(function_id, full_function_ids)
+                self.assertNotIn(function_id, projected_function_ids)
+
+        self.assertEqual(len(projected_function_ids), 99)
+
     def test_v2_c_ownership_docs_do_not_leak_into_v1_registry_projection(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         projection = generate._registry_manifest_v2(manifest)
