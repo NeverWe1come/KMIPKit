@@ -1,9 +1,12 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Optional;
 import java.util.OptionalLong;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.Client;
@@ -147,6 +150,29 @@ final class ClientFacadeContractTest {
             assertThrows(ResourceLimitException.class,
                     () -> item.withUniqueBatchItemId(new byte[16 * 1024 * 1024 + 1]));
             assertEquals(0, item.extensionCount(), "rejected inputs must retain the item handle");
+        }
+    }
+
+    @Test
+    void requestBatchItemUniqueIdAccessorPreservesAbsentEmptyAndOpaqueBytes() {
+        try (ClientBatchItem absent = ClientBatchItem.discoverVersions()) {
+            assertTrue(absent.uniqueBatchItemId().isEmpty());
+        }
+
+        try (ClientBatchItem empty = ClientBatchItem.discoverVersions()
+                        .withUniqueBatchItemId(new byte[0]);
+                ClientBatchItem binary = ClientBatchItem.discoverVersions()
+                        .withUniqueBatchItemId(new byte[] {0x00, (byte) 0xff, 0x69, 0x64})) {
+            Optional<byte[]> emptyId = empty.uniqueBatchItemId();
+            Optional<byte[]> binaryId = binary.uniqueBatchItemId();
+            assertTrue(emptyId.isPresent());
+            assertArrayEquals(new byte[0], emptyId.orElseThrow());
+            assertTrue(binaryId.isPresent());
+            assertArrayEquals(new byte[] {0x00, (byte) 0xff, 0x69, 0x64}, binaryId.orElseThrow());
+            binaryId.orElseThrow()[1] = 0x01;
+            assertArrayEquals(new byte[] {0x00, (byte) 0xff, 0x69, 0x64},
+                    binary.uniqueBatchItemId().orElseThrow());
+            assertEquals(0L, binary.extensionCount(), "reading the ID must retain the item handle");
         }
     }
 

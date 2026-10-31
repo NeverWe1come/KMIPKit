@@ -5059,6 +5059,72 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit::ClientCauseCategory::Other", capability["mappings"]["rust"]
         )
 
+    def test_t091_request_batch_item_unique_id_accessor_maps_to_all_facades(self) -> None:
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_batch_model"
+        )
+        requirement_ids = {
+            "KMIPKIT-0006-FR-004",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+        }
+        mappings_by_package = {
+            "rust-kmipkit-client": "kmipkit_client::ClientBatchItem::unique_batch_item_id",
+            "rust-kmipkit": "kmipkit::ClientBatchItem::unique_batch_item_id",
+        }
+        expected_foreign_mappings = {
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_batch_item_unique_batch_item_id",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.ClientBatchItem.uniqueBatchItemId",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.extensions.client_batch_item_unique_batch_item_id",
+            },
+        }
+
+        self.assertEqual("KMIPKIT-0006", capability["ownerSpecId"])
+        self.assertEqual("Approved", capability["approvalEvidence"]["status"])
+        for package_id, rust_name in mappings_by_package.items():
+            declaration = declarations[(package_id, rust_name)]
+            with self.subTest(export=rust_name):
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("client_batch_model", declaration["capabilityId"])
+                self.assertEqual(requirement_ids, set(declaration["requirementIds"]))
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": package_id, "name": rust_name},
+                        **expected_foreign_mappings,
+                    },
+                    declaration["languageMappings"],
+                )
+
+        function = next(
+            row
+            for row in self.checked_in_manifest["functions"]
+            if row["id"] == "client_batch_item_unique_batch_item_id"
+        )
+        self.assertEqual(requirement_ids, set(function["requirementIds"]))
+        self.assertEqual("Option<&[u8]>", function["rust"]["returnType"])
+        self.assertEqual("Optional<byte[]>", function["java"]["returnType"])
+        self.assertEqual("bytes | None", function["python"]["returnType"])
+        self.assertTrue(
+            any("borrowed byte span" in line for line in function["c"]["documentation"])
+        )
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (

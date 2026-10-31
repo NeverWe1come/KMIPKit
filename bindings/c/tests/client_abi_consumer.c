@@ -6457,6 +6457,59 @@ int kmipkit_client_abi_c_consumer_execute_tls(
         argc, argv, limits, rekey_key_pair_only, create_split_key_fixture_only, cancel_payload_only);
 }
 
+static int request_batch_item_unique_id_accessor_preserves_presence_and_bytes(void) {
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_item_t *replacement = 0;
+    const uint8_t identifier[] = {0x00, 0xff, 0x69, 0x64};
+    uint8_t present = UINT8_MAX;
+    kmipkit_byte_span_v1_t value = {(const uint8_t *)1, UINT64_MAX};
+    int32_t status = 0;
+
+    if (kmipkit_client_batch_item_discover_versions(&item) != 0 || item == 0) {
+        goto failure;
+    }
+    if (kmipkit_client_batch_item_unique_batch_item_id(item, &present, &value) != 0 ||
+        present != 0 || value.data != 0 || value.length != 0) {
+        goto failure;
+    }
+    status = kmipkit_client_batch_item_with_unique_batch_item_id(item, 0, 0, &replacement);
+    item = 0;
+    if (status != 0 || replacement == 0) {
+        goto failure;
+    }
+    item = replacement;
+    replacement = 0;
+    if (kmipkit_client_batch_item_unique_batch_item_id(item, &present, &value) != 0 ||
+        present != 1 || value.length != 0) {
+        goto failure;
+    }
+    status = kmipkit_client_batch_item_with_unique_batch_item_id(
+            item, identifier, sizeof(identifier), &replacement);
+    item = 0;
+    if (status != 0 || replacement == 0) {
+        goto failure;
+    }
+    item = replacement;
+    replacement = 0;
+    if (kmipkit_client_batch_item_unique_batch_item_id(item, &present, &value) != 0 ||
+        present != 1 || value.data == 0 || value.length != sizeof(identifier) ||
+        memcmp(value.data, identifier, sizeof(identifier)) != 0) {
+        goto failure;
+    }
+    if (kmipkit_client_batch_item_unique_batch_item_id(item, &present, &value) != 0 ||
+        present != 1 || value.data == 0 || value.length != sizeof(identifier) ||
+        memcmp(value.data, identifier, sizeof(identifier)) != 0) {
+        goto failure;
+    }
+    kmipkit_client_batch_item_release(item);
+    return 1;
+
+failure:
+    kmipkit_client_batch_item_release(replacement);
+    kmipkit_client_batch_item_release(item);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (!execute_with_options_and_error_ttlv_clears_outputs()) {
         return 22;
@@ -6527,6 +6580,7 @@ int main(int argc, char **argv) {
         !creation_rejects_malformed_split_key_inputs() ||
         !creation_rejects_missing_required_attributes() ||
         !cryptographic_abi_symbols_are_callable() ||
+        !request_batch_item_unique_id_accessor_preserves_presence_and_bytes() ||
         !encrypt_decrypt_abi_is_callable_from_compiled_c()) {
         return 7;
     }

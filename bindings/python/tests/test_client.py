@@ -850,6 +850,51 @@ def test_typed_batch_item_unique_id_builder_preserves_bytes_and_transfers_owners
     identified.close()
 
 
+def test_request_batch_item_unique_id_accessor_preserves_absence_empty_and_bytes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_storage = extensions.ffi.new("uint8_t[]", 1)
+    item_pointer = extensions.ffi.cast("kmipkit_client_batch_item_t *", item_storage)
+    binary_storage = extensions.ffi.new("uint8_t[]", b"\x00\xffid")
+    state: list[tuple[int, object, int]] = [
+        (0, extensions.ffi.NULL, 0),
+        (1, extensions.ffi.NULL, 0),
+        (1, binary_storage, 4),
+    ]
+
+    def create(output: object) -> int:
+        output[0] = item_pointer  # type: ignore[index]
+        return 0
+
+    def unique_id(_item: object, out_present: object, out_value: object) -> int:
+        present, data, length = state.pop(0)
+        out_present[0] = present  # type: ignore[index]
+        out_value.data = data  # type: ignore[attr-defined]
+        out_value.length = length  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        extensions,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_discover_versions=create,
+            kmipkit_client_batch_item_unique_batch_item_id=unique_id,
+            kmipkit_client_batch_item_release=lambda _pointer: None,
+        ),
+    )
+    item = extensions.client_batch_item_discover_versions()
+    absent = extensions.client_batch_item_unique_batch_item_id(item)
+    empty = extensions.client_batch_item_unique_batch_item_id(item)
+    binary = extensions.client_batch_item_unique_batch_item_id(item)
+
+    assert absent is None
+    assert empty == b""
+    assert binary == b"\x00\xffid"
+    assert not item.closed
+    assert item._pointer() == item_pointer
+    item.close()
+
+
 def test_client_create_serializes_transport_and_returns_owned_client(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
