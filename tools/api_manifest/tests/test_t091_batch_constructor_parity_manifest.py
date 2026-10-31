@@ -28,35 +28,22 @@ APPROVAL_SOURCE = {
 
 DECLARATIONS = {
     ("rust-kmipkit-client", "kmipkit_client::ClientBatch::new"): {
-        "rust": "kmipkit_client::ClientBatch::new",
         "root": "kmipkit::ClientBatch::new",
     },
     ("rust-kmipkit-client", "kmipkit_client::ClientBatch::from_items"): {
-        "rust": "kmipkit_client::ClientBatch::from_items",
         "root": "kmipkit::ClientBatch::from_items",
     },
 }
 
 LANGUAGE_OPERATIONS = {
-    "c": (
-        "c-kmipkit",
-        "kmipkit_client_batch_create + kmipkit_client_batch_add_item",
-        ["kmipkit_client_batch_create", "kmipkit_client_batch_add_item"],
-    ),
-    "java": (
-        "java-kmipkit",
-        "org.kmipkit.extensions.ClientBatch.create + "
-        "org.kmipkit.extensions.ClientBatch.add",
-        [
-            "org.kmipkit.extensions.ClientBatch.create",
-            "org.kmipkit.extensions.ClientBatch.add",
-        ],
-    ),
-    "python": (
-        "python-kmipkit",
-        "kmipkit.client.Batch.create + kmipkit.client.Batch.add_item",
-        ["kmipkit.client.Batch.create", "kmipkit.client.Batch.add_item"],
-    ),
+    "c": ("c-kmipkit", "kmipkit_client_batch_add_item"),
+    "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.add"),
+    "python": ("python-kmipkit", "kmipkit.client.Batch.add_item"),
+}
+EMPTY_BUILDER_OPERATIONS = {
+    "c": ("c-kmipkit", "kmipkit_client_batch_create"),
+    "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.create"),
+    "python": ("python-kmipkit", "kmipkit.client.Batch.create"),
 }
 
 
@@ -84,7 +71,11 @@ class T091BatchConstructorParityManifestTests(unittest.TestCase):
             if row.get("candidateSpecId") == "KMIPKIT-0007"
             and (row["packageId"], row["exportName"]) in expected_pairs
         }
-        self.assertEqual(expected_pairs, candidate_pairs)
+        self.assertEqual(
+            set(),
+            candidate_pairs,
+            f"T091 ClientBatch constructor candidates remain: {sorted(candidate_pairs)}",
+        )
 
         for (package_id, canonical_export), names in DECLARATIONS.items():
             canonical = declarations[(package_id, canonical_export)]
@@ -104,25 +95,36 @@ class T091BatchConstructorParityManifestTests(unittest.TestCase):
                         {"packageId": rust_package, "name": declaration["exportName"]},
                         mappings["rust"],
                     )
-                    for language, (foreign_package, composite_name, exports) in (
-                        LANGUAGE_OPERATIONS.items()
-                    ):
+                    for language, (foreign_package, mapped_name) in LANGUAGE_OPERATIONS.items():
                         with self.subTest(export=declaration["exportName"], language=language):
                             self.assertEqual(
-                                {"packageId": foreign_package, "name": composite_name},
+                                {"packageId": foreign_package, "name": mapped_name},
                                 mappings[language],
                             )
-                            self.assertEqual(
-                                exports,
-                                [name.strip() for name in composite_name.split("+")],
+                            target = declarations.get((foreign_package, mapped_name))
+                            self.assertIsNotNone(
+                                target,
+                                f"{language} mapping target {mapped_name} is not inventoried",
                             )
-                            for export in exports:
-                                target = declarations.get((foreign_package, export))
-                                self.assertIsNotNone(
-                                    target,
-                                    f"{language} mapping target {export} is not inventoried",
-                                )
-                                self.assertEqual("declared", target["declarationState"])
+                            self.assertEqual("declared", target["declarationState"])
+
+        # `new` is one create-plus-append; `from_items` is create-plus-zero or
+        # more ordered appends. Empty construction and execution validation stay
+        # with the existing shared builder and client paths.
+        empty = declarations[("rust-kmipkit-client", "kmipkit_client::ClientBatch::empty")]
+        push = declarations[("rust-kmipkit-client", "kmipkit_client::ClientBatch::push")]
+        for language, (foreign_package, export) in EMPTY_BUILDER_OPERATIONS.items():
+            with self.subTest(language=language, operation="empty builder"):
+                self.assertEqual(
+                    {"packageId": foreign_package, "name": export},
+                    empty["languageMappings"][language],
+                )
+        for language, (foreign_package, export) in LANGUAGE_OPERATIONS.items():
+            with self.subTest(language=language, operation="append item"):
+                self.assertEqual(
+                    {"packageId": foreign_package, "name": export},
+                    push["languageMappings"][language],
+                )
 
 
 if __name__ == "__main__":

@@ -87040,28 +87040,78 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientBatch::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_batch_model",
       "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatch::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_add_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatch.add"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Batch.add_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-8691fb852793d2aaee0e",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientBatch::from_items",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_batch_model",
       "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatch::from_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_add_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatch.add"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Batch.add_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d82a2016da1d60b0b9ec",
@@ -95789,28 +95839,78 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::ClientBatch::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_batch_model",
       "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatch::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_add_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatch.add"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Batch.add_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-afda16b3380b94e2e62e",
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::ClientBatch::from_items",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_batch_model",
       "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatch::from_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_add_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatch.add"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Batch.add_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-933bbaa94b089868b19c",
@@ -400995,6 +401095,8 @@
         "rust": [
           "kmipkit::ClientBatch",
           "kmipkit::ClientBatch::empty",
+          "kmipkit::ClientBatch::from_items",
+          "kmipkit::ClientBatch::new",
           "kmipkit::ClientBatch::push",
           "kmipkit::ClientBatch::with_asynchronous_indicator",
           "kmipkit::ClientBatch::with_batch_error_continuation_option",
@@ -401004,6 +401106,8 @@
           "kmipkit::ClientBatchItem::with_unique_batch_item_id",
           "kmipkit_client::ClientBatch",
           "kmipkit_client::ClientBatch::empty",
+          "kmipkit_client::ClientBatch::from_items",
+          "kmipkit_client::ClientBatch::new",
           "kmipkit_client::ClientBatch::push",
           "kmipkit_client::ClientBatch::with_asynchronous_indicator",
           "kmipkit_client::ClientBatch::with_batch_error_continuation_option",
