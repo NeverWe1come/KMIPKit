@@ -878,7 +878,7 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
 }
 
 #[test]
-// OASIS KMIP v2.1 §6.1.5, Table 177; §11.7, Tables 437–438.
+// OASIS KMIP v2.1 §6.1.5, Table 177; §11.7, Tables 437–438; §11.36, Table 470.
 // Exercise the public Cancel response-payload accessor from compiled C over mTLS.
 #[allow(clippy::too_many_lines)]
 fn generated_public_c_consumer_reads_cancel_echo_from_response_payload_over_mtls() {
