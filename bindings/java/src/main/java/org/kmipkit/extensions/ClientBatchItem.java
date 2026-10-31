@@ -1554,7 +1554,7 @@ public final class ClientBatchItem implements AutoCloseable {
         return extensions;
     }
 
-    private void requireMutable() {
+    void requireMutable() {
         if (readOnly) {
             throw new InvalidInputException("client batch item readback is immutable");
         }

@@ -29,6 +29,7 @@ public final class ClientBatch implements AutoCloseable {
         if (item == null) {
             throw new InvalidInputException("client batch item is invalid");
         }
+        item.requireMutable();
         NativeExtensionRegistry.ensureLoaded();
         NativeHandle.withNativeHandles(() -> {
             long batch = handle.get();

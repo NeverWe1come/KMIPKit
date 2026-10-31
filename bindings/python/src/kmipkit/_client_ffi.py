@@ -232,6 +232,13 @@ ffi.cdef(
     int32_t kmipkit_client_batch_add_item(
         kmipkit_client_batch_t *batch,
         kmipkit_client_batch_item_t **inout_item);
+    int32_t kmipkit_client_batch_item_count(
+        kmipkit_client_batch_t *batch,
+        uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_at(
+        kmipkit_client_batch_t *batch,
+        uint64_t index,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_set_request_time_stamp(
         kmipkit_client_batch_t *batch, int64_t time_stamp);
     int32_t kmipkit_client_batch_request_time_stamp(
