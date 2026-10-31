@@ -152,11 +152,11 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
     cancellation_result = 0xF000_0001
     observed: list[bytes] = []
     released: list[object] = []
-    # KMIP 2.1 §11.36, Table 470 assigns Cancel the Operation value 0x19.
+    # KMIP 2.1 section 11.36, Table 470 assigns Cancel the Operation value 0x19.
     stubs = _outcome_stubs(
         0x19,
         released,
-        response_correlation=echoed,
+        response_correlation=None,
         cancellation_result=cancellation_result,
     )
 
@@ -182,11 +182,27 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
             assert observed == [expected]
             assert outcome.metadata_v1.operation == 0x19
             assert outcome.metadata_v1.cancellation_result == cancellation_result
-            observed_echo: list[bytes] = []
-            assert outcome.with_asynchronous_correlation_value(
-                lambda value: observed_echo.append(bytes(value))
+            assert not outcome.with_asynchronous_correlation_value(
+                lambda _value: pytest.fail("Cancel echo is in the Response Payload")
             )
-            assert observed_echo == [echoed]
+            payload = outcome.response_payload_ttlv
+            assert payload is not None
+            with ttlv.ttlv_structure_view(payload) as payload_view:
+                assert ttlv.ttlv_structure_view_item_count(payload_view) == 1
+                with ttlv.ttlv_structure_view_item_at(payload_view, 0) as item_view:
+                    with ttlv.ttlv_item_view_tag(item_view) as tag:
+                        assert ttlv.tag_value(tag) == 0x0042_0006
+                    assert (
+                        ttlv.ttlv_item_view_type(item_view)
+                        == ttlv.ItemType.ByteString
+                    )
+                    with ttlv.ttlv_item_view_value(item_view) as value_view:
+                        length = ttlv.ttlv_value_view_byte_length(value_view)
+                        observed_echo = bytes(
+                            ttlv.ttlv_value_view_byte_at(value_view, index)
+                            for index in range(length)
+                        )
+            assert observed_echo == echoed
         finally:
             outcome.close()
     finally:
