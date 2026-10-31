@@ -2574,6 +2574,45 @@ class Client(_ClientHandle):
         asynchronous_indicator: int | None = None,
     ) -> AsyncOperationOutcome:
         """Send one Query Asynchronous Requests and retain generic response TTLV."""
+        return self._execute_query_async_requests(
+            limits,
+            None,
+            correlation_values=correlation_values,
+            operations=operations,
+            asynchronous_indicator=asynchronous_indicator,
+        )
+
+    def execute_query_async_requests_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+        *,
+        correlation_values: Sequence[bytes | bytearray | memoryview] | None = None,
+        operations: Sequence[int] | None = None,
+        asynchronous_indicator: int | None = None,
+    ) -> AsyncOperationOutcome:
+        """Send one filtered Query Asynchronous Requests with timeout overrides."""
+        if not isinstance(limits, ttlv.CodecLimits) or not isinstance(
+            options, RequestOptions
+        ):
+            errors.raise_for_status(4)
+        return self._execute_query_async_requests(
+            limits,
+            options,
+            correlation_values=correlation_values,
+            operations=operations,
+            asynchronous_indicator=asynchronous_indicator,
+        )
+
+    def _execute_query_async_requests(
+        self,
+        limits: ttlv.CodecLimits,
+        request_options: RequestOptions | None,
+        *,
+        correlation_values: Sequence[bytes | bytearray | memoryview] | None = None,
+        operations: Sequence[int] | None = None,
+        asynchronous_indicator: int | None = None,
+    ) -> AsyncOperationOutcome:
         if correlation_values is not None and (
             not isinstance(correlation_values, Sequence)
             or isinstance(correlation_values, (str, bytes, bytearray, memoryview))
@@ -2628,7 +2667,11 @@ class Client(_ClientHandle):
                     operation_array = ffi.new("uint32_t[]", raw_operations)
             return self._execute_async_exchange(
                 limits,
-                lib.kmipkit_client_execute_query_async_requests,
+                (
+                    lib.kmipkit_client_execute_query_async_requests
+                    if request_options is None
+                    else lib.kmipkit_client_execute_query_async_requests_with_options_v1
+                ),
                 (
                     has_correlations,
                     span_array,
@@ -2639,95 +2682,7 @@ class Client(_ClientHandle):
                     has_indicator,
                     indicator,
                 ),
-            )
-        finally:
-            for staged in staged_values:
-                _wipe_staging_buffer(staged)
-
-    def execute_query_async_requests_with_options(
-        self,
-        limits: ttlv.CodecLimits,
-        options: RequestOptions,
-        *,
-        correlation_values: Sequence[bytes | bytearray | memoryview] | None = None,
-        operations: Sequence[int] | None = None,
-        asynchronous_indicator: int | None = None,
-    ) -> AsyncOperationOutcome:
-        """Send one filtered Query Asynchronous Requests with timeout overrides."""
-        if not isinstance(limits, ttlv.CodecLimits) or not isinstance(
-            options, RequestOptions
-        ):
-            errors.raise_for_status(4)
-        if correlation_values is not None and (
-            not isinstance(correlation_values, Sequence)
-            or isinstance(correlation_values, (str, bytes, bytearray, memoryview))
-        ):
-            errors.raise_for_status(4)
-        if operations is not None and (
-            not isinstance(operations, Sequence)
-            or isinstance(operations, (str, bytes, bytearray, memoryview))
-        ):
-            errors.raise_for_status(4)
-        has_correlations = int(correlation_values is not None)
-        has_operations = int(operations is not None)
-        has_indicator = int(asynchronous_indicator is not None)
-        indicator = (
-            _unsigned(asynchronous_indicator, 32)
-            if asynchronous_indicator is not None
-            else 0
-        )
-        staged_values: list[Any] = []
-        span_array = ffi.NULL
-        operation_array = ffi.NULL
-        correlation_count = 0
-        operation_count = 0
-        try:
-            if correlation_values is not None:
-                if len(correlation_values) > 100_000:
-                    errors.raise_for_status(6)
-                correlations = tuple(correlation_values)
-                correlation_count = len(correlations)
-                if correlation_count > 100_000:
-                    errors.raise_for_status(6)
-                total_correlation_bytes = 0
-                if correlation_count:
-                    span_array = ffi.new(
-                        "kmipkit_byte_span_v1_t[]", correlation_count
-                    )
-                    for index, value in enumerate(correlations):
-                        raw, staged = _stage_correlation_value(value)
-                        total_correlation_bytes += len(raw)
-                        if total_correlation_bytes > _MAX_INPUT_BYTES:
-                            _wipe_staging_buffer(staged)
-                            errors.raise_for_status(6)
-                        staged_values.append(staged)
-                        span_array[index].data = ffi.cast(
-                            "const uint8_t *", staged
-                        )
-                        span_array[index].length = len(raw)
-            if operations is not None:
-                if len(operations) > 100_000:
-                    errors.raise_for_status(6)
-                raw_operations = tuple(_unsigned(value, 32) for value in operations)
-                operation_count = len(raw_operations)
-                if operation_count > 100_000:
-                    errors.raise_for_status(6)
-                if operation_count:
-                    operation_array = ffi.new("uint32_t[]", raw_operations)
-            return self._execute_async_exchange(
-                limits,
-                lib.kmipkit_client_execute_query_async_requests_with_options_v1,
-                (
-                    has_correlations,
-                    span_array,
-                    correlation_count,
-                    has_operations,
-                    operation_array,
-                    operation_count,
-                    has_indicator,
-                    indicator,
-                ),
-                options,
+                request_options,
             )
         finally:
             for staged in staged_values:
