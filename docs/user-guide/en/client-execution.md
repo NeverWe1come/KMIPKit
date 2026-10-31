@@ -226,6 +226,12 @@ does not generate a timestamp from a clock or countdown timer. Client-initiated
 requests omit Server Correlation Value. Client Correlation Value, if present,
 is independent metadata and never identifies a batch item.
 
+The batch getter preserves absence separately from the valid value zero. Rust
+uses `ClientBatch::request_time_stamp` and returns `Option<i64>`; C uses
+`kmipkit_client_batch_request_time_stamp` with a presence flag and signed
+value; Java uses `ClientBatch.getRequestTimestamp()` and returns `OptionalLong`;
+Python exposes `Batch.request_timestamp` as `int | None`.
+
 KMIP Specification v2.1 §9.20 also permits a client with a countdown timer but
 no real-time clock to derive relative seconds by subtracting Date attributes
 from a Time Stamp. KMIPKit exposes the required server response Time Stamp and

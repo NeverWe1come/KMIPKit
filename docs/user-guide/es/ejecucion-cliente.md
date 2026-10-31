@@ -237,6 +237,12 @@ iniciadas por el cliente omiten Server Correlation Value. Si se proporciona
 Client Correlation Value, es metadato independiente y nunca identifica un
 elemento del lote.
 
+El getter del lote distingue entre el campo ausente y el valor válido cero.
+Rust usa `ClientBatch::request_time_stamp` y devuelve `Option<i64>`; C usa
+`kmipkit_client_batch_request_time_stamp` con un indicador de presencia y un
+valor con signo; Java usa `ClientBatch.getRequestTimestamp()` y devuelve
+`OptionalLong`; Python expone `Batch.request_timestamp` como `int | None`.
+
 KMIP Specification v2.1 §9.20 también permite que un cliente sin reloj en
 tiempo real, pero con temporizador de cuenta atrás, calcule segundos relativos
 restando atributos Date de una marca de tiempo. KMIPKit expone la marca de
