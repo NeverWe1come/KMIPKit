@@ -5504,6 +5504,72 @@ def _read_last_error() -> tuple[int, int, int, int]:
     return int(status[0]), int(category[0]), int(cause[0]), int(delivery[0])
 
 
+def _read_profile_validation_details() -> errors.ProfileValidationDetails | None:
+    get_error = getattr(lib, "kmipkit_last_error_profile_validation_error_get_v1", None)
+    view_error = getattr(lib, "kmipkit_profile_validation_error_view_get_v1", None)
+    release_error = getattr(lib, "kmipkit_profile_validation_error_release", None)
+    if get_error is None or view_error is None or release_error is None:
+        return None
+    handle = ffi.new("kmipkit_profile_validation_error_t **")
+    if get_error(handle) != 0 or handle[0] == ffi.NULL:
+        return None
+    try:
+        view = ffi.new("kmipkit_profile_validation_error_view_v1_t *")
+        view.struct_size = ffi.sizeof("kmipkit_profile_validation_error_view_v1_t")
+        view.abi_version = 1
+        if view_error(handle[0], view) != 0:
+            return None
+
+        def read_text(data: Any, length_value: Any, *, optional: bool = False) -> str | None:
+            length = int(length_value)
+            if length == 0:
+                if data != ffi.NULL:
+                    raise ValueError("empty native text span has a pointer")
+                if optional:
+                    return None
+                raise ValueError("required native text span is empty")
+            if data == ffi.NULL or length > _MAX_TEXT_BYTES:
+                raise ValueError("native text span is invalid")
+            return ffi.buffer(data, length)[:].decode("utf-8", errors="strict")
+
+        error_code = read_text(view.error_code_data, view.error_code_length)
+        profile_id = read_text(view.profile_id_data, view.profile_id_length, optional=True)
+        requirement_id = read_text(
+            view.requirement_id_data, view.requirement_id_length, optional=True
+        )
+        source_id = read_text(view.source_id_data, view.source_id_length, optional=True)
+        source_locator = read_text(
+            view.source_locator_data, view.source_locator_length, optional=True
+        )
+        if error_code is None:
+            return None
+        source_kind = int(view.source_kind)
+        if source_kind == 0 and (source_id is not None or source_locator is not None):
+            return None
+        if source_kind == 1 and (source_id is None or source_locator is not None):
+            return None
+        if source_kind == 2 and (source_id is None or source_locator is None):
+            return None
+        if source_kind not in (0, 1, 2):
+            return None
+        index_present = int(view.batch_item_index_present)
+        if index_present not in (0, 1) or (index_present == 0 and int(view.batch_item_index) != 0):
+            return None
+        return errors.ProfileValidationDetails(
+            error_code=error_code,
+            profile_id=profile_id,
+            requirement_id=requirement_id,
+            source_clause_id=source_id if source_kind == 1 else None,
+            source_gap_id=source_id if source_kind == 2 else None,
+            source_gap_locator=source_locator,
+            batch_item_index=int(view.batch_item_index) if index_present == 1 else None,
+        )
+    except (UnicodeDecodeError, ValueError, OverflowError):
+        return None
+    finally:
+        release_error(handle[0])
+
+
 def _raise_client_status(status: int, error_response_ttlv: Any = ffi.NULL) -> None:
     if status == 0:
         if error_response_ttlv != ffi.NULL:
@@ -5511,6 +5577,7 @@ def _raise_client_status(status: int, error_response_ttlv: Any = ffi.NULL) -> No
             errors.raise_for_status(7)
         return
     _status, category, cause, delivery = _read_last_error()
+    profile_validation = _read_profile_validation_details()
     response_ttlv = None
     if error_response_ttlv != ffi.NULL:
         if category == int(errors.ClientErrorCategory.PROTOCOL):
@@ -5529,6 +5596,7 @@ def _raise_client_status(status: int, error_response_ttlv: Any = ffi.NULL) -> No
             cause=_known_enum(errors.ClientErrorCause, cause),
             delivery=_known_enum(errors.DeliveryState, delivery),
             response_ttlv=response_ttlv,
+            profile_validation=profile_validation,
         )
     except Exception:
         if response_ttlv is not None:

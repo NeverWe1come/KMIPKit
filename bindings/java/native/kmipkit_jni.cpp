@@ -91,6 +91,9 @@ static_assert(sizeof(kmipkit_client_batch_item_metadata_v1_t) == 24);
 static_assert(offsetof(kmipkit_client_batch_item_metadata_v1_t, outcome_kind) == 8);
 static_assert(sizeof(kmipkit_client_async_operation_metadata_v1_t) == 64);
 static_assert(offsetof(kmipkit_client_async_operation_metadata_v1_t, result_message_data) == 48);
+static_assert(sizeof(kmipkit_profile_validation_error_view_v1_t) == 104);
+static_assert(offsetof(kmipkit_profile_validation_error_view_v1_t, batch_item_index) == 16);
+static_assert(offsetof(kmipkit_profile_validation_error_view_v1_t, error_code_data) == 24);
 
 extern "C" {
 int32_t kmipkit_request_message_from_ttlv(
@@ -278,6 +281,7 @@ namespace {
 constexpr int32_t kErrorProtocol = 8;
 constexpr int32_t kErrorTransport = 9;
 constexpr int32_t kErrorServerResult = 10;
+constexpr uint32_t kErrorCategoryValidation = 1;
 constexpr uint32_t kErrorCategoryProtocol = 2;
 constexpr uint32_t kErrorCategoryTransport = 3;
 constexpr uint32_t kErrorCategoryServerResult = 4;
@@ -316,6 +320,96 @@ void throw_invalid_input(JNIEnv* env) noexcept {
     throw_java(env, "org/kmipkit/InvalidInputException", "native input is invalid");
 }
 
+bool profile_error_text(JNIEnv* env, const uint8_t* data, uint64_t length,
+        bool required, jstring* out) noexcept {
+    *out = nullptr;
+    if (length == 0) return !required && data == nullptr;
+    if (data == nullptr || length > kMaximumTextBytes) return false;
+    const auto* bytes = reinterpret_cast<const unsigned char*>(data);
+    for (uint64_t index = 0; index < length; ++index) {
+        // All surfaced values are catalogued ASCII identifiers and locators. Reject any
+        // unexpected non-ASCII or embedded NUL byte instead of passing unvalidated text to JNI.
+        if (bytes[index] == 0 || bytes[index] > 0x7f) return false;
+    }
+    std::string text(reinterpret_cast<const char*>(data), static_cast<size_t>(length));
+    *out = env->NewStringUTF(text.c_str());
+    return *out != nullptr && !env->ExceptionCheck();
+}
+
+jobject read_profile_validation_details(JNIEnv* env) noexcept {
+    kmipkit_profile_validation_error_t* error = nullptr;
+    if (kmipkit_last_error_profile_validation_error_get_v1(&error) != 0 || error == nullptr) {
+        return nullptr;
+    }
+    kmipkit_profile_validation_error_view_v1_t view{};
+    view.struct_size = static_cast<uint32_t>(sizeof(view));
+    view.abi_version = 1;
+    if (kmipkit_profile_validation_error_view_get_v1(error, &view) != 0) {
+        kmipkit_profile_validation_error_release(error);
+        return nullptr;
+    }
+    if (view.batch_item_index_present > 1
+            || (view.batch_item_index_present == 0 && view.batch_item_index != 0)) {
+        kmipkit_profile_validation_error_release(error);
+        return nullptr;
+    }
+
+    jstring error_code = nullptr;
+    jstring profile_id = nullptr;
+    jstring requirement_id = nullptr;
+    jstring source_id = nullptr;
+    jstring source_locator = nullptr;
+    if (!profile_error_text(env, view.error_code_data, view.error_code_length, true, &error_code)
+            || !profile_error_text(env, view.profile_id_data, view.profile_id_length,
+                    false, &profile_id)
+            || !profile_error_text(env, view.requirement_id_data, view.requirement_id_length,
+                    false, &requirement_id)
+            || !profile_error_text(env, view.source_id_data, view.source_id_length,
+                    view.source_kind != 0, &source_id)
+            || !profile_error_text(env, view.source_locator_data, view.source_locator_length,
+                    view.source_kind == 2, &source_locator)) {
+        if (error_code != nullptr) env->DeleteLocalRef(error_code);
+        if (profile_id != nullptr) env->DeleteLocalRef(profile_id);
+        if (requirement_id != nullptr) env->DeleteLocalRef(requirement_id);
+        if (source_id != nullptr) env->DeleteLocalRef(source_id);
+        if (source_locator != nullptr) env->DeleteLocalRef(source_locator);
+        kmipkit_profile_validation_error_release(error);
+        return nullptr;
+    }
+    if ((view.source_kind == 0 && (source_id != nullptr || source_locator != nullptr))
+            || (view.source_kind == 1 && source_locator != nullptr)
+            || (view.source_kind == 2 && source_id == nullptr)
+            || view.source_kind > 2) {
+        if (error_code != nullptr) env->DeleteLocalRef(error_code);
+        if (profile_id != nullptr) env->DeleteLocalRef(profile_id);
+        if (requirement_id != nullptr) env->DeleteLocalRef(requirement_id);
+        if (source_id != nullptr) env->DeleteLocalRef(source_id);
+        if (source_locator != nullptr) env->DeleteLocalRef(source_locator);
+        kmipkit_profile_validation_error_release(error);
+        return nullptr;
+    }
+    kmipkit_profile_validation_error_release(error);
+
+    jclass details_class = env->FindClass("org/kmipkit/ProfileValidationDetails");
+    if (details_class == nullptr) return nullptr;
+    jmethodID constructor = env->GetMethodID(details_class, "<init>",
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+            "Ljava/lang/String;Ljava/lang/String;ZJ)V");
+    jobject details = constructor == nullptr ? nullptr : env->NewObject(details_class, constructor,
+            error_code, profile_id, requirement_id,
+            view.source_kind == 1 ? source_id : nullptr,
+            view.source_kind == 2 ? source_id : nullptr, source_locator,
+            static_cast<jboolean>(view.batch_item_index_present != 0),
+            static_cast<jlong>(view.batch_item_index));
+    if (error_code != nullptr) env->DeleteLocalRef(error_code);
+    if (profile_id != nullptr) env->DeleteLocalRef(profile_id);
+    if (requirement_id != nullptr) env->DeleteLocalRef(requirement_id);
+    if (source_id != nullptr) env->DeleteLocalRef(source_id);
+    if (source_locator != nullptr) env->DeleteLocalRef(source_locator);
+    env->DeleteLocalRef(details_class);
+    return details;
+}
+
 // Bounds Java byte-array payloads copied through JNI; file contents are loaded later by Rust.
 struct TransportBridgeByteBudget {
     uint64_t total_bytes = 0;
@@ -349,6 +443,8 @@ void throw_client_operation_status(
         throw_java(env, "org/kmipkit/KmipException", "native operation failed");
         return;
     }
+    jobject profile_validation = category == kErrorCategoryValidation
+            ? read_profile_validation_details(env) : nullptr;
     const char* class_name = category == kErrorCategoryProtocol ? "org/kmipkit/ProtocolException"
             : category == kErrorCategoryTransport ? "org/kmipkit/TransportException"
             : category == kErrorCategoryServerResult ? "org/kmipkit/ServerResultException"
@@ -356,13 +452,18 @@ void throw_client_operation_status(
     jclass exception_class = env->FindClass(class_name);
     if (exception_class == nullptr) {
         if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        if (profile_validation != nullptr) env->DeleteLocalRef(profile_validation);
         return;
     }
     const bool protocol_error = category == kErrorCategoryProtocol;
+    const char* constructor_signature = protocol_error ? "(IIIIJ)V"
+            : profile_validation != nullptr
+                    ? "(IIIILorg/kmipkit/ProfileValidationDetails;)V" : "(IIII)V";
     jmethodID constructor = env->GetMethodID(
-            exception_class, "<init>", protocol_error ? "(IIIIJ)V" : "(IIII)V");
+            exception_class, "<init>", constructor_signature);
     if (constructor == nullptr) {
         if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        if (profile_validation != nullptr) env->DeleteLocalRef(profile_validation);
         env->DeleteLocalRef(exception_class);
         return;
     }
@@ -371,7 +472,12 @@ void throw_client_operation_status(
                     static_cast<jint>(native_status), static_cast<jint>(category),
                     static_cast<jint>(cause), static_cast<jint>(delivery),
                     static_cast<jlong>(reinterpret_cast<uintptr_t>(response_ttlv)))
-            : env->NewObject(exception_class, constructor,
+            : profile_validation != nullptr
+                    ? env->NewObject(exception_class, constructor,
+                            static_cast<jint>(native_status), static_cast<jint>(category),
+                            static_cast<jint>(cause), static_cast<jint>(delivery),
+                            profile_validation)
+                    : env->NewObject(exception_class, constructor,
                     static_cast<jint>(native_status), static_cast<jint>(category),
                     static_cast<jint>(cause), static_cast<jint>(delivery));
     if (exception != nullptr) {
@@ -380,6 +486,7 @@ void throw_client_operation_status(
         env->DeleteLocalRef(exception);
     }
     if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+    if (profile_validation != nullptr) env->DeleteLocalRef(profile_validation);
     env->DeleteLocalRef(exception_class);
 }
 

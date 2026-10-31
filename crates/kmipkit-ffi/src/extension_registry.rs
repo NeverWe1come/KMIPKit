@@ -36,7 +36,8 @@ use crate::{
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
     kmipkit_extension_schema_t, kmipkit_message_extension_view_t,
     kmipkit_message_validation_error_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_selection_v1_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
     kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
     kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
     kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
@@ -76,7 +77,10 @@ use kmipkit_protocol::{
     UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
-use kmipkit_protocol::{ProfileObjectState, ProfileValidationContext, ProfileValidationSelection};
+use kmipkit_protocol::{
+    ProfileObjectState, ProfileValidationContext, ProfileValidationError,
+    ProfileValidationSelection,
+};
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
     RequestOptions, RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory,
@@ -205,6 +209,9 @@ const TRANSPORT_FLAG_TLS_SERVER_NAME: u32 = 1;
 const TRANSPORT_FLAG_TARGET_URI: u32 = 2;
 const BATCH_OUTCOME_COMPLETED: u32 = 1;
 const BATCH_OUTCOME_PENDING: u32 = 2;
+const PROFILE_ERROR_SOURCE_NONE: u32 = 0;
+const PROFILE_ERROR_SOURCE_CLAUSE: u32 = 1;
+const PROFILE_ERROR_SOURCE_GAP: u32 = 2;
 
 enum DelegatedLoginLeaseTime {
     Interval(u32),
@@ -235,6 +242,8 @@ impl LastError {
 
 thread_local! {
     static LAST_ERROR: std::cell::Cell<LastError> = const { std::cell::Cell::new(LastError::NONE) };
+    static LAST_PROFILE_VALIDATION_ERROR: std::cell::RefCell<Option<ProfileValidationError>> =
+        const { std::cell::RefCell::new(None) };
 }
 
 fn record_ffi_error(status: i32) -> i32 {
@@ -256,6 +265,7 @@ fn record_ffi_error(status: i32) -> i32 {
             delivery: DELIVERY_STATE_NONE,
         });
     });
+    LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
     status
 }
 
@@ -308,6 +318,9 @@ fn record_client_error(error: &ClientError) -> i32 {
             cause,
             delivery,
         });
+    });
+    LAST_PROFILE_VALIDATION_ERROR.with(|last_error| {
+        *last_error.borrow_mut() = error.profile_validation_error().cloned();
     });
     status
 }
@@ -375,6 +388,7 @@ enum Kind {
     ResponseHeaderView,
     ResponseBatchItemView,
     MessageValidationError,
+    ProfileValidationError,
     TransportConfig,
     Client,
     ClientBatch,
@@ -442,6 +456,7 @@ enum HandleValue {
         extension_index: usize,
     },
     MessageValidationError(MessageValidationError),
+    ProfileValidationError(ProfileValidationError),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
     ClientBatch(std::sync::Mutex<ClientBatchBuilder>),
@@ -1731,6 +1746,15 @@ pub extern "C" fn kmipkit_message_validation_error_release(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_profile_validation_error_release(
+    handle: *mut kmipkit_profile_validation_error_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::ProfileValidationError);
+    });
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_release(handle: *mut kmipkit_client_batch_item_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::BatchItem);
@@ -1973,11 +1997,112 @@ pub extern "C" fn kmipkit_last_error_get(
     })
 }
 
+fn profile_error_span(value: Option<&str>) -> (*const u8, u64) {
+    value.map_or((ptr::null(), 0), |text| (text.as_ptr(), text.len() as u64))
+}
+
+fn profile_validation_error_view(
+    error: &ProfileValidationError,
+    struct_size: u32,
+    abi_version: u32,
+) -> FfiResult<kmipkit_profile_validation_error_view_v1_t> {
+    let (source_kind, source_id, source_locator) = match (
+        error.source_clause_id(),
+        error.source_gap_id(),
+        error.source_gap_locator(),
+    ) {
+        (Some(clause_id), None, None) => (PROFILE_ERROR_SOURCE_CLAUSE, Some(clause_id), None),
+        (None, Some(gap_id), Some(locator)) => {
+            (PROFILE_ERROR_SOURCE_GAP, Some(gap_id), Some(locator))
+        }
+        (None, None, None) => (PROFILE_ERROR_SOURCE_NONE, None, None),
+        _ => (PROFILE_ERROR_SOURCE_NONE, None, None),
+    };
+    let (batch_item_index_present, batch_item_index) = match error.batch_item_index() {
+        Some(index) => (1, u64::try_from(index).map_err(|_| ERROR_RESOURCE_LIMIT)?),
+        None => (0, 0),
+    };
+    let (error_code_data, error_code_length) = profile_error_span(Some(error.code().as_str()));
+    let (profile_id_data, profile_id_length) = profile_error_span(error.profile_id());
+    let (requirement_id_data, requirement_id_length) = profile_error_span(error.requirement_id());
+    let (source_id_data, source_id_length) = profile_error_span(source_id);
+    let (source_locator_data, source_locator_length) = profile_error_span(source_locator);
+    Ok(kmipkit_profile_validation_error_view_v1_t {
+        struct_size,
+        abi_version,
+        source_kind,
+        batch_item_index_present,
+        batch_item_index,
+        error_code_data,
+        error_code_length,
+        profile_id_data,
+        profile_id_length,
+        requirement_id_data,
+        requirement_id_length,
+        source_id_data,
+        source_id_length,
+        source_locator_data,
+        source_locator_length,
+    })
+}
+
+/// Returns an owned snapshot of this thread's last profile validation details, when present.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_last_error_profile_validation_error_get_v1(
+    out_error: *mut *mut kmipkit_profile_validation_error_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_error);
+        let error = LAST_PROFILE_VALIDATION_ERROR
+            .with(|last_error| last_error.borrow().clone())
+            .ok_or(ERROR_INVALID_INPUT);
+        let error = try_ffi!(error);
+        *out = try_ffi!(try_make_handle(
+            Kind::ProfileValidationError,
+            HandleValue::ProfileValidationError(error),
+        ));
+        SUCCESS
+    })
+}
+
+/// Copies safe profile validation details into a versioned view owned by the supplied handle.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_profile_validation_error_view_get_v1(
+    error: *mut kmipkit_profile_validation_error_t,
+    out_view: *mut kmipkit_profile_validation_error_view_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_view.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the C caller promises a readable and writable v1 view record for this call.
+        let view = unsafe { &mut *out_view };
+        let Ok(expected_size) =
+            u32::try_from(size_of::<kmipkit_profile_validation_error_view_v1_t>())
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if view.struct_size != expected_size || view.abi_version != 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handle = match reference_handle(error, Kind::ProfileValidationError) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        let HandleValue::ProfileValidationError(error) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *view = try_ffi!(profile_validation_error_view(error, expected_size, 1,));
+        SUCCESS
+    })
+}
+
 /// Clears this thread's last ABI failure snapshot.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_last_error_clear() -> i32 {
     ffi_entrypoint(|| {
         LAST_ERROR.with(|last_error| last_error.set(LastError::NONE));
+        LAST_PROFILE_VALIDATION_ERROR.with(|last_error| *last_error.borrow_mut() = None);
         SUCCESS
     })
 }

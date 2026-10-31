@@ -47,6 +47,7 @@ ffi.cdef(
     typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_view_t;
     typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
     typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
+    typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
 
     typedef struct {
         const uint8_t *data;
@@ -97,6 +98,23 @@ ffi.cdef(
         int64_t usage_limits_total;
         int64_t usage_limits_count;
     } kmipkit_profile_object_state_v1_t;
+    typedef struct {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t source_kind;
+        uint32_t batch_item_index_present;
+        uint64_t batch_item_index;
+        const uint8_t *error_code_data;
+        uint64_t error_code_length;
+        const uint8_t *profile_id_data;
+        uint64_t profile_id_length;
+        const uint8_t *requirement_id_data;
+        uint64_t requirement_id_length;
+        const uint8_t *source_id_data;
+        uint64_t source_id_length;
+        const uint8_t *source_locator_data;
+        uint64_t source_locator_length;
+    } kmipkit_profile_validation_error_view_v1_t;
 
     typedef struct {
         uint32_t struct_size;
@@ -1203,6 +1221,12 @@ ffi.cdef(
         uint32_t *out_category,
         uint32_t *out_cause,
         uint32_t *out_delivery);
+    int32_t kmipkit_last_error_profile_validation_error_get_v1(
+        kmipkit_profile_validation_error_t **out_error);
+    int32_t kmipkit_profile_validation_error_view_get_v1(
+        kmipkit_profile_validation_error_t *error,
+        kmipkit_profile_validation_error_view_v1_t *out_view);
+    void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *error);
     int32_t kmipkit_last_error_clear(void);
     """
 )

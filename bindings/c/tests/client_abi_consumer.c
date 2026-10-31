@@ -83,19 +83,19 @@ static int baseline_profile_fails_closed_before_c_transport_write(
     }
     result = error_status == status && error_category == 1 && error_delivery == 1 &&
         profile_view.source_kind == 1 && profile_view.batch_item_index_present == 0 &&
-        profile_view.error_code.length == sizeof("profile_unavailable") - 1 &&
-        memcmp(profile_view.error_code.data, "profile_unavailable",
-               profile_view.error_code.length) == 0 &&
-        profile_view.profile_id.length == sizeof(baseline_profile) - 1 &&
-        memcmp(profile_view.profile_id.data, baseline_profile,
-               profile_view.profile_id.length) == 0 &&
-        profile_view.requirement_id.length == sizeof("KMIPKIT-REQ-SPEC-14.1-001") - 1 &&
-        memcmp(profile_view.requirement_id.data, "KMIPKIT-REQ-SPEC-14.1-001",
-               profile_view.requirement_id.length) == 0 &&
-        profile_view.source_id.length == sizeof("KMIPKIT-CLAUSE-SPEC-14.1-001") - 1 &&
-        memcmp(profile_view.source_id.data, "KMIPKIT-CLAUSE-SPEC-14.1-001",
-               profile_view.source_id.length) == 0 &&
-        profile_view.source_locator.length == 0;
+        profile_view.error_code_length == sizeof("profile_unavailable") - 1 &&
+        memcmp(profile_view.error_code_data, "profile_unavailable",
+               profile_view.error_code_length) == 0 &&
+        profile_view.profile_id_length == sizeof(baseline_profile) - 1 &&
+        memcmp(profile_view.profile_id_data, baseline_profile,
+               profile_view.profile_id_length) == 0 &&
+        profile_view.requirement_id_length == sizeof("KMIPKIT-REQ-SPEC-14.1-001") - 1 &&
+        memcmp(profile_view.requirement_id_data, "KMIPKIT-REQ-SPEC-14.1-001",
+               profile_view.requirement_id_length) == 0 &&
+        profile_view.source_id_length == sizeof("KMIPKIT-CLAUSE-SPEC-14.1-001") - 1 &&
+        memcmp(profile_view.source_id_data, "KMIPKIT-CLAUSE-SPEC-14.1-001",
+               profile_view.source_id_length) == 0 &&
+        profile_view.source_locator_length == 0;
 
 cleanup:
     kmipkit_profile_validation_error_release(profile_error);

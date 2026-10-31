@@ -105,6 +105,8 @@ typedef struct kmipkit_response_header_view_t kmipkit_response_header_view_t;
 typedef struct kmipkit_response_batch_item_view_t kmipkit_response_batch_item_view_t;
 typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t;
 typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
+typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
+typedef struct kmipkit_profile_validation_error_view_v1_t kmipkit_profile_validation_error_view_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -255,6 +257,24 @@ struct kmipkit_ttlv_decode_error_v1_t {
     uint64_t byte_offset;
 };
 
+struct kmipkit_profile_validation_error_view_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t source_kind;
+    uint32_t batch_item_index_present;
+    uint64_t batch_item_index;
+    const uint8_t * error_code_data;
+    uint64_t error_code_length;
+    const uint8_t * profile_id_data;
+    uint64_t profile_id_length;
+    const uint8_t * requirement_id_data;
+    uint64_t requirement_id_length;
+    const uint8_t * source_id_data;
+    uint64_t source_id_length;
+    const uint8_t * source_locator_data;
+    uint64_t source_locator_length;
+};
+
 struct kmipkit_byte_span_v1_t {
     const uint8_t * data;
     uint64_t length;
@@ -345,6 +365,7 @@ void kmipkit_response_header_view_release(kmipkit_response_header_view_t *handle
 void kmipkit_response_batch_item_release(kmipkit_response_batch_item_view_t *handle);
 void kmipkit_message_extension_view_release(kmipkit_message_extension_view_t *handle);
 void kmipkit_message_validation_error_release(kmipkit_message_validation_error_t *handle);
+void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1417,6 +1438,16 @@ int32_t kmipkit_response_message_from_ttlv(kmipkit_ttlv_structure_t * structure,
 int32_t kmipkit_response_message_header(kmipkit_response_message_t * message, kmipkit_response_header_view_t ** out_header);
 /* KMIPKIT-0006-FR-001, KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-014, KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0006-FR-020, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_response_message_ttlv(kmipkit_response_message_t * message, kmipkit_ttlv_structure_t ** out_structure);
+/* Returns an owned snapshot of safe profile validation IDs when the calling thread's last error is a profile validation failure.
+ * The returned handle remains valid when the thread-local error snapshot changes and must be released with kmipkit_profile_validation_error_release.
+ */
+/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_last_error_profile_validation_error_get_v1(kmipkit_profile_validation_error_t ** out_error);
+/* Copies the versioned details view; its UTF-8 pointer/length pairs remain valid while the supplied error handle remains open.
+ * source_kind is 0 for no source, 1 for a clause ID, or 2 for a catalogued source-gap ID and locator. The view contains no object state or request payload.
+ */
+/* KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_profile_validation_error_view_get_v1(kmipkit_profile_validation_error_t * error, kmipkit_profile_validation_error_view_v1_t * out_view);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

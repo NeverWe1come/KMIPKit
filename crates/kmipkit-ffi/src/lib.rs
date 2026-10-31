@@ -65,6 +65,10 @@ pub struct kmipkit_client_batch_item_response_t {
 pub struct kmipkit_client_async_operation_outcome_t {
     _private: [u8; 0],
 }
+#[repr(C)]
+pub struct kmipkit_profile_validation_error_t {
+    _private: [u8; 0],
+}
 
 /// Common result fields for one explicit asynchronous follow-up operation.
 #[repr(C)]
@@ -281,6 +285,32 @@ pub struct kmipkit_extension_registry_limits_v1_t {
 pub struct kmipkit_byte_span_v1_t {
     pub data: *const u8,
     pub length: u64,
+}
+
+/// Versioned, redacted profile validation details. UTF-8 pointer/length pairs remain valid while
+/// the owning `kmipkit_profile_validation_error_t` handle remains open.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_profile_validation_error_view_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// 0 for no source, 1 for a clause ID, or 2 for a source-gap ID and locator.
+    pub source_kind: u32,
+    /// 1 when `batch_item_index` contains a zero-based request item index; otherwise 0.
+    pub batch_item_index_present: u32,
+    pub batch_item_index: u64,
+    pub error_code_data: *const u8,
+    pub error_code_length: u64,
+    pub profile_id_data: *const u8,
+    pub profile_id_length: u64,
+    pub requirement_id_data: *const u8,
+    pub requirement_id_length: u64,
+    /// Clause ID for source kind 1, gap ID for source kind 2, otherwise an empty span.
+    pub source_id_data: *const u8,
+    pub source_id_length: u64,
+    /// Catalogued locator for source kind 2, otherwise an empty span.
+    pub source_locator_data: *const u8,
+    pub source_locator_length: u64,
 }
 
 /// Exact wire value for the three Unique Identifier forms accepted by KMIP

@@ -106,7 +106,19 @@ fn profile_validation_details_remain_owned_after_last_error_changes() {
         struct_size: u32::try_from(size_of::<kmipkit_profile_validation_error_view_v1_t>())
             .expect("profile error view size fits u32"),
         abi_version: 1,
-        ..kmipkit_profile_validation_error_view_v1_t::default()
+        source_kind: 0,
+        batch_item_index_present: 0,
+        batch_item_index: 0,
+        error_code_data: ptr::null(),
+        error_code_length: 0,
+        profile_id_data: ptr::null(),
+        profile_id_length: 0,
+        requirement_id_data: ptr::null(),
+        requirement_id_length: 0,
+        source_id_data: ptr::null(),
+        source_id_length: 0,
+        source_locator_data: ptr::null(),
+        source_locator_length: 0,
     };
     assert_eq!(
         kmipkit_profile_validation_error_view_get_v1(handle, &mut view),
@@ -114,19 +126,33 @@ fn profile_validation_details_remain_owned_after_last_error_changes() {
     );
     assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
     assert_eq!(view.batch_item_index_present, 0);
-    assert_eq!(unsafe { span_text(view.error_code) }, "profile_unavailable");
     assert_eq!(
-        unsafe { span_text(view.profile_id) },
+        span_text(view.error_code_data, view.error_code_length),
+        "profile_unavailable"
+    );
+    assert_eq!(
+        span_text(view.profile_id_data, view.profile_id_length),
         "KMIPKIT-PROFILE-BASELINE-CLIENT"
     );
     assert_eq!(
-        unsafe { span_text(view.requirement_id) },
+        span_text(view.requirement_id_data, view.requirement_id_length),
         "KMIPKIT-REQ-SPEC-14.1-001"
     );
     assert_eq!(
-        unsafe { span_text(view.source_id) },
+        span_text(view.source_id_data, view.source_id_length),
         "KMIPKIT-CLAUSE-SPEC-14.1-001"
     );
-    assert_eq!(view.source_locator.length, 0);
-    assert_eq!(kmipkit_profile_validation_error_release(handle), SUCCESS);
+    assert_eq!(view.source_locator_length, 0);
+    kmipkit_profile_validation_error_release(handle);
+}
+
+fn span_text(data: *const u8, length: u64) -> String {
+    assert!(!data.is_null());
+    let Ok(length) = usize::try_from(length) else {
+        panic!("profile error text length fits usize");
+    };
+    // SAFETY: the FFI view points into the live profile-error handle and this test keeps that
+    // handle open until after the span has been copied.
+    let bytes = unsafe { std::slice::from_raw_parts(data, length) };
+    String::from_utf8(bytes.to_vec()).expect("profile error IDs are UTF-8")
 }

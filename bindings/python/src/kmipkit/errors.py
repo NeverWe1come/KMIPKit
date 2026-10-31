@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass as _dataclass
 from enum import IntEnum as _IntEnum
 
 from . import ttlv as _ttlv
@@ -123,6 +124,19 @@ class DeliveryState(_IntEnum):
     RESPONSE_STARTED = 3
 
 
+@_dataclass(frozen=True)
+class ProfileValidationDetails:
+    """Safe source-backed IDs describing a fail-closed profile validation error."""
+
+    error_code: str
+    profile_id: str | None
+    requirement_id: str | None
+    source_clause_id: str | None
+    source_gap_id: str | None
+    source_gap_locator: str | None
+    batch_item_index: int | None
+
+
 def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
     try:
         return enum_type(value)
@@ -148,12 +162,14 @@ class ClientExecutionError(KmipKitError):
         cause: ClientErrorCause | int,
         delivery: DeliveryState | int,
         response_ttlv: _ttlv.Structure | None = None,
+        profile_validation: ProfileValidationDetails | None = None,
     ) -> None:
         self.status = int(status)
         self.client_category = _known_or_raw(ClientErrorCategory, int(category))
         self.cause = _known_or_raw(ClientErrorCause, int(cause))
         self.delivery = _known_or_raw(DeliveryState, int(delivery))
         self.response_ttlv = response_ttlv
+        self.profile_validation = profile_validation
         super().__init__()
         self.args = (
             f"KMIPKit client operation failed ({self.client_category!s}; "
