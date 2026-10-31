@@ -62,6 +62,7 @@ public final class NativeExtensionRegistry {
     public static final int RESPONSE_BATCH_ITEM_VIEW = 44;
     public static final int NONCE = 45;
     public static final int CREDENTIAL = 46;
+    public static final int ATTESTATION_CREDENTIAL = 47;
 
     private static volatile boolean loaded;
 
@@ -102,6 +103,11 @@ public final class NativeExtensionRegistry {
     public static native long credentialTypeRaw(long credential);
     public static native long credentialTtlvView(long credential);
     public static native long credentialIntoTtlv(long credential);
+
+    public static native int attestationCredentialFromTtlv(
+            long structure, long[] outCredential);
+    public static native long attestationCredentialTtlvView(long credential);
+    public static native long attestationCredentialIntoTtlv(long credential);
 
     public static native void release(int handleKind, long handle);
 

@@ -24,28 +24,28 @@ macro_rules! test_pointer_ffi_call {
 mod ffi_pointer_safety_tests;
 
 use crate::{
-    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
-    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
-    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
-    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t, kmipkit_extension_child_rule_t,
-    kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
-    kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
-    kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
-    kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
-    kmipkit_extension_schema_t, kmipkit_message_extension_view_t,
-    kmipkit_message_validation_error_t, kmipkit_nonce_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
-    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
-    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
-    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
-    kmipkit_revoke_request_t, kmipkit_split_key_reference_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_attestation_credential_t, kmipkit_client_async_operation_metadata_v1_t,
+    kmipkit_client_async_operation_outcome_t, kmipkit_client_batch_item_metadata_v1_t,
+    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
+    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
+    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
+    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
+    kmipkit_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
+    kmipkit_extension_identity_t, kmipkit_extension_information_t,
+    kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
+    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
+    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t, kmipkit_nonce_t,
+    kmipkit_profile_object_state_v1_t, kmipkit_profile_validation_context_v1_t,
+    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
+    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
+    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t,
+    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_validated_extension_value_t,
@@ -76,7 +76,7 @@ use kmipkit_protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit_protocol::{Credential, CredentialType, Nonce};
+use kmipkit_protocol::{AttestationCredential, Credential, CredentialType, Nonce};
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileValidationContext, ProfileValidationError,
@@ -409,6 +409,7 @@ enum Kind {
     RevokeRequest,
     Nonce,
     Credential,
+    AttestationCredential,
 }
 
 enum HandleValue {
@@ -440,6 +441,7 @@ enum HandleValue {
     RevokeRequest(Box<RevokeRequest>),
     Nonce(Nonce),
     Credential(Credential),
+    AttestationCredential(AttestationCredential),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -642,6 +644,9 @@ impl TtlvView {
                     nonce.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 HandleValue::Credential(credential) => {
+                    credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                HandleValue::AttestationCredential(credential) => {
                     credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 _ => Err(ERROR_INVALID_INPUT),
@@ -8156,6 +8161,79 @@ pub extern "C" fn kmipkit_credential_into_ttlv(
 pub extern "C" fn kmipkit_credential_release(handle: *mut kmipkit_credential_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Credential);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attestation_credential_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_credential: *mut *mut kmipkit_attestation_credential_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let credential = match AttestationCredential::try_from_ttlv(structure) {
+            Ok(credential) => credential,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::AttestationCredential,
+            HandleValue::AttestationCredential(credential)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attestation_credential_ttlv_view(
+    credential: *mut kmipkit_attestation_credential_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(credential, Kind::AttestationCredential));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attestation_credential_into_ttlv(
+    credential: *mut kmipkit_attestation_credential_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(
+            credential,
+            Kind::AttestationCredential
+        ));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::AttestationCredential(credential) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(credential.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_attestation_credential_release(
+    handle: *mut kmipkit_attestation_credential_t,
+) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::AttestationCredential);
     });
 }
 

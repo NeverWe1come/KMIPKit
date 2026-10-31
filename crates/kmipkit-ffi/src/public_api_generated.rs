@@ -993,6 +993,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier",
     ),
     (
+        "rust-observed-f98d3072cd15e3365297",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttestationCredential",
+    ),
+    (
+        "rust-observed-911341793d438787999e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttestationCredential::try_from_ttlv",
+    ),
+    (
+        "rust-observed-771a11e2c2cf066dd673",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttestationCredential::with_ttlv",
+    ),
+    (
+        "rust-observed-a6ca1084e16efe1c2a8e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::AttestationCredential::into_ttlv",
+    ),
+    (
         "rust-observed-7d9de6376690408035d6",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Credential",

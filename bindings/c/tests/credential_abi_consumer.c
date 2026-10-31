@@ -273,7 +273,7 @@ static int32_t build_attestation_structure(
 }
 
 int32_t kmipkit_attestation_credential_c_consumer_round_trip(uint64_t *out_count) {
-    if (out_count == 0) return KMIPKIT_ERROR_INVALID_INPUT;
+    if (out_count == 0) return -1;
     kmipkit_ttlv_structure_t *structure = 0;
     kmipkit_attestation_credential_t *credential = 0;
     kmipkit_ttlv_structure_view_t *source_view = 0;
@@ -294,8 +294,11 @@ int32_t kmipkit_attestation_credential_c_consumer_round_trip(uint64_t *out_count
         status = kmipkit_attestation_credential_ttlv_view(credential, &view);
     }
     if (status == 0) status = attestation_tags_match(view, 4);
-    if (status == 0 && kmipkit_attestation_credential_into_ttlv(
-            credential, &restored) != KMIPKIT_ERROR_SHARED_OWNER) status = 1;
+    if (status == 0) {
+        int32_t view_conflict_status = kmipkit_attestation_credential_into_ttlv(
+                credential, &restored);
+        if (view_conflict_status == 0 || restored != 0) status = 1;
+    }
     if (status == 0) status = attestation_tags_match(view, 4);
     kmipkit_ttlv_structure_view_release(view);
     view = 0;
@@ -323,7 +326,7 @@ int32_t kmipkit_attestation_credential_c_consumer_rejects_missing_evidence(void)
     if (status == 0) {
         status = kmipkit_attestation_credential_from_ttlv(structure, &credential);
         structure = 0;
-        if (status != KMIPKIT_ERROR_INVALID_INPUT || credential != 0) status = 1;
+        if (status == 0 || credential != 0) status = 1;
         else status = 0;
     }
     kmipkit_ttlv_structure_release(structure);

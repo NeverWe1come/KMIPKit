@@ -39,11 +39,12 @@ final class AttestationCredentialFacadeTest {
         try (AttestationCredential credential = AttestationCredential.fromTtlv(source)) {
             assertTrue(sourceIsConsumed(source));
             assertEquals("AttestationCredential[redacted]", credential.toString());
-            assertEquals(4L, credential.withTtlv(view -> {
+            long itemCount = credential.withTtlv(view -> {
                 borrowed.set(view);
                 assertThrows(InvalidInputException.class, credential::intoTtlv);
-                return view.itemCount();
-            }));
+                return Long.valueOf(view.itemCount());
+            });
+            assertEquals(4L, itemCount);
             assertThrows(InvalidInputException.class, borrowed.get()::itemCount);
         }
 

@@ -68,9 +68,8 @@ fn compiled_c_consumer_preserves_unknown_credential_type_and_structure() {
 fn compiled_c_consumer_preserves_attestation_credential_and_scoped_ownership() {
     let mut item_count = 0;
     // SAFETY: The C consumer writes the count and owns the temporary ABI handles it creates.
-    let status = unsafe {
-        kmipkit_attestation_credential_c_consumer_round_trip(&raw mut item_count)
-    };
+    let status =
+        unsafe { kmipkit_attestation_credential_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
     assert_eq!(item_count, 4);
 }
