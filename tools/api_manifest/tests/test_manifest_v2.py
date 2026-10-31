@@ -4283,6 +4283,145 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         operation["declarations"]["rust"],
                     )
 
+    def test_t091_safe_client_error_taxonomy_maps_to_existing_error_metadata(self) -> None:
+        declaration_suffixes = {
+            "ClientCauseCategory": ("cause-type",),
+            "ClientCauseCategory::InvalidInput": ("cause-invalid-input",),
+            "ClientCauseCategory::Protocol": ("cause-protocol",),
+            "ClientCauseCategory::Protocol::0": ("cause-protocol",),
+            "ClientCauseCategory::Transport": ("cause-transport",),
+            "ClientCauseCategory::Transport::0": ("cause-transport",),
+            "ClientCauseCategory::Other": ("cause-other",),
+            "ClientErrorCategory::Validation": ("category-validation",),
+            "ClientError::Validation": ("validation-error",),
+            "ClientError::Validation::cause": ("validation-cause",),
+            "ClientError::Validation::delivery_state": ("delivery-state",),
+            "ClientError::ProtocolResponse": ("protocol-response-error",),
+            "ClientError::Protocol::delivery_state": ("delivery-state",),
+            "ClientError::ProtocolResponse::delivery_state": ("delivery-state",),
+            "ClientError::Transport::0": ("transport-error",),
+            "ClientError::ProfileValidation::delivery_state": ("delivery-state",),
+        }
+        foreign_names = {
+            "cause-type": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientErrorCause",
+            ),
+            "cause-invalid-input": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientErrorCause.INVALID_INPUT",
+            ),
+            "cause-protocol": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientErrorCause",
+            ),
+            "cause-transport": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientErrorCause",
+            ),
+            "cause-other": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientErrorCause.OTHER",
+            ),
+            "category-validation": (
+                "org.kmipkit.ClientOperationException.categoryCode",
+                "kmipkit.errors.ClientErrorCategory.VALIDATION",
+            ),
+            "validation-error": (
+                "org.kmipkit.ClientOperationException",
+                "kmipkit.errors.ClientExecutionError",
+            ),
+            "validation-cause": (
+                "org.kmipkit.ClientOperationException.causeCode",
+                "kmipkit.errors.ClientExecutionError.cause",
+            ),
+            "delivery-state": (
+                "org.kmipkit.ClientOperationException.deliveryStateCode",
+                "kmipkit.errors.ClientExecutionError.delivery",
+            ),
+            "protocol-response-error": (
+                "org.kmipkit.ProtocolException",
+                "kmipkit.errors.ClientExecutionError",
+            ),
+            "transport-error": (
+                "org.kmipkit.TransportException",
+                "kmipkit.errors.ClientExecutionError",
+            ),
+        }
+        declarations = {
+            row["exportName"]: row for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+        canonical = declarations["kmipkit_client::ClientError::category"]
+        requirements = sorted(
+            set(canonical["requirementIds"])
+            | {
+                "KMIPKIT-0003-FR-001",
+                "KMIPKIT-0003-FR-004",
+                "KMIPKIT-0003-FR-005",
+                "KMIPKIT-0003-FR-006",
+                "KMIPKIT-0043-FR-007",
+                "KMIPKIT-0043-FR-008",
+                "KMIPKIT-0043-FR-009",
+                "KMIPKIT-0043-FR-010",
+            }
+        )
+        prefixes = (
+            ("kmipkit_client", "rust-kmipkit-client"),
+            ("kmipkit", "rust-kmipkit"),
+        )
+
+        for prefix, rust_package in prefixes:
+            for suffix, (group,) in declaration_suffixes.items():
+                export_name = f"{prefix}::{suffix}"
+                with self.subTest(export=export_name):
+                    declaration = declarations[export_name]
+                    java_name, python_name = foreign_names[group]
+                    expected_mappings = {
+                        "rust": {"packageId": rust_package, "name": export_name},
+                        "c": {
+                            "packageId": "c-kmipkit",
+                            "name": "kmipkit_last_error_get",
+                        },
+                        "java": {"packageId": "java-kmipkit", "name": java_name},
+                        "python": {"packageId": "python-kmipkit", "name": python_name},
+                    }
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertNotIn("blockedReason", declaration)
+                    self.assertEqual("client_execution", declaration["capabilityId"])
+                    self.assertEqual(requirements, declaration["requirementIds"])
+                    self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
+                    self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    for language, mapping in expected_mappings.items():
+                        self.assertIn(mapping["name"], capability["mappings"][language])
+
+        remain_unmapped = (
+            "ClientError::Protocol::error",
+            "ClientError::ProtocolResponse::error",
+            "ClientError::ServerResult::0",
+            "ClientError::server_operation_result",
+            "ClientError::server_status",
+            "ClientError::validation",
+            "ClientError::protocol",
+            "ClientError::transport",
+            "ClientError::server_result",
+            "ClientError::ProfileValidation",
+            "ClientError::ProfileValidation::error",
+            "ClientError::profile_validation",
+            "ClientError::profile_validation_error",
+        )
+        for prefix, _ in prefixes:
+            for suffix in remain_unmapped:
+                declaration = declarations[f"{prefix}::{suffix}"]
+                with self.subTest(unmapped=f"{prefix}::{suffix}"):
+                    self.assertEqual("blocked", declaration["declarationState"])
+                    self.assertEqual("KMIPKIT-0007", declaration["candidateSpecId"])
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (
