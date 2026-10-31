@@ -4579,6 +4579,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         profile_validation_approval = declarations[
             "kmipkit_client::ClientError::ProfileValidation"
         ]["approvalSource"]
+        self.assertEqual("feature-specification", profile_validation_approval["kind"])
+        self.assertEqual(
+            "specs/010-profile-conformance/spec.md", profile_validation_approval["path"]
+        )
+        self.assertEqual("Accepted", profile_validation_approval["status"])
         profile_capability = next(
             row
             for row in self.checked_in_manifest["capabilities"]
