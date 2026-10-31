@@ -35,7 +35,7 @@ use crate::{
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
     kmipkit_extension_schema_t, kmipkit_message_extension_view_t,
-    kmipkit_message_validation_error_t, kmipkit_profile_object_state_v1_t,
+    kmipkit_message_validation_error_t, kmipkit_nonce_t, kmipkit_profile_object_state_v1_t,
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_selection_v1_t,
     kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
@@ -57,6 +57,7 @@ use kmipkit_client::{
     ClientErrorCategory, ClientRequest,
 };
 use kmipkit_protocol::CredentialType;
+use kmipkit_protocol::Nonce;
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
@@ -98,9 +99,6 @@ const BATCH_ITEM_TAG_RAW: u32 = 0x0042_000F;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/credential_type_abi_tests.rs"]
 mod credential_type_abi_tests;
-#[cfg(all(test, feature = "coverage-c-consumer"))]
-#[path = "../tests/support/nonce_abi_tests.rs"]
-mod nonce_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
@@ -122,6 +120,9 @@ mod message_model_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/nonce_abi_tests.rs"]
+mod nonce_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;
@@ -406,6 +407,7 @@ enum Kind {
     SplitKeyReference,
     RevocationReason,
     RevokeRequest,
+    Nonce,
 }
 
 enum HandleValue {
@@ -435,6 +437,7 @@ enum HandleValue {
         message: Option<String>,
     },
     RevokeRequest(Box<RevokeRequest>),
+    Nonce(Nonce),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -629,12 +632,15 @@ impl TtlvView {
         callback: impl for<'a> FnOnce(&kmipkit_ttlv::StructureView<'a>) -> R,
     ) -> FfiResult<R> {
         match self.root {
-            ViewRoot::Structure => {
-                let HandleValue::Structure(structure) = &self.owner.value else {
-                    return Err(ERROR_INVALID_INPUT);
-                };
-                resolve_structure_path(&structure.view(), steps, callback)
-            }
+            ViewRoot::Structure => match &self.owner.value {
+                HandleValue::Structure(structure) => {
+                    resolve_structure_path(&structure.view(), steps, callback)
+                }
+                HandleValue::Nonce(nonce) => {
+                    nonce.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                _ => Err(ERROR_INVALID_INPUT),
+            },
             ViewRoot::Value => {
                 let HandleValue::Value(value) = &self.owner.value else {
                     return Err(ERROR_INVALID_INPUT);
@@ -1014,6 +1020,22 @@ fn consume_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
         .map_err(|_| ERROR_INTERNAL)?;
     match handles.entry(id) {
         Entry::Occupied(entry) if entry.get().kind == expected => Ok(entry.remove()),
+        Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn consume_unshared_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let mut handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Occupied(entry)
+            if entry.get().kind == expected && Arc::strong_count(entry.get()) == 1 =>
+        {
+            Ok(entry.remove())
+        }
         Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
     }
 }
@@ -7946,6 +7968,71 @@ pub extern "C" fn kmipkit_ttlv_structure_view(
         ));
         SUCCESS
     })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nonce_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_nonce: *mut *mut kmipkit_nonce_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_nonce);
+        let owner = try_ffi!(consume_unshared_owner(structure, Kind::Structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let nonce = match Nonce::try_from_ttlv(structure) {
+            Ok(nonce) => nonce,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(Kind::Nonce, HandleValue::Nonce(nonce)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nonce_ttlv_view(
+    nonce: *mut kmipkit_nonce_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(nonce, Kind::Nonce));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nonce_into_ttlv(
+    nonce: *mut kmipkit_nonce_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(nonce, Kind::Nonce));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Nonce(nonce) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(nonce.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_nonce_release(handle: *mut kmipkit_nonce_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::Nonce);
+    });
 }
 
 #[unsafe(no_mangle)]

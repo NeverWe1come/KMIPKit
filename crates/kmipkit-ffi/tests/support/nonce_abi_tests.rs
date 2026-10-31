@@ -42,19 +42,13 @@ fn assert_nonce_view(view: *mut kmipkit_ttlv_structure_view_t) {
             SUCCESS
         );
         let mut tag = ptr::null_mut();
-        assert_eq!(
-            kmipkit_ttlv_item_view_tag(item, &raw mut tag),
-            SUCCESS
-        );
+        assert_eq!(kmipkit_ttlv_item_view_tag(item, &raw mut tag), SUCCESS);
         let mut actual_tag = 0;
         assert_eq!(kmipkit_ttlv_tag_value(tag, &raw mut actual_tag), SUCCESS);
         assert_eq!(actual_tag, expected_tag);
 
         let mut value = ptr::null_mut();
-        assert_eq!(
-            kmipkit_ttlv_item_view_value(item, &raw mut value),
-            SUCCESS
-        );
+        assert_eq!(kmipkit_ttlv_item_view_value(item, &raw mut value), SUCCESS);
         let mut length = 0;
         assert_eq!(
             kmipkit_ttlv_value_view_byte_length(value, &raw mut length),

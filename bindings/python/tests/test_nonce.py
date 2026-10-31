@@ -72,6 +72,8 @@ class NonceTests(unittest.TestCase):
         )
         if facade is None:
             return
+        with self.assertRaises(errors.InvalidInputError):
+            facade()
 
         structure = nonce_structure()
         nonce = facade.from_ttlv(structure)

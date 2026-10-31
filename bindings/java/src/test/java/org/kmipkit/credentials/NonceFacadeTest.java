@@ -42,6 +42,8 @@ final class NonceFacadeTest {
 
         TtlvStructure structure = nonceStructure();
         Object nonce = fromTtlv.invoke(null, structure);
+        assertEquals("Nonce[redacted]", nonce.toString());
+        assertTrue(!nonce.toString().contains(hex(NONCE_VALUE)));
         assertTrue(
                 throwsInvalidInput(structure::view),
                 "fromTtlv must consume the original Structure handle");

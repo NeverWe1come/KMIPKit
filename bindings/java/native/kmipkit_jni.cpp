@@ -1722,6 +1722,36 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialTypeF
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_nonceFromTtlv(
+        JNIEnv* env, jclass, jlong raw_structure) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_nonce_t>(env, [&](auto output) {
+            return kmipkit_nonce_from_ttlv(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_structure), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_nonceTtlvView(
+        JNIEnv* env, jclass, jlong raw_nonce) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_view_t>(env, [&](auto output) {
+            return kmipkit_nonce_ttlv_view(
+                    from_java_handle<kmipkit_nonce_t>(raw_nonce), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_nonceIntoTtlv(
+        JNIEnv* env, jclass, jlong raw_nonce) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_nonce_into_ttlv(
+                    from_java_handle<kmipkit_nonce_t>(raw_nonce), output);
+        });
+    });
+}
+
 JNIEXPORT jstring JNICALL Java_org_kmipkit_NativeExtensionRegistry_extensionIdentityVendorIdentifier(
         JNIEnv* env, jclass, jlong identity) {
     return identity_text(env, identity, kmipkit_extension_identity_vendor_identifier);
@@ -3816,6 +3846,7 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
         case 42: kmipkit_response_message_release(from_java_handle<kmipkit_response_message_t>(raw_handle)); break;
         case 43: kmipkit_response_header_view_release(from_java_handle<kmipkit_response_header_view_t>(raw_handle)); break;
         case 44: kmipkit_response_batch_item_release(from_java_handle<kmipkit_response_batch_item_view_t>(raw_handle)); break;
+        case 45: kmipkit_nonce_release(from_java_handle<kmipkit_nonce_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

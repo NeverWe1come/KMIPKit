@@ -60,6 +60,7 @@ public final class NativeExtensionRegistry {
     public static final int RESPONSE_MESSAGE = 42;
     public static final int RESPONSE_HEADER_VIEW = 43;
     public static final int RESPONSE_BATCH_ITEM_VIEW = 44;
+    public static final int NONCE = 45;
 
     private static volatile boolean loaded;
 
@@ -90,6 +91,10 @@ public final class NativeExtensionRegistry {
     static native int nativeAbiVersion();
 
     public static native long credentialTypeFromRaw(long raw);
+
+    public static native long nonceFromTtlv(long structure);
+    public static native long nonceTtlvView(long nonce);
+    public static native long nonceIntoTtlv(long nonce);
 
     public static native void release(int handleKind, long handle);
 

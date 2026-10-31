@@ -90,7 +90,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             if inventory_row.get("exportName") == row["exportName"]
             and isinstance(inventory_row.get("identity"), str)
         }
-        self.assertEqual(18, len(owner_paths), "the credential owner type inventory changed")
+        self.assertEqual(17, len(owner_paths), "the credential owner type inventory changed")
 
         inventory_rows = inventory["declarations"] + inventory["conditionalDeclarations"]
         trait_exports: set[str] = set()

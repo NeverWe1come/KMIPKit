@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TypeVar
+
 from . import errors
-from ._client_ffi import ffi, lib
-from ._handles import _integer_range
+from ._ffi import ffi, lib
+from ._handles import (
+    NativeHandle,
+    _integer_range,
+    _new_handle,
+    _wrap_owned_handle,
+)
+from .ttlv import Structure, TtlvStructureView
+
+_T = TypeVar("_T")
 
 
 class CredentialType:
@@ -50,4 +61,46 @@ class CredentialType:
         return "Unknown"
 
 
-__all__ = ["CredentialType"]
+class Nonce(NativeHandle):
+    """Server-sourced Attestation Nonce preserving its original TTLV structure."""
+
+    _release_name = "kmipkit_nonce_release"
+
+    @classmethod
+    def from_ttlv(cls, structure: Structure) -> Nonce:
+        """Consume and validate a TTLV Structure containing Nonce ID and Nonce Value."""
+        handle = _new_handle(
+            "kmipkit_nonce_t",
+            lib.kmipkit_nonce_from_ttlv,
+            structure,
+            consumed=(0,),
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend a read-only TTLV view and close it when the callback returns."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_nonce_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        try:
+            return callback(view)
+        finally:
+            view.close()
+
+    def into_ttlv(self) -> Structure:
+        """Transfer the original ordered TTLV Structure without rebuilding it."""
+        handle = _new_handle(
+            "kmipkit_ttlv_structure_t",
+            lib.kmipkit_nonce_into_ttlv,
+            self,
+            consumed=(0,),
+        )
+        return _wrap_owned_handle(Structure, handle)
+
+
+__all__ = ["CredentialType", "Nonce"]

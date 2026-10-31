@@ -12,6 +12,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "generic_ttlv_model",
+    "nonce_ttlv_parity",
     "opaque_register_context",
     "production_transport",
     "server_generated_creation",
@@ -1044,6 +1045,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-37dab5effc63fc149ca1",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CredentialType::raw",
+    ),
+    (
+        "rust-observed-b9db592df59582578b06",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Nonce",
+    ),
+    (
+        "rust-observed-76f07f240a59e344be9e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Nonce::try_from_ttlv",
+    ),
+    (
+        "rust-observed-41105b230288b3a5a575",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Nonce::with_ttlv",
+    ),
+    (
+        "rust-observed-89b15abea06d0c739a2b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Nonce::into_ttlv",
     ),
     (
         "rust-observed-8105d635297cff8dd3f6",

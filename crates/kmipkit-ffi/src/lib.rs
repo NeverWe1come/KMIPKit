@@ -200,6 +200,10 @@ pub struct kmipkit_revoke_request_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_nonce_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_extension_child_rule_t {
     _private: [u8; 0],
 }
