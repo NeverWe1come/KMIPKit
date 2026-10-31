@@ -11,6 +11,7 @@ int kmipkit_client_abi_c_consumer_batch_item_readback(void) {
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_t *second_batch = 0;
     kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_item_t *identified_item = 0;
     kmipkit_client_batch_item_t *indexed_item = 0;
     kmipkit_client_batch_item_t *out_of_range_item =
         (kmipkit_client_batch_item_t *)(uintptr_t)1;
@@ -23,7 +24,8 @@ int kmipkit_client_abi_c_consumer_batch_item_readback(void) {
         kmipkit_client_batch_create(&second_batch) != 0 ||
         kmipkit_client_batch_item_ping(&item) != 0 ||
         kmipkit_client_batch_item_with_unique_batch_item_id(
-            item, item_id, sizeof(item_id), &item) != 0 ||
+            item, item_id, sizeof(item_id), &identified_item) != 0 || identified_item == 0 ||
+        (item = identified_item) == 0 ||
         kmipkit_client_batch_add_item(batch, &item) != 0 || item != 0 ||
         kmipkit_client_batch_item_count(batch, &item_count) != 0 || item_count != 1 ||
         kmipkit_client_batch_item_at(batch, 0, &indexed_item) != 0 || indexed_item == 0 ||

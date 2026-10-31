@@ -120,6 +120,17 @@ public final class ClientBatch implements AutoCloseable {
         return itemCount;
     }
 
+    /** Returns an owned, read-only item metadata view at the given index. */
+    public ClientBatchItem itemAt(long index) {
+        if (index < 0) {
+            throw new InvalidInputException("client batch item index is invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long nativeHandle = handle.withValue(
+                batch -> NativeExtensionRegistry.clientBatchItemAt(batch, index));
+        return ClientBatchItem.fromReadbackHandle(nativeHandle);
+    }
+
     NativeHandle nativeHandleOwner() {
         return handle;
     }

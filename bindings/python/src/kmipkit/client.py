@@ -1210,7 +1210,7 @@ class Batch(_ClientHandle):
 
     def add_item(self, item: extensions.ClientBatchItem) -> Self:
         """Append one typed item, consuming its wrapper only when accepted."""
-        if not isinstance(item, extensions.ClientBatchItem):
+        if not isinstance(item, extensions.ClientBatchItem) or item._read_only:
             errors.raise_for_status(4)
         with _NATIVE_CALL_LOCK:
             batch_pointer = self._pointer()
@@ -1233,6 +1233,26 @@ class Batch(_ClientHandle):
             finally:
                 item._release_ownership_lock()
         return self
+
+    @property
+    def item_count(self) -> int:
+        """Return the number of request items in caller order."""
+        return _client_scalar("uint64_t", lib.kmipkit_client_batch_item_count, self)
+
+    def item_at(self, index: int) -> extensions.ClientBatchItem:
+        """Return an owned read-only item metadata view that retains the batch owner."""
+        value = _integer_range(index, 0, _MAX_U64)
+        output = ffi.new("kmipkit_client_batch_item_t **")
+        with _NATIVE_CALL_LOCK:
+            status = lib.kmipkit_client_batch_item_at(self._pointer(), value, output)
+        _raise_abi_status(status)
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(4)
+        handle = _base_ffi.cast(
+            "kmipkit_client_batch_item_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        return extensions.ClientBatchItem._from_readback_handle(handle)
 
     def set_request_timestamp(self, timestamp: int) -> Self:
         """Set the caller-selected KMIP request timestamp in signed Unix seconds."""

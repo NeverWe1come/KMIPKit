@@ -870,7 +870,7 @@ pub extern "C" fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_clien
         let out = out_slot!(out_batch);
         *out = try_ffi!(try_make_handle(
             Kind::ClientBatch,
-            HandleValue::ClientBatch(std::sync::Mutex::new(ClientBatchBuilder::new())),
+            HandleValue::ClientBatch(Arc::new(Mutex::new(Some(ClientBatchBuilder::new())))),
         ));
         SUCCESS
     })
@@ -892,12 +892,20 @@ pub extern "C" fn kmipkit_client_batch_add_item(
         if item_handle.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
+        let item = read_handle!(item_handle, BatchItem);
+        if !matches!(&item.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(item);
         let batch = read_handle!(batch, ClientBatch);
         let HandleValue::ClientBatch(batch) = &batch.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         if let Err(status) = reference_handle(item_handle, Kind::BatchItem) {
             return record_ffi_error(status);
@@ -917,6 +925,99 @@ pub extern "C" fn kmipkit_client_batch_add_item(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_count(
+    batch: *mut kmipkit_client_batch_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_count);
+        *out = 0;
+        let batch_handle = read_handle!(batch, ClientBatch);
+        let HandleValue::ClientBatch(batch) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(batch) = batch.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_ref() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(u64::try_from(batch.items.len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Creates an owned, read-only metadata view retaining the batch owner's lifetime.
+///
+/// The view does not copy request payload bytes or expose request payload access.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_at(
+    batch: *mut kmipkit_client_batch_t,
+    index: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(index) = usize::try_from(index).ok() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let batch_handle = read_handle!(batch, ClientBatch);
+        let HandleValue::ClientBatch(owner) = &batch_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(batch) = owner.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_ref() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = batch.items.get(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        let unique_batch_item_id = if let Some(value) = item.unique_batch_item_id() {
+            let mut copy = Vec::new();
+            if copy.try_reserve_exact(value.len()).is_err() {
+                return record_ffi_error(ERROR_RESOURCE_LIMIT);
+            }
+            copy.extend_from_slice(value);
+            Some(copy)
+        } else {
+            None
+        };
+        let mut extensions = Vec::new();
+        if extensions
+            .try_reserve_exact(item.extension_count())
+            .is_err()
+        {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        for extension_index in 0..item.extension_count() {
+            let Some(identity) = item.extension_identity_at(extension_index) else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let Some(criticality) = item.extension_criticality_indicator_at(extension_index) else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            extensions.push((identity, criticality));
+        }
+
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItemReadback(ClientBatchItemReadback {
+                owner: Arc::clone(owner),
+                index,
+                metadata: ClientBatchItemMetadataSnapshot {
+                    unique_batch_item_id,
+                    extensions,
+                },
+            }),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_set_request_time_stamp(
     batch: *mut kmipkit_client_batch_t,
     time_stamp: i64,
@@ -928,6 +1029,9 @@ pub extern "C" fn kmipkit_client_batch_set_request_time_stamp(
         };
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         batch.request_time_stamp = Some(time_stamp);
         SUCCESS
@@ -971,6 +1075,9 @@ pub extern "C" fn kmipkit_client_batch_request_time_stamp(
         let Ok(batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
+        let Some(batch) = batch.as_ref() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
         if let Some(value) = batch.request_time_stamp {
             *present = 1;
             *time_stamp = value;
@@ -995,6 +1102,9 @@ pub extern "C" fn kmipkit_client_batch_set_order_option(
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
         batch.batch_order_option = Some(enabled != 0);
         SUCCESS
     })
@@ -1012,6 +1122,9 @@ pub extern "C" fn kmipkit_client_batch_add_error_continuation_value(
         };
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         if batch.batch_error_continuation_values.len()
             >= usize::try_from(MAX_TRANSPORT_CONFIG_ITEMS).unwrap_or(usize::MAX)
@@ -1043,6 +1156,9 @@ pub extern "C" fn kmipkit_client_batch_set_asynchronous_indicator(
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
         batch.asynchronous_indicator = Some(indicator);
         SUCCESS
     })
@@ -1067,6 +1183,9 @@ pub extern "C" fn kmipkit_client_batch_set_client_correlation_value(
         };
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(batch) = batch.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         batch.client_correlation_value = Some(value.to_owned());
         SUCCESS
@@ -1946,8 +2065,11 @@ fn execute_client_batch(
         Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
         Err(status) => return record_ffi_error(status),
     };
-    let batch = match batch_payload.into_inner() {
-        Ok(batch) => batch.into_batch(),
+    let batch = match batch_payload.lock() {
+        Ok(mut batch) => match batch.take() {
+            Some(batch) => batch.into_batch(),
+            None => return record_ffi_error(ERROR_INVALID_INPUT),
+        },
         Err(_) => return record_ffi_error(ERROR_INTERNAL),
     };
     let Ok(mut client) = client.lock() else {
@@ -4901,10 +5023,15 @@ pub extern "C" fn kmipkit_client_batch_item_unique_batch_item_id(
             length: 0,
         };
         let item_handle = read_handle!(item, BatchItem);
-        let HandleValue::BatchItem(item) = &item_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+        let unique_batch_item_id = match &item_handle.value {
+            HandleValue::BatchItem(item) => item.unique_batch_item_id(),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => {
+                item.metadata.unique_batch_item_id.as_deref()
+            }
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        if let Some(bytes) = item.unique_batch_item_id() {
+        if let Some(bytes) = unique_batch_item_id {
             *present = 1;
             *value = crate::kmipkit_byte_span_v1_t {
                 data: bytes.as_ptr(),

@@ -9729,7 +9729,9 @@ fn empty_client_configuration() -> client_extension::ClientConfiguration {
 fn empty_client_batch_handle() -> *mut kmipkit_client_batch_t {
     make_handle(
         Kind::ClientBatch,
-        HandleValue::ClientBatch(std::sync::Mutex::new(ClientBatchBuilder::new())),
+        HandleValue::ClientBatch(Arc::new(std::sync::Mutex::new(Some(
+            ClientBatchBuilder::new(),
+        )))),
     )
 }
 

@@ -301,7 +301,22 @@ class ClientRequestMessageExtension(NativeHandle):
 
 
 class ClientBatchItem(NativeHandle):
+    __slots__ = ("_read_only",)
     _release_name = "kmipkit_client_batch_item_release"
+
+    def __init__(self, handle: Any, *, _token: object, owner: object | None = None) -> None:
+        super().__init__(handle, _token=_token, owner=owner)
+        self._read_only = False
+
+    @classmethod
+    def _from_readback_handle(cls, handle: Any) -> ClientBatchItem:
+        item = _wrap_owned_handle(cls, handle)
+        item._read_only = True
+        return item
+
+    def _require_mutable(self) -> None:
+        if self._read_only:
+            errors.raise_for_status(4)
 
 
 class RevocationReason(NativeHandle):
@@ -1577,6 +1592,9 @@ def create_client_request_message_extension(
 def with_extension(
     item: ClientBatchItem, extension: ClientRequestMessageExtension
 ) -> ClientBatchItem:
+    if not isinstance(item, ClientBatchItem):
+        errors.raise_for_status(4)
+    item._require_mutable()
     handle = _make_handle(
         "kmipkit_client_batch_item_t",
         "kmipkit_client_batch_item_with_extension",
@@ -1594,6 +1612,7 @@ def with_unique_batch_item_id(
         identifier, (bytes, bytearray, memoryview)
     ):
         errors.raise_for_status(4)
+    item._require_mutable()
     with _staging_buffer_scope() as staging_buffers:
         raw, data = _owned_bytes(identifier, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
         staging_buffers.append(data)

@@ -421,6 +421,7 @@ enum HandleValue {
     MessageExtension(client_extension::ClientRequestMessageExtension),
     Structure(Structure),
     BatchItem(Box<ClientBatchItem>),
+    BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     RevocationReason {
         reason: RevocationReason,
@@ -459,7 +460,7 @@ enum HandleValue {
     ProfileValidationError(ProfileValidationError),
     TransportConfig(TransportConfig),
     Client(Box<std::sync::Mutex<Client>>),
-    ClientBatch(std::sync::Mutex<ClientBatchBuilder>),
+    ClientBatch(Arc<Mutex<Option<ClientBatchBuilder>>>),
     ClientBatchResponse(Arc<ClientBatchResponse>),
     ClientBatchItemResponse {
         response: Arc<ClientBatchResponse>,
@@ -487,6 +488,28 @@ struct ClientBatchBuilder {
     batch_error_continuation_values: Vec<u32>,
     asynchronous_indicator: Option<u32>,
     client_correlation_value: Option<String>,
+}
+
+struct ClientBatchItemReadback {
+    owner: Arc<Mutex<Option<ClientBatchBuilder>>>,
+    index: usize,
+    metadata: ClientBatchItemMetadataSnapshot,
+}
+
+struct ClientBatchItemMetadataSnapshot {
+    unique_batch_item_id: Option<Vec<u8>>,
+    extensions: Vec<(extension::ExtensionIdentity, bool)>,
+}
+
+impl ClientBatchItemReadback {
+    fn owner_index_is_valid(&self) -> bool {
+        let Ok(owner) = self.owner.lock() else {
+            return false;
+        };
+        owner
+            .as_ref()
+            .is_none_or(|batch| self.index < batch.items.len())
+    }
 }
 
 impl ClientBatchBuilder {
@@ -3102,7 +3125,11 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let _ = read_handle!(item, BatchItem);
+        let item_handle = read_handle!(item, BatchItem);
+        if !matches!(&item_handle.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(item_handle);
         let _ = read_handle!(extension, MessageExtension);
         let item = try_ffi!(consume_owner(item, Kind::BatchItem));
         let extension = try_ffi!(consume_owner(extension, Kind::MessageExtension));
@@ -3130,7 +3157,11 @@ pub extern "C" fn kmipkit_client_batch_item_with_unique_batch_item_id(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let _ = read_handle!(item, BatchItem);
+        let item_handle = read_handle!(item, BatchItem);
+        if !matches!(&item_handle.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(item_handle);
         let id = try_ffi!(input_span(id_data, id_length, MAX_FFI_INPUT_BYTES,));
         let item = try_ffi!(consume_owner(item, Kind::BatchItem));
         let item = try_ffi!(unwrap_payload(item));
@@ -5947,10 +5978,15 @@ pub extern "C" fn kmipkit_client_batch_item_extension_count(
     ffi_entrypoint(|| {
         let out = scalar_out!(out_count);
         let item = read_handle!(item, BatchItem);
-        let HandleValue::BatchItem(item) = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+        let extension_count = match &item.value {
+            HandleValue::BatchItem(item) => item.extension_count(),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => {
+                item.metadata.extensions.len()
+            }
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        *out = try_ffi!(u64::try_from(item.extension_count()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        *out = try_ffi!(u64::try_from(extension_count).map_err(|_| ERROR_RESOURCE_LIMIT));
         SUCCESS
     })
 }
@@ -5964,13 +6000,20 @@ pub extern "C" fn kmipkit_client_batch_item_extension_identity_at(
     ffi_entrypoint(|| {
         let out = out_slot!(out_identity);
         let item = read_handle!(item, BatchItem);
-        let HandleValue::BatchItem(item) = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
         let Some(index) = usize::try_from(index).ok() else {
             return SUCCESS;
         };
-        let Some(identity) = item.extension_identity_at(index) else {
+        let identity = match &item.value {
+            HandleValue::BatchItem(item) => item.extension_identity_at(index),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => item
+                .metadata
+                .extensions
+                .get(index)
+                .map(|(identity, _)| identity.clone()),
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let Some(identity) = identity else {
             return SUCCESS;
         };
         *out = try_ffi!(try_make_handle(
@@ -5990,13 +6033,20 @@ pub extern "C" fn kmipkit_client_batch_item_extension_criticality_indicator_at(
     ffi_entrypoint(|| {
         let out = scalar_out!(out_criticality_indicator);
         let item = read_handle!(item, BatchItem);
-        let HandleValue::BatchItem(item) = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
         let Some(index) = usize::try_from(index).ok() else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let Some(criticality_indicator) = item.extension_criticality_indicator_at(index) else {
+        let criticality_indicator = match &item.value {
+            HandleValue::BatchItem(item) => item.extension_criticality_indicator_at(index),
+            HandleValue::BatchItemReadback(item) if item.owner_index_is_valid() => item
+                .metadata
+                .extensions
+                .get(index)
+                .map(|(_, criticality)| *criticality),
+            HandleValue::BatchItemReadback(_) => return record_ffi_error(ERROR_INTERNAL),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let Some(criticality_indicator) = criticality_indicator else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = u8::from(criticality_indicator);

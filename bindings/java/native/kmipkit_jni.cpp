@@ -4972,6 +4972,21 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchCrea
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemAt(
+        JNIEnv* env, jclass, jlong raw_batch, jlong index) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_batch == 0 || index < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_at(
+                    from_java_handle<kmipkit_client_batch_t>(raw_batch),
+                    static_cast<uint64_t>(index), output);
+        });
+    });
+}
+
 JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchAddItem(
         JNIEnv* env, jclass, jlong raw_batch, jlong raw_item) {
     guarded<int>(env, 0, [&] {

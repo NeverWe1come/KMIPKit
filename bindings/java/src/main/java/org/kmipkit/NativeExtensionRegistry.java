@@ -295,6 +295,7 @@ public final class NativeExtensionRegistry {
     public static native long clientCreate(long extensionConfiguration, long transportConfiguration);
     public static native long clientBatchCreate();
     public static native void clientBatchAddItem(long batch, long item);
+    public static native long clientBatchItemAt(long batch, long index);
     public static native void clientBatchSetAsynchronousIndicator(long batch, long indicator);
     public static native void clientBatchSetRequestTimestamp(long batch, long timestamp);
     public static native java.util.OptionalLong clientBatchRequestTimestamp(long batch);

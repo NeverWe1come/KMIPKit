@@ -33,10 +33,23 @@ public final class ClientBatchItem implements AutoCloseable {
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
+    private final boolean readOnly;
 
     private ClientBatchItem(long nativeHandle, List<ClientRequestMessageExtension> extensions) {
+        this(nativeHandle, extensions, false);
+    }
+
+    private ClientBatchItem(
+            long nativeHandle,
+            List<ClientRequestMessageExtension> extensions,
+            boolean readOnly) {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.BATCH_ITEM);
         this.extensions = List.copyOf(extensions);
+        this.readOnly = readOnly;
+    }
+
+    static ClientBatchItem fromReadbackHandle(long nativeHandle) {
+        return new ClientBatchItem(nativeHandle, List.of(), true);
     }
 
     /** Creates the supported Discover Versions request batch item. */
@@ -1503,6 +1516,7 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     public ClientBatchItem withExtension(ClientRequestMessageExtension extension) {
+        requireMutable();
         NativeExtensionRegistry.ensureLoaded();
         long[] consumed = NativeHandle.transferAll(handle, extension.handleOwner());
         long nextHandle = NativeExtensionRegistry.clientBatchItemWithExtension(
@@ -1514,6 +1528,7 @@ public final class ClientBatchItem implements AutoCloseable {
 
     /** Returns a new item carrying the caller-selected opaque KMIP identifier bytes. */
     public ClientBatchItem withUniqueBatchItemId(byte[] identifier) {
+        requireMutable();
         if (identifier == null) {
             throw new InvalidInputException("unique batch item ID is invalid");
         }
@@ -1537,6 +1552,12 @@ public final class ClientBatchItem implements AutoCloseable {
 
     List<ClientRequestMessageExtension> extensions() {
         return extensions;
+    }
+
+    private void requireMutable() {
+        if (readOnly) {
+            throw new InvalidInputException("client batch item readback is immutable");
+        }
     }
 
     NativeHandle nativeHandleOwner() {

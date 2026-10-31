@@ -624,6 +624,17 @@ int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t * response, uint64_t index, kmipkit_client_batch_item_response_t ** out_item);
+/* Returns an owned read-only view of the indexed batch item. Getters expose item metadata only: Unique Batch Item ID and extension identity or criticality.
+ * The view retains the batch owner lifetime without copying request payload bytes and remains valid after the original batch handle is released. Batch execution still consumes request items as usual; this view does not expose request payload access. Release the view with kmipkit_client_batch_item_release.
+ * The readback handle cannot be consumed into another batch or modified by item builder functions.
+ * An index outside the batch returns invalid_input and clears out_item.
+ */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_at(kmipkit_client_batch_t * batch, uint64_t index, kmipkit_client_batch_item_t ** out_item);
+/* Sets out_count to zero before returning an error.
+ */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0006-FR-014, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_count(kmipkit_client_batch_t * batch, uint64_t * out_count);
 /* The item handle is borrowed and is not consumed.
  * The returned out_value is a borrowed byte span into the item-owned buffer. It remains valid and unchanged while this item handle remains open; copy the bytes before releasing the item handle.
  * out_present distinguishes an absent ID from a present empty Byte String; when out_present is zero, out_value is cleared.

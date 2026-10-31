@@ -19,7 +19,7 @@ from typing import get_type_hints
 
 import pytest
 
-from kmipkit import client, errors, extensions, ttlv
+from kmipkit import _handles, client, errors, extensions, ttlv
 from kmipkit._handles import _wipe_staging_buffer, _wrap_owned_handle
 
 
@@ -782,14 +782,26 @@ def test_batch_item_readback_clones_owned_handle_and_checks_index(
         output[0] = item_pointer  # type: ignore[index]
         return 0
 
+    def item_unique_batch_item_id(item: object, present: object, value: object) -> int:
+        assert int(_handles.ffi.cast("uintptr_t", item)) == int(
+            client.ffi.cast("uintptr_t", item_pointer)
+        )
+        present[0] = 0  # type: ignore[index]
+        value.data = _handles.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
     fake = SimpleNamespace(
         kmipkit_client_batch_create=create,
         kmipkit_client_batch_release=lambda _pointer: observed.append(("release_batch", 0)),
         kmipkit_client_batch_item_count=item_count,
         kmipkit_client_batch_item_at=item_at,
         kmipkit_client_batch_item_release=lambda _pointer: observed.append(("release_item", 0)),
+        kmipkit_client_batch_item_unique_batch_item_id=item_unique_batch_item_id,
     )
     monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(extensions, "lib", fake)
+    monkeypatch.setattr(_handles, "lib", fake)
     batch = client.Batch.create()
     assert batch.item_count == 1
     item = batch.item_at(0)
@@ -799,6 +811,7 @@ def test_batch_item_readback_clones_owned_handle_and_checks_index(
         extensions.with_unique_batch_item_id(item, b"new-id")
     assert item._pointer() == item_pointer_before_rejected_mutation
     batch.close()
+    assert extensions.client_batch_item_unique_batch_item_id(item) is None
     item.close()
     assert observed == [("item_at", 0), ("release_batch", 0), ("release_item", 0)]
     with pytest.raises(errors.InvalidInputError):
