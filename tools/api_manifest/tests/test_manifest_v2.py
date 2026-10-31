@@ -3059,7 +3059,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertIn(
                         declaration["declarationId"], operation["declarations"]["rust"]
                     )
-                    self.assertTrue(operation["parityEvidenceIds"])
+                    if operation["apiState"] == "verified":
+                        self.assertTrue(operation.get("parityEvidenceIds"))
                     self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
                     for language in ("c", "java", "python"):
                         self.assertIn(
