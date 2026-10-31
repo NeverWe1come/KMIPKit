@@ -7376,3 +7376,11 @@ These are three additional KMIPKIT-0043 blockers, separate from the 196 remainin
 | Refactor/evidence — document the optional C result and handle-scoped span lifetime | `this commit` | C mTLS consumer; Python profile suite; isolated Java profile suite; generator `--check`; `cargo fmt --all --check`; `git diff --check`; scoped Clippy | Pass: the C mTLS consumer passes; Python has 5 passing tests; isolated Java has 4 passing tests; all 12 generated outputs are current; formatting and whitespace checks pass. Clippy remains blocked by pre-existing `clippy::unused_self` at `crates/kmipkit-protocol/src/profile.rs:390`; that unrelated source was not changed. |
 
 The optional getter sets the output handle to null and returns success when the thread-local error has no profile-validation details. This probe leaves status, category, cause, and delivery state unchanged. When details are present, UTF-8 spans remain borrowed from the owned versioned detail handle until its release.
+
+### T036 exact Rust profile-mapping expectation and workspace Clippy baseline (2026-10-31)
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — compare the exact T036 Rust mapping set and run the required workspace lint gate | `cb74b0640` | `python -B -m unittest tools.api_manifest.tests.test_t036_profile_mapping`; `cargo clippy --workspace --all-targets --all-features -- -D warnings` | Expected failures: 7/8 T036 tests pass; the exact Rust mapping assertion is stale by 30 manifest entries (the manifest has 54 Rust mappings and the test expects 24). Workspace Clippy reports one redundant source-kind match arm and seven implicit `&mut`-to-raw-pointer conversions in the profile mapping test. |
+
+The 30 additional Rust names are the `ProfileValidationError` type and its seven safe accessors in each of `kmipkit`, `kmipkit_client`, and `kmipkit_protocol`, plus the `ClientError::ProfileValidation` variant, its `error` field, and the `profile_validation_error` accessor in `kmipkit` and `kmipkit_client`. The exact-set assertion remains required and will be updated to this complete current set; the capability inventory is not widened by the test change.
