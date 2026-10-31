@@ -1,8 +1,9 @@
 package org.kmipkit.credentials;
 
-import java.util.function.Function;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -58,7 +59,7 @@ public final class Nonce implements AutoCloseable {
     /** Transfers the original ordered TTLV Structure without rebuilding it. */
     public TtlvStructure intoTtlv() {
         if (activeViews.get() != 0) {
-            throw new org.kmipkit.InvalidInputException("nonce is in use by a scoped view");
+            throw new InvalidInputException("nonce is in use by a scoped view");
         }
         return TtlvStructure.fromNative(
                 NativeExtensionRegistry.nonceIntoTtlv(handle.transfer()), this);

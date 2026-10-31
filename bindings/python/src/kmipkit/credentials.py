@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from threading import RLock
 from typing import TypeVar
 
 from . import errors
@@ -78,7 +77,6 @@ class Nonce(NativeHandle):
             consumed=(0,),
         )
         nonce = _wrap_owned_handle(cls, handle)
-        nonce._view_lock = RLock()
         nonce._active_views = 0
         return nonce
 
@@ -93,23 +91,20 @@ class Nonce(NativeHandle):
             self._pointer(),
         )
         view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
-        with self._view_lock:
-            self._active_views += 1
+        self._active_views += 1
         try:
             return callback(view)
         finally:
             try:
                 view.close()
             finally:
-                with self._view_lock:
-                    self._active_views -= 1
+                self._active_views -= 1
 
     @synchronized_native_call
     def into_ttlv(self) -> Structure:
         """Transfer the original ordered TTLV Structure without rebuilding it."""
-        with self._view_lock:
-            if self._active_views:
-                errors.raise_for_status(4)
+        if self._active_views:
+            errors.raise_for_status(4)
         handle = _new_handle(
             "kmipkit_ttlv_structure_t",
             lib.kmipkit_nonce_into_ttlv,
