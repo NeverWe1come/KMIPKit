@@ -684,6 +684,17 @@ fn request_options_from_v1(input: &kmipkit_request_options_v1_t) -> FfiResult<Re
     Ok(options)
 }
 
+fn request_options_from_pointer_v1(
+    input: *const kmipkit_request_options_v1_t,
+) -> FfiResult<RequestOptions> {
+    if input.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the versioned C ABI requires a non-null input pointer to reference
+    // one readable request-options record for the duration of this call.
+    request_options_from_v1(unsafe { &*input })
+}
+
 fn transport_text(span: crate::kmipkit_byte_span_v1_t) -> FfiResult<String> {
     let bytes = copy_transport_span(span.data, span.length, MAX_TRANSPORT_TEXT_BYTES)?;
     let text = std::str::from_utf8(&bytes).map_err(|_| ERROR_INVALID_INPUT)?;
@@ -1170,6 +1181,155 @@ pub extern "C" fn kmipkit_client_execute_query_async_requests(
         let indicator = (has_asynchronous_indicator == 1).then_some(asynchronous_indicator);
         execute_async_client_operation(client, limits, out, |client, limits| {
             client.execute_query_async_requests(request, indicator, limits)
+        })
+    })
+}
+
+/// Executes exactly one Poll request with per-exchange timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_poll_with_options_v1(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        let request_options = try_ffi!(request_options_from_pointer_v1(options));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_poll_with_options(
+                kmipkit_protocol::PollRequest::new(correlation_value),
+                limits,
+                &request_options,
+            )
+        })
+    })
+}
+
+/// Executes exactly one Cancel request with per-exchange timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_cancel_with_options_v1(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        let request_options = try_ffi!(request_options_from_pointer_v1(options));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_cancel_with_options(
+                kmipkit_protocol::CancelRequest::new(correlation_value),
+                limits,
+                &request_options,
+            )
+        })
+    })
+}
+
+/// Executes exactly one Process request with per-exchange timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_process_with_options_v1(
+    client: *mut kmipkit_client_t,
+    correlation_value: *const u8,
+    correlation_value_length: u64,
+    has_asynchronous_indicator: u8,
+    asynchronous_indicator: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        let correlation_value = try_ffi!(input_span(
+            correlation_value,
+            correlation_value_length,
+            MAX_FFI_INPUT_BYTES
+        ));
+        if has_asynchronous_indicator > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let indicator = (has_asynchronous_indicator == 1).then_some(asynchronous_indicator);
+        let request_options = try_ffi!(request_options_from_pointer_v1(options));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_process_with_options(
+                kmipkit_protocol::ProcessRequest::new(correlation_value),
+                indicator,
+                limits,
+                &request_options,
+            )
+        })
+    })
+}
+
+/// Executes exactly one Query Asynchronous Requests operation with timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_query_async_requests_with_options_v1(
+    client: *mut kmipkit_client_t,
+    has_correlation_values: u8,
+    correlation_values: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value_count: u64,
+    has_operations: u8,
+    operations: *const u32,
+    operation_count: u64,
+    has_asynchronous_indicator: u8,
+    asynchronous_indicator: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_outcome: *mut *mut kmipkit_client_async_operation_outcome_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_outcome);
+        if has_correlation_values > 1 || has_operations > 1 || has_asynchronous_indicator > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let correlation_spans = try_ffi!(input_array(
+            correlation_values,
+            correlation_value_count,
+            100_000,
+        ));
+        let operation_values = try_ffi!(input_array(operations, operation_count, 100_000));
+        let mut request = kmipkit_protocol::QueryAsyncRequestsRequest::new();
+        if has_correlation_values == 0 && correlation_value_count != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if has_operations == 0 && operation_count != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if has_correlation_values == 1 {
+            let values = correlation_spans
+                .iter()
+                .map(|span| input_span(span.data, span.length, MAX_FFI_INPUT_BYTES))
+                .collect::<FfiResult<Vec<_>>>();
+            let values = try_ffi!(values);
+            request = request.with_correlation_values(values.into_iter().map(<[u8]>::to_vec));
+        }
+        if has_operations == 1 {
+            request = request.with_operations(operation_values.iter().copied());
+        }
+        let indicator = (has_asynchronous_indicator == 1).then_some(asynchronous_indicator);
+        let request_options = try_ffi!(request_options_from_pointer_v1(options));
+        execute_async_client_operation(client, limits, out, |client, limits| {
+            client.execute_query_async_requests_with_options(
+                request,
+                indicator,
+                limits,
+                &request_options,
+            )
         })
     })
 }

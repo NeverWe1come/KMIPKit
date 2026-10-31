@@ -2165,6 +2165,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::create_split_key_with_options",
     ),
     (
+        "rust-observed-cb77d49beb63b6d1c4c5",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_poll_with_options",
+    ),
+    (
+        "rust-observed-4490fa790b739c94e187",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_cancel_with_options",
+    ),
+    (
+        "rust-observed-1f9c8a76f5da7aab656e",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_process_with_options",
+    ),
+    (
+        "rust-observed-d95bd38b12b42b034b32",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_query_async_requests_with_options",
+    ),
+    (
         "rust-observed-f5bbde677ed59bfed75e",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatch",
@@ -2880,9 +2900,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::execute_poll",
     ),
     (
+        "rust-observed-3e107e1dd858d441f204",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_poll_with_options",
+    ),
+    (
         "rust-observed-eceabc2126cec64f924b",
         "rust-kmipkit",
         "kmipkit::Client::execute_cancel",
+    ),
+    (
+        "rust-observed-49cc4b3450359bd25afa",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_cancel_with_options",
     ),
     (
         "rust-observed-f8ee4a2896aaa81c0b3f",
@@ -2890,9 +2920,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::execute_process",
     ),
     (
+        "rust-observed-d41cf951c47b9bbb2a06",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_process_with_options",
+    ),
+    (
         "rust-observed-c42f04e1a7c526f1f259",
         "rust-kmipkit",
         "kmipkit::Client::execute_query_async_requests",
+    ),
+    (
+        "rust-observed-2920ba6df5820571c0f6",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_query_async_requests_with_options",
     ),
     (
         "rust-observed-b948932e54e91c36a61f",

@@ -728,6 +728,34 @@ bool read_long_array(JNIEnv* env, jlongArray input, jsize expected_length,
     return true;
 }
 
+bool read_request_options(JNIEnv* env, jlongArray input,
+                          kmipkit_request_options_v1_t& options) {
+    std::vector<uint64_t> values;
+    if (!read_long_array(env, input, 12, values, 12)) return false;
+    options = {};
+    options.struct_size = static_cast<uint32_t>(sizeof(options));
+    options.abi_version = 1;
+    kmipkit_timeout_limit_v1_t* outputs[] = {
+            &options.connect_timeout, &options.write_timeout,
+            &options.read_timeout, &options.total_timeout};
+    for (size_t index = 0; index < 4; ++index) {
+        const uint64_t kind = values[index * 3];
+        const uint64_t seconds = values[index * 3 + 1];
+        const uint64_t nanos = values[index * 3 + 2];
+        if (kind > kTransportTimeoutUnbounded || nanos >= 1'000'000'000
+                || ((kind == kTransportTimeoutDefault
+                        || kind == kTransportTimeoutUnbounded)
+                    && (seconds != 0 || nanos != 0))) {
+            throw_invalid_input(env);
+            return false;
+        }
+        outputs[index]->kind = static_cast<uint32_t>(kind);
+        outputs[index]->seconds = seconds;
+        outputs[index]->nanoseconds = static_cast<uint32_t>(nanos);
+    }
+    return true;
+}
+
 template <typename Handle>
 bool read_handle_array(JNIEnv* env, jlongArray input, std::vector<Handle*>& output) {
     if (input == nullptr) {
@@ -8686,6 +8714,30 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecutePo
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecutePollWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jbyteArray raw_correlation,
+        jlongArray raw_limits, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) return static_cast<jlong>(0);
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_request_options_v1_t options{};
+        if (!read_request_options(env, raw_timeouts, options)) return static_cast<jlong>(0);
+        kmipkit_client_async_operation_outcome_t* outcome = nullptr;
+        const int32_t status = kmipkit_client_execute_poll_with_options_v1(
+                client, correlation.empty() ? nullptr : correlation.data(), correlation.size(),
+                limits.get(), &options, &outcome);
+        return execute_async_client_operation(env, status, outcome);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteCancel(
         JNIEnv* env, jclass, jlong raw_client, jbyteArray raw_correlation, jlongArray raw_limits) {
     return guarded<jlong>(env, 0, [&] {
@@ -8702,6 +8754,30 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteCa
         kmipkit_client_async_operation_outcome_t* outcome = nullptr;
         const int32_t status = kmipkit_client_execute_cancel(client,
                 correlation.empty() ? nullptr : correlation.data(), correlation.size(), limits.get(), &outcome);
+        return execute_async_client_operation(env, status, outcome);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteCancelWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jbyteArray raw_correlation,
+        jlongArray raw_limits, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) return static_cast<jlong>(0);
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_request_options_v1_t options{};
+        if (!read_request_options(env, raw_timeouts, options)) return static_cast<jlong>(0);
+        kmipkit_client_async_operation_outcome_t* outcome = nullptr;
+        const int32_t status = kmipkit_client_execute_cancel_with_options_v1(
+                client, correlation.empty() ? nullptr : correlation.data(), correlation.size(),
+                limits.get(), &options, &outcome);
         return execute_async_client_operation(env, status, outcome);
     });
 }
@@ -8726,6 +8802,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecutePr
                 correlation.empty() ? nullptr : correlation.data(), correlation.size(),
                 static_cast<uint8_t>(has_indicator == JNI_TRUE), static_cast<uint32_t>(raw_indicator),
                 limits.get(), &outcome);
+        return execute_async_client_operation(env, status, outcome);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteProcessWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jbyteArray raw_correlation,
+        jboolean has_indicator, jlong raw_indicator, jlongArray raw_limits,
+        jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr || (has_indicator != JNI_FALSE && has_indicator != JNI_TRUE)
+                || raw_indicator < 0 || static_cast<uint64_t>(raw_indicator) > 0xffff'ffffULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        if (!read_bytes(env, raw_correlation, 16 * 1024 * 1024, correlation)) return static_cast<jlong>(0);
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_request_options_v1_t options{};
+        if (!read_request_options(env, raw_timeouts, options)) return static_cast<jlong>(0);
+        kmipkit_client_async_operation_outcome_t* outcome = nullptr;
+        const int32_t status = kmipkit_client_execute_process_with_options_v1(
+                client, correlation.empty() ? nullptr : correlation.data(), correlation.size(),
+                static_cast<uint8_t>(has_indicator == JNI_TRUE), static_cast<uint32_t>(raw_indicator),
+                limits.get(), &options, &outcome);
         return execute_async_client_operation(env, status, outcome);
     });
 }
@@ -8758,6 +8861,42 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteQu
                 operations.empty() ? nullptr : operations.data(), operations.size(),
                 static_cast<uint8_t>(has_indicator == JNI_TRUE), static_cast<uint32_t>(raw_indicator),
                 limits.get(), &outcome);
+        return execute_async_client_operation(env, status, outcome);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteQueryAsyncRequestsWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jobjectArray raw_correlations,
+        jlongArray raw_operations, jboolean has_indicator, jlong raw_indicator,
+        jlongArray raw_limits, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+        if (client == nullptr || (has_indicator != JNI_FALSE && has_indicator != JNI_TRUE)
+                || raw_indicator < 0 || static_cast<uint64_t>(raw_indicator) > 0xffff'ffffULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<std::vector<uint8_t>> correlations;
+        AsyncCorrelationValuesWiper correlation_wiper(correlations);
+        std::vector<kmipkit_byte_span_v1_t> correlation_spans;
+        if (!read_async_correlation_values(env, raw_correlations, correlations, correlation_spans)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint32_t> operations;
+        if (!read_async_operations(env, raw_operations, operations)) return static_cast<jlong>(0);
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_request_options_v1_t options{};
+        if (!read_request_options(env, raw_timeouts, options)) return static_cast<jlong>(0);
+        kmipkit_client_async_operation_outcome_t* outcome = nullptr;
+        const int32_t status = kmipkit_client_execute_query_async_requests_with_options_v1(
+                client,
+                static_cast<uint8_t>(raw_correlations != nullptr),
+                correlation_spans.empty() ? nullptr : correlation_spans.data(), correlation_spans.size(),
+                static_cast<uint8_t>(raw_operations != nullptr),
+                operations.empty() ? nullptr : operations.data(), operations.size(),
+                static_cast<uint8_t>(has_indicator == JNI_TRUE), static_cast<uint32_t>(raw_indicator),
+                limits.get(), &options, &outcome);
         return execute_async_client_operation(env, status, outcome);
     });
 }

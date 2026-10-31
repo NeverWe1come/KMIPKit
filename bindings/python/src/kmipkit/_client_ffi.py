@@ -296,11 +296,25 @@ ffi.cdef(
         uint64_t correlation_value_length,
         kmipkit_codec_limits_t *limits,
         kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_poll_with_options_v1(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
     int32_t kmipkit_client_execute_cancel(
         kmipkit_client_t *client,
         const uint8_t *correlation_value,
         uint64_t correlation_value_length,
         kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_cancel_with_options_v1(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
         kmipkit_client_async_operation_outcome_t **out_outcome);
     int32_t kmipkit_client_execute_process(
         kmipkit_client_t *client,
@@ -309,6 +323,15 @@ ffi.cdef(
         uint8_t has_asynchronous_indicator,
         uint32_t asynchronous_indicator,
         kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_process_with_options_v1(
+        kmipkit_client_t *client,
+        const uint8_t *correlation_value,
+        uint64_t correlation_value_length,
+        uint8_t has_asynchronous_indicator,
+        uint32_t asynchronous_indicator,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
         kmipkit_client_async_operation_outcome_t **out_outcome);
     int32_t kmipkit_client_execute_query_async_requests(
         kmipkit_client_t *client,
@@ -321,6 +344,19 @@ ffi.cdef(
         uint8_t has_asynchronous_indicator,
         uint32_t asynchronous_indicator,
         kmipkit_codec_limits_t *limits,
+        kmipkit_client_async_operation_outcome_t **out_outcome);
+    int32_t kmipkit_client_execute_query_async_requests_with_options_v1(
+        kmipkit_client_t *client,
+        uint8_t has_correlation_values,
+        const kmipkit_byte_span_v1_t *correlation_values,
+        uint64_t correlation_value_count,
+        uint8_t has_operations,
+        const uint32_t *operations,
+        uint64_t operation_count,
+        uint8_t has_asynchronous_indicator,
+        uint32_t asynchronous_indicator,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
         kmipkit_client_async_operation_outcome_t **out_outcome);
     void kmipkit_client_async_operation_outcome_release(
         kmipkit_client_async_operation_outcome_t *outcome);

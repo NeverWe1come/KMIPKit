@@ -60,10 +60,17 @@ def test_async_operation_options_call_the_matching_native_method_once(
         calls.append(arguments)
         return 4
 
+    def last_error(status: object, category: object, cause: object, delivery: object) -> int:
+        status[0] = 4  # type: ignore[index]
+        category[0] = int(errors.ClientErrorCategory.VALIDATION)  # type: ignore[index]
+        cause[0] = int(errors.ClientErrorCause.INVALID_INPUT)  # type: ignore[index]
+        delivery[0] = int(errors.DeliveryState.NOT_SENT)  # type: ignore[index]
+        return 0
+
     monkeypatch.setattr(
         client,
         "lib",
-        SimpleNamespace(**{native_symbol: native_method}),
+        SimpleNamespace(**{native_symbol: native_method, "kmipkit_last_error_get": last_error}),
     )
     monkeypatch.setattr(client.Client, "_pointer", lambda _self: object())
     instance = object.__new__(client.Client)
@@ -76,7 +83,7 @@ def test_async_operation_options_call_the_matching_native_method_once(
     )
 
     try:
-        with pytest.raises(errors.InvalidInputError):
+        with pytest.raises(errors.ClientExecutionError):
             invoke(instance, limits, options)
         assert len(calls) == 1, method_name
         options_record = calls[0][-2]

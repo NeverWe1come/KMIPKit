@@ -1350,6 +1350,25 @@ int32_t kmipkit_ttlv_decode(const uint8_t * data, uint64_t length, kmipkit_ttlv_
 int32_t kmipkit_ttlv_decode_with_limits(const uint8_t * data, uint64_t length, kmipkit_codec_limits_t * limits, kmipkit_ttlv_decode_error_v1_t * error, kmipkit_ttlv_item_t ** out_item);
 /* KMIPKIT-0004-FR-010, KMIPKIT-0005-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_ttlv_item_view_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_view_t ** out_view);
+/* Executes exactly one KMIP 2.1 Poll request with per-exchange timeout overrides; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-003, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_execute_poll_with_options_v1(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Cancel request with per-exchange timeout overrides; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-004, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_execute_cancel_with_options_v1(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Process request with per-exchange timeout overrides; it never retries or automatically follows up.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-005, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_execute_process_with_options_v1(kmipkit_client_t * client, const uint8_t * correlation_value, uint64_t correlation_value_length, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Executes exactly one KMIP 2.1 Query Async Requests request with per-exchange timeout overrides; it never retries or automatically follows up.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_execute_query_async_requests_with_options_v1(kmipkit_client_t * client, uint8_t has_correlation_values, const kmipkit_byte_span_v1_t * correlation_values, uint64_t correlation_value_count, uint8_t has_operations, const uint32_t * operations, uint64_t operation_count, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_async_operation_outcome_t ** out_outcome);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

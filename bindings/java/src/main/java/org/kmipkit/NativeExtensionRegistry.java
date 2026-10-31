@@ -308,13 +308,24 @@ public final class NativeExtensionRegistry {
             int[] booleanValues, long[] usageLimitsTotals, long[] usageLimitsCounts,
             long[] requestTimeouts);
     public static native long clientExecutePoll(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecutePollWithOptions(
+            long client, byte[] correlationValue, long[] codecLimits, long[] requestTimeouts);
     public static native long clientExecuteCancel(long client, byte[] correlationValue, long[] codecLimits);
+    public static native long clientExecuteCancelWithOptions(
+            long client, byte[] correlationValue, long[] codecLimits, long[] requestTimeouts);
     public static native long clientExecuteProcess(
             long client, byte[] correlationValue, boolean hasAsynchronousIndicator,
             long asynchronousIndicator, long[] codecLimits);
+    public static native long clientExecuteProcessWithOptions(
+            long client, byte[] correlationValue, boolean hasAsynchronousIndicator,
+            long asynchronousIndicator, long[] codecLimits, long[] requestTimeouts);
     public static native long clientExecuteQueryAsyncRequests(
             long client, byte[][] correlationValues, long[] operations,
             boolean hasAsynchronousIndicator, long asynchronousIndicator, long[] codecLimits);
+    public static native long clientExecuteQueryAsyncRequestsWithOptions(
+            long client, byte[][] correlationValues, long[] operations,
+            boolean hasAsynchronousIndicator, long asynchronousIndicator,
+            long[] codecLimits, long[] requestTimeouts);
     public static native Object[] clientAsyncOperationOutcomeMetadataV1(long outcome);
     public static native boolean withClientAsyncOperationOutcomeCorrelationValue(
             long outcome, Consumer<ByteBuffer> callback);
