@@ -3476,9 +3476,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::GetConstraints",
     ),
     (
+        "rust-observed-97ba06de0d8fe065568d",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::GetConstraints::0",
+    ),
+    (
         "rust-observed-54d53901b332eb10df39",
         "rust-kmipkit",
         "kmipkit::ClientRequest::GetUsageAllocation",
+    ),
+    (
+        "rust-observed-1ca2d0d260c79d46d7b6",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::GetUsageAllocation::0",
     ),
     (
         "rust-observed-845703c389f8f721c5c8",
@@ -3606,9 +3616,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::SetConstraints",
     ),
     (
+        "rust-observed-5c9a0fa40e9ddab0fb54",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::SetConstraints::0",
+    ),
+    (
         "rust-observed-10cdec8ac838c7ffc5ba",
         "rust-kmipkit",
         "kmipkit::ClientRequest::SetDefaults",
+    ),
+    (
+        "rust-observed-de3a339eea0b9c95e680",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::SetDefaults::0",
     ),
     (
         "rust-observed-680108555def35d5803e",
@@ -3624,6 +3644,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-979521e14f2461810182",
         "rust-kmipkit",
         "kmipkit::ClientRequest::delegated_login",
+    ),
+    (
+        "rust-observed-995e4d3ab908c44e2067",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::get_constraints",
     ),
     (
         "rust-observed-15202a6508bea1672eae",
@@ -3689,6 +3714,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-87b41a5927a75d001e04",
         "rust-kmipkit",
         "kmipkit::ClientRequest::rng_seed",
+    ),
+    (
+        "rust-observed-fdba2995302584cd99c9",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::set_constraints",
+    ),
+    (
+        "rust-observed-a2925729f7388e209902",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::set_defaults",
     ),
     (
         "rust-observed-29b0b3f00d3c2870d314",
@@ -4086,9 +4121,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::GetConstraints",
     ),
     (
+        "rust-observed-d4878b106679ca4038b8",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::GetConstraints::0",
+    ),
+    (
         "rust-observed-9365e579da298db8f315",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::GetUsageAllocation",
+    ),
+    (
+        "rust-observed-02caf25ee1528ea97c2f",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::GetUsageAllocation::0",
     ),
     (
         "rust-observed-1a8e2178a54e41059166",
@@ -4216,9 +4261,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::SetConstraints",
     ),
     (
+        "rust-observed-a789ea2ffef8a11a52bd",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::SetConstraints::0",
+    ),
+    (
         "rust-observed-4d1210647d305501dc77",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::SetDefaults",
+    ),
+    (
+        "rust-observed-826c4fc328ce8c351762",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::SetDefaults::0",
     ),
     (
         "rust-observed-8ec4bffbbf2d4498daeb",
@@ -4234,6 +4289,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-a2cbba1f79c2557a10e3",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::delegated_login",
+    ),
+    (
+        "rust-observed-1c9838f86c114d8bcbd1",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::get_constraints",
     ),
     (
         "rust-observed-12029d442c5430d1f445",
@@ -4299,6 +4359,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4407b05d072d782dec68",
         "rust-kmipkit-client",
         "kmipkit_client::Client::rng_seed",
+    ),
+    (
+        "rust-observed-bb04631af9686ea8b5cf",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::set_constraints",
+    ),
+    (
+        "rust-observed-cf36c46c90e176f72792",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::set_defaults",
     ),
     (
         "rust-observed-28d98324cf31193d352c",

@@ -63368,16 +63368,20 @@
         ],
         "rust": [
           "rust-observed-0a82491e64b8b4d20fef",
+          "rust-observed-1c9838f86c114d8bcbd1",
           "rust-observed-25bc60a872640b444d62",
           "rust-observed-29b0b3f00d3c2870d314",
           "rust-observed-3ac25bcc62493f86c058",
           "rust-observed-75c9e7fd591cb4bc2e62",
           "rust-observed-8b981f0d69f98fc2c3c5",
           "rust-observed-8ccfc6417bae599ffa03",
+          "rust-observed-97ba06de0d8fe065568d",
           "rust-observed-97fade1732968c846085",
+          "rust-observed-995e4d3ab908c44e2067",
           "rust-observed-b3ab111d2e31d0d6a5f9",
           "rust-observed-cb558133752a358d19c9",
           "rust-observed-d4442df58f0095b78ca5",
+          "rust-observed-d4878b106679ca4038b8",
           "rust-observed-e90cb0fdf7902c0309ea",
           "rust-observed-fe847c708f4afc2b0fc5"
         ]
@@ -63433,11 +63437,13 @@
           "T049:result:uniqueIdentifier:python"
         ],
         "rust": [
+          "rust-observed-02caf25ee1528ea97c2f",
           "rust-observed-07696fae05f99bd1ad16",
           "rust-observed-12029d442c5430d1f445",
           "rust-observed-13dd78ed4ea678db8508",
           "rust-observed-15202a6508bea1672eae",
           "rust-observed-1b3d0b75acdff86532c8",
+          "rust-observed-1ca2d0d260c79d46d7b6",
           "rust-observed-397ee0115e79bd8b9749",
           "rust-observed-4baa96ecea0508484e65",
           "rust-observed-54d53901b332eb10df39",
@@ -65365,15 +65371,19 @@
           "rust-observed-1275c564bdeda0bcbaf2",
           "rust-observed-145da8210ae0efbe5f1e",
           "rust-observed-22b1892390ad3d471374",
+          "rust-observed-5c9a0fa40e9ddab0fb54",
           "rust-observed-818560968b2289285cc2",
           "rust-observed-90b2c6e4ae3e1b8d3298",
           "rust-observed-99565f242c80272ee474",
+          "rust-observed-a789ea2ffef8a11a52bd",
           "rust-observed-b4a94e5e0db608823382",
           "rust-observed-b4fc93359d80eb3876c9",
+          "rust-observed-bb04631af9686ea8b5cf",
           "rust-observed-c300b322c5871744fd3b",
           "rust-observed-c376f4e22ac3b6c497ea",
           "rust-observed-d36fa5380e679dbfeb31",
-          "rust-observed-dafdbc59fc336cf55b3d"
+          "rust-observed-dafdbc59fc336cf55b3d",
+          "rust-observed-fdba2995302584cd99c9"
         ]
       },
       "featureSpecId": "KMIPKIT-0039",
@@ -65430,12 +65440,16 @@
           "rust-observed-4d1210647d305501dc77",
           "rust-observed-527f86d5bc61966ee357",
           "rust-observed-6a95d173c982e7ce23f9",
+          "rust-observed-826c4fc328ce8c351762",
           "rust-observed-867763c25321166b9ea2",
           "rust-observed-a0651221bd844b958e24",
+          "rust-observed-a2925729f7388e209902",
           "rust-observed-a8c286965fc30cd6db90",
           "rust-observed-b96ee3941ac8daaadc8e",
+          "rust-observed-cf36c46c90e176f72792",
           "rust-observed-d76900d4d52bf9e0aad1",
           "rust-observed-db1758b21c44cc36f30e",
+          "rust-observed-de3a339eea0b9c95e680",
           "rust-observed-de4e9b0a25d0be982e2b"
         ]
       },
@@ -119153,6 +119167,72 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "rust-observed-97ba06de0d8fe065568d",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::GetConstraints::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::GetConstraints::0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
       "declarationId": "rust-observed-54d53901b332eb10df39",
       "declarationState": "verified",
@@ -119185,6 +119265,72 @@
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-1ca2d0d260c79d46d7b6",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::GetUsageAllocation::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::GetUsageAllocation::0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -120878,6 +121024,72 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "rust-observed-5c9a0fa40e9ddab0fb54",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::SetConstraints::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::SetConstraints::0",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "declarationId": "rust-observed-10cdec8ac838c7ffc5ba",
       "declarationState": "verified",
@@ -120898,6 +121110,75 @@
         },
         "rust": {
           "name": "kmipkit::ClientRequest::SetDefaults",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "rust-observed-de3a339eea0b9c95e680",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::SetDefaults::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::SetDefaults::0",
           "packageId": "rust-kmipkit"
         }
       },
@@ -121134,6 +121415,72 @@
         "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "rust-observed-995e4d3ab908c44e2067",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::get_constraints",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::get_constraints",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
@@ -122001,6 +122348,141 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "rust-observed-fdba2995302584cd99c9",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::set_constraints",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::set_constraints",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "rust-observed-a2925729f7388e209902",
+      "declarationState": "verified",
+      "exportName": "kmipkit::ClientRequest::set_defaults",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientRequest::set_defaults",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {
@@ -127108,6 +127590,72 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "rust-observed-d4878b106679ca4038b8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::GetConstraints::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetConstraints::0",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
       "declarationId": "rust-observed-9365e579da298db8f315",
       "declarationState": "verified",
@@ -127140,6 +127688,72 @@
         "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-02caf25ee1528ea97c2f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::GetUsageAllocation::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetUsageAllocation::0",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -128833,6 +129447,72 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "rust-observed-a789ea2ffef8a11a52bd",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::SetConstraints::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::SetConstraints::0",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "declarationId": "rust-observed-4d1210647d305501dc77",
       "declarationState": "verified",
@@ -128853,6 +129533,75 @@
         },
         "rust": {
           "name": "kmipkit_client::ClientRequest::SetDefaults",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "rust-observed-826c4fc328ce8c351762",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::SetDefaults::0",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::SetDefaults::0",
           "packageId": "rust-kmipkit-client"
         }
       },
@@ -129089,6 +129838,72 @@
         "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+      "declarationId": "rust-observed-1c9838f86c114d8bcbd1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::get_constraints",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::get_constraints",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_get_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
@@ -129956,6 +130771,141 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+      "declarationId": "rust-observed-bb04631af9686ea8b5cf",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::set_constraints",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_constraints",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getConstraints",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_constraints",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::set_constraints",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/SetConstraintsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetConstraintsResponseMappingTest.java",
+        "bindings/python/tests/test_set_constraints_operation.py",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_constraints_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "declarationId": "rust-observed-cf36c46c90e176f72792",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::set_defaults",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_set_defaults",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_set_defaults",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::set_defaults",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {
