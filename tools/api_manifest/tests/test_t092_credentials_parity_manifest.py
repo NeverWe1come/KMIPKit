@@ -133,13 +133,13 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 exclusion_counts[name] = exclusion_counts.get(name, 0) + 1
         duplicates = sorted(name for name, count in exclusion_counts.items() if count != 1)
         self.assertEqual([], duplicates, "duplicate exact KMIPKIT-0008 exclusions")
-        exclusions = {
+        actual_exclusions = {
             row["exportName"]: row
             for row in owner_exclusions
-            if row.get("exportName") in trait_exports
+            if isinstance(row.get("exportName"), str)
         }
-        unaccounted = sorted(trait_exports - exclusions.keys())
-        extra_exclusions = sorted(exclusions.keys() - trait_exports)
+        unaccounted = sorted(trait_exports - actual_exclusions.keys())
+        extra_exclusions = sorted(actual_exclusions.keys() - trait_exports)
         self.assertEqual(
             0,
             len(unaccounted) + len(extra_exclusions),
@@ -149,7 +149,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         )
 
         for export_name in sorted(trait_exports):
-            exclusion = exclusions[export_name]
+            exclusion = actual_exclusions[export_name]
             self.assertTrue(export_name.startswith("<kmipkit_protocol::"))
             self.assertIn(" as ", export_name)
             self.assertTrue(_is_nonblank_string(exclusion.get("reason")))
