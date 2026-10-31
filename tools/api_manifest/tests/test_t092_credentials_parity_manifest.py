@@ -32,6 +32,12 @@ EXPECTED_NONCE_EXPORTS = {
     "kmipkit_protocol::Nonce::with_ttlv",
     "kmipkit_protocol::Nonce::into_ttlv",
 }
+ATTESTATION_CREDENTIAL_EXPORTS = {
+    "kmipkit_protocol::AttestationCredential",
+    "kmipkit_protocol::AttestationCredential::try_from_ttlv",
+    "kmipkit_protocol::AttestationCredential::with_ttlv",
+    "kmipkit_protocol::AttestationCredential::into_ttlv",
+}
 CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::Credential",
     "kmipkit_protocol::Credential::try_from_ttlv",
@@ -562,6 +568,105 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             ("credential_into_ttlv", "kmipkit_credential_into_ttlv"),
         ):
             function = next(row for row in manifest["functions"] if row["id"] == function_id)
+            self.assertEqual(symbol, function["c"]["symbol"])
+
+    def test_attestation_credential_maps_through_all_four_languages(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in ATTESTATION_CREDENTIAL_EXPORTS
+        }
+        self.assertEqual(ATTESTATION_CREDENTIAL_EXPORTS, declarations.keys())
+
+        expected_names = {
+            "kmipkit_protocol::AttestationCredential": {
+                "rust": "kmipkit_protocol::AttestationCredential",
+                "c": "kmipkit_attestation_credential_t",
+                "java": "org.kmipkit.credentials.AttestationCredential",
+                "python": "kmipkit.credentials.AttestationCredential",
+            },
+            "kmipkit_protocol::AttestationCredential::try_from_ttlv": {
+                "rust": "kmipkit_protocol::AttestationCredential::try_from_ttlv",
+                "c": "kmipkit_attestation_credential_from_ttlv",
+                "java": "org.kmipkit.credentials.AttestationCredential.fromTtlv",
+                "python": "kmipkit.credentials.AttestationCredential.from_ttlv",
+            },
+            "kmipkit_protocol::AttestationCredential::with_ttlv": {
+                "rust": "kmipkit_protocol::AttestationCredential::with_ttlv",
+                "c": "kmipkit_attestation_credential_ttlv_view",
+                "java": "org.kmipkit.credentials.AttestationCredential.withTtlv",
+                "python": "kmipkit.credentials.AttestationCredential.with_ttlv",
+            },
+            "kmipkit_protocol::AttestationCredential::into_ttlv": {
+                "rust": "kmipkit_protocol::AttestationCredential::into_ttlv",
+                "c": "kmipkit_attestation_credential_into_ttlv",
+                "java": "org.kmipkit.credentials.AttestationCredential.intoTtlv",
+                "python": "kmipkit.credentials.AttestationCredential.into_ttlv",
+            },
+        }
+        required_ids = {
+            "KMIPKIT-0008-FR-006",
+            "KMIPKIT-REQ-SPEC-9.11-006",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-017",
+            "KMIPKIT-0043-FR-021",
+            "KMIPKIT-0043-FR-022",
+        }
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertTrue(_has_approved_source(declaration))
+                self.assertEqual(
+                    "specs/008-credentials-attestation/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertTrue(required_ids <= set(declaration.get("requirementIds", [])))
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                if isinstance(mappings, dict):
+                    self.assertEqual(LANGUAGES, set(mappings))
+                    for language, expected_name in expected_names[export_name].items():
+                        self.assertEqual(expected_name, mappings[language]["name"])
+
+        credential_type = next(
+            (
+                row
+                for row in manifest["types"]
+                if row["id"] == "AttestationCredential"
+            ),
+            None,
+        )
+        self.assertIsNotNone(credential_type)
+        if credential_type is None:
+            return
+        self.assertEqual(
+            "kmipkit_attestation_credential_t", credential_type["c"]["name"]
+        )
+        self.assertEqual(
+            "kmipkit_attestation_credential_release",
+            credential_type["c"]["releaseFunction"],
+        )
+        for function_id, symbol in (
+            (
+                "attestation_credential_from_ttlv",
+                "kmipkit_attestation_credential_from_ttlv",
+            ),
+            (
+                "attestation_credential_ttlv_view",
+                "kmipkit_attestation_credential_ttlv_view",
+            ),
+            (
+                "attestation_credential_into_ttlv",
+                "kmipkit_attestation_credential_into_ttlv",
+            ),
+        ):
+            function = next(
+                row for row in manifest["functions"] if row["id"] == function_id
+            )
             self.assertEqual(symbol, function["c"]["symbol"])
 
 
