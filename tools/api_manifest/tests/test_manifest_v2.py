@@ -5098,6 +5098,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertEqual("KMIPKIT-0006", capability["ownerSpecId"])
         self.assertEqual("Approved", capability["approvalEvidence"]["status"])
+        self.assertIn("KMIPKIT-0006-FR-008", capability["requirementIds"])
         for package_id, rust_name in mappings_by_package.items():
             declaration = declarations[(package_id, rust_name)]
             with self.subTest(export=rust_name):
@@ -5112,6 +5113,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     },
                     declaration["languageMappings"],
                 )
+        for language, target in expected_foreign_mappings.items():
+            declaration = declarations[(target["packageId"], target["name"])]
+            with self.subTest(language=language):
+                self.assertEqual(requirement_ids, set(declaration["requirementIds"]))
 
         function = next(
             row
