@@ -920,6 +920,9 @@ fn generated_public_c_consumer_reads_cancel_echo_from_response_payload_over_mtls
         };
         peer_exchange_count.fetch_add(1, Ordering::Relaxed);
         stream
+            .set_nonblocking(false)
+            .expect("the accepted TLS stream uses blocking I/O");
+        stream
             .set_read_timeout(Some(std::time::Duration::from_secs(5)))
             .expect("server read timeout is configured");
         stream
