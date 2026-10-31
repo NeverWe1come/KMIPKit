@@ -3050,6 +3050,61 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_create_outcome_paths_map_to_accepted_operation(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operation_id = "KMIPKIT-ELEM-OP-C2S-CREATE"
+        operation = next(
+            row
+            for row in self.checked_in_manifest["operations"]
+            if row["operationId"] == operation_id
+        )
+        canonical = declarations_by_id[
+            "T032:create:response:client_batch_item_response_create:rust"
+        ]
+
+        for prefix, package_id in (
+            ("kmipkit_client", "rust-kmipkit-client"),
+            ("kmipkit", "rust-kmipkit"),
+        ):
+            for suffix in (
+                "ClientBatchOutcome::CreateCompleted",
+                "ClientBatchOutcome::CreateCompleted::0",
+            ):
+                export_name = f"{prefix}::{suffix}"
+                declaration = declarations[export_name]
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": package_id,
+                    "name": export_name,
+                }
+                with self.subTest(export=export_name):
+                    self.assertEqual("declared", operation["apiState"])
+                    self.assertEqual("approved", operation["ownerDependency"]["state"])
+                    self.assertEqual("Accepted", operation["approvalEvidence"]["status"])
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                    self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                    self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    if "parityEvidenceIds" in canonical:
+                        self.assertEqual(
+                            canonical["parityEvidenceIds"], declaration["parityEvidenceIds"]
+                        )
+                    else:
+                        self.assertNotIn("parityEvidenceIds", declaration)
+                    self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_server_generated_creation_payloads_map_to_accepted_operations(
         self,
     ) -> None:
