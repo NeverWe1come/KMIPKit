@@ -4,7 +4,7 @@
 //! KMIPKIT-REQ-SPEC-9.11-004-002, and KMIPKIT-REQ-SPEC-9.11-004-003;
 //! OASIS KMIP v2.1 §9.11 Table 412.
 
-use kmipkit_protocol::{DeviceCredential, CredentialValidationErrorKind};
+use kmipkit_protocol::{CredentialValidationErrorKind, DeviceCredential};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
 const DEVICE_SERIAL_NUMBER: u32 = 0x0042_00B0;
@@ -26,7 +26,9 @@ fn item(raw: u32, value: Value) -> Item {
 fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
     let mut result = Structure::new();
     for child in items {
-        result.try_push(child).expect("fixture is within depth limits");
+        result
+            .try_push(child)
+            .expect("fixture is within depth limits");
     }
     result
 }
@@ -35,10 +37,22 @@ fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
 fn device_credential_direct_constructor_preserves_table_412_fields_and_order() {
     let source = structure([
         item(DEVICE_SERIAL_NUMBER, Value::text_string(String::new())),
-        item(PASSWORD, Value::text_string("sensitive-sentinel".to_owned())),
-        item(DEVICE_IDENTIFIER, Value::text_string("device-id".to_owned())),
-        item(NETWORK_IDENTIFIER, Value::text_string("network-id".to_owned())),
-        item(MACHINE_IDENTIFIER, Value::text_string("machine-id".to_owned())),
+        item(
+            PASSWORD,
+            Value::text_string("sensitive-sentinel".to_owned()),
+        ),
+        item(
+            DEVICE_IDENTIFIER,
+            Value::text_string("device-id".to_owned()),
+        ),
+        item(
+            NETWORK_IDENTIFIER,
+            Value::text_string("network-id".to_owned()),
+        ),
+        item(
+            MACHINE_IDENTIFIER,
+            Value::text_string("machine-id".to_owned()),
+        ),
         item(MEDIA_IDENTIFIER, Value::text_string("media-id".to_owned())),
         item(EXTENSION_CHILD, Value::integer(7)),
     ]);

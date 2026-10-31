@@ -320,6 +320,21 @@ fn validate(
 }
 
 impl DeviceCredential {
+    /// Validates and takes ownership of a Device Credential Value Structure.
+    ///
+    /// The original child order and unknown children are retained. The caller
+    /// remains responsible for choosing identifier values that are unique
+    /// under the server's policy.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error when a Table 412 field is duplicated,
+    /// malformed, out of order, or when no required identifier is present.
+    pub fn try_from_ttlv(tree: Structure) -> Result<Self, CredentialValidationError> {
+        Self::validate_view(&tree.view())?;
+        Ok(Self { tree })
+    }
+
     pub(super) fn validate_view(view: &StructureView<'_>) -> Result<(), CredentialValidationError> {
         validation::validate_fields(view, DEVICE_RULES, DEVICE_IDENTIFIER_GROUP)
     }
