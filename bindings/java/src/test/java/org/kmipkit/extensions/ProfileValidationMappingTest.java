@@ -71,7 +71,8 @@ final class ProfileValidationMappingTest {
                             .trustCertificatesPem(new byte[][] {serverCertificate})
                             .build();
                     Client client = Client.create(configuration, transport);
-                    ClientBatch batch = ClientBatch.create()) {
+                    ClientBatch batch = ClientBatch.create();
+                    ClientBatch unknownBatch = ClientBatch.create()) {
                 batch.add(ClientBatchItem.discoverVersions());
                 ClientOperationException failure = assertThrows(ClientOperationException.class,
                         () -> client.executeWithProfiles(batch, CodecLimits.defaults(),
@@ -87,6 +88,24 @@ final class ProfileValidationMappingTest {
                 assertFalse(details.sourceGapId().isPresent());
                 assertFalse(details.batchItemIndex().isPresent());
                 assertFalse(failure.getMessage().contains("KMIPKIT-PROFILE-BASELINE-CLIENT"));
+
+                unknownBatch.add(ClientBatchItem.discoverVersions());
+                String unknownSelector = "unpublished-profile-selector-sentinel";
+                ClientOperationException unknownFailure = assertThrows(
+                        ClientOperationException.class,
+                        () -> client.executeWithProfiles(unknownBatch, CodecLimits.defaults(),
+                                new ProfileValidationSelection(List.of(unknownSelector))));
+                assertEquals(1, unknownFailure.categoryCode());
+                assertEquals(1, unknownFailure.deliveryStateCode());
+                var unknownDetails = unknownFailure.profileValidation().orElseThrow();
+                assertEquals("unknown_profile", unknownDetails.errorCode());
+                assertFalse(unknownDetails.profileId().isPresent());
+                assertFalse(unknownDetails.requirementId().isPresent());
+                assertFalse(unknownDetails.sourceClauseId().isPresent());
+                assertFalse(unknownDetails.sourceGapId().isPresent());
+                assertFalse(unknownDetails.sourceGapLocator().isPresent());
+                assertFalse(unknownDetails.batchItemIndex().isPresent());
+                assertFalse(unknownFailure.getMessage().contains(unknownSelector));
             }
 
             assertFalse(accepted.get(2, TimeUnit.SECONDS),

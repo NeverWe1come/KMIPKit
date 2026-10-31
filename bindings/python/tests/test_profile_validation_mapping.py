@@ -109,6 +109,11 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
     )
     batch = client.Batch.create()
     batch.add_item(extensions.client_batch_item_discover_versions())
+    unknown_selection = client.ProfileValidationSelection(
+        ("unpublished-profile-selector-sentinel",)
+    )
+    unknown_batch = client.Batch.create()
+    unknown_batch.add_item(extensions.client_batch_item_discover_versions())
     with (
         configuration,
         client.Client.create(
@@ -118,20 +123,36 @@ def test_baseline_selection_fails_closed_before_a_cffi_transport_connection() ->
     ):
         with pytest.raises(errors.ClientExecutionError) as failure:
             kmip.execute_with_profiles(batch, limits, selection)
+        assert failure.value.client_category is errors.ClientErrorCategory.VALIDATION
+        assert failure.value.delivery is errors.DeliveryState.NOT_SENT
+        details = failure.value.profile_validation
+        assert details == errors.ProfileValidationDetails(
+            error_code="profile_unavailable",
+            profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
+            requirement_id="KMIPKIT-REQ-SPEC-14.1-001",
+            source_clause_id="KMIPKIT-CLAUSE-SPEC-14.1-001",
+            source_gap_id=None,
+            source_gap_locator=None,
+            batch_item_index=None,
+        )
+        assert "KMIPKIT-PROFILE-BASELINE-CLIENT" not in str(failure.value)
 
-    assert failure.value.client_category is errors.ClientErrorCategory.VALIDATION
-    assert failure.value.delivery is errors.DeliveryState.NOT_SENT
-    details = failure.value.profile_validation
-    assert details == errors.ProfileValidationDetails(
-        error_code="profile_unavailable",
-        profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
-        requirement_id="KMIPKIT-REQ-SPEC-14.1-001",
-        source_clause_id="KMIPKIT-CLAUSE-SPEC-14.1-001",
-        source_gap_id=None,
-        source_gap_locator=None,
-        batch_item_index=None,
-    )
-    assert "KMIPKIT-PROFILE-BASELINE-CLIENT" not in str(failure.value)
+        with pytest.raises(errors.ClientExecutionError) as unknown_failure:
+            kmip.execute_with_profiles(unknown_batch, limits, unknown_selection)
+        assert unknown_failure.value.client_category is errors.ClientErrorCategory.VALIDATION
+        assert unknown_failure.value.delivery is errors.DeliveryState.NOT_SENT
+        unknown_details = unknown_failure.value.profile_validation
+        assert unknown_details == errors.ProfileValidationDetails(
+            error_code="unknown_profile",
+            profile_id=None,
+            requirement_id=None,
+            source_clause_id=None,
+            source_gap_id=None,
+            source_gap_locator=None,
+            batch_item_index=None,
+        )
+        assert "unpublished-profile-selector-sentinel" not in str(unknown_failure.value)
+
     peer.join(timeout=2)
     assert not peer.is_alive(), "the connection observer must finish"
     assert accepted == [False], "incomplete Baseline readiness must make zero TCP connections"

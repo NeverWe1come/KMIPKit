@@ -105,6 +105,72 @@ cleanup:
     return result;
 }
 
+static int unknown_profile_fails_closed_before_c_transport_write(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t unknown_profile[] = "unpublished-profile-selector-sentinel";
+    static const uint64_t profile_id_offsets[] = {0};
+    static const uint64_t profile_id_lengths[] = {sizeof(unknown_profile) - 1};
+    kmipkit_profile_validation_selection_v1_t selection = {0};
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_response_t *response =
+        (kmipkit_client_batch_response_t *)(uintptr_t)1;
+    int32_t status = 0;
+    int32_t error_status = 0;
+    uint32_t error_category = 0;
+    uint32_t error_cause = 0;
+    uint32_t error_delivery = 0;
+    kmipkit_profile_validation_error_t *profile_error = 0;
+    kmipkit_profile_validation_error_view_v1_t profile_view = {0};
+    int result = 0;
+
+    selection.struct_size = (uint32_t)sizeof(selection);
+    selection.abi_version = 1;
+    selection.profile_id_data = unknown_profile;
+    selection.profile_id_data_length = sizeof(unknown_profile) - 1;
+    selection.profile_id_offsets = profile_id_offsets;
+    selection.profile_id_lengths = profile_id_lengths;
+    selection.profile_id_count = 1;
+    if (kmipkit_client_batch_create(&batch) != 0 ||
+        kmipkit_client_batch_item_discover_versions(&item) != 0 ||
+        kmipkit_client_batch_add_item(batch, &item) != 0 ||
+        kmipkit_last_error_clear() != 0) {
+        goto cleanup;
+    }
+    status = kmipkit_client_execute_with_profiles(
+        client, &batch, limits, &selection, &response);
+    if (status == 0 || response != 0 || batch != 0 ||
+        kmipkit_last_error_get(
+            &error_status, &error_category, &error_cause, &error_delivery) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_last_error_profile_validation_error_get_v1(&profile_error) != 0 ||
+        profile_error == 0 || kmipkit_last_error_clear() != 0) {
+        goto cleanup;
+    }
+    profile_view.struct_size = (uint32_t)sizeof(profile_view);
+    profile_view.abi_version = 1;
+    if (kmipkit_profile_validation_error_view_get_v1(profile_error, &profile_view) != 0) {
+        goto cleanup;
+    }
+    result = error_status == status && error_category == 1 && error_delivery == 1 &&
+        profile_view.source_kind == 0 && profile_view.batch_item_index_present == 0 &&
+        profile_view.error_code_length == sizeof("unknown_profile") - 1 &&
+        memcmp(profile_view.error_code_data, "unknown_profile",
+               profile_view.error_code_length) == 0 &&
+        profile_view.profile_id_data == 0 && profile_view.profile_id_length == 0 &&
+        profile_view.requirement_id_data == 0 && profile_view.requirement_id_length == 0 &&
+        profile_view.source_id_data == 0 && profile_view.source_id_length == 0 &&
+        profile_view.source_locator_data == 0 && profile_view.source_locator_length == 0;
+
+cleanup:
+    kmipkit_profile_validation_error_release(profile_error);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
 static int execute_with_options_returns(
     const kmipkit_request_options_v1_t *options, int32_t expected_status) {
     kmipkit_client_batch_response_t *response = 0;
@@ -3471,7 +3537,8 @@ static int execute_public_tls_request(
     }
     transport = 0; /* consumed by client */
     if (!rekey_key_pair_only && !create_split_key_fixture_only &&
-        !baseline_profile_fails_closed_before_c_transport_write(client, limits)) {
+        (!baseline_profile_fails_closed_before_c_transport_write(client, limits) ||
+         !unknown_profile_fails_closed_before_c_transport_write(client, limits))) {
         result = 29;
         goto cleanup;
     }
