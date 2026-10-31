@@ -179,7 +179,7 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
         outcome = client.Client.execute_cancel(instance, expected, limits)
         try:
             assert observed == [expected]
-            assert outcome.metadata_v1.operation == 0x05
+            assert outcome.metadata_v1.operation == 0x19
             assert outcome.metadata_v1.cancellation_result == cancellation_result
             observed_echo: list[bytes] = []
             assert outcome.with_asynchronous_correlation_value(
