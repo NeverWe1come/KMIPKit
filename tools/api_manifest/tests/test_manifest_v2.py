@@ -1988,14 +1988,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_client::ClientResponseView": (
                 "kmipkit_client::ClientBatchItemResponse",
                 "rust-kmipkit-client",
+                "kmipkit_client::ClientResponseView",
             ),
             "kmipkit_client::ClientResponseView::result": (
                 "kmipkit_protocol::KmipOperationResult",
                 "rust-kmipkit-protocol",
+                "kmipkit_protocol::KmipOperationResult",
             ),
         }
 
-        for export_name, (canonical_name, rust_package) in mappings.items():
+        for export_name, (canonical_name, rust_package, rust_mapping_name) in mappings.items():
             canonical = declarations[canonical_name]
             declaration = declarations[export_name]
             capability = next(
@@ -2009,7 +2011,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             }
             expected_mappings["rust"] = {
                 "packageId": rust_package,
-                "name": export_name,
+                "name": rust_mapping_name,
             }
 
             with self.subTest(export=export_name):
