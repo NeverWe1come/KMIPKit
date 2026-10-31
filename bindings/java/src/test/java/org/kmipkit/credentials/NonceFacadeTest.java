@@ -76,6 +76,26 @@ final class NonceFacadeTest {
         assertTrue(!error.getCause().getMessage().contains(hex(NONCE_VALUE)));
     }
 
+    @Test
+    void nonceRemainsUsableWhenConsumptionIsAttemptedInsideItsScopedView() {
+        TtlvStructure structure = nonceStructure();
+        Nonce nonce = Nonce.fromTtlv(structure);
+
+        nonce.withTtlv(view -> {
+            assertThrows(InvalidInputException.class, nonce::intoTtlv);
+            assertEquals(2L, readNonce(view));
+            return null;
+        });
+
+        assertEquals(2L, nonce.withTtlv(NonceFacadeTest::readNonce));
+        try (TtlvStructure restored = nonce.intoTtlv()) {
+            try (TtlvStructureView view = restored.view()) {
+                assertEquals(2L, readNonce(view));
+            }
+        }
+        nonce.close();
+    }
+
     private static boolean throwsInvalidInput(ThrowingSupplier action) {
         try {
             action.get();
