@@ -6,7 +6,7 @@
   "directRustDeclarationCount": 8414,
   "conditionalRustDeclarationCount": 2043,
   "mappedRustDeclarationCount": 638,
-  "approvedExcludedRustDeclarationCount": 1425,
+  "approvedExcludedRustDeclarationCount": 1423,
   "crates": [
     {
       "packageId": "rust-kmipkit-ttlv",
@@ -37,16 +37,16 @@
       "crateName": "kmipkit-client",
       "observedDeclarationCount": 1219,
       "mappedDeclarationCount": 173,
-      "excludedDeclarationCount": 228,
-      "blockedDeclarationCount": 818
+      "excludedDeclarationCount": 227,
+      "blockedDeclarationCount": 819
     },
     {
       "packageId": "rust-kmipkit",
       "crateName": "kmipkit",
       "observedDeclarationCount": 2142,
       "mappedDeclarationCount": 158,
-      "excludedDeclarationCount": 486,
-      "blockedDeclarationCount": 1498
+      "excludedDeclarationCount": 485,
+      "blockedDeclarationCount": 1499
     }
   ],
   "mappedDeclarations": [

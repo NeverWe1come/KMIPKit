@@ -59500,11 +59500,11 @@
   "counts": {
     "conditionalConditionMismatches": 0,
     "conditionalStateMismatches": 0,
-    "excluded": 1425,
+    "excluded": 1423,
     "issues": 0,
     "kindMismatches": 0,
-    "manifest": 9032,
-    "matched": 9032,
+    "manifest": 9034,
+    "matched": 9034,
     "missingFromManifest": 0,
     "notObserved": 0,
     "observed": 10457
@@ -236232,28 +236232,6 @@
     },
     {
       "aliases": [
-        "kmipkit::ClientBatchItem::request",
-        "kmipkit_client::ClientBatchItem::request"
-      ],
-      "exportLocations": [
-        {
-          "column": 26,
-          "line": 130,
-          "path": "crates/kmipkit/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit::ClientBatchItem::request",
-      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":1096,\"path\":\"crates/kmipkit-client/src/execute.rs\"},\"function\",[\"kmipkit_client\",\"execute\",\"ClientBatchItem\",\"request\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 1096,
-        "path": "crates/kmipkit-client/src/execute.rs"
-      },
-      "packageId": "rust-kmipkit"
-    },
-    {
-      "aliases": [
         "kmipkit::ClientError::Protocol::error",
         "kmipkit_client::ClientError::Protocol::error"
       ],
@@ -242065,28 +242043,6 @@
       "location": {
         "column": 5,
         "line": 1048,
-        "path": "crates/kmipkit-client/src/execute.rs"
-      },
-      "packageId": "rust-kmipkit-client"
-    },
-    {
-      "aliases": [
-        "kmipkit::ClientBatchItem::request",
-        "kmipkit_client::ClientBatchItem::request"
-      ],
-      "exportLocations": [
-        {
-          "column": 26,
-          "line": 288,
-          "path": "crates/kmipkit-client/src/lib.rs"
-        }
-      ],
-      "exportName": "kmipkit_client::ClientBatchItem::request",
-      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":1096,\"path\":\"crates/kmipkit-client/src/execute.rs\"},\"function\",[\"kmipkit_client\",\"execute\",\"ClientBatchItem\",\"request\"]]",
-      "kind": "associated-item",
-      "location": {
-        "column": 5,
-        "line": 1096,
         "path": "crates/kmipkit-client/src/execute.rs"
       },
       "packageId": "rust-kmipkit-client"
@@ -278862,6 +278818,29 @@
     },
     {
       "aliases": [
+        "kmipkit::ClientBatchItem::request",
+        "kmipkit_client::ClientBatchItem::request"
+      ],
+      "declarationState": "blocked",
+      "exportLocations": [
+        {
+          "column": 26,
+          "line": 130,
+          "path": "crates/kmipkit/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit::ClientBatchItem::request",
+      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":1096,\"path\":\"crates/kmipkit-client/src/execute.rs\"},\"function\",[\"kmipkit_client\",\"execute\",\"ClientBatchItem\",\"request\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 1096,
+        "path": "crates/kmipkit-client/src/execute.rs"
+      },
+      "packageId": "rust-kmipkit"
+    },
+    {
+      "aliases": [
         "kmipkit::ClientBatchItem::unique_batch_item_id",
         "kmipkit_client::ClientBatchItem::unique_batch_item_id"
       ],
@@ -303930,6 +303909,29 @@
       "location": {
         "column": 5,
         "line": 1041,
+        "path": "crates/kmipkit-client/src/execute.rs"
+      },
+      "packageId": "rust-kmipkit-client"
+    },
+    {
+      "aliases": [
+        "kmipkit::ClientBatchItem::request",
+        "kmipkit_client::ClientBatchItem::request"
+      ],
+      "declarationState": "blocked",
+      "exportLocations": [
+        {
+          "column": 26,
+          "line": 288,
+          "path": "crates/kmipkit-client/src/lib.rs"
+        }
+      ],
+      "exportName": "kmipkit_client::ClientBatchItem::request",
+      "identity": "[\"kmipkit_client\",{\"column\":5,\"line\":1096,\"path\":\"crates/kmipkit-client/src/execute.rs\"},\"function\",[\"kmipkit_client\",\"execute\",\"ClientBatchItem\",\"request\"]]",
+      "kind": "associated-item",
+      "location": {
+        "column": 5,
+        "line": 1096,
         "path": "crates/kmipkit-client/src/execute.rs"
       },
       "packageId": "rust-kmipkit-client"
