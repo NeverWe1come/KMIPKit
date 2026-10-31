@@ -4152,6 +4152,137 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertIn(declaration_id, operation["declarations"]["rust"])
 
+    def test_t091_client_operation_variants_map_to_four_language_raw_metadata(self) -> None:
+        expected_variants = {
+            "AddAttribute",
+            "AdjustAttribute",
+            "Certify",
+            "Check",
+            "DelegatedLogin",
+            "DeleteAttribute",
+            "DeriveKey",
+            "DiscoverVersions",
+            "Export",
+            "Get",
+            "GetAttributeList",
+            "GetAttributes",
+            "GetConstraints",
+            "GetUsageAllocation",
+            "Import",
+            "Interop",
+            "JoinSplitKey",
+            "Locate",
+            "Log",
+            "Login",
+            "Logout",
+            "MacVerify",
+            "ModifyAttribute",
+            "ObtainLease",
+            "QueryAsyncRequests",
+            "ReProvision",
+            "Recertify",
+            "Register",
+            "Rekey",
+            "RekeyKeyPair",
+            "Revoke",
+            "RngRetrieve",
+            "RngSeed",
+            "SetAttribute",
+            "SetConstraints",
+            "SetDefaults",
+            "SignatureVerify",
+            "Validate",
+        }
+        declarations = {
+            row["exportName"]: row for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = self.checked_in_manifest["operations"]
+        operation_by_name = {
+            "".join(character.lower() for character in row["name"] if character.isalnum()): row
+            for row in operations
+        }
+        operation_name_overrides = {
+            "QueryAsyncRequests": "queryasynchronousrequests",
+        }
+        mappings = {
+            "c": {
+                "packageId": "c-kmipkit",
+                "name": "kmipkit_client_batch_item_metadata_v2_t.operation",
+            },
+            "java": {
+                "packageId": "java-kmipkit",
+                "name": "org.kmipkit.extensions.ClientBatchItemMetadataV2.operation",
+            },
+            "python": {
+                "packageId": "python-kmipkit",
+                "name": "kmipkit.client.BatchItemMetadataV2.operation",
+            },
+        }
+        operation_ids = {row["operationId"]: row for row in operations}
+        declarations_by_capability: dict[str, list[dict[str, object]]] = {}
+        for row in declarations.values():
+            declarations_by_capability.setdefault(row["capabilityId"], []).append(row)
+
+        for variant in sorted(expected_variants):
+            operation_key = operation_name_overrides.get(
+                variant,
+                "".join(character.lower() for character in variant if character.isalnum()),
+            )
+            operation = operation_by_name.get(operation_key)
+            self.assertIsNotNone(operation, f"missing KMIP 2.1 operation for {variant}")
+            if operation is None:
+                continue
+            operation = operation_ids[operation["operationId"]]
+            self.assertEqual("client_1_0", operation["scope"])
+            self.assertEqual("approved", operation["ownerDependency"]["state"])
+
+            if variant == "QueryAsyncRequests":
+                canonical = declarations[
+                    "kmipkit_client::Client::execute_query_async_requests"
+                ]
+            else:
+                canonical = next(
+                    row
+                    for row in declarations_by_capability[operation["operationId"]]
+                    if row["packageId"].startswith("rust-")
+                    and not row.get("candidateSpecId")
+                    and "ClientOperation::" not in row["exportName"]
+                )
+            expected_requirement_ids = canonical["requirementIds"]
+            expected_approval = canonical.get("approvalSource")
+            parity_evidence_ids = sorted(
+                set(operation.get("parityEvidenceIds", []))
+                | {"tools/api_manifest/tests/test_manifest_v2.py"}
+            )
+
+            for rust_package, rust_prefix in (
+                ("rust-kmipkit-client", "kmipkit_client"),
+                ("rust-kmipkit", "kmipkit"),
+            ):
+                export_name = f"{rust_prefix}::ClientOperation::{variant}"
+                with self.subTest(export=export_name):
+                    declaration = declarations[export_name]
+                    expected_mappings = {
+                        "rust": {"packageId": rust_package, "name": export_name},
+                        **mappings,
+                    }
+                    self.assertEqual(operation["apiState"], declaration["declarationState"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertNotIn("blockedReason", declaration)
+                    self.assertEqual(operation["operationId"], declaration["capabilityId"])
+                    self.assertEqual(expected_requirement_ids, declaration["requirementIds"])
+                    if expected_approval is not None:
+                        self.assertEqual(expected_approval, declaration["approvalSource"])
+                    self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    self.assertTrue(
+                        set(parity_evidence_ids)
+                        <= set(declaration.get("parityEvidenceIds", []))
+                    )
+                    self.assertIn(
+                        declaration["declarationId"],
+                        operation["declarations"]["rust"],
+                    )
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (
