@@ -262564,7 +262564,7 @@
     {
       "declarationId": "T076:client_batch_request_time_stamp:python",
       "packageId": "python-kmipkit",
-      "kind": "field",
+      "kind": "python-export",
       "exportName": "kmipkit.client.Batch.request_timestamp",
       "capabilityId": "client_batch_model",
       "requirementIds": [
@@ -401017,6 +401017,138 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Exact export <kmipkit_protocol::UsernameAndPasswordCredential as core::fmt::Display>::fmt appears in the checked-in specs/043-public-api-bindings/reports/rust-export-report-2026-10-30.json under kmipkit_protocol::UsernameAndPasswordCredential. KMIPKIT-0008-FR-010 continues to govern redacted diagnostics."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeExtensionCount",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientAsyncOperationOutcomeExtensionTtlvAt",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemAt",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseExtensionCount",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseExtensionTtlvAt",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemUniqueBatchItemId",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchRequestTimestamp",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteCancelWithOptions",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecutePollWithOptions",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteProcessWithOptions",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteQueryAsyncRequestsWithOptions",
+      "reason": "This exact public static method is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed facade. The bridge method has no independent product-level capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "T091 maps the semantic behavior through the typed client APIs; this exact internal bridge member is JNI plumbing, not a separate capability. Reviewed against KMIPKIT-0043-FR-008/010/021/022 and the internal bridge scope documented in docs/architecture/ffi-and-bindings.md."
     }
   ],
   "apiLevels": [
