@@ -177,6 +177,10 @@ fn async_outcome_extension_abi_returns_owned_ordered_generic_ttlv_copy() {
     kmipkit_codec_limits_release(limits_handle);
     kmipkit_client_release(client_handle);
 
+    assert_async_extension_ttlv_contents(extension_copy);
+}
+
+fn assert_async_extension_ttlv_contents(extension_copy: *mut kmipkit_ttlv_structure_t) {
     let mut view = ptr::null_mut();
     assert_eq!(
         kmipkit_ttlv_structure_view(extension_copy, &raw mut view),
