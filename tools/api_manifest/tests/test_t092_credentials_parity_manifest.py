@@ -89,7 +89,11 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 row.get("candidateSpecId") == OWNER_SPEC
                 or (
                     row.get("exportName")
-                    in {"kmipkit_protocol::CredentialType", "kmipkit_protocol::Nonce"}
+                    in {
+                        "kmipkit_protocol::CredentialType",
+                        "kmipkit_protocol::Nonce",
+                        "kmipkit_protocol::Credential",
+                    }
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
                 )
@@ -231,7 +235,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 == "specs/008-credentials-attestation/spec.md"
             )
         ]
-        self.assertEqual(101, len(meaningful))
+        self.assertEqual(95, len(meaningful))
         credential_type_rows = {
             row["exportName"]: row
             for row in meaningful
@@ -434,6 +438,39 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         ):
             function = next(row for row in manifest["functions"] if row["id"] == function_id)
             self.assertEqual(symbol, function["c"]["symbol"])
+
+    def test_credential_and_nonce_jni_converters_declare_status_and_output_handle(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        expected_java = {
+            "nonce_from_ttlv": {
+                "package": "org.kmipkit",
+                "class": "NativeExtensionRegistry",
+                "method": "nonceFromTtlv",
+                "parameters": [
+                    {"name": "structure", "type": "long"},
+                    {"name": "outNonce", "type": "long[]"},
+                ],
+                "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_nonceFromTtlv",
+                "returnType": "int",
+                "errorCategories": ["invalid_input", "shared_owner"],
+            },
+            "credential_from_ttlv": {
+                "package": "org.kmipkit",
+                "class": "NativeExtensionRegistry",
+                "method": "credentialFromTtlv",
+                "parameters": [
+                    {"name": "structure", "type": "long"},
+                    {"name": "outCredential", "type": "long[]"},
+                ],
+                "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_credentialFromTtlv",
+                "returnType": "int",
+                "errorCategories": ["invalid_input", "shared_owner"],
+            },
+        }
+        functions = {row["id"]: row for row in manifest["functions"]}
+        for function_id, expected_descriptor in expected_java.items():
+            with self.subTest(function_id=function_id):
+                self.assertEqual(expected_descriptor, functions[function_id]["java"])
 
     def test_credential_envelope_maps_through_all_four_languages(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
