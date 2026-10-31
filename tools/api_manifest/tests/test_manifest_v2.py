@@ -5157,6 +5157,41 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(export=declaration["exportName"]):
                 self.assertIn(requirement_id, declaration["requirementIds"])
 
+    def test_t091_all_declared_correlation_field_surfaces_trace_batch_model_requirement(self) -> None:
+        requirement_id = "KMIPKIT-0006-FR-008"
+        field_names = (
+            "client_correlation_value",
+            "server_correlation_value",
+            "unique_batch_item_id",
+            "asynchronous_correlation_value",
+            "pending_correlation_value",
+        )
+
+        def exposes_correlation_field(value: str) -> bool:
+            normalized = re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()
+            return any(field_name in normalized for field_name in field_names)
+
+        functions = [
+            row
+            for row in self.checked_in_manifest["functions"]
+            if exposes_correlation_field(json.dumps(row, ensure_ascii=False))
+        ]
+        declarations = [
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationState"] == "declared"
+            and exposes_correlation_field(row["exportName"])
+        ]
+
+        self.assertGreaterEqual(len(functions), 4)
+        self.assertGreaterEqual(len(declarations), 40)
+        for function in functions:
+            with self.subTest(function=function["id"]):
+                self.assertIn(requirement_id, function["requirementIds"])
+        for declaration in declarations:
+            with self.subTest(export=declaration["exportName"]):
+                self.assertIn(requirement_id, declaration["requirementIds"])
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (
