@@ -4,7 +4,7 @@ from functools import partial
 from types import SimpleNamespace
 
 import pytest
-from _test_support import install_ticket_native_response
+from _test_support import install_ticket_native_response, no_response_extension_test_symbols
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit.errors import InvalidInputError
@@ -375,6 +375,7 @@ def test_batch_result_dispatches_delegated_login_to_typed_response(monkeypatch) 
         kmipkit_client_batch_item_response_delegated_login=delegated_response,
         kmipkit_client_batch_item_response_delegated_login_ttlv=delegated_ttlv,
         kmipkit_ttlv_structure_release=lambda _handle: None,
+        **no_response_extension_test_symbols(client.ffi),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_wrap_owned_handle", lambda _kind, handle, *_owners: OwnedHandle(handle))

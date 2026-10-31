@@ -276,6 +276,7 @@ def install_ticket_native_response(
             response_symbol: response,
             response_ttlv_symbol: response_ttlv,
             "kmipkit_ttlv_structure_release": release,
+            **no_response_extension_test_symbols(ffi),
         }
     )
     monkeypatch.setattr(client, "lib", library)
@@ -326,6 +327,7 @@ def batch_result_test_symbols(
         return 0
 
     return {
+        **no_response_extension_test_symbols(ffi_module),
         "kmipkit_client_batch_response_release": response_release
         or (lambda _pointer: None),
         "kmipkit_client_batch_item_response_release": item_release
@@ -343,4 +345,23 @@ def batch_result_test_symbols(
         "kmipkit_client_batch_item_response_create": absent_create,
         "kmipkit_client_batch_item_response_create_key_pair": absent_create_key_pair,
         "kmipkit_client_batch_item_response_create_split_key_count": absent_split_key_count,
+    }
+
+
+def no_response_extension_test_symbols(ffi_module: object) -> dict[str, object]:
+    """Return fake ABI symbols for a response item with no Message Extensions."""
+    def no_extensions(_item: object, count: object) -> int:
+        count[0] = 0  # type: ignore[index]
+        return 0
+
+    def no_extension_at(
+        _item: object, _index: int, present: object, output: object
+    ) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = ffi_module.NULL  # type: ignore[attr-defined,index]
+        return 0
+
+    return {
+        "kmipkit_client_batch_item_response_extension_count": no_extensions,
+        "kmipkit_client_batch_item_response_extension_ttlv_at": no_extension_at,
     }

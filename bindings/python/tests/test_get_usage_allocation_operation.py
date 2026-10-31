@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
-from _test_support import batch_result_test_symbols
+from _test_support import batch_result_test_symbols, no_response_extension_test_symbols
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi
@@ -259,6 +259,7 @@ def test_batch_result_releases_retained_allocation_if_later_mapper_fails(
             kmipkit_client_batch_item_response_metadata_v2=metadata,
             kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
             kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+            **no_response_extension_test_symbols(client.ffi),
         ),
     )
     monkeypatch.setattr(client, "_response_span", lambda *_args: None)

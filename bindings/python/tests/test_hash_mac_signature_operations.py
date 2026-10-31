@@ -14,6 +14,7 @@ from typing import Any
 import pytest
 
 from kmipkit import client, errors, extensions, ttlv
+from _test_support import no_response_extension_test_symbols
 
 
 _OPERATIONS = (
@@ -397,6 +398,7 @@ def _common_result_symbols(
         return 0
 
     return {
+        **no_response_extension_test_symbols(client.ffi),
         "kmipkit_client_batch_response_release": lambda _handle: None,
         "kmipkit_client_batch_item_response_release": lambda _handle: None,
         "kmipkit_client_batch_response_item_count": lambda _response, count: count.__setitem__(0, 1) or 0,

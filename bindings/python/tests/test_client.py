@@ -368,6 +368,24 @@ def _no_creation_response_symbols() -> dict[str, object]:
     }
 
 
+def _no_response_extension_symbols() -> dict[str, object]:
+    def no_extensions(_item: object, count: object) -> int:
+        count[0] = 0  # type: ignore[index]
+        return 0
+
+    def no_extension_at(
+        _item: object, _index: int, present: object, output: object
+    ) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    return {
+        "kmipkit_client_batch_item_response_extension_count": no_extensions,
+        "kmipkit_client_batch_item_response_extension_ttlv_at": no_extension_at,
+    }
+
+
 def _transport_configuration(**overrides: object) -> client.TransportConfig:
     values: dict[str, object] = {
         "endpoint": client.Endpoint.raw_tls("kms.example.test", 5696),
@@ -1124,6 +1142,7 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
         kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)
@@ -1189,6 +1208,7 @@ def test_batch_result_dispatches_check_operation_to_typed_mapper(
         kmipkit_client_batch_item_response_check=absent_check,
         kmipkit_client_batch_item_response_check_ttlv=absent_check_ttlv,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1232,6 +1252,8 @@ def test_batch_result_dispatches_successful_import_and_interop_responses(
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
@@ -1280,6 +1302,8 @@ def test_batch_result_dispatches_export_operation_to_typed_mapper(
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
@@ -1341,6 +1365,8 @@ def test_batch_result_dispatches_get_constraints_only_for_successful_completion(
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
@@ -1405,6 +1431,7 @@ def test_batch_result_dispatches_get_locate_and_log_mappers(
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
@@ -1535,6 +1562,7 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1616,6 +1644,7 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
         kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=supported_versions,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1798,6 +1827,7 @@ def test_creation_response_mapping_preserves_wire_identifiers_and_failure_messag
         kmipkit_client_batch_item_response_create_key_pair=create_key_pair,
         kmipkit_client_batch_item_response_create_split_key_count=split_count,
         kmipkit_client_batch_item_response_create_split_key_unique_identifier_at=split_identifier,
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -2077,7 +2107,10 @@ def test_create_split_key_fixture_success_and_pending_metadata(
         write_identifier(output, identifiers[int(index)])
         return 0
 
-    creation_symbols = _no_creation_response_symbols()
+    creation_symbols = {
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
+    }
     creation_symbols.update(
         {
             "kmipkit_client_batch_item_response_create_split_key_count": split_count,
@@ -2310,6 +2343,7 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
         kmipkit_client_batch_item_response_pending_correlation_value=absent,
         kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
         **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)
@@ -2460,6 +2494,8 @@ def test_batch_result_enforces_count_metadata_and_span_limits_and_releases_handl
     item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
     released: list[str] = []
     common = {
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
         "kmipkit_client_batch_response_release": lambda _ptr: released.append("response"),
         "kmipkit_client_batch_item_response_release": lambda _ptr: released.append("item"),
     }
@@ -3896,6 +3932,8 @@ def test_batch_result_rejects_noncanonical_result_reason_presence_flag(
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
         kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
+        **_no_creation_response_symbols(),
+        **_no_response_extension_symbols(),
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -4845,6 +4883,7 @@ def test_batch_result_rejects_malformed_native_metadata(
                 _no_supported_versions
             ),
             **_no_creation_response_symbols(),
+            **_no_response_extension_symbols(),
         ),
     )
 

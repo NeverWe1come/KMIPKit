@@ -9,6 +9,7 @@ import pytest
 
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
+from _test_support import no_response_extension_test_symbols
 
 
 def test_ping_query_result_fields_follow_existing_positional_fields() -> None:
@@ -539,6 +540,7 @@ def test_batch_result_dispatches_operation_specific_payload_mappers(
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **no_response_extension_test_symbols(ffi),
     )
     monkeypatch.setattr(client, "lib", fake)
     monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
