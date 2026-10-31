@@ -5131,6 +5131,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             any("borrowed byte span" in line for line in function["c"]["documentation"])
         )
 
+    def test_t091_request_batch_item_unique_id_setter_traces_exact_byte_preservation(self) -> None:
+        requirement_id = "KMIPKIT-0006-FR-008"
+        function = next(
+            row
+            for row in self.checked_in_manifest["functions"]
+            if row["id"] == "client_batch_item_with_unique_batch_item_id"
+        )
+        self.assertIn(requirement_id, function["requirementIds"])
+
+        expected_exports = {
+            "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
+            "kmipkit::ClientBatchItem::with_unique_batch_item_id",
+            "kmipkit_client_batch_item_with_unique_batch_item_id",
+            "org.kmipkit.extensions.ClientBatchItem.withUniqueBatchItemId",
+            "kmipkit.extensions.with_unique_batch_item_id",
+        }
+        declarations = [
+            row
+            for row in self.checked_in_manifest["publicDeclarations"]
+            if row["exportName"] in expected_exports
+        ]
+        self.assertEqual(expected_exports, {row["exportName"] for row in declarations})
+        for declaration in declarations:
+            with self.subTest(export=declaration["exportName"]):
+                self.assertIn(requirement_id, declaration["requirementIds"])
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (
