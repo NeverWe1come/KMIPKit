@@ -2047,16 +2047,19 @@ fn profile_validation_error_view(
 }
 
 /// Returns an owned snapshot of this thread's last profile validation details, when present.
+/// Writes a null handle and returns success when the last error has no profile details.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_last_error_profile_validation_error_get_v1(
     out_error: *mut *mut kmipkit_profile_validation_error_t,
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_error);
-        let error = LAST_PROFILE_VALIDATION_ERROR
-            .with(|last_error| last_error.borrow().clone())
-            .ok_or(ERROR_INVALID_INPUT);
-        let error = try_ffi!(error);
+        let Some(error) =
+            LAST_PROFILE_VALIDATION_ERROR.with(|last_error| last_error.borrow().clone())
+        else {
+            *out = ptr::null_mut();
+            return SUCCESS;
+        };
         *out = try_ffi!(try_make_handle(
             Kind::ProfileValidationError,
             HandleValue::ProfileValidationError(error),
