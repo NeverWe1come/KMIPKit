@@ -1942,6 +1942,51 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for language, mapping in expected_mappings.items():
                     self.assertIn(mapping["name"], capability["mappings"][language])
 
+    def test_t091_discover_versions_request_enum_variants_map_to_four_language_operation(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        canonical = declarations["kmipkit_client::ClientBatchItem::discover_versions"]
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == canonical["capabilityId"]
+        )
+        request_variants = {
+            "kmipkit_client::ClientRequest::DiscoverVersions": (
+                "rust-kmipkit-client",
+            ),
+            "kmipkit_client::ClientRequest::DiscoverVersions::0": (
+                "rust-kmipkit-client",
+            ),
+            "kmipkit::ClientRequest::DiscoverVersions": ("rust-kmipkit",),
+            "kmipkit::ClientRequest::DiscoverVersions::0": ("rust-kmipkit",),
+        }
+
+        for export_name, (rust_package,) in request_variants.items():
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": rust_package,
+                    "name": export_name,
+                }
+
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(canonical["capabilityId"], declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(canonical["approvalSource"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                for language, mapping in expected_mappings.items():
+                    self.assertIn(mapping["name"], capability["mappings"][language])
+
     def test_t091_discover_versions_response_view_maps_to_existing_version_accessor(
         self,
     ) -> None:
