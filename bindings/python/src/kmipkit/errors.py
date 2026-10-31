@@ -177,6 +177,8 @@ class ClientExecutionError(KmipKitError):
         )
 
 
+_SHARED_OWNER_STATUS = 11
+
 _ERROR_TYPES: dict[int, type[KmipKitError]] = {
     1: CompatibilityMismatchError,
     2: DuplicateKeyError,
@@ -185,6 +187,7 @@ _ERROR_TYPES: dict[int, type[KmipKitError]] = {
     5: InvalidExtensionSchemaError,
     6: ResourceLimitError,
     7: KmipKitError,
+    _SHARED_OWNER_STATUS: InvalidInputError,
 }
 
 

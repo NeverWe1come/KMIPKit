@@ -7,6 +7,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "client_batch_model",
     "client_execution",
     "client_profile_validation",
+    "credential_ttlv_parity",
     "credential_type_parity",
     "crypto_response_ttlv",
     "discover_versions_request_item",
@@ -990,6 +991,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9a02bef2724c1a7a151c",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier",
+    ),
+    (
+        "rust-observed-7d9de6376690408035d6",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential",
+    ),
+    (
+        "rust-observed-7f21c26576c368b0be40",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential::try_from_ttlv",
+    ),
+    (
+        "rust-observed-60d525f22b3812f5894c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential::into_ttlv",
+    ),
+    (
+        "rust-observed-7f5200baeff82218f583",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential::credential_type",
+    ),
+    (
+        "rust-observed-664fba5ba688af864142",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential::credential_type_raw",
+    ),
+    (
+        "rust-observed-2f2adf555e6d210a7f38",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Credential::with_ttlv",
     ),
     (
         "rust-observed-db4b3c84954345d8a637",

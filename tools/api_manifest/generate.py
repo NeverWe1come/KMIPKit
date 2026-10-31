@@ -993,8 +993,12 @@ def _validate_public_declarations(
             )
         if state in {"authorized_wip", "declared", "verified"}:
             mappings = declaration.get("languageMappings", {})
-            required_languages = ("rust",) if parity_scope == "rust-only-adr" else (
-                "rust", "c", "java", "python"
+            required_languages = (
+                ("rust",)
+                if parity_scope == "rust-only-adr"
+                else ("c",)
+                if parity_scope == "c-only"
+                else ("rust", "c", "java", "python")
             )
             for language in required_languages:
                 mapping = mappings.get(language)
@@ -1044,6 +1048,13 @@ def _validate_declaration_parity_scope(
             )
         if not accepted_transport_exception:
             raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
+    elif parity_scope == "c-only":
+        if (
+            package_id != "c-kmipkit"
+            or capability is None
+            or capability.get("parityScope") != "c-only"
+        ):
+            raise ManifestError("C-only parity is reserved for explicit C ABI capabilities")
     elif parity_scope != "four-language":
         raise ManifestError("public declaration has an unsupported parity scope")
     return parity_scope
@@ -1111,7 +1122,10 @@ def _validate_public_declaration_approval(
             declaration.get("approvalSource"), root, adr_id=owner_adr_id
         )
     else:
-        if parity_scope != "four-language":
+        if parity_scope not in {"four-language", "c-only"} or (
+            parity_scope == "c-only"
+            and (capability is None or capability.get("parityScope") != "c-only")
+        ):
             raise ManifestError("feature-owned public declaration has an invalid parity scope")
         _validate_approval_source(
             declaration.get("approvalSource"), root, feature_id=owner_spec_id
@@ -1279,6 +1293,8 @@ def _validate_ready_mapping_targets(
         required_languages = (
             ("rust",)
             if declaration.get("parityScope") == "rust-only-adr"
+            else ("c",)
+            if declaration.get("parityScope") == "c-only"
             else ("rust", "c", "java", "python")
         )
         for language in required_languages:
@@ -1349,6 +1365,8 @@ def _validate_capability_mapping_inventories(
         language_scope = (
             ("rust",)
             if capability.get("parityScope") == "rust-only-adr"
+            else ("c",)
+            if capability.get("parityScope") == "c-only"
             else ("rust", "c", "java", "python")
         )
         mappings = capability.get("mappings", {})
@@ -2872,6 +2890,7 @@ def render_public_rust_api(projection: dict[str, Any]) -> str:
         capability["capabilityId"]
         for capability in projection["capabilities"]
         if capability["capabilityState"] in {"declared", "verified"}
+        and capability.get("parityScope") != "c-only"
         and capability.get("mappings", {}).get("c")
     )
     c_capability_literals = [_rust_string_literal(capability) for capability in c_capabilities]

@@ -90,7 +90,7 @@ int32_t kmipkit_nonce_c_consumer_round_trip(uint64_t *out_item_count) {
     if (status == 0) status = kmipkit_ttlv_structure_view(structure, &source_view);
     if (status == 0) {
         int32_t shared_owner_status = kmipkit_nonce_from_ttlv(structure, &nonce);
-        if (shared_owner_status != 11) status = 1;
+        if (shared_owner_status != KMIPKIT_ERROR_SHARED_OWNER) status = 1;
     }
     if (status == 0) status = structure_matches(source_view, &count);
     kmipkit_ttlv_structure_view_release(source_view);

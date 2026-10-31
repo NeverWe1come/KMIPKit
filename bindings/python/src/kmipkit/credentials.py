@@ -19,6 +19,7 @@ from .ttlv import Structure, TtlvStructureView
 
 _T = TypeVar("_T")
 _ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
+_ACTIVE_CREDENTIAL_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 
 
 class CredentialType:
@@ -79,6 +80,7 @@ class Nonce(NativeHandle):
             lib.kmipkit_nonce_from_ttlv,
             structure,
             consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
         )
         nonce = _wrap_owned_handle(cls, handle)
         return nonce
@@ -123,4 +125,81 @@ class Nonce(NativeHandle):
         return _wrap_owned_handle(Structure, handle)
 
 
-__all__ = ["CredentialType", "Nonce"]
+class Credential(NativeHandle):
+    """Generic KMIP Credential envelope preserving its original ordered TTLV."""
+
+    __slots__ = ("__weakref__",)
+
+    _release_name = "kmipkit_credential_release"
+
+    @classmethod
+    def from_ttlv(cls, structure: Structure) -> Credential:
+        """Consume and validate the outer Credential Type and Credential Value fields."""
+        handle = _new_handle(
+            "kmipkit_credential_t",
+            lib.kmipkit_credential_from_ttlv,
+            structure,
+            consumed=(0,),
+            restore_on_statuses=(errors._SHARED_OWNER_STATUS,),
+        )
+        return _wrap_owned_handle(cls, handle)
+
+    @property
+    @synchronized_native_call
+    def credential_type(self) -> CredentialType:
+        """Return a raw-preserving typed view of the Credential Type."""
+        out_raw = ffi.new("uint32_t *")
+        errors.raise_for_status(
+            lib.kmipkit_credential_type(self._pointer(), out_raw)
+        )
+        return CredentialType.from_raw(int(out_raw[0]))
+
+    @synchronized_native_call
+    def credential_type_raw(self) -> int:
+        """Return the original unsigned 32-bit Credential Type value."""
+        out_raw = ffi.new("uint32_t *")
+        errors.raise_for_status(
+            lib.kmipkit_credential_type_raw(self._pointer(), out_raw)
+        )
+        return int(out_raw[0])
+
+    @synchronized_native_call
+    def with_ttlv(self, callback: Callable[[TtlvStructureView], _T]) -> _T:
+        """Lend a read-only TTLV view and close it when the callback returns."""
+        if not callable(callback):
+            errors.raise_for_status(4)
+        view_handle = _new_handle(
+            "kmipkit_ttlv_structure_view_t",
+            lib.kmipkit_credential_ttlv_view,
+            self._pointer(),
+        )
+        view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
+        previous_view_count = _ACTIVE_CREDENTIAL_VIEWS.get(self, 0)
+        _ACTIVE_CREDENTIAL_VIEWS[self] = previous_view_count + 1
+        try:
+            return callback(view)
+        finally:
+            try:
+                view.close()
+            finally:
+                if previous_view_count:
+                    _ACTIVE_CREDENTIAL_VIEWS[self] = previous_view_count
+                else:
+                    _ACTIVE_CREDENTIAL_VIEWS.pop(self, None)
+
+    @synchronized_native_call
+    def into_ttlv(self) -> Structure:
+        """Transfer the original ordered TTLV Structure without rebuilding it."""
+        if _ACTIVE_CREDENTIAL_VIEWS.get(self, 0):
+            errors.raise_for_status(4)
+        handle = _new_handle(
+            "kmipkit_ttlv_structure_t",
+            lib.kmipkit_credential_into_ttlv,
+            self,
+            consumed=(0,),
+            restore_on_statuses=(4,),
+        )
+        return _wrap_owned_handle(Structure, handle)
+
+
+__all__ = ["Credential", "CredentialType", "Nonce"]

@@ -112,6 +112,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "client_batch_model"
             | "client_execution"
             | "client_profile_validation"
+            | "credential_ttlv_parity"
             | "credential_type_parity"
             | "crypto_response_ttlv"
             | "ffi_runtime_metadata"

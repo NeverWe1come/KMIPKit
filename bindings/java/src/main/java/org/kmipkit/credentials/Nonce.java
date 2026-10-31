@@ -30,8 +30,16 @@ public final class Nonce implements AutoCloseable {
             throw new org.kmipkit.InvalidInputException("nonce structure is invalid");
         }
         NativeExtensionRegistry.ensureLoaded();
-        return new Nonce(NativeExtensionRegistry.nonceFromTtlv(
-                structure.nativeHandleOwner().transfer()));
+        return NativeHandle.withNativeHandles(() -> {
+            NativeHandle owner = structure.nativeHandleOwner();
+            long[] outNonce = new long[1];
+            int status = NativeExtensionRegistry.nonceFromTtlv(owner.get(), outNonce);
+            if (status != CredentialInterop.SHARED_OWNER_STATUS) {
+                owner.transfer();
+            }
+            CredentialInterop.throwIfFailed(status, "nonce");
+            return new Nonce(outNonce[0]);
+        });
     }
 
     /**

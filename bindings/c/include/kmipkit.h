@@ -115,6 +115,7 @@ typedef struct kmipkit_message_extension_view_t kmipkit_message_extension_view_t
 typedef struct kmipkit_message_validation_error_t kmipkit_message_validation_error_t;
 typedef struct kmipkit_profile_validation_error_t kmipkit_profile_validation_error_t;
 typedef struct kmipkit_profile_validation_error_view_v1_t kmipkit_profile_validation_error_view_v1_t;
+typedef struct kmipkit_credential_t kmipkit_credential_t;
 typedef struct kmipkit_nonce_t kmipkit_nonce_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
@@ -362,12 +363,14 @@ void kmipkit_response_batch_item_release(kmipkit_response_batch_item_view_t *han
 void kmipkit_message_extension_view_release(kmipkit_message_extension_view_t *handle);
 void kmipkit_message_validation_error_release(kmipkit_message_validation_error_t *handle);
 void kmipkit_profile_validation_error_release(kmipkit_profile_validation_error_t *handle);
+void kmipkit_credential_release(kmipkit_credential_t *handle);
 void kmipkit_nonce_release(kmipkit_nonce_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
 #define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
 #define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
+#define KMIPKIT_ERROR_SHARED_OWNER ((int32_t)11)
 
 /* Creates a typed KMIP 2.1 Derive Key request from §6.1.14, Table 205. Source Unique Identifiers are required, ordered, and may repeat; unknown Object Type and Derivation Method values are preserved. Derivation Parameters and Attributes are borrowed and copied by the call. The source array is bounded to 100,000 identifiers and 16 MiB of aggregate Text String bytes.
  */
@@ -1433,6 +1436,26 @@ int32_t kmipkit_nonce_ttlv_view(kmipkit_nonce_t * nonce, kmipkit_ttlv_structure_
  */
 /* KMIPKIT-0008-FR-006, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-006 */
 int32_t kmipkit_nonce_into_ttlv(kmipkit_nonce_t * nonce, kmipkit_ttlv_structure_t ** out_structure);
+/* Consumes and validates the outer Credential Type and Credential Value fields while preserving the original ordered TTLV without interpreting the payload.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_credential_t ** out_credential);
+/* Creates a read-only view over the same ordered Credential TTLV allocation. C callers own and release the view; Java and Python wrappers close it when the callback returns.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_ttlv_view(kmipkit_credential_t * credential, kmipkit_ttlv_structure_view_t ** out_view);
+/* Consumes the Credential and transfers its exact original ordered TTLV Structure without rebuilding or copying its payload.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_into_ttlv(kmipkit_credential_t * credential, kmipkit_ttlv_structure_t ** out_structure);
+/* Returns the raw-preserving Credential Type discriminator.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_type(kmipkit_credential_t * credential, uint32_t * out_raw);
+/* Returns the original unsigned 32-bit Credential Type enumeration.
+ */
+/* KMIPKIT-0008-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-9.11-001 */
+int32_t kmipkit_credential_type_raw(kmipkit_credential_t * credential, uint32_t * out_raw);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

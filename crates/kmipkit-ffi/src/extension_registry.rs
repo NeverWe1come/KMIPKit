@@ -29,7 +29,7 @@ use crate::{
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_extension_child_rule_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t, kmipkit_extension_child_rule_t,
     kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
     kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
@@ -56,8 +56,6 @@ use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
     ClientErrorCategory, ClientRequest,
 };
-use kmipkit_protocol::CredentialType;
-use kmipkit_protocol::Nonce;
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
@@ -78,6 +76,7 @@ use kmipkit_protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
     UniqueIdentifier, ValidateRequest,
 };
+use kmipkit_protocol::{Credential, CredentialType, Nonce};
 use kmipkit_protocol::{MessageValidationError, MessageValidationErrorKind, RequestMessage};
 use kmipkit_protocol::{
     ProfileObjectState, ProfileValidationContext, ProfileValidationError,
@@ -170,6 +169,7 @@ const MESSAGE_VALIDATION_ERROR_INVALID_FIELD_VALUE: u32 = 9;
 const MESSAGE_VALIDATION_ERROR_UNKNOWN: u32 = 255;
 const ERROR_TRANSPORT: i32 = 9;
 const ERROR_SERVER_RESULT: i32 = 10;
+const ERROR_SHARED_OWNER: i32 = 11;
 const ERROR_CATEGORY_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CATEGORY_PROTOCOL: u32 = 2;
@@ -408,6 +408,7 @@ enum Kind {
     RevocationReason,
     RevokeRequest,
     Nonce,
+    Credential,
 }
 
 enum HandleValue {
@@ -438,6 +439,7 @@ enum HandleValue {
     },
     RevokeRequest(Box<RevokeRequest>),
     Nonce(Nonce),
+    Credential(Credential),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -638,6 +640,9 @@ impl TtlvView {
                 }
                 HandleValue::Nonce(nonce) => {
                     nonce.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
+                }
+                HandleValue::Credential(credential) => {
+                    credential.with_ttlv(|view| resolve_structure_path(&view, steps, callback))
                 }
                 _ => Err(ERROR_INVALID_INPUT),
             },
@@ -1034,6 +1039,23 @@ fn consume_unshared_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<H
         Entry::Occupied(entry)
             if entry.get().kind == expected && Arc::strong_count(entry.get()) == 1 =>
         {
+            Ok(entry.remove())
+        }
+        Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn consume_unshared_ttlv_source<T>(pointer: *mut T) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let mut handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Occupied(entry) if entry.get().kind == Kind::Structure => {
+            if Arc::strong_count(entry.get()) != 1 {
+                return Err(ERROR_SHARED_OWNER);
+            }
             Ok(entry.remove())
         }
         Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
@@ -7977,7 +7999,7 @@ pub extern "C" fn kmipkit_nonce_from_ttlv(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_nonce);
-        let owner = try_ffi!(consume_unshared_owner(structure, Kind::Structure));
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
         let payload = try_ffi!(unwrap_payload(owner));
         let HandleValue::Structure(structure) = payload else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -8032,6 +8054,108 @@ pub extern "C" fn kmipkit_nonce_into_ttlv(
 pub extern "C" fn kmipkit_nonce_release(handle: *mut kmipkit_nonce_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::Nonce);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_from_ttlv(
+    structure: *mut kmipkit_ttlv_structure_t,
+    out_credential: *mut *mut kmipkit_credential_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_credential);
+        let owner = try_ffi!(consume_unshared_ttlv_source(structure));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Structure(structure) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let credential = match Credential::try_from_ttlv(structure) {
+            Ok(credential) => credential,
+            Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Credential,
+            HandleValue::Credential(credential)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_type(
+    credential: *mut kmipkit_credential_t,
+    out_raw: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = 0;
+        let handle = try_ffi!(reference_handle(credential, Kind::Credential));
+        let HandleValue::Credential(credential) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = credential.credential_type().raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_type_raw(
+    credential: *mut kmipkit_credential_t,
+    out_raw: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_raw);
+        *out = 0;
+        let handle = try_ffi!(reference_handle(credential, Kind::Credential));
+        let HandleValue::Credential(credential) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = credential.credential_type_raw();
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_ttlv_view(
+    credential: *mut kmipkit_credential_t,
+    out_view: *mut *mut kmipkit_ttlv_structure_view_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_view);
+        let owner = try_ffi!(clone_handle_owner(credential, Kind::Credential));
+        let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_into_ttlv(
+    credential: *mut kmipkit_credential_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let owner = try_ffi!(consume_unshared_owner(credential, Kind::Credential));
+        let payload = try_ffi!(unwrap_payload(owner));
+        let HandleValue::Credential(credential) = payload else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(credential.into_ttlv())
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_credential_release(handle: *mut kmipkit_credential_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::Credential);
     });
 }
 

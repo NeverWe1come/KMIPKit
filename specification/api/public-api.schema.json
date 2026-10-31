@@ -2317,7 +2317,8 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr"
+            "rust-only-adr",
+            "c-only"
           ]
         },
         "mappingSemantics": {
@@ -2861,6 +2862,28 @@
         {
           "if": {
             "properties": {
+              "parityScope": {
+                "const": "c-only"
+              },
+              "declarationState": {
+                "enum": ["declared", "verified"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": ["c"],
+                "propertyNames": {
+                  "const": "c"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
               "apiState": {
                 "const": "authorized_wip"
               }
@@ -3016,7 +3039,8 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr"
+            "rust-only-adr",
+            "c-only"
           ]
         },
         "ownerSpecId": {
@@ -3165,6 +3189,22 @@
               }
             },
             "required": ["ownerAdrId", "acceptedEvidence"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {"const": "c-only"},
+              "capabilityState": {"enum": ["declared", "verified"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": ["c"],
+                "propertyNames": {"const": "c"}
+              }
+            }
           }
         }
       ]

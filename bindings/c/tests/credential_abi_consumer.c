@@ -127,7 +127,7 @@ int32_t kmipkit_credential_c_consumer_round_trip(
     if (status == 0) status = kmipkit_ttlv_structure_view(structure, &source_view);
     if (status == 0) {
         int32_t shared_owner_status = kmipkit_credential_from_ttlv(structure, &credential);
-        if (shared_owner_status != 9) status = 1;
+        if (shared_owner_status != KMIPKIT_ERROR_SHARED_OWNER) status = 1;
     }
     if (status == 0) status = tags_match(source_view, &count);
     kmipkit_ttlv_structure_view_release(source_view);
