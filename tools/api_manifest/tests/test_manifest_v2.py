@@ -2974,6 +2974,99 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         client_execution["mappings"][language],
                     )
 
+    def test_t091_high_level_operation_options_map_to_four_language_execution(self) -> None:
+        operations = {
+            "activate": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+            "archive": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
+            "destroy": "KMIPKIT-ELEM-OP-C2S-DESTROY",
+            "recover": "KMIPKIT-ELEM-OP-C2S-RECOVER",
+            "ping": "KMIPKIT-ELEM-OP-C2S-PING",
+            "query": "KMIPKIT-ELEM-OP-C2S-QUERY",
+            "hash": "KMIPKIT-ELEM-OP-C2S-HASH",
+            "mac": "KMIPKIT-ELEM-OP-C2S-MAC",
+            "mac_verify": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+            "sign": "KMIPKIT-ELEM-OP-C2S-SIGN",
+            "signature_verify": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+            "create": "KMIPKIT-ELEM-OP-C2S-CREATE",
+            "create_key_pair": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+            "create_split_key": "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+            "import": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations_by_id = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        client_execution = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_execution"
+        )
+
+        for method, operation_id in operations.items():
+            operation = operations_by_id[operation_id]
+            owner_declarations = [
+                declarations_by_id[declaration_id]
+                for declaration_id in operation["declarations"]["rust"]
+            ]
+            owner_requirements = {
+                requirement_id
+                for owner_declaration in owner_declarations
+                for requirement_id in owner_declaration["requirementIds"]
+            }
+            owner_source = next(
+                owner_declaration["approvalSource"]
+                for owner_declaration in owner_declarations
+                if "approvalSource" in owner_declaration
+            )
+            for package_id, rust_prefix in (
+                ("rust-kmipkit-client", "kmipkit_client::"),
+                ("rust-kmipkit", "kmipkit::"),
+            ):
+                export_name = f"{rust_prefix}Client::{method}_with_options"
+                with self.subTest(export=export_name):
+                    declaration = declarations[export_name]
+                    self.assertEqual(operation["apiState"], declaration["declarationState"])
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertNotIn("candidateSpecId", declaration)
+                    self.assertNotIn("blockedReason", declaration)
+                    self.assertEqual(owner_source, declaration["approvalSource"])
+                    self.assertTrue(owner_requirements.issubset(declaration["requirementIds"]))
+                    self.assertEqual(
+                        {
+                            "rust": {"packageId": package_id, "name": export_name},
+                            "c": {
+                                "packageId": "c-kmipkit",
+                                "name": "kmipkit_client_execute_with_options_v1",
+                            },
+                            "java": {
+                                "packageId": "java-kmipkit",
+                                "name": "org.kmipkit.extensions.Client.executeWithOptions",
+                            },
+                            "python": {
+                                "packageId": "python-kmipkit",
+                                "name": "kmipkit.client.Client.execute_with_options",
+                            },
+                        },
+                        declaration["languageMappings"],
+                    )
+                    self.assertIn(
+                        declaration["declarationId"], operation["declarations"]["rust"]
+                    )
+                    self.assertTrue(operation["parityEvidenceIds"])
+                    self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+                    for language in ("c", "java", "python"):
+                        self.assertIn(
+                            declaration["languageMappings"][language]["name"],
+                            client_execution["mappings"][language],
+                        )
+
     def test_t091_client_derive_key_with_options_maps_to_shared_execute_options(self) -> None:
         declaration_id = "rust-observed-c1b5fc8d2a0980e520c3"
         export_name = "kmipkit_client::Client::derive_key_with_options"
