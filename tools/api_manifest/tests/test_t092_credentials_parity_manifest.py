@@ -63,6 +63,7 @@ EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     | EXPECTED_NONCE_EXPORTS
     | CREDENTIAL_EXPORTS
     | ATTESTATION_CREDENTIAL_EXPORTS
+    | AUTHENTICATION_EXPORTS
 )
 NONCE_REQUIREMENTS = {
     "KMIPKIT-0008-FR-006",
@@ -115,6 +116,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::Nonce",
                         "kmipkit_protocol::Credential",
                         "kmipkit_protocol::AttestationCredential",
+                        "kmipkit_protocol::Authentication",
+                        "kmipkit_protocol::CredentialView",
                     }
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
@@ -124,6 +127,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             if inventory_row.get("exportName") == row["exportName"]
             and isinstance(inventory_row.get("identity"), str)
         }
+        self.assertIn("kmipkit_protocol::Authentication", owner_paths)
+        self.assertIn("kmipkit_protocol::CredentialView", owner_paths)
         self.assertEqual(17, len(owner_paths), "the credential owner type inventory changed")
 
         inventory_rows = inventory["declarations"] + inventory["conditionalDeclarations"]
@@ -274,7 +279,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(68, len(remaining))
+        self.assertEqual(58, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -337,7 +342,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(68, len(blocked))
+        self.assertEqual(58, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -870,6 +875,49 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             expected_python_attestation_exports,
             observed_python_attestation_exports,
         )
+        for identity, owner_path in expected.items():
+            with self.subTest(export=identity[1]):
+                exclusion = exclusions[identity]
+                self.assertEqual(owner_path, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertTrue(exclusion.get("reason"))
+                self.assertTrue(exclusion.get("evidence"))
+                if identity[0] == "python-kmipkit":
+                    self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+
+    def test_authentication_binding_glue_has_exact_owner_exclusions(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        java_bridge_exports = {
+            "org.kmipkit.NativeExtensionRegistry.AUTHENTICATION",
+            "org.kmipkit.NativeExtensionRegistry.CREDENTIAL_VIEW",
+            "org.kmipkit.NativeExtensionRegistry.authenticationCreate",
+            "org.kmipkit.NativeExtensionRegistry.authenticationFromTtlv",
+            "org.kmipkit.NativeExtensionRegistry.authenticationCredentialCount",
+            "org.kmipkit.NativeExtensionRegistry.authenticationCredentialAt",
+            "org.kmipkit.NativeExtensionRegistry.authenticationTtlvView",
+            "org.kmipkit.NativeExtensionRegistry.authenticationIntoTtlv",
+            "org.kmipkit.NativeExtensionRegistry.credentialViewType",
+            "org.kmipkit.NativeExtensionRegistry.credentialViewTypeRaw",
+            "org.kmipkit.NativeExtensionRegistry.credentialViewTtlvView",
+        }
+        python_glue_exports = {
+            "kmipkit.credentials.Authentication.__init__",
+            "kmipkit.credentials.Authentication.__slots__",
+            "kmipkit.credentials.CredentialView.__init__",
+            "kmipkit.credentials.CredentialView.__slots__",
+        }
+        expected = {
+            **{("java-kmipkit", name): "specs/043-public-api-bindings/spec.md"
+               for name in java_bridge_exports},
+            **{("python-kmipkit", name): "specs/008-credentials-attestation/spec.md"
+               for name in python_glue_exports},
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+            if (row.get("packageId"), row.get("exportName")) in expected
+        }
+        self.assertEqual(expected.keys(), exclusions.keys())
         for identity, owner_path in expected.items():
             with self.subTest(export=identity[1]):
                 exclusion = exclusions[identity]
