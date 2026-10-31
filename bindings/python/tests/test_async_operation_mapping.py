@@ -152,8 +152,9 @@ def test_cancel_preserves_the_exact_binary_correlation(monkeypatch) -> None:
     cancellation_result = 0xF000_0001
     observed: list[bytes] = []
     released: list[object] = []
+    # KMIP 2.1 §11.36, Table 470 assigns Cancel the Operation value 0x19.
     stubs = _outcome_stubs(
-        0x05,
+        0x19,
         released,
         response_correlation=echoed,
         cancellation_result=cancellation_result,
