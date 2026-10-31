@@ -55,6 +55,11 @@ class T091RootReexportAliasTests(unittest.TestCase):
             self.assertIn(root_name, root_observation["aliases"])
             self.assertIn(canonical_name, root_observation["aliases"])
             self.assertIn(canonical["declarationState"], {"declared", "verified"})
+            self.assertEqual(
+                canonical["requirementIds"],
+                facade["requirementIds"],
+                f"{root_name} must retain every canonical owner requirement",
+            )
             expected = copy.deepcopy(canonical)
             expected["declarationId"] = case["rootDeclarationId"]
             expected["packageId"] = "rust-kmipkit"
