@@ -708,6 +708,50 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             )
             self.assertEqual(symbol, function["c"]["symbol"])
 
+    def test_attestation_credential_binding_glue_has_exact_owner_exclusions(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        expected = {
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.ATTESTATION_CREDENTIAL",
+            ): "specs/043-public-api-bindings/spec.md",
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.attestationCredentialFromTtlv",
+            ): "specs/043-public-api-bindings/spec.md",
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.attestationCredentialTtlvView",
+            ): "specs/043-public-api-bindings/spec.md",
+            (
+                "java-kmipkit",
+                "org.kmipkit.NativeExtensionRegistry.attestationCredentialIntoTtlv",
+            ): "specs/043-public-api-bindings/spec.md",
+            (
+                "python-kmipkit",
+                "kmipkit.credentials.AttestationCredential.__init__",
+            ): "specs/008-credentials-attestation/spec.md",
+            (
+                "python-kmipkit",
+                "kmipkit.credentials.AttestationCredential.__slots__",
+            ): "specs/008-credentials-attestation/spec.md",
+        }
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+            if (row.get("packageId"), row.get("exportName")) in expected
+        }
+        self.assertEqual(expected.keys(), exclusions.keys())
+        for identity, owner_path in expected.items():
+            with self.subTest(export=identity[1]):
+                exclusion = exclusions[identity]
+                self.assertEqual(owner_path, exclusion["approvalSource"]["path"])
+                self.assertEqual("Approved", exclusion["approvalSource"]["status"])
+                self.assertTrue(exclusion.get("reason"))
+                self.assertTrue(exclusion.get("evidence"))
+                if identity[0] == "python-kmipkit":
+                    self.assertEqual("KMIPKIT-0008", exclusion["candidateSpecId"])
+
 
 if __name__ == "__main__":
     unittest.main()
