@@ -16,6 +16,15 @@ unsafe extern "C" {
     fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
 }
 
+#[link(name = "kmipkit_credential_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_credential_c_consumer_round_trip(
+        raw_type: u32,
+        out_type: *mut u32,
+        out_count: *mut u64,
+    ) -> i32;
+}
+
 use kmipkit_ffi::kmipkit_codec_limits_t;
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_ttlv::{Item, ValueView};
@@ -32,6 +41,24 @@ fn compiled_c_consumer_preserves_nonce_bytes_and_ttlv_structure() {
     // SAFETY: The C consumer receives a writable count slot and owns its temporary ABI handles.
     let status = unsafe { kmipkit_nonce_c_consumer_round_trip(&raw mut item_count) };
     assert_eq!(status, 0);
+    assert_eq!(item_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_unknown_credential_type_and_structure() {
+    let raw_type = 0xf123_4567;
+    let mut observed_type = 0;
+    let mut item_count = 0;
+    // SAFETY: The C consumer receives writable result slots and manages its temporary ABI handles.
+    let status = unsafe {
+        kmipkit_credential_c_consumer_round_trip(
+            raw_type,
+            &raw mut observed_type,
+            &raw mut item_count,
+        )
+    };
+    assert_eq!(status, 0);
+    assert_eq!(observed_type, raw_type);
     assert_eq!(item_count, 2);
 }
 
