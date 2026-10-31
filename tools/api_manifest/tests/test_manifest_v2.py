@@ -2418,6 +2418,71 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_remaining_verified_request_payloads_map_to_their_operations(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = {
+            "Pkcs11": (
+                "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+                "KMIPKIT-0040",
+                "kmipkit_client::ClientRequest::pkcs11",
+            ),
+            "RngRetrieve": (
+                "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+                "KMIPKIT-0041",
+                "kmipkit_client::ClientRequest::rng_retrieve",
+            ),
+            "RngSeed": (
+                "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+                "KMIPKIT-0041",
+                "kmipkit_client::ClientRequest::rng_seed",
+            ),
+            "Interop": (
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
+                "KMIPKIT-0042",
+                "kmipkit_client::ClientRequest::Interop",
+            ),
+            "Log": (
+                "KMIPKIT-ELEM-OP-C2S-LOG",
+                "KMIPKIT-0042",
+                "kmipkit_client::ClientRequest::Log",
+            ),
+        }
+        expected_exports = [
+            (f"{prefix}::ClientRequest::{variant}::0", operation_id, owner_id, canonical)
+            for variant, (operation_id, owner_id, canonical) in cases.items()
+            for prefix in ("kmipkit_client", "kmipkit")
+        ]
+
+        self.assertEqual(10, len(expected_exports))
+        for export_name, operation_id, owner_id, canonical_name in expected_exports:
+            declaration = declarations[export_name]
+            operation = operations[operation_id]
+            canonical = declarations[canonical_name]
+            with self.subTest(export=export_name):
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": declaration["packageId"],
+                    "name": export_name,
+                }
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual(owner_id, operation["featureSpecId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_discover_versions_response_view_maps_to_existing_version_accessor(
         self,
     ) -> None:
