@@ -742,6 +742,21 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             if (row.get("packageId"), row.get("exportName")) in expected
         }
         self.assertEqual(expected.keys(), exclusions.keys())
+        expected_python_attestation_exports = {
+            export_name
+            for (package_id, export_name) in expected
+            if package_id == "python-kmipkit"
+        }
+        observed_python_attestation_exports = {
+            row["exportName"]
+            for row in manifest["approvedExclusions"]
+            if row.get("packageId") == "python-kmipkit"
+            and row.get("exportName", "").startswith("kmipkit.credentials.Attestation")
+        }
+        self.assertEqual(
+            expected_python_attestation_exports,
+            observed_python_attestation_exports,
+        )
         for identity, owner_path in expected.items():
             with self.subTest(export=identity[1]):
                 exclusion = exclusions[identity]
