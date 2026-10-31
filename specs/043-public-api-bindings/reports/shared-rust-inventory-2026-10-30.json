@@ -5,7 +5,7 @@
   "observedRustDeclarationCount": 10457,
   "directRustDeclarationCount": 8414,
   "conditionalRustDeclarationCount": 2043,
-  "mappedRustDeclarationCount": 519,
+  "mappedRustDeclarationCount": 523,
   "approvedExcludedRustDeclarationCount": 1399,
   "crates": [
     {
@@ -36,17 +36,17 @@
       "packageId": "rust-kmipkit-client",
       "crateName": "kmipkit-client",
       "observedDeclarationCount": 1219,
-      "mappedDeclarationCount": 117,
+      "mappedDeclarationCount": 119,
       "excludedDeclarationCount": 215,
-      "blockedDeclarationCount": 887
+      "blockedDeclarationCount": 885
     },
     {
       "packageId": "rust-kmipkit",
       "crateName": "kmipkit",
       "observedDeclarationCount": 2142,
-      "mappedDeclarationCount": 103,
+      "mappedDeclarationCount": 105,
       "excludedDeclarationCount": 473,
-      "blockedDeclarationCount": 1566
+      "blockedDeclarationCount": 1564
     }
   ],
   "mappedDeclarations": [
@@ -1707,6 +1707,46 @@
         "KMIPKIT-0009-FR-009",
         "KMIPKIT-0009-FR-010",
         "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-63e01546d2e98d294056",
+      "packageId": "rust-kmipkit",
+      "kind": "variant",
+      "exportName": "kmipkit::ClientRequest::DiscoverVersions",
+      "capabilityId": "discover_versions_request_item",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-0ca2f21546d11cb0b889",
+      "packageId": "rust-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit::ClientRequest::DiscoverVersions::0",
+      "capabilityId": "discover_versions_request_item",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
@@ -4006,6 +4046,46 @@
         "KMIPKIT-0009-FR-009",
         "KMIPKIT-0009-FR-010",
         "KMIPKIT-0009-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-6fa4a3ed6ac774b3c741",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::ClientRequest::DiscoverVersions",
+      "capabilityId": "discover_versions_request_item",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-f0824641ec5a8da34e3e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "field",
+      "exportName": "kmipkit_client::ClientRequest::DiscoverVersions::0",
+      "capabilityId": "discover_versions_request_item",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0007-FR-001",
+        "KMIPKIT-0007-FR-002",
+        "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"

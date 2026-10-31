@@ -2280,6 +2280,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientOperation",
     ),
     (
+        "rust-observed-6fa4a3ed6ac774b3c741",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::DiscoverVersions",
+    ),
+    (
         "rust-observed-5aacdd6b55c95d262b62",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Activate",
@@ -2855,6 +2860,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientOperationOutcome::with_response_payload",
     ),
     (
+        "rust-observed-63e01546d2e98d294056",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::DiscoverVersions",
+    ),
+    (
         "rust-observed-7bc37d23f0d597cf8156",
         "rust-kmipkit",
         "kmipkit::ClientRequest::CreateKeyPair",
@@ -3361,6 +3371,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientRequest::Check",
     ),
     (
+        "rust-observed-0ca2f21546d11cb0b889",
+        "rust-kmipkit",
+        "kmipkit::ClientRequest::DiscoverVersions::0",
+    ),
+    (
         "rust-observed-aec481f2aa8c3d798b6b",
         "rust-kmipkit",
         "kmipkit::ClientRequest::Export",
@@ -3854,6 +3869,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-4d05f9d9fc8377cd7a6f",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Check",
+    ),
+    (
+        "rust-observed-f0824641ec5a8da34e3e",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::DiscoverVersions::0",
     ),
     (
         "rust-observed-a60dee53f11a9b109b34",
