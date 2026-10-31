@@ -1343,9 +1343,10 @@
           "type": "string",
           "enum": [
             "not-applicable",
-            "preserves-caller-batch-and-extension-order"
+            "preserves-caller-batch-and-extension-order",
+            "preserves-response-extension-order"
           ],
-          "description": "For repeatable extension attachment, declare preservation of caller-selected batch and extension order."
+          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order."
         },
         "criticalityIndicator": {
           "$ref": "#/$defs/criticalityIndicator"

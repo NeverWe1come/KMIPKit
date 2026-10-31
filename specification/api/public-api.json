@@ -34250,7 +34250,7 @@
         ],
         "returnType": "ttlv.Structure"
       },
-      "ordering": "preserves-caller-batch-and-extension-order"
+      "ordering": "preserves-response-extension-order"
     }
   ],
   "errorCategories": [

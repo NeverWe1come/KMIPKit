@@ -8973,7 +8973,7 @@
         ],
         "returnType": "TtlvStructure"
       },
-      "ordering": "preserves-caller-batch-and-extension-order",
+      "ordering": "preserves-response-extension-order",
       "python": {
         "cffiSymbol": "kmipkit_client_async_operation_outcome_extension_ttlv_at",
         "errorCategories": [
