@@ -278615,7 +278615,7 @@
         "kmipkit::ClientBatchOutcome::AddAttribute::0",
         "kmipkit_client::ClientBatchOutcome::AddAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278661,7 +278661,7 @@
         "kmipkit::ClientBatchOutcome::AdjustAttribute::0",
         "kmipkit_client::ClientBatchOutcome::AdjustAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278868,7 +278868,7 @@
         "kmipkit::ClientBatchOutcome::CreateCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278891,7 +278891,7 @@
         "kmipkit::ClientBatchOutcome::CreateCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278914,7 +278914,7 @@
         "kmipkit::ClientBatchOutcome::CreateKeyPairCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateKeyPairCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278937,7 +278937,7 @@
         "kmipkit::ClientBatchOutcome::CreateKeyPairCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateKeyPairCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278960,7 +278960,7 @@
         "kmipkit::ClientBatchOutcome::CreateSplitKeyCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateSplitKeyCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -278983,7 +278983,7 @@
         "kmipkit::ClientBatchOutcome::CreateSplitKeyCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateSplitKeyCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -279121,7 +279121,7 @@
         "kmipkit::ClientBatchOutcome::DeleteAttribute::0",
         "kmipkit_client::ClientBatchOutcome::DeleteAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -279167,7 +279167,7 @@
         "kmipkit::ClientBatchOutcome::DeriveKey::0",
         "kmipkit_client::ClientBatchOutcome::DeriveKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279305,7 +279305,7 @@
         "kmipkit::ClientBatchOutcome::Export::0",
         "kmipkit_client::ClientBatchOutcome::Export::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279397,7 +279397,7 @@
         "kmipkit::ClientBatchOutcome::GetAttributes::0",
         "kmipkit_client::ClientBatchOutcome::GetAttributes::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -279443,7 +279443,7 @@
         "kmipkit::ClientBatchOutcome::GetCompleted::0",
         "kmipkit_client::ClientBatchOutcome::GetCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279535,7 +279535,7 @@
         "kmipkit::ClientBatchOutcome::GetUsageAllocation::0",
         "kmipkit_client::ClientBatchOutcome::GetUsageAllocation::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279627,7 +279627,7 @@
         "kmipkit::ClientBatchOutcome::Import::0",
         "kmipkit_client::ClientBatchOutcome::Import::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279673,7 +279673,7 @@
         "kmipkit::ClientBatchOutcome::Interop::0",
         "kmipkit_client::ClientBatchOutcome::Interop::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279719,7 +279719,7 @@
         "kmipkit::ClientBatchOutcome::JoinSplitKeyCompleted::0",
         "kmipkit_client::ClientBatchOutcome::JoinSplitKeyCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279765,7 +279765,7 @@
         "kmipkit::ClientBatchOutcome::LocateCompleted::0",
         "kmipkit_client::ClientBatchOutcome::LocateCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -279811,7 +279811,7 @@
         "kmipkit::ClientBatchOutcome::Log::0",
         "kmipkit_client::ClientBatchOutcome::Log::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -280041,7 +280041,7 @@
         "kmipkit::ClientBatchOutcome::ModifyAttribute::0",
         "kmipkit_client::ClientBatchOutcome::ModifyAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -280110,7 +280110,7 @@
         "kmipkit::ClientBatchOutcome::Pending",
         "kmipkit_client::ClientBatchOutcome::Pending"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -280133,7 +280133,7 @@
         "kmipkit::ClientBatchOutcome::Pending::0",
         "kmipkit_client::ClientBatchOutcome::Pending::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -280731,7 +280731,7 @@
         "kmipkit::ClientBatchOutcome::SetAttribute::0",
         "kmipkit_client::ClientBatchOutcome::SetAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -280938,7 +280938,7 @@
         "kmipkit::ClientBatchOutcome::Validate",
         "kmipkit_client::ClientBatchOutcome::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -280961,7 +280961,7 @@
         "kmipkit::ClientBatchOutcome::Validate::0",
         "kmipkit_client::ClientBatchOutcome::Validate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -281260,7 +281260,7 @@
         "kmipkit::ClientBatchOutcome::discover_versions_response",
         "kmipkit_client::ClientBatchOutcome::discover_versions_response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -281720,7 +281720,7 @@
         "kmipkit::ClientBatchOutcome::response",
         "kmipkit_client::ClientBatchOutcome::response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -281743,7 +281743,7 @@
         "kmipkit::ClientBatchOutcome::result",
         "kmipkit_client::ClientBatchOutcome::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -281996,7 +281996,7 @@
         "kmipkit::ClientCauseCategory",
         "kmipkit_client::ClientCauseCategory"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282019,7 +282019,7 @@
         "kmipkit::ClientCauseCategory::InvalidInput",
         "kmipkit_client::ClientCauseCategory::InvalidInput"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282065,7 +282065,7 @@
         "kmipkit::ClientCauseCategory::Protocol",
         "kmipkit_client::ClientCauseCategory::Protocol"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282088,7 +282088,7 @@
         "kmipkit::ClientCauseCategory::Protocol::0",
         "kmipkit_client::ClientCauseCategory::Protocol::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282111,7 +282111,7 @@
         "kmipkit::ClientCauseCategory::Transport",
         "kmipkit_client::ClientCauseCategory::Transport"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282134,7 +282134,7 @@
         "kmipkit::ClientCauseCategory::Transport::0",
         "kmipkit_client::ClientCauseCategory::Transport::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 26,
@@ -282203,7 +282203,7 @@
         "kmipkit::ClientError::ProfileValidation::delivery_state",
         "kmipkit_client::ClientError::ProfileValidation::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282272,7 +282272,7 @@
         "kmipkit::ClientError::Protocol::delivery_state",
         "kmipkit_client::ClientError::Protocol::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282318,7 +282318,7 @@
         "kmipkit::ClientError::ProtocolResponse",
         "kmipkit_client::ClientError::ProtocolResponse"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282341,7 +282341,7 @@
         "kmipkit::ClientError::ProtocolResponse::delivery_state",
         "kmipkit_client::ClientError::ProtocolResponse::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282479,7 +282479,7 @@
         "kmipkit::ClientError::Transport::0",
         "kmipkit_client::ClientError::Transport::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282502,7 +282502,7 @@
         "kmipkit::ClientError::Validation",
         "kmipkit_client::ClientError::Validation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282525,7 +282525,7 @@
         "kmipkit::ClientError::Validation::cause",
         "kmipkit_client::ClientError::Validation::cause"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282548,7 +282548,7 @@
         "kmipkit::ClientError::Validation::delivery_state",
         "kmipkit_client::ClientError::Validation::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 47,
@@ -282939,7 +282939,7 @@
         "kmipkit::ClientErrorCategory::Validation",
         "kmipkit_client::ClientErrorCategory::Validation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 60,
@@ -283054,7 +283054,7 @@
         "kmipkit::ClientOperation::AddAttribute",
         "kmipkit_client::ClientOperation::AddAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283077,7 +283077,7 @@
         "kmipkit::ClientOperation::AdjustAttribute",
         "kmipkit_client::ClientOperation::AdjustAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283146,7 +283146,7 @@
         "kmipkit::ClientOperation::Certify",
         "kmipkit_client::ClientOperation::Certify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283169,7 +283169,7 @@
         "kmipkit::ClientOperation::Check",
         "kmipkit_client::ClientOperation::Check"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283284,7 +283284,7 @@
         "kmipkit::ClientOperation::DelegatedLogin",
         "kmipkit_client::ClientOperation::DelegatedLogin"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283307,7 +283307,7 @@
         "kmipkit::ClientOperation::DeleteAttribute",
         "kmipkit_client::ClientOperation::DeleteAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283330,7 +283330,7 @@
         "kmipkit::ClientOperation::DeriveKey",
         "kmipkit_client::ClientOperation::DeriveKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283376,7 +283376,7 @@
         "kmipkit::ClientOperation::DiscoverVersions",
         "kmipkit_client::ClientOperation::DiscoverVersions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283422,7 +283422,7 @@
         "kmipkit::ClientOperation::Export",
         "kmipkit_client::ClientOperation::Export"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283445,7 +283445,7 @@
         "kmipkit::ClientOperation::Get",
         "kmipkit_client::ClientOperation::Get"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283468,7 +283468,7 @@
         "kmipkit::ClientOperation::GetAttributeList",
         "kmipkit_client::ClientOperation::GetAttributeList"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283491,7 +283491,7 @@
         "kmipkit::ClientOperation::GetAttributes",
         "kmipkit_client::ClientOperation::GetAttributes"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283514,7 +283514,7 @@
         "kmipkit::ClientOperation::GetConstraints",
         "kmipkit_client::ClientOperation::GetConstraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283537,7 +283537,7 @@
         "kmipkit::ClientOperation::GetUsageAllocation",
         "kmipkit_client::ClientOperation::GetUsageAllocation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283583,7 +283583,7 @@
         "kmipkit::ClientOperation::Import",
         "kmipkit_client::ClientOperation::Import"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283606,7 +283606,7 @@
         "kmipkit::ClientOperation::Interop",
         "kmipkit_client::ClientOperation::Interop"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283629,7 +283629,7 @@
         "kmipkit::ClientOperation::JoinSplitKey",
         "kmipkit_client::ClientOperation::JoinSplitKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283652,7 +283652,7 @@
         "kmipkit::ClientOperation::Locate",
         "kmipkit_client::ClientOperation::Locate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283675,7 +283675,7 @@
         "kmipkit::ClientOperation::Log",
         "kmipkit_client::ClientOperation::Log"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283698,7 +283698,7 @@
         "kmipkit::ClientOperation::Login",
         "kmipkit_client::ClientOperation::Login"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283721,7 +283721,7 @@
         "kmipkit::ClientOperation::Logout",
         "kmipkit_client::ClientOperation::Logout"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283767,7 +283767,7 @@
         "kmipkit::ClientOperation::MacVerify",
         "kmipkit_client::ClientOperation::MacVerify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 29,
@@ -283790,7 +283790,7 @@
         "kmipkit::ClientOperation::ModifyAttribute",
         "kmipkit_client::ClientOperation::ModifyAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283813,7 +283813,7 @@
         "kmipkit::ClientOperation::ObtainLease",
         "kmipkit_client::ClientOperation::ObtainLease"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283951,7 +283951,7 @@
         "kmipkit::ClientOperation::QueryAsyncRequests",
         "kmipkit_client::ClientOperation::QueryAsyncRequests"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 29,
@@ -283974,7 +283974,7 @@
         "kmipkit::ClientOperation::ReProvision",
         "kmipkit_client::ClientOperation::ReProvision"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -283997,7 +283997,7 @@
         "kmipkit::ClientOperation::Recertify",
         "kmipkit_client::ClientOperation::Recertify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284043,7 +284043,7 @@
         "kmipkit::ClientOperation::Register",
         "kmipkit_client::ClientOperation::Register"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284066,7 +284066,7 @@
         "kmipkit::ClientOperation::Rekey",
         "kmipkit_client::ClientOperation::Rekey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284089,7 +284089,7 @@
         "kmipkit::ClientOperation::RekeyKeyPair",
         "kmipkit_client::ClientOperation::RekeyKeyPair"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284112,7 +284112,7 @@
         "kmipkit::ClientOperation::Revoke",
         "kmipkit_client::ClientOperation::Revoke"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284135,7 +284135,7 @@
         "kmipkit::ClientOperation::RngRetrieve",
         "kmipkit_client::ClientOperation::RngRetrieve"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284158,7 +284158,7 @@
         "kmipkit::ClientOperation::RngSeed",
         "kmipkit_client::ClientOperation::RngSeed"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284181,7 +284181,7 @@
         "kmipkit::ClientOperation::SetAttribute",
         "kmipkit_client::ClientOperation::SetAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284204,7 +284204,7 @@
         "kmipkit::ClientOperation::SetConstraints",
         "kmipkit_client::ClientOperation::SetConstraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284227,7 +284227,7 @@
         "kmipkit::ClientOperation::SetDefaults",
         "kmipkit_client::ClientOperation::SetDefaults"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284273,7 +284273,7 @@
         "kmipkit::ClientOperation::SignatureVerify",
         "kmipkit_client::ClientOperation::SignatureVerify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 29,
@@ -284296,7 +284296,7 @@
         "kmipkit::ClientOperation::Validate",
         "kmipkit_client::ClientOperation::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 29,
@@ -284618,7 +284618,7 @@
         "kmipkit::ClientRequest::AddAttribute",
         "kmipkit_client::ClientRequest::AddAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284641,7 +284641,7 @@
         "kmipkit::ClientRequest::AddAttribute::0",
         "kmipkit_client::ClientRequest::AddAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284664,7 +284664,7 @@
         "kmipkit::ClientRequest::AdjustAttribute",
         "kmipkit_client::ClientRequest::AdjustAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284687,7 +284687,7 @@
         "kmipkit::ClientRequest::AdjustAttribute::0",
         "kmipkit_client::ClientRequest::AdjustAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284779,7 +284779,7 @@
         "kmipkit::ClientRequest::Certify::0",
         "kmipkit_client::ClientRequest::Certify::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284825,7 +284825,7 @@
         "kmipkit::ClientRequest::Check::0",
         "kmipkit_client::ClientRequest::Check::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -284917,7 +284917,7 @@
         "kmipkit::ClientRequest::CreateKeyPair::0",
         "kmipkit_client::ClientRequest::CreateKeyPair::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
@@ -284963,7 +284963,7 @@
         "kmipkit::ClientRequest::CreateSplitKey::0",
         "kmipkit_client::ClientRequest::CreateSplitKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
@@ -285032,7 +285032,7 @@
         "kmipkit::ClientRequest::DelegatedLogin",
         "kmipkit_client::ClientRequest::DelegatedLogin"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285055,7 +285055,7 @@
         "kmipkit::ClientRequest::DelegatedLogin::0",
         "kmipkit_client::ClientRequest::DelegatedLogin::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285078,7 +285078,7 @@
         "kmipkit::ClientRequest::DeleteAttribute",
         "kmipkit_client::ClientRequest::DeleteAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285101,7 +285101,7 @@
         "kmipkit::ClientRequest::DeleteAttribute::0",
         "kmipkit_client::ClientRequest::DeleteAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285124,7 +285124,7 @@
         "kmipkit::ClientRequest::DeriveKey",
         "kmipkit_client::ClientRequest::DeriveKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285147,7 +285147,7 @@
         "kmipkit::ClientRequest::DeriveKey::0",
         "kmipkit_client::ClientRequest::DeriveKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285216,7 +285216,7 @@
         "kmipkit::ClientRequest::DiscoverVersions",
         "kmipkit_client::ClientRequest::DiscoverVersions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
@@ -285239,7 +285239,7 @@
         "kmipkit::ClientRequest::DiscoverVersions::0",
         "kmipkit_client::ClientRequest::DiscoverVersions::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
@@ -285331,7 +285331,7 @@
         "kmipkit::ClientRequest::Export::0",
         "kmipkit_client::ClientRequest::Export::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285377,7 +285377,7 @@
         "kmipkit::ClientRequest::Get::0",
         "kmipkit_client::ClientRequest::Get::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285423,7 +285423,7 @@
         "kmipkit::ClientRequest::GetAttributeList::0",
         "kmipkit_client::ClientRequest::GetAttributeList::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285469,7 +285469,7 @@
         "kmipkit::ClientRequest::GetAttributes::0",
         "kmipkit_client::ClientRequest::GetAttributes::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285515,7 +285515,7 @@
         "kmipkit::ClientRequest::GetConstraints::0",
         "kmipkit_client::ClientRequest::GetConstraints::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285561,7 +285561,7 @@
         "kmipkit::ClientRequest::GetUsageAllocation::0",
         "kmipkit_client::ClientRequest::GetUsageAllocation::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285653,7 +285653,7 @@
         "kmipkit::ClientRequest::Import::0",
         "kmipkit_client::ClientRequest::Import::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285699,7 +285699,7 @@
         "kmipkit::ClientRequest::Interop::0",
         "kmipkit_client::ClientRequest::Interop::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285745,7 +285745,7 @@
         "kmipkit::ClientRequest::JoinSplitKey::0",
         "kmipkit_client::ClientRequest::JoinSplitKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285791,7 +285791,7 @@
         "kmipkit::ClientRequest::Locate::0",
         "kmipkit_client::ClientRequest::Locate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285837,7 +285837,7 @@
         "kmipkit::ClientRequest::Log::0",
         "kmipkit_client::ClientRequest::Log::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285860,7 +285860,7 @@
         "kmipkit::ClientRequest::Login",
         "kmipkit_client::ClientRequest::Login"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285883,7 +285883,7 @@
         "kmipkit::ClientRequest::Login::0",
         "kmipkit_client::ClientRequest::Login::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285906,7 +285906,7 @@
         "kmipkit::ClientRequest::Logout",
         "kmipkit_client::ClientRequest::Logout"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -285929,7 +285929,7 @@
         "kmipkit::ClientRequest::Logout::0",
         "kmipkit_client::ClientRequest::Logout::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286044,7 +286044,7 @@
         "kmipkit::ClientRequest::ModifyAttribute",
         "kmipkit_client::ClientRequest::ModifyAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286067,7 +286067,7 @@
         "kmipkit::ClientRequest::ModifyAttribute::0",
         "kmipkit_client::ClientRequest::ModifyAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286113,7 +286113,7 @@
         "kmipkit::ClientRequest::ObtainLease::0",
         "kmipkit_client::ClientRequest::ObtainLease::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286205,7 +286205,7 @@
         "kmipkit::ClientRequest::Pkcs11::0",
         "kmipkit_client::ClientRequest::Pkcs11::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286297,7 +286297,7 @@
         "kmipkit::ClientRequest::ReProvision::0",
         "kmipkit_client::ClientRequest::ReProvision::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286343,7 +286343,7 @@
         "kmipkit::ClientRequest::Recertify::0",
         "kmipkit_client::ClientRequest::Recertify::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286435,7 +286435,7 @@
         "kmipkit::ClientRequest::Register::0",
         "kmipkit_client::ClientRequest::Register::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286481,7 +286481,7 @@
         "kmipkit::ClientRequest::Rekey::0",
         "kmipkit_client::ClientRequest::Rekey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286527,7 +286527,7 @@
         "kmipkit::ClientRequest::RekeyKeyPair::0",
         "kmipkit_client::ClientRequest::RekeyKeyPair::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286573,7 +286573,7 @@
         "kmipkit::ClientRequest::Revoke::0",
         "kmipkit_client::ClientRequest::Revoke::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286619,7 +286619,7 @@
         "kmipkit::ClientRequest::RngRetrieve::0",
         "kmipkit_client::ClientRequest::RngRetrieve::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286665,7 +286665,7 @@
         "kmipkit::ClientRequest::RngSeed::0",
         "kmipkit_client::ClientRequest::RngSeed::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286688,7 +286688,7 @@
         "kmipkit::ClientRequest::SetAttribute",
         "kmipkit_client::ClientRequest::SetAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286711,7 +286711,7 @@
         "kmipkit::ClientRequest::SetAttribute::0",
         "kmipkit_client::ClientRequest::SetAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286757,7 +286757,7 @@
         "kmipkit::ClientRequest::SetConstraints::0",
         "kmipkit_client::ClientRequest::SetConstraints::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286803,7 +286803,7 @@
         "kmipkit::ClientRequest::SetDefaults::0",
         "kmipkit_client::ClientRequest::SetDefaults::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286918,7 +286918,7 @@
         "kmipkit::ClientRequest::Validate",
         "kmipkit_client::ClientRequest::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -286941,7 +286941,7 @@
         "kmipkit::ClientRequest::Validate::0",
         "kmipkit_client::ClientRequest::Validate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287056,7 +287056,7 @@
         "kmipkit::ClientRequest::certify",
         "kmipkit_client::ClientRequest::certify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287171,7 +287171,7 @@
         "kmipkit::ClientRequest::derive_key",
         "kmipkit_client::ClientRequest::derive_key"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287217,7 +287217,7 @@
         "kmipkit::ClientRequest::discover_versions",
         "kmipkit_client::ClientRequest::discover_versions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 70,
@@ -287263,7 +287263,7 @@
         "kmipkit::ClientRequest::export",
         "kmipkit_client::ClientRequest::export"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287286,7 +287286,7 @@
         "kmipkit::ClientRequest::get",
         "kmipkit_client::ClientRequest::get"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287355,7 +287355,7 @@
         "kmipkit::ClientRequest::get_constraints",
         "kmipkit_client::ClientRequest::get_constraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287424,7 +287424,7 @@
         "kmipkit::ClientRequest::import",
         "kmipkit_client::ClientRequest::import"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287447,7 +287447,7 @@
         "kmipkit::ClientRequest::interop",
         "kmipkit_client::ClientRequest::interop"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287470,7 +287470,7 @@
         "kmipkit::ClientRequest::join_split_key",
         "kmipkit_client::ClientRequest::join_split_key"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287493,7 +287493,7 @@
         "kmipkit::ClientRequest::locate",
         "kmipkit_client::ClientRequest::locate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287516,7 +287516,7 @@
         "kmipkit::ClientRequest::log",
         "kmipkit_client::ClientRequest::log"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287746,7 +287746,7 @@
         "kmipkit::ClientRequest::recertify",
         "kmipkit_client::ClientRequest::recertify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287792,7 +287792,7 @@
         "kmipkit::ClientRequest::register",
         "kmipkit_client::ClientRequest::register"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287815,7 +287815,7 @@
         "kmipkit::ClientRequest::rekey",
         "kmipkit_client::ClientRequest::rekey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287838,7 +287838,7 @@
         "kmipkit::ClientRequest::rekey_key_pair",
         "kmipkit_client::ClientRequest::rekey_key_pair"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287884,7 +287884,7 @@
         "kmipkit::ClientRequest::revoke",
         "kmipkit_client::ClientRequest::revoke"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287976,7 +287976,7 @@
         "kmipkit::ClientRequest::set_constraints",
         "kmipkit_client::ClientRequest::set_constraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -287999,7 +287999,7 @@
         "kmipkit::ClientRequest::set_defaults",
         "kmipkit_client::ClientRequest::set_defaults"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -288068,7 +288068,7 @@
         "kmipkit::ClientRequest::validate",
         "kmipkit_client::ClientRequest::validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 70,
@@ -290115,7 +290115,7 @@
         "kmipkit::PendingOutcome",
         "kmipkit_client::PendingOutcome"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 85,
@@ -290138,7 +290138,7 @@
         "kmipkit::PendingOutcome::asynchronous_correlation_value",
         "kmipkit_client::PendingOutcome::asynchronous_correlation_value"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 85,
@@ -290161,7 +290161,7 @@
         "kmipkit::PendingOutcome::operation",
         "kmipkit_client::PendingOutcome::operation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 85,
@@ -290184,7 +290184,7 @@
         "kmipkit::PendingOutcome::response",
         "kmipkit_client::PendingOutcome::response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 85,
@@ -290207,7 +290207,7 @@
         "kmipkit::PendingOutcome::result",
         "kmipkit_client::PendingOutcome::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 85,
@@ -303988,7 +303988,7 @@
         "kmipkit::ClientBatchOutcome::AddAttribute::0",
         "kmipkit_client::ClientBatchOutcome::AddAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304034,7 +304034,7 @@
         "kmipkit::ClientBatchOutcome::AdjustAttribute::0",
         "kmipkit_client::ClientBatchOutcome::AdjustAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304241,7 +304241,7 @@
         "kmipkit::ClientBatchOutcome::CreateCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304264,7 +304264,7 @@
         "kmipkit::ClientBatchOutcome::CreateCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304287,7 +304287,7 @@
         "kmipkit::ClientBatchOutcome::CreateKeyPairCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateKeyPairCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304310,7 +304310,7 @@
         "kmipkit::ClientBatchOutcome::CreateKeyPairCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateKeyPairCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304333,7 +304333,7 @@
         "kmipkit::ClientBatchOutcome::CreateSplitKeyCompleted",
         "kmipkit_client::ClientBatchOutcome::CreateSplitKeyCompleted"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304356,7 +304356,7 @@
         "kmipkit::ClientBatchOutcome::CreateSplitKeyCompleted::0",
         "kmipkit_client::ClientBatchOutcome::CreateSplitKeyCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304494,7 +304494,7 @@
         "kmipkit::ClientBatchOutcome::DeleteAttribute::0",
         "kmipkit_client::ClientBatchOutcome::DeleteAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304540,7 +304540,7 @@
         "kmipkit::ClientBatchOutcome::DeriveKey::0",
         "kmipkit_client::ClientBatchOutcome::DeriveKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -304678,7 +304678,7 @@
         "kmipkit::ClientBatchOutcome::Export::0",
         "kmipkit_client::ClientBatchOutcome::Export::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -304770,7 +304770,7 @@
         "kmipkit::ClientBatchOutcome::GetAttributes::0",
         "kmipkit_client::ClientBatchOutcome::GetAttributes::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -304816,7 +304816,7 @@
         "kmipkit::ClientBatchOutcome::GetCompleted::0",
         "kmipkit_client::ClientBatchOutcome::GetCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -304908,7 +304908,7 @@
         "kmipkit::ClientBatchOutcome::GetUsageAllocation::0",
         "kmipkit_client::ClientBatchOutcome::GetUsageAllocation::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305000,7 +305000,7 @@
         "kmipkit::ClientBatchOutcome::Import::0",
         "kmipkit_client::ClientBatchOutcome::Import::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305046,7 +305046,7 @@
         "kmipkit::ClientBatchOutcome::Interop::0",
         "kmipkit_client::ClientBatchOutcome::Interop::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305092,7 +305092,7 @@
         "kmipkit::ClientBatchOutcome::JoinSplitKeyCompleted::0",
         "kmipkit_client::ClientBatchOutcome::JoinSplitKeyCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305138,7 +305138,7 @@
         "kmipkit::ClientBatchOutcome::LocateCompleted::0",
         "kmipkit_client::ClientBatchOutcome::LocateCompleted::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305184,7 +305184,7 @@
         "kmipkit::ClientBatchOutcome::Log::0",
         "kmipkit_client::ClientBatchOutcome::Log::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -305414,7 +305414,7 @@
         "kmipkit::ClientBatchOutcome::ModifyAttribute::0",
         "kmipkit_client::ClientBatchOutcome::ModifyAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -305483,7 +305483,7 @@
         "kmipkit::ClientBatchOutcome::Pending",
         "kmipkit_client::ClientBatchOutcome::Pending"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -305506,7 +305506,7 @@
         "kmipkit::ClientBatchOutcome::Pending::0",
         "kmipkit_client::ClientBatchOutcome::Pending::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -306104,7 +306104,7 @@
         "kmipkit::ClientBatchOutcome::SetAttribute::0",
         "kmipkit_client::ClientBatchOutcome::SetAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -306311,7 +306311,7 @@
         "kmipkit::ClientBatchOutcome::Validate",
         "kmipkit_client::ClientBatchOutcome::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -306334,7 +306334,7 @@
         "kmipkit::ClientBatchOutcome::Validate::0",
         "kmipkit_client::ClientBatchOutcome::Validate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 68,
@@ -306633,7 +306633,7 @@
         "kmipkit::ClientBatchOutcome::discover_versions_response",
         "kmipkit_client::ClientBatchOutcome::discover_versions_response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -307093,7 +307093,7 @@
         "kmipkit::ClientBatchOutcome::response",
         "kmipkit_client::ClientBatchOutcome::response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -307116,7 +307116,7 @@
         "kmipkit::ClientBatchOutcome::result",
         "kmipkit_client::ClientBatchOutcome::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 68,
@@ -307369,7 +307369,7 @@
         "kmipkit::ClientCauseCategory",
         "kmipkit_client::ClientCauseCategory"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307392,7 +307392,7 @@
         "kmipkit::ClientCauseCategory::InvalidInput",
         "kmipkit_client::ClientCauseCategory::InvalidInput"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307415,7 +307415,7 @@
         "kmipkit::ClientCauseCategory::Other",
         "kmipkit_client::ClientCauseCategory::Other"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307438,7 +307438,7 @@
         "kmipkit::ClientCauseCategory::Protocol",
         "kmipkit_client::ClientCauseCategory::Protocol"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307461,7 +307461,7 @@
         "kmipkit::ClientCauseCategory::Protocol::0",
         "kmipkit_client::ClientCauseCategory::Protocol::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307484,7 +307484,7 @@
         "kmipkit::ClientCauseCategory::Transport",
         "kmipkit_client::ClientCauseCategory::Transport"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307507,7 +307507,7 @@
         "kmipkit::ClientCauseCategory::Transport::0",
         "kmipkit_client::ClientCauseCategory::Transport::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 17,
@@ -307576,7 +307576,7 @@
         "kmipkit::ClientError::ProfileValidation::delivery_state",
         "kmipkit_client::ClientError::ProfileValidation::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307645,7 +307645,7 @@
         "kmipkit::ClientError::Protocol::delivery_state",
         "kmipkit_client::ClientError::Protocol::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307691,7 +307691,7 @@
         "kmipkit::ClientError::ProtocolResponse",
         "kmipkit_client::ClientError::ProtocolResponse"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307714,7 +307714,7 @@
         "kmipkit::ClientError::ProtocolResponse::delivery_state",
         "kmipkit_client::ClientError::ProtocolResponse::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307852,7 +307852,7 @@
         "kmipkit::ClientError::Transport::0",
         "kmipkit_client::ClientError::Transport::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307875,7 +307875,7 @@
         "kmipkit::ClientError::Validation",
         "kmipkit_client::ClientError::Validation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307898,7 +307898,7 @@
         "kmipkit::ClientError::Validation::cause",
         "kmipkit_client::ClientError::Validation::cause"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -307921,7 +307921,7 @@
         "kmipkit::ClientError::Validation::delivery_state",
         "kmipkit_client::ClientError::Validation::delivery_state"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 38,
@@ -308312,7 +308312,7 @@
         "kmipkit::ClientErrorCategory::Validation",
         "kmipkit_client::ClientErrorCategory::Validation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 51,
@@ -308427,7 +308427,7 @@
         "kmipkit::ClientOperation::AddAttribute",
         "kmipkit_client::ClientOperation::AddAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308450,7 +308450,7 @@
         "kmipkit::ClientOperation::AdjustAttribute",
         "kmipkit_client::ClientOperation::AdjustAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308519,7 +308519,7 @@
         "kmipkit::ClientOperation::Certify",
         "kmipkit_client::ClientOperation::Certify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308542,7 +308542,7 @@
         "kmipkit::ClientOperation::Check",
         "kmipkit_client::ClientOperation::Check"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308657,7 +308657,7 @@
         "kmipkit::ClientOperation::DelegatedLogin",
         "kmipkit_client::ClientOperation::DelegatedLogin"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308680,7 +308680,7 @@
         "kmipkit::ClientOperation::DeleteAttribute",
         "kmipkit_client::ClientOperation::DeleteAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308703,7 +308703,7 @@
         "kmipkit::ClientOperation::DeriveKey",
         "kmipkit_client::ClientOperation::DeriveKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308749,7 +308749,7 @@
         "kmipkit::ClientOperation::DiscoverVersions",
         "kmipkit_client::ClientOperation::DiscoverVersions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308795,7 +308795,7 @@
         "kmipkit::ClientOperation::Export",
         "kmipkit_client::ClientOperation::Export"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308818,7 +308818,7 @@
         "kmipkit::ClientOperation::Get",
         "kmipkit_client::ClientOperation::Get"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308841,7 +308841,7 @@
         "kmipkit::ClientOperation::GetAttributeList",
         "kmipkit_client::ClientOperation::GetAttributeList"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308864,7 +308864,7 @@
         "kmipkit::ClientOperation::GetAttributes",
         "kmipkit_client::ClientOperation::GetAttributes"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308887,7 +308887,7 @@
         "kmipkit::ClientOperation::GetConstraints",
         "kmipkit_client::ClientOperation::GetConstraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308910,7 +308910,7 @@
         "kmipkit::ClientOperation::GetUsageAllocation",
         "kmipkit_client::ClientOperation::GetUsageAllocation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308956,7 +308956,7 @@
         "kmipkit::ClientOperation::Import",
         "kmipkit_client::ClientOperation::Import"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -308979,7 +308979,7 @@
         "kmipkit::ClientOperation::Interop",
         "kmipkit_client::ClientOperation::Interop"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309002,7 +309002,7 @@
         "kmipkit::ClientOperation::JoinSplitKey",
         "kmipkit_client::ClientOperation::JoinSplitKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309025,7 +309025,7 @@
         "kmipkit::ClientOperation::Locate",
         "kmipkit_client::ClientOperation::Locate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309048,7 +309048,7 @@
         "kmipkit::ClientOperation::Log",
         "kmipkit_client::ClientOperation::Log"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309071,7 +309071,7 @@
         "kmipkit::ClientOperation::Login",
         "kmipkit_client::ClientOperation::Login"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309094,7 +309094,7 @@
         "kmipkit::ClientOperation::Logout",
         "kmipkit_client::ClientOperation::Logout"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309140,7 +309140,7 @@
         "kmipkit::ClientOperation::MacVerify",
         "kmipkit_client::ClientOperation::MacVerify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 50,
@@ -309163,7 +309163,7 @@
         "kmipkit::ClientOperation::ModifyAttribute",
         "kmipkit_client::ClientOperation::ModifyAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309186,7 +309186,7 @@
         "kmipkit::ClientOperation::ObtainLease",
         "kmipkit_client::ClientOperation::ObtainLease"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309324,7 +309324,7 @@
         "kmipkit::ClientOperation::QueryAsyncRequests",
         "kmipkit_client::ClientOperation::QueryAsyncRequests"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 50,
@@ -309347,7 +309347,7 @@
         "kmipkit::ClientOperation::ReProvision",
         "kmipkit_client::ClientOperation::ReProvision"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309370,7 +309370,7 @@
         "kmipkit::ClientOperation::Recertify",
         "kmipkit_client::ClientOperation::Recertify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309416,7 +309416,7 @@
         "kmipkit::ClientOperation::Register",
         "kmipkit_client::ClientOperation::Register"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309439,7 +309439,7 @@
         "kmipkit::ClientOperation::Rekey",
         "kmipkit_client::ClientOperation::Rekey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309462,7 +309462,7 @@
         "kmipkit::ClientOperation::RekeyKeyPair",
         "kmipkit_client::ClientOperation::RekeyKeyPair"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309485,7 +309485,7 @@
         "kmipkit::ClientOperation::Revoke",
         "kmipkit_client::ClientOperation::Revoke"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309508,7 +309508,7 @@
         "kmipkit::ClientOperation::RngRetrieve",
         "kmipkit_client::ClientOperation::RngRetrieve"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309531,7 +309531,7 @@
         "kmipkit::ClientOperation::RngSeed",
         "kmipkit_client::ClientOperation::RngSeed"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309554,7 +309554,7 @@
         "kmipkit::ClientOperation::SetAttribute",
         "kmipkit_client::ClientOperation::SetAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309577,7 +309577,7 @@
         "kmipkit::ClientOperation::SetConstraints",
         "kmipkit_client::ClientOperation::SetConstraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309600,7 +309600,7 @@
         "kmipkit::ClientOperation::SetDefaults",
         "kmipkit_client::ClientOperation::SetDefaults"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309646,7 +309646,7 @@
         "kmipkit::ClientOperation::SignatureVerify",
         "kmipkit_client::ClientOperation::SignatureVerify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 50,
@@ -309669,7 +309669,7 @@
         "kmipkit::ClientOperation::Validate",
         "kmipkit_client::ClientOperation::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 50,
@@ -309991,7 +309991,7 @@
         "kmipkit::ClientRequest::AddAttribute",
         "kmipkit_client::ClientRequest::AddAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310014,7 +310014,7 @@
         "kmipkit::ClientRequest::AddAttribute::0",
         "kmipkit_client::ClientRequest::AddAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310037,7 +310037,7 @@
         "kmipkit::ClientRequest::AdjustAttribute",
         "kmipkit_client::ClientRequest::AdjustAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310060,7 +310060,7 @@
         "kmipkit::ClientRequest::AdjustAttribute::0",
         "kmipkit_client::ClientRequest::AdjustAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310152,7 +310152,7 @@
         "kmipkit::ClientRequest::Certify::0",
         "kmipkit_client::ClientRequest::Certify::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310198,7 +310198,7 @@
         "kmipkit::ClientRequest::Check::0",
         "kmipkit_client::ClientRequest::Check::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310290,7 +310290,7 @@
         "kmipkit::ClientRequest::CreateKeyPair::0",
         "kmipkit_client::ClientRequest::CreateKeyPair::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310336,7 +310336,7 @@
         "kmipkit::ClientRequest::CreateSplitKey::0",
         "kmipkit_client::ClientRequest::CreateSplitKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310405,7 +310405,7 @@
         "kmipkit::ClientRequest::DelegatedLogin",
         "kmipkit_client::ClientRequest::DelegatedLogin"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310428,7 +310428,7 @@
         "kmipkit::ClientRequest::DelegatedLogin::0",
         "kmipkit_client::ClientRequest::DelegatedLogin::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310451,7 +310451,7 @@
         "kmipkit::ClientRequest::DeleteAttribute",
         "kmipkit_client::ClientRequest::DeleteAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310474,7 +310474,7 @@
         "kmipkit::ClientRequest::DeleteAttribute::0",
         "kmipkit_client::ClientRequest::DeleteAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310497,7 +310497,7 @@
         "kmipkit::ClientRequest::DeriveKey",
         "kmipkit_client::ClientRequest::DeriveKey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310520,7 +310520,7 @@
         "kmipkit::ClientRequest::DeriveKey::0",
         "kmipkit_client::ClientRequest::DeriveKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310589,7 +310589,7 @@
         "kmipkit::ClientRequest::DiscoverVersions",
         "kmipkit_client::ClientRequest::DiscoverVersions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310612,7 +310612,7 @@
         "kmipkit::ClientRequest::DiscoverVersions::0",
         "kmipkit_client::ClientRequest::DiscoverVersions::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -310704,7 +310704,7 @@
         "kmipkit::ClientRequest::Export::0",
         "kmipkit_client::ClientRequest::Export::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310750,7 +310750,7 @@
         "kmipkit::ClientRequest::Get::0",
         "kmipkit_client::ClientRequest::Get::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310796,7 +310796,7 @@
         "kmipkit::ClientRequest::GetAttributeList::0",
         "kmipkit_client::ClientRequest::GetAttributeList::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310842,7 +310842,7 @@
         "kmipkit::ClientRequest::GetAttributes::0",
         "kmipkit_client::ClientRequest::GetAttributes::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310888,7 +310888,7 @@
         "kmipkit::ClientRequest::GetConstraints::0",
         "kmipkit_client::ClientRequest::GetConstraints::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -310934,7 +310934,7 @@
         "kmipkit::ClientRequest::GetUsageAllocation::0",
         "kmipkit_client::ClientRequest::GetUsageAllocation::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311026,7 +311026,7 @@
         "kmipkit::ClientRequest::Import::0",
         "kmipkit_client::ClientRequest::Import::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311072,7 +311072,7 @@
         "kmipkit::ClientRequest::Interop::0",
         "kmipkit_client::ClientRequest::Interop::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311118,7 +311118,7 @@
         "kmipkit::ClientRequest::JoinSplitKey::0",
         "kmipkit_client::ClientRequest::JoinSplitKey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311164,7 +311164,7 @@
         "kmipkit::ClientRequest::Locate::0",
         "kmipkit_client::ClientRequest::Locate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311210,7 +311210,7 @@
         "kmipkit::ClientRequest::Log::0",
         "kmipkit_client::ClientRequest::Log::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311233,7 +311233,7 @@
         "kmipkit::ClientRequest::Login",
         "kmipkit_client::ClientRequest::Login"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311256,7 +311256,7 @@
         "kmipkit::ClientRequest::Login::0",
         "kmipkit_client::ClientRequest::Login::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311279,7 +311279,7 @@
         "kmipkit::ClientRequest::Logout",
         "kmipkit_client::ClientRequest::Logout"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311302,7 +311302,7 @@
         "kmipkit::ClientRequest::Logout::0",
         "kmipkit_client::ClientRequest::Logout::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311417,7 +311417,7 @@
         "kmipkit::ClientRequest::ModifyAttribute",
         "kmipkit_client::ClientRequest::ModifyAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311440,7 +311440,7 @@
         "kmipkit::ClientRequest::ModifyAttribute::0",
         "kmipkit_client::ClientRequest::ModifyAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311486,7 +311486,7 @@
         "kmipkit::ClientRequest::ObtainLease::0",
         "kmipkit_client::ClientRequest::ObtainLease::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311578,7 +311578,7 @@
         "kmipkit::ClientRequest::Pkcs11::0",
         "kmipkit_client::ClientRequest::Pkcs11::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311670,7 +311670,7 @@
         "kmipkit::ClientRequest::ReProvision::0",
         "kmipkit_client::ClientRequest::ReProvision::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311716,7 +311716,7 @@
         "kmipkit::ClientRequest::Recertify::0",
         "kmipkit_client::ClientRequest::Recertify::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311808,7 +311808,7 @@
         "kmipkit::ClientRequest::Register::0",
         "kmipkit_client::ClientRequest::Register::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311854,7 +311854,7 @@
         "kmipkit::ClientRequest::Rekey::0",
         "kmipkit_client::ClientRequest::Rekey::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311900,7 +311900,7 @@
         "kmipkit::ClientRequest::RekeyKeyPair::0",
         "kmipkit_client::ClientRequest::RekeyKeyPair::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311946,7 +311946,7 @@
         "kmipkit::ClientRequest::Revoke::0",
         "kmipkit_client::ClientRequest::Revoke::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -311992,7 +311992,7 @@
         "kmipkit::ClientRequest::RngRetrieve::0",
         "kmipkit_client::ClientRequest::RngRetrieve::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312038,7 +312038,7 @@
         "kmipkit::ClientRequest::RngSeed::0",
         "kmipkit_client::ClientRequest::RngSeed::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312061,7 +312061,7 @@
         "kmipkit::ClientRequest::SetAttribute",
         "kmipkit_client::ClientRequest::SetAttribute"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312084,7 +312084,7 @@
         "kmipkit::ClientRequest::SetAttribute::0",
         "kmipkit_client::ClientRequest::SetAttribute::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312130,7 +312130,7 @@
         "kmipkit::ClientRequest::SetConstraints::0",
         "kmipkit_client::ClientRequest::SetConstraints::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312176,7 +312176,7 @@
         "kmipkit::ClientRequest::SetDefaults::0",
         "kmipkit_client::ClientRequest::SetDefaults::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312291,7 +312291,7 @@
         "kmipkit::ClientRequest::Validate",
         "kmipkit_client::ClientRequest::Validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312314,7 +312314,7 @@
         "kmipkit::ClientRequest::Validate::0",
         "kmipkit_client::ClientRequest::Validate::0"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312429,7 +312429,7 @@
         "kmipkit::ClientRequest::certify",
         "kmipkit_client::ClientRequest::certify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312544,7 +312544,7 @@
         "kmipkit::ClientRequest::derive_key",
         "kmipkit_client::ClientRequest::derive_key"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312590,7 +312590,7 @@
         "kmipkit::ClientRequest::discover_versions",
         "kmipkit_client::ClientRequest::discover_versions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 5,
@@ -312636,7 +312636,7 @@
         "kmipkit::ClientRequest::export",
         "kmipkit_client::ClientRequest::export"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312659,7 +312659,7 @@
         "kmipkit::ClientRequest::get",
         "kmipkit_client::ClientRequest::get"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312728,7 +312728,7 @@
         "kmipkit::ClientRequest::get_constraints",
         "kmipkit_client::ClientRequest::get_constraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312797,7 +312797,7 @@
         "kmipkit::ClientRequest::import",
         "kmipkit_client::ClientRequest::import"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312820,7 +312820,7 @@
         "kmipkit::ClientRequest::interop",
         "kmipkit_client::ClientRequest::interop"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312843,7 +312843,7 @@
         "kmipkit::ClientRequest::join_split_key",
         "kmipkit_client::ClientRequest::join_split_key"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312866,7 +312866,7 @@
         "kmipkit::ClientRequest::locate",
         "kmipkit_client::ClientRequest::locate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -312889,7 +312889,7 @@
         "kmipkit::ClientRequest::log",
         "kmipkit_client::ClientRequest::log"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313119,7 +313119,7 @@
         "kmipkit::ClientRequest::recertify",
         "kmipkit_client::ClientRequest::recertify"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313165,7 +313165,7 @@
         "kmipkit::ClientRequest::register",
         "kmipkit_client::ClientRequest::register"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313188,7 +313188,7 @@
         "kmipkit::ClientRequest::rekey",
         "kmipkit_client::ClientRequest::rekey"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313211,7 +313211,7 @@
         "kmipkit::ClientRequest::rekey_key_pair",
         "kmipkit_client::ClientRequest::rekey_key_pair"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313257,7 +313257,7 @@
         "kmipkit::ClientRequest::revoke",
         "kmipkit_client::ClientRequest::revoke"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313349,7 +313349,7 @@
         "kmipkit::ClientRequest::set_constraints",
         "kmipkit_client::ClientRequest::set_constraints"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313372,7 +313372,7 @@
         "kmipkit::ClientRequest::set_defaults",
         "kmipkit_client::ClientRequest::set_defaults"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313441,7 +313441,7 @@
         "kmipkit::ClientRequest::validate",
         "kmipkit_client::ClientRequest::validate"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "exportLocations": [
         {
           "column": 5,
@@ -313463,7 +313463,7 @@
       "aliases": [
         "kmipkit_client::ClientResponseView"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 20,
@@ -313793,7 +313793,7 @@
       "aliases": [
         "kmipkit_client::ClientResponseView<'a>::discover_versions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 20,
@@ -314431,7 +314431,7 @@
       "aliases": [
         "kmipkit_client::ClientResponseView<'a>::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 20,
@@ -314629,7 +314629,7 @@
       "aliases": [
         "kmipkit_client::ClientResponseView<'a>::supported_versions"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 20,
@@ -314674,7 +314674,7 @@
         "kmipkit::PendingOutcome",
         "kmipkit_client::PendingOutcome"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 40,
@@ -314697,7 +314697,7 @@
         "kmipkit::PendingOutcome::asynchronous_correlation_value",
         "kmipkit_client::PendingOutcome::asynchronous_correlation_value"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 40,
@@ -314720,7 +314720,7 @@
         "kmipkit::PendingOutcome::operation",
         "kmipkit_client::PendingOutcome::operation"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 40,
@@ -314743,7 +314743,7 @@
         "kmipkit::PendingOutcome::response",
         "kmipkit_client::PendingOutcome::response"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 40,
@@ -314766,7 +314766,7 @@
         "kmipkit::PendingOutcome::result",
         "kmipkit_client::PendingOutcome::result"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "exportLocations": [
         {
           "column": 40,

@@ -114,7 +114,7 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 10457)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 539)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 570)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(set(inventory["draftOwnerGates"]), {"KMIPKIT-0010"})
         self.assertEqual(
@@ -323,7 +323,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                     f"{capability['capabilityId']} {language} mappings must name exact ready exports",
                 )
 
-    def test_unrepresented_runtime_error_enum_stays_blocked_but_other_variant_maps(self) -> None:
+    def test_root_client_cause_category_maps_to_client_execution(self) -> None:
         declarations = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -333,15 +333,14 @@ class SharedRustInventoryTests(unittest.TestCase):
         other_variant = declarations["kmipkit::ClientCauseCategory::Other"]
 
         self.assertEqual(error_type["kind"], "type")
-        self.assertEqual(error_type["declarationState"], "blocked")
-        self.assertEqual(error_type["candidateSpecId"], "KMIPKIT-0043")
-        for missing_category in ("invalid-input", "protocol", "transport"):
-            with self.subTest(category=missing_category):
-                self.assertIn(missing_category, error_type["blockedReason"])
-        self.assertNotIn("languageMappings", error_type)
-        self.assertNotIn("approvalSource", error_type)
+        self.assertEqual(error_type["declarationState"], "declared")
+        self.assertEqual(error_type["capabilityId"], "client_execution")
+        self.assertNotIn("candidateSpecId", error_type)
+        self.assertIn("languageMappings", error_type)
+        self.assertIn("approvalSource", error_type)
         self.assertEqual(other_variant["kind"], "variant")
         self.assertEqual(other_variant["declarationState"], "declared")
+        self.assertEqual(other_variant["capabilityId"], "client_execution")
         self.assertEqual(
             other_variant["languageMappings"]["rust"],
             {"packageId": "rust-kmipkit", "name": "kmipkit::ClientCauseCategory::Other"},
