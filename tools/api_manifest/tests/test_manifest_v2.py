@@ -3232,6 +3232,65 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ):
                 self.assertIn(name, async_capability["mappings"][language])
 
+    def test_t091_cancel_echo_maps_to_response_payload_ttlv_in_all_facades(self) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        async_capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "client_asynchronous_operations"
+        )
+        c_export = "kmipkit_client_async_operation_outcome_response_payload_ttlv"
+        java_export = "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv"
+        python_export = "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv"
+        expected_requirements = {
+            "KMIPKIT-0009-FR-004",
+            "KMIPKIT-0009-FR-009",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+            "KMIPKIT-0043-FR-022",
+        }
+        expected_evidence = {
+            "bindings/c/tests/client_abi_consumer.c",
+            "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "bindings/python/tests/test_async_operation_mapping.py",
+            "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
+            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        }
+
+        self.assertIn(c_export, async_capability["mappings"]["c"])
+        self.assertIn(java_export, async_capability["mappings"]["java"])
+        self.assertIn(python_export, async_capability["mappings"]["python"])
+
+        for package_id, export_name in (
+            ("rust-kmipkit-client", "kmipkit_client::ClientOperationOutcome::with_cancel_echo"),
+            ("rust-kmipkit", "kmipkit::ClientOperationOutcome::with_cancel_echo"),
+        ):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual(package_id, declaration["packageId"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("client_asynchronous_operations", declaration["capabilityId"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(
+                    "specs/009-asynchronous-operations/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                self.assertTrue(expected_requirements <= set(declaration["requirementIds"]))
+                self.assertTrue(expected_evidence <= set(declaration["parityEvidenceIds"]))
+                self.assertEqual(
+                    {
+                        "rust": {"packageId": package_id, "name": export_name},
+                        "c": {"packageId": "c-kmipkit", "name": c_export},
+                        "java": {"packageId": "java-kmipkit", "name": java_export},
+                        "python": {"packageId": "python-kmipkit", "name": python_export},
+                    },
+                    declaration["languageMappings"],
+                )
+
     def test_t091_client_operation_options_methods_map_to_shared_execute_options(self) -> None:
         cases = (
             (
