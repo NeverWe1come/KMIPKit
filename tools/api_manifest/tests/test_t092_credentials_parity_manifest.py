@@ -11,6 +11,21 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0008"
 LANGUAGES = {"rust", "c", "java", "python"}
+EXPECTED_CREDENTIAL_TYPE_EXPORTS = {
+    "kmipkit_protocol::CredentialType",
+    "kmipkit_protocol::CredentialType::UsernameAndPassword",
+    "kmipkit_protocol::CredentialType::Device",
+    "kmipkit_protocol::CredentialType::Attestation",
+    "kmipkit_protocol::CredentialType::OneTimePassword",
+    "kmipkit_protocol::CredentialType::HashedPassword",
+    "kmipkit_protocol::CredentialType::Ticket",
+    "kmipkit_protocol::CredentialType::Extensions",
+    "kmipkit_protocol::CredentialType::Unknown",
+    "kmipkit_protocol::CredentialType::from_raw",
+    "kmipkit_protocol::CredentialType::raw",
+    "kmipkit_protocol::CredentialType::Extensions::0",
+    "kmipkit_protocol::CredentialType::Unknown::0",
+}
 RUST_EXPORT_INVENTORY = (
     ROOT
     / "specs"
@@ -174,7 +189,68 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             and row.get("exportName") not in trait_exports
         ]
         self.assertEqual(95, len(meaningful))
-        self.assertTrue(all(row.get("declarationState") == "blocked" for row in meaningful))
+        credential_type_rows = {
+            row["exportName"]: row
+            for row in meaningful
+            if row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_CREDENTIAL_TYPE_EXPORTS, credential_type_rows.keys())
+        self.assertTrue(
+            all(row.get("declarationState") == "declared" for row in credential_type_rows.values())
+        )
+        remaining = [
+            row for row in meaningful
+            if row.get("exportName") not in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+        ]
+        self.assertEqual(82, len(remaining))
+        self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
+
+    def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == OWNER_SPEC
+            and row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+        }
+        self.assertEqual(EXPECTED_CREDENTIAL_TYPE_EXPORTS, declarations.keys())
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertTrue(_has_approved_source(declaration))
+                self.assertEqual(
+                    "specs/008-credentials-attestation/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                self.assertEqual(LANGUAGES, set(mappings))
+                self.assertTrue(
+                    all(
+                        _is_nonblank_string(mappings[language].get("name"))
+                        and _is_nonblank_string(mappings[language].get("packageId"))
+                        for language in LANGUAGES
+                    )
+                )
+                self.assertTrue(
+                    {"KMIPKIT-0008-FR-003", "KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021"}
+                    <= set(declaration.get("requirementIds", []))
+                )
+
+        credential_type = next(
+            row for row in manifest["types"] if row["id"] == "CredentialType"
+        )
+        self.assertEqual("open-numeric", credential_type["enumRepresentation"]["shape"])
+        self.assertEqual(
+            "preserve-raw", credential_type["enumRepresentation"]["unknownValuePolicy"]
+        )
+        self.assertEqual("preserve-raw", credential_type["c"]["unknownValuePolicy"])
+        function = next(
+            row for row in manifest["functions"] if row["id"] == "credential_type_from_raw"
+        )
+        self.assertEqual("kmipkit_credential_type_from_raw", function["c"]["symbol"])
+        self.assertEqual("from_raw", function["rust"]["name"])
 
     def test_every_nonblocked_owner_declaration_is_mapped_or_reviewedly_excluded(
         self,
@@ -192,11 +268,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(
-            95,
-            len(blocked),
-            "the expected 95 functional KMIPKIT-0008 declarations must remain blocked",
-        )
+        self.assertEqual(82, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
