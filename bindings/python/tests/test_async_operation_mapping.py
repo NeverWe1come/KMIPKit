@@ -101,7 +101,7 @@ def test_async_outcome_exposes_owned_generic_response_extension_copy(
     released: list[object] = []
     stubs = _outcome_stubs(0x1A, released)
     extension_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 43)
-    expected_extension = object()
+    expected_extension = _async_response_extension()
     calls: list[int] = []
 
     def extension_count(_outcome, output) -> int:
@@ -134,14 +134,121 @@ def test_async_outcome_exposes_owned_generic_response_extension_copy(
     try:
         assert outcome.extension_count == 1
         assert outcome.extension_ttlv_at(0) is expected_extension
+        _assert_async_extension_payload(expected_extension)
         assert calls == [0]
         with pytest.raises(errors.InvalidInputError):
             outcome.extension_ttlv_at(1)
         assert calls == [0]
     finally:
         outcome.close()
+        expected_extension.close()
 
     assert released == [stubs.outcome_handle]
+
+
+def _async_response_extension() -> ttlv.Structure:
+    with ttlv.codec_limits_defaults() as limits:
+        vendor_extension = ttlv.ttlv_structure_create()
+        vendor_extension = _append_ttlv_item(
+            vendor_extension,
+            0x00540173,
+            ttlv.ttlv_value_text_string(b"opaque-v1", limits),
+            limits,
+        )
+        vendor_extension = _append_ttlv_item(
+            vendor_extension,
+            0x00540174,
+            ttlv.ttlv_value_enumeration(0xFFFFFFFF),
+            limits,
+        )
+
+        extension = ttlv.ttlv_structure_create()
+        extension = _append_ttlv_item(
+            extension,
+            0x0042009D,
+            ttlv.ttlv_value_text_string(b"OpaqueVendor", limits),
+            limits,
+        )
+        extension = _append_ttlv_item(
+            extension,
+            0x00420026,
+            ttlv.ttlv_value_boolean(False),
+            limits,
+        )
+        extension = _append_ttlv_item(
+            extension,
+            0x0042009C,
+            ttlv.ttlv_value_structure(vendor_extension, limits),
+            limits,
+        )
+        return extension
+
+
+def _append_ttlv_item(
+    structure: ttlv.Structure,
+    raw_tag: int,
+    value: ttlv.Value,
+    limits: ttlv.CodecLimits,
+) -> ttlv.Structure:
+    with ttlv.raw_tag_from_raw(raw_tag) as raw:
+        tag = ttlv.raw_tag_try_checked(raw)
+    try:
+        item = ttlv.ttlv_item_create(tag, value, limits)
+    finally:
+        tag.close()
+    return ttlv.ttlv_structure_with_item(structure, item, limits)
+
+
+def _assert_async_extension_payload(extension: ttlv.Structure) -> None:
+    with ttlv.ttlv_structure_view(extension) as view:
+        assert ttlv.ttlv_structure_view_item_count(view) == 3
+        _assert_text_value(view, 0, 0x0042009D, b"OpaqueVendor")
+        _assert_boolean_value(view, 1, 0x00420026, False)
+        with ttlv.ttlv_structure_view_item_at(view, 2) as item:
+            with ttlv.ttlv_item_view_tag(item) as tag:
+                assert ttlv.tag_value(tag) == 0x0042009C
+            with ttlv.ttlv_item_view_value(item) as value:
+                with ttlv.ttlv_value_view_structure(value) as vendor_view:
+                    assert ttlv.ttlv_structure_view_item_count(vendor_view) == 2
+                    _assert_text_value(vendor_view, 0, 0x00540173, b"opaque-v1")
+                    _assert_enumeration_value(vendor_view, 1, 0x00540174, 0xFFFFFFFF)
+
+
+def _assert_text_value(
+    view: ttlv.TtlvStructureView, index: int, raw_tag: int, expected: bytes
+) -> None:
+    with ttlv.ttlv_structure_view_item_at(view, index) as item:
+        assert ttlv.ttlv_item_view_type(item) is ttlv.ItemType.TextString
+        with ttlv.ttlv_item_view_tag(item) as tag:
+            assert ttlv.tag_value(tag) == raw_tag
+        with ttlv.ttlv_item_view_value(item) as value:
+            actual = bytes(
+                ttlv.ttlv_value_view_byte_at(value, offset)
+                for offset in range(ttlv.ttlv_value_view_byte_length(value))
+            )
+        assert actual == expected
+
+
+def _assert_boolean_value(
+    view: ttlv.TtlvStructureView, index: int, raw_tag: int, expected: bool
+) -> None:
+    with ttlv.ttlv_structure_view_item_at(view, index) as item:
+        assert ttlv.ttlv_item_view_type(item) is ttlv.ItemType.Boolean
+        with ttlv.ttlv_item_view_tag(item) as tag:
+            assert ttlv.tag_value(tag) == raw_tag
+        with ttlv.ttlv_item_view_value(item) as value:
+            assert ttlv.ttlv_value_view_boolean(value) is expected
+
+
+def _assert_enumeration_value(
+    view: ttlv.TtlvStructureView, index: int, raw_tag: int, expected: int
+) -> None:
+    with ttlv.ttlv_structure_view_item_at(view, index) as item:
+        assert ttlv.ttlv_item_view_type(item) is ttlv.ItemType.Enumeration
+        with ttlv.ttlv_item_view_tag(item) as tag:
+            assert ttlv.tag_value(tag) == raw_tag
+        with ttlv.ttlv_item_view_value(item) as value:
+            assert ttlv.ttlv_value_view_enumeration(value) == expected
 
 
 def _outcome_stubs(

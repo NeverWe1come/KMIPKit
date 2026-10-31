@@ -3503,6 +3503,8 @@ cleanup:
     return result;
 }
 
+static int async_response_extension_matches(kmipkit_ttlv_structure_t *extension);
+
 static int execute_cancel_payload_request_from_c(
     kmipkit_client_t *client,
     kmipkit_codec_limits_t *limits,
@@ -3548,7 +3550,7 @@ static int execute_cancel_payload_request_from_c(
         extension_present != UINT8_C(1) || extension == 0 ||
         kmipkit_ttlv_structure_view(extension, &extension_view) != 0 ||
         kmipkit_ttlv_structure_view_item_count(extension_view, &extension_items) != 0 ||
-        extension_items != UINT64_C(3)) {
+        extension_items != UINT64_C(3) || !async_response_extension_matches(extension)) {
         goto cleanup;
     }
     kmipkit_client_async_operation_outcome_release(outcome);
@@ -5697,6 +5699,145 @@ static int pkcs11_bytes_match(
         }
     }
     return 1;
+}
+
+static int async_item_value_at(
+    kmipkit_ttlv_structure_view_t *view,
+    uint64_t index,
+    uint32_t expected_tag,
+    uint8_t expected_type,
+    kmipkit_ttlv_item_view_t **out_item,
+    kmipkit_ttlv_value_view_t **out_value) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t actual_tag = 0;
+    uint8_t actual_type = 0;
+    if (view == 0 || out_item == 0 || out_value == 0 ||
+        kmipkit_ttlv_structure_view_item_at(view, index, &item) != 0 || item == 0 ||
+        !pkcs11_view_item_tag(view, index, &actual_tag) || actual_tag != expected_tag ||
+        kmipkit_ttlv_item_view_type(item, &actual_type) != 0 || actual_type != expected_type ||
+        kmipkit_ttlv_item_view_value(item, &value) != 0 || value == 0) {
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(item);
+        return 0;
+    }
+    *out_item = item;
+    *out_value = value;
+    return 1;
+}
+
+static int async_text_value_matches(
+    kmipkit_ttlv_structure_view_t *view,
+    uint64_t index,
+    uint32_t expected_tag,
+    const uint8_t *expected,
+    uint64_t expected_length) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint64_t actual_length = 0;
+    int matches = 0;
+    if (expected == 0 || !async_item_value_at(
+            view, index, expected_tag, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &item, &value) ||
+        kmipkit_ttlv_value_view_byte_length(value, &actual_length) != 0 ||
+        actual_length != expected_length) {
+        goto cleanup;
+    }
+    for (uint64_t byte_index = 0; byte_index < expected_length; ++byte_index) {
+        uint8_t actual = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, byte_index, &actual) != 0 ||
+            actual != expected[byte_index]) {
+            goto cleanup;
+        }
+    }
+    matches = 1;
+cleanup:
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return matches;
+}
+
+static int async_boolean_value_matches(
+    kmipkit_ttlv_structure_view_t *view,
+    uint64_t index,
+    uint32_t expected_tag,
+    uint8_t expected) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint8_t actual = UINT8_MAX;
+    const int matches = async_item_value_at(
+            view, index, expected_tag, KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN, &item, &value) &&
+        kmipkit_ttlv_value_view_boolean(value, &actual) == 0 && actual == expected;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return matches;
+}
+
+static int async_enumeration_value_matches(
+    kmipkit_ttlv_structure_view_t *view,
+    uint64_t index,
+    uint32_t expected_tag,
+    uint32_t expected) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t actual = 0;
+    const int matches = async_item_value_at(
+            view, index, expected_tag, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &item, &value) &&
+        kmipkit_ttlv_value_view_enumeration(value, &actual) == 0 && actual == expected;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return matches;
+}
+
+static int async_nested_structure_view(
+    kmipkit_ttlv_structure_view_t *view,
+    uint64_t index,
+    uint32_t expected_tag,
+    kmipkit_ttlv_structure_view_t **out_nested) {
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    kmipkit_ttlv_structure_view_t *nested = 0;
+    if (out_nested == 0 || !async_item_value_at(
+            view, index, expected_tag, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &item, &value) ||
+        kmipkit_ttlv_value_view_structure(value, &nested) != 0 || nested == 0) {
+        kmipkit_ttlv_structure_view_release(nested);
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(item);
+        return 0;
+    }
+    *out_nested = nested;
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    return 1;
+}
+
+static int async_response_extension_matches(kmipkit_ttlv_structure_t *extension) {
+    static const uint8_t expected_vendor[] = "OpaqueVendor";
+    static const uint8_t expected_text[] = "opaque-v1";
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_structure_view_t *vendor_view = 0;
+    uint64_t count = 0;
+    int matches = 0;
+    if (extension == 0 || kmipkit_ttlv_structure_view(extension, &view) != 0 || view == 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != UINT64_C(3) ||
+        !async_text_value_matches(
+            view, UINT64_C(0), UINT32_C(0x42009d), expected_vendor,
+            (uint64_t)(sizeof(expected_vendor) - 1)) ||
+        !async_boolean_value_matches(view, UINT64_C(1), UINT32_C(0x420026), UINT8_C(0)) ||
+        !async_nested_structure_view(view, UINT64_C(2), UINT32_C(0x42009c), &vendor_view) ||
+        kmipkit_ttlv_structure_view_item_count(vendor_view, &count) != 0 ||
+        count != UINT64_C(2) ||
+        !async_text_value_matches(
+            vendor_view, UINT64_C(0), UINT32_C(0x540173), expected_text,
+            (uint64_t)(sizeof(expected_text) - 1)) ||
+        !async_enumeration_value_matches(
+            vendor_view, UINT64_C(1), UINT32_C(0x540174), UINT32_MAX)) {
+        goto cleanup;
+    }
+    matches = 1;
+cleanup:
+    kmipkit_ttlv_structure_view_release(vendor_view);
+    kmipkit_ttlv_structure_view_release(view);
+    return matches;
 }
 
 static int pkcs11_nested_integer_matches(

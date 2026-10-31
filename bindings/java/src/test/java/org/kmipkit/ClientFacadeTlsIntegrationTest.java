@@ -2875,6 +2875,41 @@ final class ClientFacadeTlsIntegrationTest {
             try (TtlvStructure extension = outcome.extensionTtlvAt(0);
                     TtlvStructureView extensionView = extension.view()) {
                 assertEquals(3, extensionView.itemCount());
+                try (var vendorItem = extensionView.itemAt(0);
+                        var vendorTag = vendorItem.tag();
+                        var vendorValue = vendorItem.value()) {
+                    assertEquals(0x42009d, vendorTag.raw());
+                    assertEquals(org.kmipkit.ttlv.TtlvItemType.TextString, vendorItem.itemType());
+                    assertTtlvBytes(vendorValue, "OpaqueVendor".getBytes(StandardCharsets.US_ASCII));
+                }
+                try (var criticalityItem = extensionView.itemAt(1);
+                        var criticalityTag = criticalityItem.tag();
+                        var criticalityValue = criticalityItem.value()) {
+                    assertEquals(0x420026, criticalityTag.raw());
+                    assertEquals(org.kmipkit.ttlv.TtlvItemType.Boolean, criticalityItem.itemType());
+                    assertFalse(criticalityValue.booleanValue());
+                }
+                try (var vendorExtensionItem = extensionView.itemAt(2);
+                        var vendorExtensionTag = vendorExtensionItem.tag();
+                        var vendorExtensionValue = vendorExtensionItem.value();
+                        var vendorExtensionView = vendorExtensionValue.structure()) {
+                    assertEquals(0x42009c, vendorExtensionTag.raw());
+                    assertEquals(2, vendorExtensionView.itemCount());
+                    try (var textItem = vendorExtensionView.itemAt(0);
+                            var textTag = textItem.tag();
+                            var textValue = textItem.value()) {
+                        assertEquals(0x540173, textTag.raw());
+                        assertEquals(org.kmipkit.ttlv.TtlvItemType.TextString, textItem.itemType());
+                        assertTtlvBytes(textValue, "opaque-v1".getBytes(StandardCharsets.US_ASCII));
+                    }
+                    try (var enumItem = vendorExtensionView.itemAt(1);
+                            var enumTag = enumItem.tag();
+                            var enumValue = enumItem.value()) {
+                        assertEquals(0x540174, enumTag.raw());
+                        assertEquals(org.kmipkit.ttlv.TtlvItemType.Enumeration, enumItem.itemType());
+                        assertEquals(0xffff_ffffL, enumValue.enumeration());
+                    }
+                }
             }
             assertThrows(InvalidInputException.class, () -> outcome.extensionTtlvAt(1));
             assertFalse(outcome.toString().contains(Arrays.toString(correlation)));
@@ -5493,10 +5528,18 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42009d, 7, "OpaqueVendor".getBytes(StandardCharsets.US_ASCII)),
                 item(0x420026, 6, new byte[8]),
                 structure(0x42009c,
-                        item(0x541234, 8, "opaque-extension-value".getBytes(StandardCharsets.US_ASCII))));
+                        item(0x540173, 7, "opaque-v1".getBytes(StandardCharsets.US_ASCII)),
+                        enumeration(0x540174, -1)));
         byte[] response = structure(0x42000f, enumeration(0x42005c, 0x1a),
                 enumeration(0x42007f, 2), item(0x420006, 8, correlation), extension);
         return structure(0x42007b, header, response);
+    }
+
+    private static void assertTtlvBytes(org.kmipkit.ttlv.TtlvValueView value, byte[] expected) {
+        assertEquals(expected.length, value.byteLength());
+        for (int index = 0; index < expected.length; index++) {
+            assertEquals(Byte.toUnsignedInt(expected[index]), Byte.toUnsignedInt((byte) value.byteAt(index)));
+        }
     }
 
     private static byte[] singleAsyncResponseMessage(

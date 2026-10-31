@@ -189,7 +189,153 @@ fn async_outcome_extension_abi_returns_owned_ordered_generic_ttlv_copy() {
         SUCCESS
     );
     assert_eq!(item_count, 3);
+    assert_ttlv_text_value(view, 0, 0x0042_009d, b"OpaqueVendor");
+    assert_ttlv_boolean_value(view, 1, 0x0042_0026, false);
+    let vendor_extension = ttlv_nested_structure(view, 2, 0x0042_009c);
+    let mut vendor_extension_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(vendor_extension, &raw mut vendor_extension_count,),
+        SUCCESS
+    );
+    assert_eq!(vendor_extension_count, 2);
+    assert_ttlv_text_value(vendor_extension, 0, 0x0054_0173, b"opaque-v1");
+    assert_ttlv_enumeration_value(vendor_extension, 1, 0x0054_0174, u32::MAX);
+    kmipkit_ttlv_structure_view_release(vendor_extension);
     kmipkit_ttlv_structure_view_release(view);
+}
+
+fn ttlv_item_with_tag(
+    view: *mut kmipkit_ttlv_structure_view_t,
+    index: u64,
+    expected_tag: u32,
+) -> *mut kmipkit_ttlv_item_view_t {
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_at(view, index, &raw mut item),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    let mut tag = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_item_view_tag(item, &raw mut tag), SUCCESS);
+    assert!(!tag.is_null());
+    let mut actual_tag = u32::MAX;
+    assert_eq!(kmipkit_ttlv_tag_value(tag, &raw mut actual_tag), SUCCESS);
+    kmipkit_tag_release(tag);
+    assert_eq!(actual_tag, expected_tag);
+    item
+}
+
+fn assert_ttlv_text_value(
+    view: *mut kmipkit_ttlv_structure_view_t,
+    index: u64,
+    expected_tag: u32,
+    expected_bytes: &[u8],
+) {
+    let item = ttlv_item_with_tag(view, index, expected_tag);
+    let mut item_type = u8::MAX;
+    assert_eq!(
+        kmipkit_ttlv_item_view_type(item, &raw mut item_type),
+        SUCCESS
+    );
+    assert_eq!(item_type, 7);
+    let mut value = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_item_view_value(item, &raw mut value), SUCCESS);
+    let mut length = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_value_view_byte_length(value, &raw mut length),
+        SUCCESS
+    );
+    assert_eq!(
+        length,
+        u64::try_from(expected_bytes.len()).expect("test length fits u64")
+    );
+    let mut bytes = Vec::with_capacity(expected_bytes.len());
+    for index in 0..length {
+        let mut byte = u8::MAX;
+        assert_eq!(
+            kmipkit_ttlv_value_view_byte_at(value, index, &raw mut byte),
+            SUCCESS
+        );
+        bytes.push(byte);
+    }
+    assert_eq!(bytes, expected_bytes);
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+}
+
+fn assert_ttlv_boolean_value(
+    view: *mut kmipkit_ttlv_structure_view_t,
+    index: u64,
+    expected_tag: u32,
+    expected_value: bool,
+) {
+    let item = ttlv_item_with_tag(view, index, expected_tag);
+    let mut item_type = u8::MAX;
+    assert_eq!(
+        kmipkit_ttlv_item_view_type(item, &raw mut item_type),
+        SUCCESS
+    );
+    assert_eq!(item_type, 6);
+    let mut value = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_item_view_value(item, &raw mut value), SUCCESS);
+    let mut actual = u8::MAX;
+    assert_eq!(
+        kmipkit_ttlv_value_view_boolean(value, &raw mut actual),
+        SUCCESS
+    );
+    assert_eq!(actual, u8::from(expected_value));
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+}
+
+fn assert_ttlv_enumeration_value(
+    view: *mut kmipkit_ttlv_structure_view_t,
+    index: u64,
+    expected_tag: u32,
+    expected_value: u32,
+) {
+    let item = ttlv_item_with_tag(view, index, expected_tag);
+    let mut item_type = u8::MAX;
+    assert_eq!(
+        kmipkit_ttlv_item_view_type(item, &raw mut item_type),
+        SUCCESS
+    );
+    assert_eq!(item_type, 5);
+    let mut value = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_item_view_value(item, &raw mut value), SUCCESS);
+    let mut actual = u32::MAX;
+    assert_eq!(
+        kmipkit_ttlv_value_view_enumeration(value, &raw mut actual),
+        SUCCESS
+    );
+    assert_eq!(actual, expected_value);
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+}
+
+fn ttlv_nested_structure(
+    view: *mut kmipkit_ttlv_structure_view_t,
+    index: u64,
+    expected_tag: u32,
+) -> *mut kmipkit_ttlv_structure_view_t {
+    let item = ttlv_item_with_tag(view, index, expected_tag);
+    let mut item_type = u8::MAX;
+    assert_eq!(
+        kmipkit_ttlv_item_view_type(item, &raw mut item_type),
+        SUCCESS
+    );
+    assert_eq!(item_type, 1);
+    let mut value = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_item_view_value(item, &raw mut value), SUCCESS);
+    let mut nested = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_value_view_structure(value, &raw mut nested),
+        SUCCESS
+    );
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    assert!(!nested.is_null());
+    nested
 }
 
 #[test]
