@@ -248,6 +248,14 @@ The regression test `tools/api_manifest/tests/test_manifest_v2.py::test_t091_all
 
 Both Rust `ClientOperation::Interop` declarations carry the KMIPKIT-0042 operation requirements and KMIPKIT-0043-FR-005/007/008/009/010/021/022 parity requirements of the canonical Interop request surface. `tools/api_manifest/tests/test_manifest_v2.py::test_t091_client_operation_variants_map_to_four_language_raw_metadata` checks both Rust paths against the shared C, Java, and Python operation metadata. This records API parity only; it changes no operation implementation or wire encoding and makes no server-conformance claim.
 
+### T091 ClientBatch indexed item metadata readback
+
+The approved owner is `specs/006-message-batch-model/spec.md`, with KMIPKIT-0006-FR-005/008/014 and the accepted ownership/model requirements in its approval record. The four-language list/index mapping is governed by KMIPKIT-0043-FR-010/021; strict Red/Green/Refactor evidence is required by KMIPKIT-0043-FR-022. Both Rust declarations of `ClientBatch::items` map to C `kmipkit_client_batch_item_count`/`kmipkit_client_batch_item_at`, Java `ClientBatch.itemCount`/`itemAt`, and Python `Batch.item_count`/`item_at`.
+
+Each foreign indexed result is an independently owned, read-only handle that retains the existing batch owner and item position. The view exposes the item's existing Unique Batch Item ID and Message Extension identity/criticality metadata. It does not copy request payload bytes or expose request inspection; normal batch execution still consumes the typed requests. Releasing the original batch before the item handle is safe. The Rust `ClientBatchItem::request` declarations remain blocked as a separate candidate, and generic request-payload access is not part of this mapping.
+
+The compiled C consumer verifies count, bounds, binary ID metadata after batch release, rejected re-add, and continued item validity. Java's JNI contract test covers the same owner lifetime and read-only behavior; Python's client suite covers indexed wrapper ownership, metadata access after batch release, and mutation rejection. The T091 manifest contract asserts the four-language mappings and preserves the blocked Rust request accessor. This is API inventory and ownership evidence only; it makes no KMIP conformance, profile-support, interoperability, certification, or release-readiness claim.
+
 
 ### T091 async outcome response-extension bridge correction
 
