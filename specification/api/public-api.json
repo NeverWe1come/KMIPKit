@@ -13295,6 +13295,7 @@
       "id": "client_batch_item_with_unique_batch_item_id",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -88572,6 +88573,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -97664,6 +97666,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -263061,6 +263064,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -266350,6 +266354,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -266388,6 +266393,7 @@
       "capabilityId": "client_batch_model",
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],

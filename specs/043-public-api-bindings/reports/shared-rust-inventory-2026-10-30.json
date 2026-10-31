@@ -951,10 +951,12 @@
       "ownerSpecId": "KMIPKIT-0006",
       "ownerAdrId": null,
       "ownerRequirementIds": [
-        "KMIPKIT-0006-FR-005"
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008"
       ],
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],
@@ -4594,10 +4596,12 @@
       "ownerSpecId": "KMIPKIT-0006",
       "ownerAdrId": null,
       "ownerRequirementIds": [
-        "KMIPKIT-0006-FR-005"
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008"
       ],
       "requirementIds": [
         "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-021"
       ],

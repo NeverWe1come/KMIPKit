@@ -638,7 +638,7 @@ int32_t kmipkit_client_batch_set_client_correlation_value(kmipkit_client_batch_t
  * If either validation fails, the caller retains ownership. Once ownership transfer begins, the caller must not use or release item, even if the call returns an error.
  * On success, out_item receives the replacement handle.
  */
-/* KMIPKIT-0006-FR-005, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+/* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-006, KMIPKIT-0007-FR-008, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t * response, uint64_t * out_count);
