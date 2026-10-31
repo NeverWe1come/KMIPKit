@@ -94,16 +94,16 @@ class Nonce(NativeHandle):
             self._pointer(),
         )
         view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
-        _ACTIVE_NONCE_VIEWS[self] = _ACTIVE_NONCE_VIEWS.get(self, 0) + 1
+        previous_view_count = _ACTIVE_NONCE_VIEWS.get(self, 0)
+        _ACTIVE_NONCE_VIEWS[self] = previous_view_count + 1
         try:
             return callback(view)
         finally:
             try:
                 view.close()
             finally:
-                active_views = _ACTIVE_NONCE_VIEWS.get(self, 1) - 1
-                if active_views:
-                    _ACTIVE_NONCE_VIEWS[self] = active_views
+                if previous_view_count:
+                    _ACTIVE_NONCE_VIEWS[self] = previous_view_count
                 else:
                     _ACTIVE_NONCE_VIEWS.pop(self, None)
 
