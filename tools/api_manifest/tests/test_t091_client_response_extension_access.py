@@ -164,6 +164,16 @@ class T091ClientResponseExtensionAccessTests(unittest.TestCase):
                         declaration["languageMappings"],
                     )
 
+    def test_async_extension_ttlv_accessor_declares_response_ordering(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        declaration = next(
+            row
+            for row in manifest["functions"]
+            if row["id"] == "client_async_operation_outcome_extension_ttlv_at"
+        )
+
+        self.assertEqual("preserves-response-extension-order", declaration["ordering"])
+
     def test_message_extension_type_maps_to_the_generic_ttlv_structure(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         declarations = {
