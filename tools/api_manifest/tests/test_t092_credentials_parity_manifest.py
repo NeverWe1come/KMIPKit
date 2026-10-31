@@ -46,6 +46,18 @@ CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::Credential::with_ttlv",
     "kmipkit_protocol::Credential::into_ttlv",
 }
+AUTHENTICATION_EXPORTS = {
+    "kmipkit_protocol::Authentication",
+    "kmipkit_protocol::Authentication::new",
+    "kmipkit_protocol::Authentication::try_from_ttlv",
+    "kmipkit_protocol::Authentication::credentials",
+    "kmipkit_protocol::Authentication::with_ttlv",
+    "kmipkit_protocol::Authentication::into_ttlv",
+    "kmipkit_protocol::CredentialView",
+    "kmipkit_protocol::CredentialView::credential_type",
+    "kmipkit_protocol::CredentialView::credential_type_raw",
+    "kmipkit_protocol::CredentialView::with_ttlv",
+}
 EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
     EXPECTED_CREDENTIAL_TYPE_EXPORTS
     | EXPECTED_NONCE_EXPORTS
@@ -707,6 +719,107 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 row for row in manifest["functions"] if row["id"] == function_id
             )
             self.assertEqual(symbol, function["c"]["symbol"])
+
+    def test_authentication_and_credential_views_map_through_all_four_languages(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in AUTHENTICATION_EXPORTS
+        }
+        self.assertEqual(AUTHENTICATION_EXPORTS, declarations.keys())
+
+        expected_names = {
+            "kmipkit_protocol::Authentication": {
+                "rust": "kmipkit_protocol::Authentication",
+                "c": "kmipkit_authentication_t",
+                "java": "org.kmipkit.credentials.Authentication",
+                "python": "kmipkit.credentials.Authentication",
+            },
+            "kmipkit_protocol::Authentication::new": {
+                "rust": "kmipkit_protocol::Authentication::new",
+                "c": "kmipkit_authentication_create",
+                "java": "org.kmipkit.credentials.Authentication.create",
+                "python": "kmipkit.credentials.Authentication.create",
+            },
+            "kmipkit_protocol::Authentication::try_from_ttlv": {
+                "rust": "kmipkit_protocol::Authentication::try_from_ttlv",
+                "c": "kmipkit_authentication_from_ttlv",
+                "java": "org.kmipkit.credentials.Authentication.fromTtlv",
+                "python": "kmipkit.credentials.Authentication.from_ttlv",
+            },
+            "kmipkit_protocol::Authentication::credentials": {
+                "rust": "kmipkit_protocol::Authentication::credentials",
+                "c": "kmipkit_authentication_credential_at",
+                "java": "org.kmipkit.credentials.Authentication.credentials",
+                "python": "kmipkit.credentials.Authentication.credentials",
+            },
+            "kmipkit_protocol::Authentication::with_ttlv": {
+                "rust": "kmipkit_protocol::Authentication::with_ttlv",
+                "c": "kmipkit_authentication_ttlv_view",
+                "java": "org.kmipkit.credentials.Authentication.withTtlv",
+                "python": "kmipkit.credentials.Authentication.with_ttlv",
+            },
+            "kmipkit_protocol::Authentication::into_ttlv": {
+                "rust": "kmipkit_protocol::Authentication::into_ttlv",
+                "c": "kmipkit_authentication_into_ttlv",
+                "java": "org.kmipkit.credentials.Authentication.intoTtlv",
+                "python": "kmipkit.credentials.Authentication.into_ttlv",
+            },
+            "kmipkit_protocol::CredentialView": {
+                "rust": "kmipkit_protocol::CredentialView",
+                "c": "kmipkit_credential_view_t",
+                "java": "org.kmipkit.credentials.CredentialView",
+                "python": "kmipkit.credentials.CredentialView",
+            },
+            "kmipkit_protocol::CredentialView::credential_type": {
+                "rust": "kmipkit_protocol::CredentialView::credential_type",
+                "c": "kmipkit_credential_view_type",
+                "java": "org.kmipkit.credentials.CredentialView.credentialType",
+                "python": "kmipkit.credentials.CredentialView.credential_type",
+            },
+            "kmipkit_protocol::CredentialView::credential_type_raw": {
+                "rust": "kmipkit_protocol::CredentialView::credential_type_raw",
+                "c": "kmipkit_credential_view_type_raw",
+                "java": "org.kmipkit.credentials.CredentialView.credentialTypeRaw",
+                "python": "kmipkit.credentials.CredentialView.credential_type_raw",
+            },
+            "kmipkit_protocol::CredentialView::with_ttlv": {
+                "rust": "kmipkit_protocol::CredentialView::with_ttlv",
+                "c": "kmipkit_credential_view_ttlv_view",
+                "java": "org.kmipkit.credentials.CredentialView.withTtlv",
+                "python": "kmipkit.credentials.CredentialView.with_ttlv",
+            },
+        }
+        required_ids = {
+            "KMIPKIT-0008-FR-001",
+            "KMIPKIT-0008-FR-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-001",
+            "KMIPKIT-REQ-SPEC-9.4-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-002",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-017",
+            "KMIPKIT-0043-FR-021",
+            "KMIPKIT-0043-FR-022",
+        }
+        for export_name, declaration in declarations.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("declared", declaration.get("declarationState"))
+                self.assertEqual("four-language", declaration.get("parityScope"))
+                self.assertTrue(_has_approved_source(declaration))
+                self.assertEqual(
+                    "specs/008-credentials-attestation/spec.md",
+                    declaration["approvalSource"]["path"],
+                )
+                self.assertTrue(required_ids <= set(declaration.get("requirementIds", [])))
+                mappings = declaration.get("languageMappings")
+                self.assertIsInstance(mappings, dict)
+                if isinstance(mappings, dict):
+                    self.assertEqual(LANGUAGES, set(mappings))
+                    for language, expected_name in expected_names[export_name].items():
+                        self.assertEqual(expected_name, mappings[language]["name"])
 
     def test_attestation_credential_binding_glue_has_exact_owner_exclusions(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
