@@ -13,15 +13,17 @@ OWNER_SPEC = "KMIPKIT-0008"
 LANGUAGES = {"rust", "c", "java", "python"}
 
 
+def _is_nonblank_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
 def _has_approved_source(record: dict[str, object]) -> bool:
     source = record.get("approvalSource")
     return (
         isinstance(source, dict)
         and source.get("status") == "Approved"
-        and isinstance(source.get("path"), str)
-        and bool(source["path"])
-        and isinstance(source.get("evidence"), str)
-        and bool(source["evidence"])
+        and _is_nonblank_string(source.get("path"))
+        and _is_nonblank_string(source.get("evidence"))
     )
 
 
@@ -49,8 +51,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 and set(mappings) == LANGUAGES
                 and all(
                     isinstance(mappings[language], dict)
-                    and bool(mappings[language].get("packageId"))
-                    and bool(mappings[language].get("name"))
+                    and _is_nonblank_string(mappings[language].get("packageId"))
+                    and _is_nonblank_string(mappings[language].get("name"))
                     for language in LANGUAGES
                 )
                 and _has_approved_source(declaration)
@@ -59,8 +61,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             exclusion = exclusions.get(key)
             reviewed_exclusion = (
                 isinstance(exclusion, dict)
-                and bool(exclusion.get("reason"))
-                and bool(exclusion.get("evidence"))
+                and exclusion.get("candidateSpecId") == OWNER_SPEC
+                and _is_nonblank_string(exclusion.get("reason"))
+                and _is_nonblank_string(exclusion.get("evidence"))
                 and _has_approved_source(exclusion)
             )
 
