@@ -3511,9 +3511,14 @@ static int execute_cancel_payload_request_from_c(
     kmipkit_client_async_operation_outcome_t *outcome = 0;
     kmipkit_client_async_operation_metadata_v1_t metadata = {0};
     kmipkit_ttlv_structure_t *payload = 0;
+    kmipkit_ttlv_structure_t *extension = 0;
+    kmipkit_ttlv_structure_view_t *extension_view = 0;
     kmipkit_byte_span_v1_t top_level_correlation = {0};
     uint8_t top_level_correlation_present = UINT8_C(9);
     uint8_t payload_present = UINT8_C(9);
+    uint8_t extension_present = UINT8_C(9);
+    uint64_t extension_count = UINT64_MAX;
+    uint64_t extension_items = UINT64_MAX;
     int result = 1;
 
     if (client == 0 || limits == 0 || correlation == 0 || correlation_length == 0 ||
@@ -3535,12 +3540,24 @@ static int execute_cancel_payload_request_from_c(
         kmipkit_client_async_operation_outcome_response_payload_ttlv(
             outcome, &payload_present, &payload) != 0 ||
         payload_present != 1 || payload == 0 ||
-        !cancel_response_payload_matches(payload, correlation, correlation_length)) {
+        !cancel_response_payload_matches(payload, correlation, correlation_length) ||
+        kmipkit_client_async_operation_outcome_extension_count(outcome, &extension_count) != 0 ||
+        extension_count != UINT64_C(1) ||
+        kmipkit_client_async_operation_outcome_extension_ttlv_at(
+            outcome, UINT64_C(0), &extension_present, &extension) != 0 ||
+        extension_present != UINT8_C(1) || extension == 0 ||
+        kmipkit_ttlv_structure_view(extension, &extension_view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(extension_view, &extension_items) != 0 ||
+        extension_items != UINT64_C(3)) {
         goto cleanup;
     }
+    kmipkit_client_async_operation_outcome_release(outcome);
+    outcome = 0;
     result = 0;
 
 cleanup:
+    kmipkit_ttlv_structure_view_release(extension_view);
+    kmipkit_ttlv_structure_release(extension);
     kmipkit_ttlv_structure_release(payload);
     kmipkit_client_async_operation_outcome_release(outcome);
     return result;

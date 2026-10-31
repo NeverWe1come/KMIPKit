@@ -43,9 +43,9 @@ RUST_SURFACES = {
     },
     "kmipkit_client::ClientOperationOutcome::extensions": {
         "root": "kmipkit::ClientOperationOutcome::extensions",
-        "c": "kmipkit_client_batch_item_response_extension_count",
-        "java": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
-        "python": "kmipkit.client.BatchItemResult.extension_count",
+        "c": "kmipkit_client_async_operation_outcome_extension_count",
+        "java": "org.kmipkit.extensions.AsyncOperationOutcome.extensionCount",
+        "python": "kmipkit.client.AsyncOperationOutcome.extension_count",
     },
     "kmipkit_client::ClientMessageExtension::with_ttlv": {
         "root": "kmipkit::ClientMessageExtension::with_ttlv",
@@ -96,6 +96,27 @@ class T091ClientResponseExtensionAccessTests(unittest.TestCase):
                         target = declarations.get((package_id, target_name))
                         self.assertIsNotNone(target, f"Missing {language} API {target_name}")
                         self.assertEqual("declared", target["declarationState"])
+
+    def test_async_extension_ttlv_access_maps_to_the_async_outcome_handle(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["publicDeclarations"]
+        }
+        expected = {
+            "c-kmipkit": "kmipkit_client_async_operation_outcome_extension_ttlv_at",
+            "java-kmipkit": "org.kmipkit.extensions.AsyncOperationOutcome.extensionTtlvAt",
+            "python-kmipkit": "kmipkit.client.AsyncOperationOutcome.extension_ttlv_at",
+        }
+        for package_id, export_name in expected.items():
+            with self.subTest(package=package_id):
+                declaration = declarations.get((package_id, export_name))
+                self.assertIsNotNone(declaration, f"Missing async API {export_name}")
+                assert declaration is not None
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("client_execution", declaration["capabilityId"])
+                self.assertEqual(REQUIREMENTS, declaration["requirementIds"])
+                self.assertEqual("four-language", declaration["parityScope"])
 
     def test_message_extension_type_maps_to_the_generic_ttlv_structure(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))

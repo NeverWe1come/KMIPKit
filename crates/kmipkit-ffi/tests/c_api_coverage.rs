@@ -3299,12 +3299,24 @@ fn cancel_success_response(correlation: &[u8]) -> Vec<u8> {
             enumeration(0x0042_0012, 1),
         ],
     );
+    let response_extension = structure(
+        0x0042_0051,
+        [
+            ttlv_item(0x0042_009d, 0x07, b"OpaqueVendor"),
+            ttlv_item(0x0042_0026, 0x06, &[0; 8]),
+            structure(
+                0x0042_009c,
+                [ttlv_item(0x0054_0173, 0x07, b"opaque-v1"), enumeration(0x0054_0174, u32::MAX)],
+            ),
+        ],
+    );
     let cancel_item = structure(
         0x0042_000f,
         [
             enumeration(0x0042_005c, 0x19),
             enumeration(0x0042_007f, 0),
             response_payload,
+            response_extension,
         ],
     );
     structure(0x0042_007b, [header, cancel_item])

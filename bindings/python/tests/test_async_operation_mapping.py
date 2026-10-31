@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, ttlv
+from kmipkit import client, errors, ttlv
 from kmipkit._client_ffi import ffi
 
 
@@ -93,6 +93,55 @@ def test_poll_preserves_binary_correlation_and_exposes_pending_outcome(
         limits.close()
 
     assert released == [outcome_handle]
+
+
+def test_async_outcome_exposes_owned_generic_response_extension_copy(
+    monkeypatch,
+) -> None:
+    released: list[object] = []
+    stubs = _outcome_stubs(0x1A, released)
+    extension_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 43)
+    expected_extension = object()
+    calls: list[int] = []
+
+    def extension_count(_outcome, output) -> int:
+        output[0] = 1
+        return 0
+
+    def extension_at(_outcome, index, present, output) -> int:
+        calls.append(int(index))
+        present[0] = int(index == 0)
+        output[0] = extension_pointer if index == 0 else ffi.NULL
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                **stubs.__dict__,
+                "kmipkit_client_async_operation_outcome_extension_count": extension_count,
+                "kmipkit_client_async_operation_outcome_extension_ttlv_at": extension_at,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda address: expected_extension if address == 43 else None,
+    )
+    outcome = client._wrap_owned_handle(client.AsyncOperationOutcome, stubs.outcome_handle)
+    try:
+        assert outcome.extension_count == 1
+        assert outcome.extension_ttlv_at(0) is expected_extension
+        assert calls == [0]
+        with pytest.raises(errors.InvalidInputError):
+            outcome.extension_ttlv_at(1)
+        assert calls == [0, 1]
+    finally:
+        outcome.close()
+
+    assert released == [stubs.outcome_handle]
 
 
 def _outcome_stubs(

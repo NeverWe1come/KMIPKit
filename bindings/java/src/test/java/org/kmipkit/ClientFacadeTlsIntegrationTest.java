@@ -2871,6 +2871,12 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0, retainedAfterFailure[0].get(index));
             }
             assertTrue(outcome.responsePayloadTtlv().isEmpty());
+            assertEquals(1, outcome.extensionCount());
+            try (TtlvStructure extension = outcome.extensionTtlvAt(0);
+                    TtlvStructureView extensionView = extension.view()) {
+                assertEquals(3, extensionView.itemCount());
+            }
+            assertThrows(InvalidInputException.class, () -> outcome.extensionTtlvAt(1));
             assertFalse(outcome.toString().contains(Arrays.toString(correlation)));
             request = peer.get(12, TimeUnit.SECONDS);
         } finally {
@@ -5483,8 +5489,13 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
+        byte[] extension = structure(0x420051,
+                item(0x42009d, 7, "OpaqueVendor".getBytes(StandardCharsets.US_ASCII)),
+                item(0x420026, 6, new byte[8]),
+                structure(0x42009c,
+                        item(0x541234, 8, "opaque-extension-value".getBytes(StandardCharsets.US_ASCII))));
         byte[] response = structure(0x42000f, enumeration(0x42005c, 0x1a),
-                enumeration(0x42007f, 2), item(0x420006, 8, correlation));
+                enumeration(0x42007f, 2), item(0x420006, 8, correlation), extension);
         return structure(0x42007b, header, response);
     }
 

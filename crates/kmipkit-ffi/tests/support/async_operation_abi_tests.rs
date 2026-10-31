@@ -75,6 +75,121 @@ fn poll_execution_returns_exact_pending_metadata_and_correlation_without_polling
 }
 
 #[test]
+// OASIS KMIP v2.1 §9.13, Table 418: preserve a non-critical extension as generic TTLV.
+fn async_outcome_extension_abi_returns_owned_ordered_generic_ttlv_copy() {
+    let correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
+    let extension = ttlv_structure(
+        0x0042_0051,
+        [
+            ttlv_item(0x0042_009d, 0x07, b"OpaqueVendor"),
+            ttlv_item(0x0042_0026, 0x06, &[0; 8]),
+            ttlv_structure(
+                0x0042_009c,
+                [ttlv_item(0x0054_0173, 0x07, b"opaque-v1"), ttlv_enumeration(0x0054_0174, u32::MAX)],
+            ),
+        ],
+    );
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x1a),
+                    ttlv_enumeration(0x0042_007f, 2),
+                    ttlv_item(0x0042_0006, 0x08, &correlation),
+                    extension,
+                ],
+            ),
+        ],
+    );
+    let (client, peer) = client_with_one_response(response);
+    let client_handle = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(Mutex::new(client))),
+    );
+    let limits_handle = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut outcome = ptr::null_mut();
+
+    let status = kmipkit_client_execute_poll(
+        client_handle,
+        correlation.as_ptr(),
+        u64::try_from(correlation.len()).expect("correlation length fits ABI"),
+        limits_handle,
+        &mut outcome,
+    );
+    peer.join().expect("the one-exchange test peer completes");
+    assert_eq!(status, SUCCESS);
+    assert!(!outcome.is_null());
+
+    let mut count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_extension_count(outcome, &raw mut count),
+        SUCCESS
+    );
+    assert_eq!(count, 1);
+
+    let mut absent = u8::MAX;
+    let mut out_of_range = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_extension_ttlv_at(
+            outcome,
+            1,
+            &raw mut absent,
+            &raw mut out_of_range,
+        ),
+        SUCCESS
+    );
+    assert_eq!(absent, 0);
+    assert!(out_of_range.is_null());
+
+    let mut present = u8::MAX;
+    let mut extension_copy = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_async_operation_outcome_extension_ttlv_at(
+            outcome,
+            0,
+            &raw mut present,
+            &raw mut extension_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!extension_copy.is_null());
+    kmipkit_client_async_operation_outcome_release(outcome);
+    kmipkit_codec_limits_release(limits_handle);
+    kmipkit_client_release(client_handle);
+
+    let mut view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(extension_copy, &raw mut view),
+        SUCCESS
+    );
+    kmipkit_ttlv_structure_release(extension_copy);
+    let mut item_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(view, &raw mut item_count),
+        SUCCESS
+    );
+    assert_eq!(item_count, 3);
+    kmipkit_ttlv_structure_view_release(view);
+}
+
+#[test]
 fn poll_execution_with_options_returns_one_exact_async_outcome() {
     let expected_correlation = [0x00, 0xff, 0x80, 0x13, 0x00];
     let response = ttlv_structure(
