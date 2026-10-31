@@ -3050,6 +3050,67 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_interop_and_log_request_helpers_map_to_approved_operations(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = (
+            (
+                "kmipkit_client::ClientRequest::interop",
+                "rust-kmipkit-client",
+                "kmipkit.extensions.client_batch_item_interop",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
+            ),
+            (
+                "kmipkit::ClientRequest::interop",
+                "rust-kmipkit",
+                "kmipkit.extensions.client_batch_item_interop",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
+            ),
+            (
+                "kmipkit_client::ClientRequest::log",
+                "rust-kmipkit-client",
+                "kmipkit.extensions.client_batch_item_log",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
+            ),
+            (
+                "kmipkit::ClientRequest::log",
+                "rust-kmipkit",
+                "kmipkit.extensions.client_batch_item_log",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
+            ),
+        )
+
+        for export_name, package_id, canonical_name, operation_id in cases:
+            declaration = declarations[export_name]
+            canonical = declarations[canonical_name]
+            operation = operations[operation_id]
+            expected_mappings = {
+                language: mapping.copy()
+                for language, mapping in canonical["languageMappings"].items()
+            }
+            expected_mappings["rust"] = {
+                "packageId": package_id,
+                "name": export_name,
+            }
+            with self.subTest(export=export_name):
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("approved", operation["ownerDependency"]["state"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertEqual(canonical["parityEvidenceIds"], declaration["parityEvidenceIds"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_declared_attribute_outcome_payloads_map_to_response_accessors(
         self,
     ) -> None:
