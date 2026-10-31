@@ -3248,7 +3248,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         expected_requirements = {
             "KMIPKIT-0009-FR-004",
             "KMIPKIT-0009-FR-009",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-005",
             "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-017",
             "KMIPKIT-0043-FR-021",
             "KMIPKIT-0043-FR-022",
         }

@@ -31432,6 +31432,7 @@
           "kmipkit::ClientOperationOutcome::operation",
           "kmipkit::ClientOperationOutcome::result",
           "kmipkit::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit::ClientOperationOutcome::with_cancel_echo",
           "kmipkit::ClientOperationOutcome::with_response_payload",
           "kmipkit_client::Client::execute_cancel",
           "kmipkit_client::Client::execute_cancel_with_options",
@@ -31447,6 +31448,7 @@
           "kmipkit_client::ClientOperationOutcome::operation",
           "kmipkit_client::ClientOperationOutcome::result",
           "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
           "kmipkit_client::ClientOperationOutcome::with_response_payload"
         ]
       },
@@ -110077,6 +110079,57 @@
     },
     {
       "approvalSource": {
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "rust-observed-91558ad1e35a4c9717ed",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
         "path": "specs/007-client-execution/spec.md",
@@ -118983,6 +119036,57 @@
         "KMIPKIT-0009-FR-010",
         "KMIPKIT-0009-FR-012",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29",
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_asynchronous_operations",
+      "declarationId": "rust-observed-c820b22f981eca905ac4",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientOperationOutcome::with_cancel_echo",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientOperationOutcome::with_cancel_echo",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {

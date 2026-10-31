@@ -91739,14 +91739,51 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::with_cancel_echo"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ]
     },
     {
       "declarationId": "rust-observed-ed557d5cd4630fd24c4a",
@@ -101979,14 +102016,51 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::ClientOperationOutcome::with_cancel_echo",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_asynchronous_operations",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0009-FR-004",
+        "KMIPKIT-0009-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/009-asynchronous-operations/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation by the repository maintainer on 2026-10-29"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientOperationOutcome::with_cancel_echo"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_async_operation_outcome_response_payload_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.AsyncOperationOutcome.response_payload_ttlv"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_async_operation_mapping.py",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "tools/api_manifest/tests/test_manifest_v2.py"
+      ]
     },
     {
       "declarationId": "rust-observed-00ff3303adcb20eb2f3e",
@@ -404696,6 +404770,7 @@
           "kmipkit::ClientOperationOutcome::operation",
           "kmipkit::ClientOperationOutcome::result",
           "kmipkit::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit::ClientOperationOutcome::with_cancel_echo",
           "kmipkit::ClientOperationOutcome::with_response_payload",
           "kmipkit_client::Client::execute_cancel",
           "kmipkit_client::Client::execute_cancel_with_options",
@@ -404711,6 +404786,7 @@
           "kmipkit_client::ClientOperationOutcome::operation",
           "kmipkit_client::ClientOperationOutcome::result",
           "kmipkit_client::ClientOperationOutcome::with_asynchronous_correlation_value",
+          "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
           "kmipkit_client::ClientOperationOutcome::with_response_payload"
         ],
         "c": [

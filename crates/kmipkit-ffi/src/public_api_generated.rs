@@ -2525,6 +2525,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientOperation::QueryAsyncRequests",
     ),
     (
+        "rust-observed-91558ad1e35a4c9717ed",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientOperationOutcome::with_cancel_echo",
+    ),
+    (
         "rust-observed-6fa4a3ed6ac774b3c741",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::DiscoverVersions",
@@ -3398,6 +3403,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-5164fc13c4c96188d826",
         "rust-kmipkit",
         "kmipkit::ClientOperationOutcome::with_asynchronous_correlation_value",
+    ),
+    (
+        "rust-observed-c820b22f981eca905ac4",
+        "rust-kmipkit",
+        "kmipkit::ClientOperationOutcome::with_cancel_echo",
     ),
     (
         "rust-observed-00ff3303adcb20eb2f3e",
