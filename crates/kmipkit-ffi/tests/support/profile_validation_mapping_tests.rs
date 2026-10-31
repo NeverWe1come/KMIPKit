@@ -146,6 +146,45 @@ fn profile_validation_details_remain_owned_after_last_error_changes() {
     kmipkit_profile_validation_error_release(handle);
 }
 
+#[test]
+fn absent_profile_error_snapshot_does_not_clobber_client_error_metadata() {
+    let error = ClientError::Transport(kmipkit_transport::TransportError::new(
+        RequestDeliveryState::PossiblySent,
+        TransportCauseCategory::Timeout,
+        std::io::Error::other("redacted timeout source"),
+    ));
+    assert_eq!(record_client_error(&error), ERROR_TRANSPORT);
+
+    let mut handle = ptr::null_mut();
+    let detail_status = kmipkit_last_error_profile_validation_error_get_v1(&mut handle);
+    let mut status = SUCCESS;
+    let mut category = ERROR_CATEGORY_NONE;
+    let mut cause = ERROR_CAUSE_NONE;
+    let mut delivery = DELIVERY_STATE_NONE;
+    assert_eq!(
+        kmipkit_last_error_get(&mut status, &mut category, &mut cause, &mut delivery),
+        SUCCESS
+    );
+
+    assert!(handle.is_null());
+    assert_eq!(
+        (
+            detail_status,
+            status,
+            category,
+            cause,
+            delivery,
+        ),
+        (
+            SUCCESS,
+            ERROR_TRANSPORT,
+            ERROR_CATEGORY_TRANSPORT,
+            ERROR_CAUSE_TRANSPORT_TIMEOUT,
+            DELIVERY_STATE_POSSIBLY_SENT,
+        )
+    );
+}
+
 fn span_text(data: *const u8, length: u64) -> String {
     assert!(!data.is_null());
     let Ok(length) = usize::try_from(length) else {
