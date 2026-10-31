@@ -326,4 +326,8 @@ unsafe extern "C" {
     pub fn kmipkit_ttlv_value_view_byte_length(view: *mut kmipkit_ttlv_value_view_t, out_length: *mut u64) -> i32;
     // KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010
     pub fn kmipkit_ttlv_value_view_byte_at(view: *mut kmipkit_ttlv_value_view_t, index: u64, out_byte: *mut u8) -> i32;
+    // KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_response_extension_count(item: *mut kmipkit_client_batch_item_response_t, out_count: *mut u64) -> i32;
+    // KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011
+    pub fn kmipkit_client_batch_item_response_extension_ttlv_at(item: *mut kmipkit_client_batch_item_response_t, index: u64, out_present: *mut u8, out_extension: *mut *mut kmipkit_ttlv_structure_t) -> i32;
 }

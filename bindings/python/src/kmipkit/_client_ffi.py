@@ -426,6 +426,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_client_batch_item_response_extension_count(
+        kmipkit_client_batch_item_response_t *item,
+        uint64_t *out_count);
+    int32_t kmipkit_client_batch_item_response_extension_ttlv_at(
+        kmipkit_client_batch_item_response_t *item,
+        uint64_t index,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_extension);
     int32_t kmipkit_client_batch_item_unique_batch_item_id(
         kmipkit_client_batch_item_t *item,
         uint8_t *out_present,

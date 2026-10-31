@@ -1267,6 +1267,7 @@ class Batch(_ClientHandle):
 
 class _BatchItemResultNativeState:
     __slots__ = (
+        "_native_response_extensions",
         "_native_usage_allocation_response",
         "_rng_retrieve_response",
         "_rng_seed_response",
@@ -1352,6 +1353,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     )
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "_native_response_extensions", None)
         object.__setattr__(self, "_native_usage_allocation_response", None)
         object.__setattr__(self, "_rng_retrieve_response", None)
         object.__setattr__(self, "_rng_seed_response", None)
@@ -1366,6 +1368,49 @@ class BatchItemResult(_BatchItemResultNativeState):
             self.result_reason,
             self.result_message,
         )
+
+    @property
+    def extension_count(self) -> int:
+        """Return the number of accepted response Message Extensions in wire order."""
+        item = self._native_response_extensions
+        if item is None:
+            return 0
+        return _client_scalar(
+            "uint64_t", lib.kmipkit_client_batch_item_response_extension_count, item
+        )
+
+    def extension_ttlv_at(self, index: int) -> ttlv.Structure:
+        """Return a caller-owned generic TTLV copy of the response extension at ``index``.
+
+        Close the returned structure when it is no longer needed. Extension contents are omitted
+        from this result's default representation.
+        """
+        position = _unsigned(index, 64)
+        count = self.extension_count
+        if position >= count:
+            errors.raise_for_status(4)
+        item = self._native_response_extensions
+        if item is None:
+            errors.raise_for_status(4)
+
+        with _NATIVE_CALL_LOCK:
+            present = ffi.new("uint8_t *")
+            output = ffi.new("kmipkit_ttlv_structure_t **")
+            _raise_abi_status(
+                lib.kmipkit_client_batch_item_response_extension_ttlv_at(
+                    item._pointer(), position, present, output
+                )
+            )
+            if present[0] != 1 or output[0] == ffi.NULL:
+                if output[0] != ffi.NULL:
+                    lib.kmipkit_ttlv_structure_release(output[0])
+                errors.raise_for_status(4)
+            address = int(ffi.cast("uintptr_t", output[0]))
+            try:
+                return ttlv._structure_from_native_address(address)
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(output[0])
+                raise
 
     def create_usage_allocation_context(
         self, requested_units: int, usage_limits_unit: int
@@ -2235,6 +2280,9 @@ class BatchResult(_ClientHandle):
                 native_response = item._native_usage_allocation_response
                 if native_response is not None:
                     native_response.close()
+                native_extensions = item._native_response_extensions
+                if native_extensions is not None:
+                    native_extensions.close()
             super().close()
 
 
@@ -3002,6 +3050,14 @@ def _batch_result(
             item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
             keep_item_handle = False
             try:
+                extension_count = ffi.new("uint64_t *")
+                _raise_abi_status(
+                    lib.kmipkit_client_batch_item_response_extension_count(
+                        item._pointer(), extension_count
+                    )
+                )
+                if extension_count[0] > 100_000:
+                    errors.raise_for_status(6)
                 metadata = ffi.new("kmipkit_client_batch_item_metadata_v2_t *")
                 metadata.struct_size = ffi.sizeof(
                     "kmipkit_client_batch_item_metadata_v2_t"
@@ -3364,6 +3420,9 @@ def _batch_result(
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
+                if extension_count[0] > 0:
+                    object.__setattr__(result, "_native_response_extensions", item)
+                    keep_item_handle = True
                 items.append(result)
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -3382,6 +3441,9 @@ def _batch_result(
             native_response = item._native_usage_allocation_response
             if native_response is not None:
                 native_response.close()
+            native_extensions = item._native_response_extensions
+            if native_extensions is not None:
+                native_extensions.close()
         response.close()
         raise
 

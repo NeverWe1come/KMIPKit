@@ -349,6 +349,8 @@ public final class NativeExtensionRegistry {
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);
     public static native Object[] clientBatchItemResponseMetadataV2(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponseUniqueBatchItemId(long itemResponse);
+    public static native long clientBatchItemResponseExtensionCount(long itemResponse);
+    public static native long clientBatchItemResponseExtensionTtlvAt(long itemResponse, long index);
     public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
     public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
             long itemResponse);

@@ -257,6 +257,12 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(3, response.itemCount());
                 assertEquals(0x3b, pingResult.operation());
                 assertEquals(Boolean.TRUE, pingResult.pingResponse().orElseThrow());
+                // KMIP v2.1 §9.13, Table 418 preserves the response extension as generic TTLV.
+                assertEquals(1, pingResult.extensionCount());
+                try (TtlvStructure extension = pingResult.extensionTtlvAt(0);
+                        TtlvStructureView extensionView = extension.view()) {
+                    assertEquals(3, extensionView.itemCount());
+                }
                 assertEquals(0x18, queryResult.operation());
                 assertEquals(0x2e, logoutResult.operation());
                 assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
@@ -5108,11 +5114,16 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(3)));
+        byte[] responseExtension = structure(0x420051,
+                item(0x42009d, 7, "FixtureVendor".getBytes(StandardCharsets.UTF_8)),
+                item(0x420026, 6, new byte[8]),
+                structure(0x42009c,
+                        item(0x541234, 8, "opaque-extension-value".getBytes(StandardCharsets.US_ASCII))));
         byte[] pingItem = structure(0x42000f,
                 enumeration(0x42005c, 0x3b),
                 item(0x420093, 8, pingId),
                 enumeration(0x42007f, 0),
-                structure(0x42007c));
+                structure(0x42007c), responseExtension);
         byte[] queryPayload = structure(0x42007c, structure(0x42015f));
         byte[] queryItem = structure(0x42000f,
                 enumeration(0x42005c, 0x18),

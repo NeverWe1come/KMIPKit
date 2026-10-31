@@ -29,7 +29,8 @@ APPROVAL_SOURCE = {
     "status": "Approved",
     "evidence": (
         "**Status**: Approved for implementation — delegated maintainer "
-        "authorization; see `approval-record.md`."
+        "authorization, independent reviews, and merge of correction PR #39 are "
+        "recorded in `approval-record.md`."
     ),
 }
 

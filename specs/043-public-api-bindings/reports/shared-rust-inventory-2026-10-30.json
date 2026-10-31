@@ -5,7 +5,7 @@
   "observedRustDeclarationCount": 10457,
   "directRustDeclarationCount": 8414,
   "conditionalRustDeclarationCount": 2043,
-  "mappedRustDeclarationCount": 624,
+  "mappedRustDeclarationCount": 630,
   "approvedExcludedRustDeclarationCount": 1399,
   "crates": [
     {
@@ -36,17 +36,17 @@
       "packageId": "rust-kmipkit-client",
       "crateName": "kmipkit-client",
       "observedDeclarationCount": 1219,
-      "mappedDeclarationCount": 166,
+      "mappedDeclarationCount": 169,
       "excludedDeclarationCount": 215,
-      "blockedDeclarationCount": 838
+      "blockedDeclarationCount": 835
     },
     {
       "packageId": "rust-kmipkit",
       "crateName": "kmipkit",
       "observedDeclarationCount": 2142,
-      "mappedDeclarationCount": 151,
+      "mappedDeclarationCount": 154,
       "excludedDeclarationCount": 473,
-      "blockedDeclarationCount": 1518
+      "blockedDeclarationCount": 1515
     }
   ],
   "mappedDeclarations": [
@@ -1002,6 +1002,31 @@
       "requirementIds": [
         "KMIPKIT-0007-FR-002",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-76153028bdcc90d49ae8",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientBatchItemResponse::extensions",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
@@ -2377,6 +2402,56 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-509d9e15da03b45ee0ee",
+      "packageId": "rust-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit::ClientMessageExtension",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-fb1713b5d9d39a6f9e91",
+      "packageId": "rust-kmipkit",
+      "kind": "associated-item",
+      "exportName": "kmipkit::ClientMessageExtension::with_ttlv",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],
@@ -4658,6 +4733,31 @@
       "parityScope": "four-language"
     },
     {
+      "declarationId": "rust-observed-77f8f552c9380e4ca967",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientBatchItemResponse::extensions",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
       "declarationId": "T076:target:rust-kmipkit-client:kmipkit_client::ClientBatchItemResponse::outcome",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
@@ -6028,6 +6128,56 @@
         "KMIPKIT-0043-FR-009",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-9b8b2a8ac4a551f396e4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::ClientMessageExtension",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-7e635207700a4f4b4089",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ClientMessageExtension::with_ttlv",
+      "capabilityId": "client_execution",
+      "ownerSpecId": "KMIPKIT-0007",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0007-FR-010"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],

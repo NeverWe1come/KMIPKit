@@ -10235,3 +10235,112 @@ fn pkcs11_correlation_span_distinguishes_absence_from_present_empty() {
     assert!(span.data.is_null());
     assert_eq!(span.length, 0);
 }
+
+#[test]
+// KMIP 2.1 §9.13, Table 418: retain the ordered generic response extension.
+fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
+    let extension = ttlv_structure(
+        0x0042_0051,
+        [
+            ttlv_item(0x0042_009d, 0x07, b"FixtureVendor"),
+            ttlv_item(0x0042_0026, 0x06, &[0; 8]),
+            ttlv_structure(
+                0x0042_009c,
+                [
+                    ttlv_item(0x0054_0173, 0x07, b"fixture-v1"),
+                    ttlv_enumeration(0x0054_0174, u32::MAX),
+                ],
+            ),
+        ],
+    );
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 2),
+                    ttlv_item(0x0042_0093, 0x08, b"key-pair"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [
+                            ttlv_integer(0x0042_0066, -17),
+                            ttlv_item(0x0042_006f, 0x07, b"public-key-abi-test"),
+                        ],
+                    ),
+                    extension,
+                ],
+            ),
+        ],
+    );
+    kmipkit_ttlv::codec::decode(&response).expect("the fixture response is valid TTLV");
+    let response = execute_single_abi_response(
+        ClientRequest::CreateKeyPair(CreateKeyPairRequest::new()),
+        b"key-pair",
+        response,
+    )
+    .expect("a non-critical response extension is preserved");
+    let item = client_batch_item_response_from(response);
+    let mut count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_extension_count(item, &raw mut count),
+        SUCCESS
+    );
+    assert_eq!(count, 1);
+
+    let mut absent = u8::MAX;
+    let mut out_of_range = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_extension_ttlv_at(
+            item,
+            1,
+            &raw mut absent,
+            &raw mut out_of_range,
+        ),
+        SUCCESS
+    );
+    assert_eq!(absent, 0);
+    assert!(out_of_range.is_null());
+
+    let mut present = u8::MAX;
+    let mut extension_copy = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_extension_ttlv_at(
+            item,
+            0,
+            &raw mut present,
+            &raw mut extension_copy,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!extension_copy.is_null());
+    kmipkit_client_batch_item_response_release(item);
+
+    let mut view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(extension_copy, &raw mut view),
+        SUCCESS
+    );
+    kmipkit_ttlv_structure_release(extension_copy);
+    let mut item_count = u64::MAX;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(view, &raw mut item_count),
+        SUCCESS
+    );
+    assert_eq!(item_count, 3);
+
+    kmipkit_ttlv_structure_view_release(view);
+}

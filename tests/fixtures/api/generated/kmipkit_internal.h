@@ -1397,6 +1397,15 @@ int32_t kmipkit_client_execute_process_with_options_v1(kmipkit_client_t * client
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0009-FR-001, KMIPKIT-0009-FR-006, KMIPKIT-0009-FR-007, KMIPKIT-0009-FR-008, KMIPKIT-0009-FR-009, KMIPKIT-0009-FR-010, KMIPKIT-0009-FR-012, KMIPKIT-0013-FR-011, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_execute_query_async_requests_with_options_v1(kmipkit_client_t * client, uint8_t has_correlation_values, const kmipkit_byte_span_v1_t * correlation_values, uint64_t correlation_value_count, uint8_t has_operations, const uint32_t * operations, uint64_t operation_count, uint8_t has_asynchronous_indicator, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_async_operation_outcome_t ** out_outcome);
+/* Returns the number of accepted response Message Extensions in their original order.
+ */
+/* KMIPKIT-0006-FR-011, KMIPKIT-0007-FR-010, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_extension_count(kmipkit_client_batch_item_response_t * item, uint64_t * out_count);
+/* Returns a caller-owned generic TTLV Structure copy; release it with kmipkit_ttlv_structure_release.
+ * out_present is zero and out_extension is null when index is outside the extension list.
+ */
+/* KMIPKIT-0006-FR-011, KMIPKIT-0007-FR-010, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_extension_ttlv_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_extension);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

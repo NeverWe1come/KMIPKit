@@ -2275,6 +2275,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchItemResponse::outcome",
     ),
     (
+        "rust-observed-77f8f552c9380e4ca967",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::extensions",
+    ),
+    (
         "rust-observed-9894f2f50fac8e5a8de2",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome",
@@ -2453,6 +2458,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-0b46ac635a5005a4290f",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchResponse::iter",
+    ),
+    (
+        "rust-observed-9b8b2a8ac4a551f396e4",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientMessageExtension",
+    ),
+    (
+        "rust-observed-7e635207700a4f4b4089",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientMessageExtension::with_ttlv",
     ),
     (
         "rust-observed-e3630e76e3c2013468dd",
@@ -2795,6 +2810,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientErrorCategory",
     ),
     (
+        "rust-observed-509d9e15da03b45ee0ee",
+        "rust-kmipkit",
+        "kmipkit::ClientMessageExtension",
+    ),
+    (
         "rust-observed-60bfcf711a3f91fc76c4",
         "rust-kmipkit",
         "kmipkit::ClientOperation",
@@ -3058,6 +3078,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-bc55e9fa32c26b0e142f",
         "rust-kmipkit",
         "kmipkit::ClientBatchItemResponse::outcome",
+    ),
+    (
+        "rust-observed-76153028bdcc90d49ae8",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItemResponse::extensions",
     ),
     (
         "rust-observed-398efc955331c5843546",
@@ -3328,6 +3353,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-031ed23cfaeb257823db",
         "rust-kmipkit",
         "kmipkit::ClientErrorCategory::ServerResult",
+    ),
+    (
+        "rust-observed-fb1713b5d9d39a6f9e91",
+        "rust-kmipkit",
+        "kmipkit::ClientMessageExtension::with_ttlv",
     ),
     (
         "rust-observed-7ff28ede4302fbbd998a",

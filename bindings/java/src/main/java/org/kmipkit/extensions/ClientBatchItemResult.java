@@ -63,6 +63,34 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return metadataV2().resultMessage();
     }
 
+    /** Returns the number of accepted response Message Extensions in wire order. */
+    public long extensionCount() {
+        NativeExtensionRegistry.ensureLoaded();
+        long count = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseExtensionCount);
+        if (count < 0 || count > MAX_NATIVE_ARRAY_ELEMENTS) {
+            throw new ResourceLimitException("response extension count exceeds the configured limit");
+        }
+        return count;
+    }
+
+    /**
+     * Returns a caller-owned generic TTLV copy of the response Message Extension at the given
+     * index. Close the returned structure when it is no longer needed.
+     */
+    public TtlvStructure extensionTtlvAt(long index) {
+        if (index < 0 || index >= extensionCount()) {
+            throw new InvalidInputException("response extension index is outside the item");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long structure = handle.withValue(value ->
+                NativeExtensionRegistry.clientBatchItemResponseExtensionTtlvAt(value, index));
+        if (structure <= 0) {
+            throw new InvalidInputException("native response extension is invalid");
+        }
+        return TtlvStructure.fromNative(structure, null);
+    }
+
     /** Returns the successful Create response, including the identifier's exact wire type. */
     public Optional<CreateResponse> createResponse() {
         NativeExtensionRegistry.ensureLoaded();

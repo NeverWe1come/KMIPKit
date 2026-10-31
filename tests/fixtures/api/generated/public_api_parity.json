@@ -30620,6 +30620,8 @@
           "kmipkit_client_batch_item_metadata_v1_t.result_status",
           "kmipkit_client_batch_item_metadata_v2_t.outcome_kind",
           "kmipkit_client_batch_item_response_discover_versions_supported_versions",
+          "kmipkit_client_batch_item_response_extension_count",
+          "kmipkit_client_batch_item_response_extension_ttlv_at",
           "kmipkit_client_batch_item_response_pending_correlation_value",
           "kmipkit_client_batch_item_response_t",
           "kmipkit_client_batch_item_response_unique_batch_item_id",
@@ -30635,7 +30637,8 @@
           "kmipkit_last_error_get",
           "kmipkit_protocol_version_v1_t",
           "kmipkit_protocol_version_v1_t.major",
-          "kmipkit_protocol_version_v1_t.minor"
+          "kmipkit_protocol_version_v1_t.minor",
+          "kmipkit_ttlv_structure_t"
         ],
         "java": [
           "org.kmipkit.ClientOperationException",
@@ -30657,6 +30660,8 @@
           "org.kmipkit.extensions.Client.execute",
           "org.kmipkit.extensions.Client.executeWithOptions",
           "org.kmipkit.extensions.ClientBatchItemResult",
+          "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
           "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
           "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
           "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
@@ -30674,10 +30679,13 @@
           "org.kmipkit.message.ProtocolVersion",
           "org.kmipkit.message.ProtocolVersion.<init>",
           "org.kmipkit.message.ProtocolVersion.major",
-          "org.kmipkit.message.ProtocolVersion.minor"
+          "org.kmipkit.message.ProtocolVersion.minor",
+          "org.kmipkit.ttlv.TtlvStructure"
         ],
         "python": [
           "kmipkit.client.BatchItemResult",
+          "kmipkit.client.BatchItemResult.extension_count",
+          "kmipkit.client.BatchItemResult.extension_ttlv_at",
           "kmipkit.client.BatchItemResult.outcome",
           "kmipkit.client.BatchItemResult.pending_correlation_value",
           "kmipkit.client.BatchItemResult.result_reason",
@@ -30726,7 +30734,8 @@
           "kmipkit.errors.DeliveryState.NONE",
           "kmipkit.errors.DeliveryState.NOT_SENT",
           "kmipkit.errors.DeliveryState.POSSIBLY_SENT",
-          "kmipkit.errors.DeliveryState.RESPONSE_STARTED"
+          "kmipkit.errors.DeliveryState.RESPONSE_STARTED",
+          "kmipkit.ttlv.Structure"
         ],
         "rust": [
           "kmipkit::Client",
@@ -30735,6 +30744,7 @@
           "kmipkit::Client::new",
           "kmipkit::ClientBatchItemResponse",
           "kmipkit::ClientBatchItemResponse::discover_versions_supported_versions",
+          "kmipkit::ClientBatchItemResponse::extensions",
           "kmipkit::ClientBatchItemResponse::outcome",
           "kmipkit::ClientBatchItemResponse::unique_batch_item_id",
           "kmipkit::ClientBatchOutcome",
@@ -30777,6 +30787,8 @@
           "kmipkit::ClientErrorCategory::ServerResult",
           "kmipkit::ClientErrorCategory::Transport",
           "kmipkit::ClientErrorCategory::Validation",
+          "kmipkit::ClientMessageExtension",
+          "kmipkit::ClientMessageExtension::with_ttlv",
           "kmipkit::KmipOperationResult",
           "kmipkit::KmipOperationResult::reason",
           "kmipkit::KmipOperationResult::status",
@@ -30789,6 +30801,7 @@
           "kmipkit_client::Client::new",
           "kmipkit_client::ClientBatchItemResponse",
           "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
+          "kmipkit_client::ClientBatchItemResponse::extensions",
           "kmipkit_client::ClientBatchItemResponse::outcome",
           "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
           "kmipkit_client::ClientBatchOutcome",
@@ -30831,6 +30844,8 @@
           "kmipkit_client::ClientErrorCategory::ServerResult",
           "kmipkit_client::ClientErrorCategory::Transport",
           "kmipkit_client::ClientErrorCategory::Validation",
+          "kmipkit_client::ClientMessageExtension",
+          "kmipkit_client::ClientMessageExtension::with_ttlv",
           "kmipkit_client::ClientResponseView",
           "kmipkit_client::ClientResponseView::discover_versions",
           "kmipkit_client::ClientResponseView::result",
@@ -62998,6 +63013,177 @@
         ],
         "requestBoundary": "not-applicable",
         "returnType": "Result<ClientOperationOutcome, ClientError>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the number of accepted response Message Extensions in their original order."
+        ],
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_extension_count"
+      },
+      "id": "client_batch_item_response_extension_count",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseExtensionCount",
+        "method": "extensionCount",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "long"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_extension_count",
+        "errorCategories": [
+          "invalid_input"
+        ],
+        "function": "BatchItemResult.extension_count",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "int"
+      },
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItemResponse",
+        "name": "extensions",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "&[ClientMessageExtension]"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns a caller-owned generic TTLV Structure copy; release it with kmipkit_ttlv_structure_release.",
+          "out_present is zero and out_extension is null when index is outside the extension list."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_extension",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_extension_ttlv_at"
+      },
+      "id": "client_batch_item_response_extension_ttlv_at",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseExtensionTtlvAt",
+        "method": "extensionTtlvAt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "long"
+          }
+        ],
+        "returnType": "TtlvStructure"
+      },
+      "ordering": "preserves-caller-batch-and-extension-order",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_extension_ttlv_at",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "BatchItemResult.extension_ttlv_at",
+        "module": "kmipkit.client",
+        "parameters": [
+          {
+            "name": "index",
+            "type": "int"
+          }
+        ],
+        "returnType": "ttlv.Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientMessageExtension",
+        "name": "with_ttlv",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "impl for<'a> FnOnce(StructureView<'a>) -> R"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "R"
       }
     }
   ],
@@ -107577,6 +107763,51 @@
         "status": "Approved"
       },
       "capabilityId": "client_execution",
+      "declarationId": "rust-observed-77f8f552c9380e4ca967",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItemResponse::extensions",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse::extensions",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
       "declarationId": "rust-observed-9894f2f50fac8e5a8de2",
       "declarationState": "declared",
       "exportName": "kmipkit_client::ClientBatchOutcome",
@@ -109428,6 +109659,96 @@
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-9b8b2a8ac4a551f396e4",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientMessageExtension",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructure",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Structure",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientMessageExtension",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-7e635207700a4f4b4089",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientMessageExtension::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientMessageExtension::with_ttlv",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ]
     },
@@ -113008,6 +113329,51 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-509d9e15da03b45ee0ee",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientMessageExtension",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvStructure",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.Structure",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientMessageExtension",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Accepted for implementation.",
         "kind": "feature-specification",
         "path": "specs/014-server-generated-creation/spec.md",
@@ -115554,6 +115920,51 @@
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-76153028bdcc90d49ae8",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientBatchItemResponse::extensions",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientBatchItemResponse::extensions",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ]
@@ -118324,6 +118735,51 @@
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "rust-observed-fb1713b5d9d39a6f9e91",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientMessageExtension::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientMessageExtension::with_ttlv",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ]
@@ -262497,6 +262953,276 @@
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_count:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_response_extension_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse::extensions",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_ttlv_at:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_response_extension_ttlv_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientMessageExtension::with_ttlv",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_count:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse::extensions",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_ttlv_at:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientMessageExtension::with_ttlv",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_count:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.BatchItemResult.extension_count",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_count",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_count",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse::extensions",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_execution",
+      "declarationId": "T091:client_batch_item_response_extension_ttlv_at:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientMessageExtension::with_ttlv",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ]
     }

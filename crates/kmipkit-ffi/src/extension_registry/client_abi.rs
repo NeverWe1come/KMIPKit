@@ -2363,6 +2363,53 @@ pub extern "C" fn kmipkit_client_batch_response_item_at(
     })
 }
 
+/// Returns the number of accepted response Message Extensions on one result item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_extension_count(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let count = scalar_out!(out_count);
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        *count = try_ffi!(u64::try_from(item.extensions().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+        SUCCESS
+    })
+}
+
+/// Copies one accepted response Message Extension as generic TTLV.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_extension_ttlv_at(
+    item: *mut kmipkit_client_batch_item_response_t,
+    index: u64,
+    out_present: *mut u8,
+    out_extension: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let extension_out = out_slot!(out_extension);
+        *present = 0;
+
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        let Ok(index) = usize::try_from(index) else {
+            return SUCCESS;
+        };
+        let Some(extension) = item.extensions().get(index) else {
+            return SUCCESS;
+        };
+        let structure = extension.with_ttlv(|view| super::clone_structure_view(&view));
+        let structure = try_ffi!(structure);
+        *extension_out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_metadata_v1(
     item: *mut kmipkit_client_batch_item_response_t,
