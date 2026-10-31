@@ -37,8 +37,7 @@ static int absent_profile_details_preserve_non_profile_error_from_c(void) {
     kmipkit_ttlv_structure_t *invalid_response = 0;
     kmipkit_response_message_t *response = 0;
     kmipkit_message_validation_error_t *validation_error = 0;
-    kmipkit_profile_validation_error_t *profile_error =
-        (kmipkit_profile_validation_error_t *)(uintptr_t)1;
+    kmipkit_profile_validation_error_t *profile_error = 0;
     int32_t status = 0;
     int32_t error_status = 0;
     uint32_t error_category = 0;
