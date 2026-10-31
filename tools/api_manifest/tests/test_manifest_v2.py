@@ -4422,6 +4422,35 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     self.assertEqual("blocked", declaration["declarationState"])
                     self.assertEqual("KMIPKIT-0007", declaration["candidateSpecId"])
 
+    def test_t091_generic_ffi_errors_do_not_map_to_client_cause_other(self) -> None:
+        declaration_ids = {
+            "KMIPKIT_ERROR_INTERNAL:c",
+            "java-observed-d645cd79e0aaa7fea0bb",
+            "python-kmipkit-error",
+        }
+        declarations = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        capability = next(
+            row
+            for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "ffi_runtime_metadata"
+        )
+
+        for declaration_id in declaration_ids:
+            with self.subTest(declaration=declaration_id):
+                declaration = declarations[declaration_id]
+                self.assertEqual("blocked", declaration["declarationState"])
+                self.assertEqual("KMIPKIT-0043", declaration["candidateSpecId"])
+                self.assertIn("ClientCauseCategory::Other", declaration["blockedReason"])
+                self.assertNotIn("languageMappings", declaration)
+                self.assertNotIn("approvalSource", declaration)
+
+        self.assertNotIn(
+            "kmipkit::ClientCauseCategory::Other", capability["mappings"]["rust"]
+        )
+
     def test_t091_client_crate_operation_entries_map_to_verified_functions(self) -> None:
         cases = (
             (
