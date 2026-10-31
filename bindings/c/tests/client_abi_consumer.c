@@ -33,6 +33,48 @@ static int execute_with_profiles_rejects_invalid_selection_from_c(void) {
     return status == T076_ERROR_INVALID_INPUT && response == 0;
 }
 
+static int absent_profile_details_preserve_non_profile_error_from_c(void) {
+    kmipkit_ttlv_structure_t *invalid_response = 0;
+    kmipkit_response_message_t *response = 0;
+    kmipkit_message_validation_error_t *validation_error = 0;
+    kmipkit_profile_validation_error_t *profile_error =
+        (kmipkit_profile_validation_error_t *)(uintptr_t)1;
+    int32_t status = 0;
+    int32_t error_status = 0;
+    uint32_t error_category = 0;
+    uint32_t error_cause = 0;
+    uint32_t error_delivery = 0;
+    int result = 0;
+
+    if (kmipkit_last_error_clear() != 0 ||
+        kmipkit_ttlv_structure_create(&invalid_response) != 0) {
+        goto cleanup;
+    }
+    status = kmipkit_response_message_from_ttlv(
+        invalid_response, &response, &validation_error);
+    invalid_response = 0; /* consumed whether response validation succeeds or fails */
+    if (status != KMIPKIT_ERROR_PROTOCOL || response != 0 || validation_error == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_last_error_profile_validation_error_get_v1(&profile_error) != 0 ||
+        profile_error != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_last_error_get(
+            &error_status, &error_category, &error_cause, &error_delivery) != 0) {
+        goto cleanup;
+    }
+    result = error_status == status && error_category == 5 && error_cause == 10 &&
+        error_delivery == 0;
+
+cleanup:
+    kmipkit_ttlv_structure_release(invalid_response);
+    kmipkit_response_message_release(response);
+    kmipkit_message_validation_error_release(validation_error);
+    kmipkit_profile_validation_error_release(profile_error);
+    return result;
+}
+
 static int baseline_profile_fails_closed_before_c_transport_write(
     kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
     static const uint8_t baseline_profile[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -6247,6 +6289,9 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     int create_split_key_fixture_only = 0;
     if (argv == 0 || limits == 0) {
         return 22;
+    }
+    if (!absent_profile_details_preserve_non_profile_error_from_c()) {
+        return 25;
     }
     if (argc == 7 && argv[6] != 0 && strcmp(argv[6], "rekey-key-pair") == 0) {
         rekey_key_pair_only = 1;
