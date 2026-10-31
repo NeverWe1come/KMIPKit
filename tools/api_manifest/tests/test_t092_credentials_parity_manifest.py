@@ -47,7 +47,10 @@ CREDENTIAL_EXPORTS = {
     "kmipkit_protocol::Credential::into_ttlv",
 }
 EXPECTED_MAPPED_CREDENTIAL_EXPORTS = (
-    EXPECTED_CREDENTIAL_TYPE_EXPORTS | EXPECTED_NONCE_EXPORTS | CREDENTIAL_EXPORTS
+    EXPECTED_CREDENTIAL_TYPE_EXPORTS
+    | EXPECTED_NONCE_EXPORTS
+    | CREDENTIAL_EXPORTS
+    | ATTESTATION_CREDENTIAL_EXPORTS
 )
 NONCE_REQUIREMENTS = {
     "KMIPKIT-0008-FR-006",
@@ -99,6 +102,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "kmipkit_protocol::CredentialType",
                         "kmipkit_protocol::Nonce",
                         "kmipkit_protocol::Credential",
+                        "kmipkit_protocol::AttestationCredential",
                     }
                     and row.get("approvalSource", {}).get("path")
                     == "specs/008-credentials-attestation/spec.md"
@@ -258,7 +262,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             row for row in meaningful
             if row.get("exportName") not in EXPECTED_MAPPED_CREDENTIAL_EXPORTS
         ]
-        self.assertEqual(72, len(remaining))
+        self.assertEqual(68, len(remaining))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in remaining))
 
     def test_credential_type_is_mapped_as_an_open_raw_enum(self) -> None:
@@ -321,7 +325,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
             for declaration in declarations
             if declaration.get("declarationState") == "blocked"
         ]
-        self.assertEqual(72, len(blocked))
+        self.assertEqual(68, len(blocked))
 
         exclusions = {
             (row.get("packageId"), row.get("exportName")): row
@@ -631,6 +635,41 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                     self.assertEqual(LANGUAGES, set(mappings))
                     for language, expected_name in expected_names[export_name].items():
                         self.assertEqual(expected_name, mappings[language]["name"])
+
+        expected_c_declarations = {
+            "kmipkit_attestation_credential_t": ("AttestationCredential:c", "type"),
+            "kmipkit_attestation_credential_from_ttlv": (
+                "attestation_credential_from_ttlv:c",
+                "c-symbol",
+            ),
+            "kmipkit_attestation_credential_ttlv_view": (
+                "attestation_credential_with_ttlv:c",
+                "c-symbol",
+            ),
+            "kmipkit_attestation_credential_into_ttlv": (
+                "attestation_credential_into_ttlv:c",
+                "c-symbol",
+            ),
+            "kmipkit_attestation_credential_release": (
+                "AttestationCredential:release:c",
+                "c-symbol",
+            ),
+        }
+        c_declarations = {
+            row["exportName"]: row
+            for row in manifest["publicDeclarations"]
+            if row.get("exportName") in expected_c_declarations
+        }
+        self.assertEqual(expected_c_declarations.keys(), c_declarations.keys())
+        for export_name, (declaration_id, kind) in expected_c_declarations.items():
+            with self.subTest(c_export_name=export_name):
+                declaration = c_declarations[export_name]
+                self.assertEqual(declaration_id, declaration["declarationId"])
+                self.assertEqual("c-kmipkit", declaration["packageId"])
+                self.assertEqual(kind, declaration["kind"])
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertTrue(_has_approved_source(declaration))
 
         credential_type = next(
             (
