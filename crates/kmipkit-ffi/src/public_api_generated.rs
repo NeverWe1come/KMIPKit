@@ -2395,6 +2395,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::set_attribute",
     ),
     (
+        "rust-observed-847a15f66773e6e5535d",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientResponseView::supported_versions",
+    ),
+    (
         "T041:ping:response:rust",
         "rust-kmipkit-client",
         "kmipkit_client::ClientResponseView::ping",
