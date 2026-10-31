@@ -804,6 +804,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     )
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
                 elif function["id"] in {
+                    "client_batch_item_response_extension_count",
+                    "client_batch_item_response_extension_ttlv_at",
+                }:
+                    self.assertEqual(
+                        generate._registry_function_v1_projection(
+                            manifest_functions[function["id"]]
+                        ),
+                        function,
+                    )
+                elif function["id"] in {
                     "ttlv_value_structure",
                     "ttlv_item_create",
                     "ttlv_structure_with_item",

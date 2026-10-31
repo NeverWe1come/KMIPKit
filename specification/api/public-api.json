@@ -92110,14 +92110,45 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::ClientOperationOutcome::extensions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientOperationOutcome::extensions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_extension_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.extension_count"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-91558ad1e35a4c9717ed",
@@ -102419,14 +102450,45 @@
       "packageId": "rust-kmipkit",
       "kind": "associated-item",
       "exportName": "kmipkit::ClientOperationOutcome::extensions",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "client_execution",
       "requirementIds": [
+        "KMIPKIT-0006-FR-011",
+        "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0012-FR-010",
+        "KMIPKIT-0012-FR-011",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/007-client-execution/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientOperationOutcome::extensions"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_extension_count"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.extension_count"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d3548ceea6fcc9a2833f",
@@ -405131,6 +405193,7 @@
           "kmipkit::ClientErrorCategory::Validation",
           "kmipkit::ClientMessageExtension",
           "kmipkit::ClientMessageExtension::with_ttlv",
+          "kmipkit::ClientOperationOutcome::extensions",
           "kmipkit::KmipOperationResult",
           "kmipkit::KmipOperationResult::reason",
           "kmipkit::KmipOperationResult::status",
@@ -405188,6 +405251,7 @@
           "kmipkit_client::ClientErrorCategory::Validation",
           "kmipkit_client::ClientMessageExtension",
           "kmipkit_client::ClientMessageExtension::with_ttlv",
+          "kmipkit_client::ClientOperationOutcome::extensions",
           "kmipkit_client::ClientResponseView",
           "kmipkit_client::ClientResponseView::discover_versions",
           "kmipkit_client::ClientResponseView::result",
