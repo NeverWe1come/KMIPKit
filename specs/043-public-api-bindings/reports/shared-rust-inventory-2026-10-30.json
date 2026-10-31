@@ -647,9 +647,11 @@
       "ownerSpecId": "KMIPKIT-0006",
       "ownerAdrId": null,
       "ownerRequirementIds": [
+        "KMIPKIT-0006-FR-002",
         "KMIPKIT-0006-FR-005"
       ],
       "requirementIds": [
+        "KMIPKIT-0006-FR-002",
         "KMIPKIT-0006-FR-005",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",

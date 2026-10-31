@@ -95086,6 +95086,7 @@
       "exportName": "kmipkit::ClientBatch",
       "capabilityId": "client_batch_model",
       "requirementIds": [
+        "KMIPKIT-0006-FR-002",
         "KMIPKIT-0006-FR-005",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
