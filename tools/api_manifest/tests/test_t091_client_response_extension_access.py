@@ -41,6 +41,12 @@ RUST_SURFACES = {
         "java": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
         "python": "kmipkit.client.BatchItemResult.extension_count",
     },
+    "kmipkit_client::ClientOperationOutcome::extensions": {
+        "root": "kmipkit::ClientOperationOutcome::extensions",
+        "c": "kmipkit_client_batch_item_response_extension_count",
+        "java": "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+        "python": "kmipkit.client.BatchItemResult.extension_count",
+    },
     "kmipkit_client::ClientMessageExtension::with_ttlv": {
         "root": "kmipkit::ClientMessageExtension::with_ttlv",
         "c": "kmipkit_client_batch_item_response_extension_ttlv_at",
