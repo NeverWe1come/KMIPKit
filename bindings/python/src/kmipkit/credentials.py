@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from typing import TypeVar
+from weakref import WeakKeyDictionary
 
 from . import errors
 from ._ffi import ffi, lib
@@ -17,6 +18,7 @@ from ._handles import (
 from .ttlv import Structure, TtlvStructureView
 
 _T = TypeVar("_T")
+_ACTIVE_NONCE_VIEWS: WeakKeyDictionary[object, int] = WeakKeyDictionary()
 
 
 class CredentialType:
@@ -65,7 +67,7 @@ class CredentialType:
 class Nonce(NativeHandle):
     """Server-sourced Attestation Nonce preserving its original TTLV structure."""
 
-    __slots__ = ("__active_views",)
+    __slots__ = ("__weakref__",)
 
     _release_name = "kmipkit_nonce_release"
 
@@ -79,7 +81,6 @@ class Nonce(NativeHandle):
             consumed=(0,),
         )
         nonce = _wrap_owned_handle(cls, handle)
-        nonce.__active_views = 0
         return nonce
 
     @synchronized_native_call
@@ -93,19 +94,23 @@ class Nonce(NativeHandle):
             self._pointer(),
         )
         view = _wrap_owned_handle(TtlvStructureView, view_handle, owner=self)
-        self.__active_views += 1
+        _ACTIVE_NONCE_VIEWS[self] = _ACTIVE_NONCE_VIEWS.get(self, 0) + 1
         try:
             return callback(view)
         finally:
             try:
                 view.close()
             finally:
-                self.__active_views -= 1
+                active_views = _ACTIVE_NONCE_VIEWS.get(self, 1) - 1
+                if active_views:
+                    _ACTIVE_NONCE_VIEWS[self] = active_views
+                else:
+                    _ACTIVE_NONCE_VIEWS.pop(self, None)
 
     @synchronized_native_call
     def into_ttlv(self) -> Structure:
         """Transfer the original ordered TTLV Structure without rebuilding it."""
-        if self.__active_views:
+        if _ACTIVE_NONCE_VIEWS.get(self, 0):
             errors.raise_for_status(4)
         handle = _new_handle(
             "kmipkit_ttlv_structure_t",
