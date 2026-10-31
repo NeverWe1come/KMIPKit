@@ -3129,7 +3129,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
                 self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
                 self.assertEqual(expected_mappings, declaration["languageMappings"])
-                self.assertEqual(canonical["parityEvidenceIds"], declaration["parityEvidenceIds"])
+                if "parityEvidenceIds" in canonical:
+                    self.assertEqual(
+                        canonical["parityEvidenceIds"], declaration["parityEvidenceIds"]
+                    )
+                else:
+                    self.assertNotIn("parityEvidenceIds", declaration)
                 self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
     def test_t091_interop_and_log_request_helpers_map_to_approved_operations(
