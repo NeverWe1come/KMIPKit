@@ -6175,11 +6175,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 953)
+        self.assertEqual(len(declarations), 954)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
         self.assertEqual(batch_item["declarationState"], "declared")
+        unique_batch_item_id = by_name[
+            "org.kmipkit.extensions.ClientBatchItem.uniqueBatchItemId"
+        ]
+        self.assertEqual(unique_batch_item_id["kind"], "java-member")
+        self.assertEqual(unique_batch_item_id["declarationState"], "declared")
         batch_extension = by_name[
             "org.kmipkit.extensions.ClientBatchItem.withExtension"
         ]
@@ -6522,11 +6527,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 921)
+        self.assertEqual(len(declarations), 922)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
         self.assertEqual(close_method["declarationState"], "declared")
+        unique_batch_item_id = by_name[
+            "kmipkit.extensions.client_batch_item_unique_batch_item_id"
+        ]
+        self.assertEqual(unique_batch_item_id["kind"], "python-export")
+        self.assertEqual(unique_batch_item_id["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
