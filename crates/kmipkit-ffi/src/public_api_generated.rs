@@ -3736,6 +3736,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::Client::derive_key_with_options",
     ),
     (
+        "rust-observed-827eae522c36e1244797",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_guarded_protection",
+    ),
+    (
+        "rust-observed-b423c9a6089794a26282",
+        "rust-kmipkit",
+        "kmipkit::Client::execute_guarded_protection_with_asynchronous_indicator",
+    ),
+    (
         "rust-observed-b126e9e3d3c68aeda5d8",
         "rust-kmipkit",
         "kmipkit::Client::export",
@@ -5049,6 +5059,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c1b5fc8d2a0980e520c3",
         "rust-kmipkit-client",
         "kmipkit_client::Client::derive_key_with_options",
+    ),
+    (
+        "rust-observed-c05967da16871cfb0e55",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_guarded_protection",
+    ),
+    (
+        "rust-observed-5e233f6266475399ef3b",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_guarded_protection_with_asynchronous_indicator",
     ),
     (
         "rust-observed-095ba383b386427a66aa",

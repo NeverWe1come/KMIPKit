@@ -31333,10 +31333,14 @@
           "kmipkit.client.UsageAllocationContext.usage_limits_unit"
         ],
         "rust": [
+          "kmipkit::Client::execute_guarded_protection",
           "kmipkit::Client::execute_guarded_protection_item",
           "kmipkit::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+          "kmipkit::Client::execute_guarded_protection_with_asynchronous_indicator",
+          "kmipkit_client::Client::execute_guarded_protection",
           "kmipkit_client::Client::execute_guarded_protection_item",
           "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+          "kmipkit_client::Client::execute_guarded_protection_with_asynchronous_indicator",
           "kmipkit_client::UsageAllocationContext",
           "kmipkit_client::UsageAllocationContext::allocated_units",
           "kmipkit_client::UsageAllocationContext::available_units",
@@ -122739,6 +122743,100 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "usage_allocation_guard",
+      "declarationId": "rust-observed-827eae522c36e1244797",
+      "declarationState": "declared",
+      "exportName": "kmipkit::Client::execute_guarded_protection",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_guarded_protection_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_guarded_protection_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::execute_guarded_protection",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "usage_allocation_guard",
+      "declarationId": "rust-observed-b423c9a6089794a26282",
+      "declarationState": "declared",
+      "exportName": "kmipkit::Client::execute_guarded_protection_with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::Client::execute_guarded_protection_with_asynchronous_indicator",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
         "path": "specs/023-key-material-transfer/spec.md",
@@ -139860,6 +139958,100 @@
         "KMIPKIT-REQ-SPEC-6.1.14-007-002",
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "usage_allocation_guard",
+      "declarationId": "rust-observed-c05967da16871cfb0e55",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_guarded_protection",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_guarded_protection_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_guarded_protection_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_guarded_protection",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "usage_allocation_guard",
+      "declarationId": "rust-observed-5e233f6266475399ef3b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::Client::execute_guarded_protection_with_asynchronous_indicator",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::execute_guarded_protection_with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ]
     },
     {
