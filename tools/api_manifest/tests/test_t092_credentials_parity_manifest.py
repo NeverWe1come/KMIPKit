@@ -185,8 +185,15 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
 
         meaningful = [
             row for row in declarations
-            if row.get("candidateSpecId") == OWNER_SPEC
-            and row.get("exportName") not in trait_exports
+            if (
+                row.get("candidateSpecId") == OWNER_SPEC
+                and row.get("exportName") not in trait_exports
+            )
+            or (
+                row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+                and row.get("approvalSource", {}).get("path")
+                == "specs/008-credentials-attestation/spec.md"
+            )
         ]
         self.assertEqual(95, len(meaningful))
         credential_type_rows = {
@@ -197,6 +204,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         self.assertEqual(EXPECTED_CREDENTIAL_TYPE_EXPORTS, credential_type_rows.keys())
         self.assertTrue(
             all(row.get("declarationState") == "declared" for row in credential_type_rows.values())
+        )
+        self.assertTrue(
+            all("candidateSpecId" not in row for row in credential_type_rows.values())
         )
         remaining = [
             row for row in meaningful
@@ -210,8 +220,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         declarations = {
             row["exportName"]: row
             for row in manifest["publicDeclarations"]
-            if row.get("candidateSpecId") == OWNER_SPEC
-            and row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
+            if row.get("exportName") in EXPECTED_CREDENTIAL_TYPE_EXPORTS
         }
         self.assertEqual(EXPECTED_CREDENTIAL_TYPE_EXPORTS, declarations.keys())
         for export_name, declaration in declarations.items():
