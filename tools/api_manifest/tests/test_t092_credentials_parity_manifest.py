@@ -39,36 +39,113 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         inventory = json.loads(RUST_EXPORT_INVENTORY.read_text(encoding="utf-8"))
         declarations = manifest["publicDeclarations"]
-        owner_types = {
-            row["exportName"].rsplit("::", 1)[-1]
+        owner_paths = {
+            row["exportName"]: tuple(json.loads(inventory_row["identity"])[3])
             for row in declarations
             if row.get("candidateSpecId") == OWNER_SPEC and row.get("kind") == "type"
+            for inventory_row in inventory["declarations"]
+            if inventory_row.get("exportName") == row["exportName"]
+            and isinstance(inventory_row.get("identity"), str)
         }
+        self.assertEqual(17, len(owner_paths), "the credential owner type inventory changed")
+
         inventory_rows = inventory["declarations"] + inventory["conditionalDeclarations"]
-        trait_exports = {
-            row["exportName"]
-            for row in inventory_rows
+        trait_exports: set[str] = set()
+        trait_path_rows = [
+            row
+            for row in declarations + manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
-            and row.get("kind") == "associated-item"
-            and any(
-                row["exportName"].startswith(f"<kmipkit_protocol::{name} as ")
-                for name in owner_types
+            and row.get("candidateSpecId") == OWNER_SPEC
+            and isinstance(row.get("exportName"), str)
+            and row["exportName"].startswith("<kmipkit_protocol::")
+            and " as " in row["exportName"]
+            and ">::" in row["exportName"]
+        ]
+        trait_exports = {row["exportName"] for row in trait_path_rows}
+        self.assertEqual(222, len(trait_exports), "the exact T092 trait declarations changed")
+
+        for export_name in sorted(trait_exports):
+            owner_expression, trait_member = export_name[1:].split(" as ", 1)
+            owner_export = owner_expression.split("<", 1)[0]
+            self.assertIn(owner_export, owner_paths)
+            owner_path = owner_paths[owner_export]
+            matching_rows = [
+                row
+                for row in inventory_rows
+                if row.get("packageId") == "rust-kmipkit-protocol"
+                and row.get("exportName") == export_name
+            ]
+            self.assertEqual(1, len(matching_rows), f"Rust inventory identity for {export_name}")
+            observed = matching_rows[0]
+            self.assertEqual("associated-item", observed.get("kind"))
+
+            identity = (
+                json.loads(observed["identity"])
+                if isinstance(observed.get("identity"), str)
+                else None
             )
-        }
+            direct_trait = (
+                isinstance(identity, list)
+                and len(identity) >= 9
+                and identity[0] == "rust-trait-implementation"
+                and identity[1] == "rust-kmipkit-protocol"
+                and identity[2] == list(owner_path)
+                and isinstance(identity[3], list)
+                and bool(identity[3])
+            )
+            conditional_traits = [
+                predicate.get("traitPath")
+                for predicate in observed.get("condition", {}).get("predicates", [])
+                if isinstance(predicate, dict)
+                and predicate.get("kind") == "traitBound"
+                and isinstance(predicate.get("traitPath"), list)
+                and predicate.get("traitPath")
+            ]
+            conditional_trait = (
+                observed in inventory["conditionalDeclarations"]
+                and observed.get("ownerPath") == list(owner_path)
+                and bool(conditional_traits)
+                and _is_nonblank_string(observed.get("implementationId"))
+            )
+            self.assertTrue(
+                direct_trait or conditional_trait,
+                f"Rust inventory does not identify {export_name} as a trait member",
+            )
+
+            exported_trait, exported_member = trait_member.rsplit(">::", 1)
+            self.assertTrue(exported_member)
+            if direct_trait:
+                self.assertEqual("::".join(identity[3]), exported_trait.split("<", 1)[0])
+                self.assertEqual(identity[7], exported_member)
+            trait_exports.add(export_name)
         self.assertEqual(222, len(trait_exports), "the reviewed T092 trait slice changed")
 
-        exclusions = {
-            row.get("exportName"): row
+        owner_exclusions = [
+            row
             for row in manifest.get("approvedExclusions", [])
             if row.get("packageId") == "rust-kmipkit-protocol"
             and row.get("candidateSpecId") == OWNER_SPEC
+        ]
+        exclusion_counts: dict[str, int] = {}
+        for row in owner_exclusions:
+            name = row.get("exportName")
+            if isinstance(name, str):
+                exclusion_counts[name] = exclusion_counts.get(name, 0) + 1
+        duplicates = sorted(name for name, count in exclusion_counts.items() if count != 1)
+        self.assertEqual([], duplicates, "duplicate exact KMIPKIT-0008 exclusions")
+        exclusions = {
+            row["exportName"]: row
+            for row in owner_exclusions
+            if row.get("exportName") in trait_exports
         }
         unaccounted = sorted(trait_exports - exclusions.keys())
+        extra_exclusions = sorted(exclusions.keys() - trait_exports)
         self.assertEqual(
             0,
-            len(unaccounted),
+            len(unaccounted) + len(extra_exclusions),
             "unaccounted exact KMIPKIT-0008 Rust trait exports "
-            f"({len(unaccounted)}): {unaccounted[:5]}",
+            f"({len(unaccounted)}); extra exclusions ({len(extra_exclusions)}): "
+            f"{unaccounted[:5]} / {extra_exclusions[:5]}",
         )
 
         for export_name in sorted(trait_exports):
@@ -91,7 +168,11 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         self.assertEqual(set(), retained_trait_declarations)
 
-        meaningful = [row for row in declarations if row.get("candidateSpecId") == OWNER_SPEC]
+        meaningful = [
+            row for row in declarations
+            if row.get("candidateSpecId") == OWNER_SPEC
+            and row.get("exportName") not in trait_exports
+        ]
         self.assertEqual(95, len(meaningful))
         self.assertTrue(all(row.get("declarationState") == "blocked" for row in meaningful))
 
