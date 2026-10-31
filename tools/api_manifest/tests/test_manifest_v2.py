@@ -2044,6 +2044,85 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for language, mapping in expected_mappings.items():
                     self.assertIn(mapping["name"], capability["mappings"][language])
 
+    def test_t091_verification_request_variants_map_to_approved_operation_builders(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        cases = {
+            "MacVerify": (
+                "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+                "mac_verify",
+            ),
+            "SignatureVerify": (
+                "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+                "signature_verify",
+            ),
+        }
+
+        for variant, (operation_id, method) in cases.items():
+            operation = operations[operation_id]
+            self.assertEqual("declared", operation["apiState"])
+            self.assertEqual("KMIPKIT-0021", operation["featureSpecId"])
+
+            constructor_declarations = {}
+            for language in ("c", "java", "python"):
+                constructor_id = next(
+                    declaration_id
+                    for declaration_id in operation["declarations"][language]
+                    if declaration_id.endswith(f":constructor:{language}")
+                )
+                constructor_declarations[language] = declarations_by_id[constructor_id]
+
+            for rust_prefix, package_id in (
+                ("kmipkit_client", "rust-kmipkit-client"),
+                ("kmipkit", "rust-kmipkit"),
+            ):
+                export_names = (
+                    f"{rust_prefix}::ClientRequest::{method}",
+                    f"{rust_prefix}::ClientRequest::{variant}",
+                    f"{rust_prefix}::ClientRequest::{variant}::0",
+                )
+                for export_name in export_names:
+                    with self.subTest(export=export_name):
+                        declaration = declarations[export_name]
+                        expected_mappings = {
+                            language: constructor_declarations[language][
+                                "languageMappings"
+                            ][language]
+                            for language in ("c", "java", "python")
+                        }
+                        expected_mappings["rust"] = {
+                            "packageId": package_id,
+                            "name": export_name,
+                        }
+
+                        self.assertEqual("declared", declaration["declarationState"])
+                        self.assertNotIn("candidateSpecId", declaration)
+                        self.assertEqual(operation_id, declaration["capabilityId"])
+                        self.assertEqual(
+                            constructor_declarations["c"]["requirementIds"],
+                            declaration["requirementIds"],
+                        )
+                        self.assertEqual(
+                            operation["approvalEvidence"], declaration["approvalSource"]
+                        )
+                        self.assertEqual(
+                            expected_mappings, declaration["languageMappings"]
+                        )
+                        self.assertIn(
+                            declaration["declarationId"], operation["declarations"]["rust"]
+                        )
+
     def test_t091_add_attribute_request_variants_map_to_verified_operation(self) -> None:
         declarations = {
             row["exportName"]: row
