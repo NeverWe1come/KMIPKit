@@ -2227,6 +2227,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         operation["approvalEvidence"], declaration["approvalSource"]
                     )
                     self.assertEqual(expected_mappings, declaration["languageMappings"])
+                    required_parity_evidence = {
+                        evidence_id
+                        for constructor in constructor_declarations.values()
+                        for evidence_id in constructor.get("parityEvidenceIds", [])
+                    }
+                    required_parity_evidence.update(
+                        {
+                            f"crates/kmipkit-client/tests/unit/{method}_execution_tests.rs",
+                            "tools/api_manifest/tests/test_manifest_v2.py",
+                            "tools/api_manifest/tests/test_t091_root_reexport_aliases.py",
+                        }
+                    )
+                    self.assertLessEqual(
+                        required_parity_evidence,
+                        set(declaration.get("parityEvidenceIds", [])),
+                    )
                     self.assertIn(
                         declaration["declarationId"], operation["declarations"]["rust"]
                     )
