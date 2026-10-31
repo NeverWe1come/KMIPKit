@@ -7775,3 +7775,15 @@ An application callback can call `Nonce.into_ttlv()` on the same Nonce whose cal
 | Refactor/evidence — simplify synchronized view accounting and record the ownership contract | this commit | Java `NonceFacadeTest`; Python 3.12 `tests/test_nonce.py`; `git diff --check` | Pass after refactoring: Java and Python facade tests remain green. Callback views close in all return and exception paths; T092 remains open with 78 blocked functional declarations. |
 
 The completed security diff review of the original T092 mapping found no reportable vulnerability. It tracked the nested callback consume as a caller-controlled wrapper lifecycle defect, which this follow-up now prevents. The follow-up commits will receive their own review before publication.
+
+### T092 Python callback guard hardening (2026-10-31)
+
+An independent review found that Python callbacks could assign the ordinary `_active_views` instance attribute to zero before calling `into_ttlv()`, bypassing the wrapper guard and losing the wrapper while the native ABI rejected the still-shared owner. The counter now lives in a slotted, name-mangled field with no instance dictionary, so ordinary callback attribute assignment cannot reset it. Native ownership checks remain authoritative.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red — prevent a callback from resetting the scoped-view guard | `6a32f8a66` | Python 3.12 `test_nonce_callback_cannot_reset_the_scoped_view_guard` | Expected failure: assignment to `_active_views` succeeded inside the callback. |
+| Green — move the counter into a slotted private field | `141d5a103` | Python 3.12 `tests/test_nonce.py` | Pass: 4/4 Nonce facade tests, including rejected nested transfer, callback tampering, callback view closure, and exact TTLV transfer. |
+| Refactor/evidence — record independent review and the hardened state boundary | this commit | Python 3.12 `tests/test_nonce.py`; Java `NonceFacadeTest`; `git diff --check` | Both binding suites remain green. The callback cannot reset guard state through ordinary instance attributes; T092 remains open with 78 blocked functional declarations. |
+
+The follow-up security review is being rerun against the completed fix before publishing the branch update.
