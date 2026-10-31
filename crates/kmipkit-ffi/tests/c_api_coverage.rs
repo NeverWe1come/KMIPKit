@@ -25,6 +25,12 @@ unsafe extern "C" {
     ) -> i32;
     fn kmipkit_attestation_credential_c_consumer_round_trip(out_count: *mut u64) -> i32;
     fn kmipkit_attestation_credential_c_consumer_rejects_missing_evidence() -> i32;
+    fn kmipkit_authentication_c_consumer_round_trip(
+        first_type: u32,
+        second_type: u32,
+        out_count: *mut u64,
+    ) -> i32;
+    fn kmipkit_authentication_c_consumer_rejects_empty_credentials() -> i32;
 }
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
@@ -78,6 +84,28 @@ fn compiled_c_consumer_preserves_attestation_credential_and_scoped_ownership() {
 fn compiled_c_consumer_rejects_attestation_without_evidence() {
     // SAFETY: The C consumer owns all structures and handles created for this negative case.
     let status = unsafe { kmipkit_attestation_credential_c_consumer_rejects_missing_evidence() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+fn compiled_c_consumer_preserves_authentication_order_and_owner_backed_views() {
+    let mut credential_count = 0;
+    // SAFETY: The C consumer writes one count and manages all temporary ABI handles.
+    let status = unsafe {
+        kmipkit_authentication_c_consumer_round_trip(
+            0xf123_4567,
+            0x8000_4321,
+            &raw mut credential_count,
+        )
+    };
+    assert_eq!(status, 0);
+    assert_eq!(credential_count, 2);
+}
+
+#[test]
+fn compiled_c_consumer_rejects_empty_authentication_credentials() {
+    // SAFETY: The C consumer owns all handles created by this negative case.
+    let status = unsafe { kmipkit_authentication_c_consumer_rejects_empty_credentials() };
     assert_eq!(status, 0);
 }
 
