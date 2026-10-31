@@ -2100,6 +2100,102 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         self.assertEqual(expected_mappings, declaration["languageMappings"])
                         self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
 
+    def test_t091_object_lifecycle_request_fields_and_helpers_map_to_verified_operations(
+        self,
+    ) -> None:
+        declarations = {
+            row["exportName"]: row
+            for row in self.checked_in_manifest["publicDeclarations"]
+        }
+        operations = {
+            row["operationId"]: row for row in self.checked_in_manifest["operations"]
+        }
+        variants = {
+            "Certify": (
+                "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+                "kmipkit::ClientRequest::Certify",
+            ),
+            "Check": (
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
+                "kmipkit_client::ClientRequest::check",
+            ),
+            "ObtainLease": (
+                "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
+                "kmipkit_client::ClientRequest::obtain_lease",
+            ),
+            "ReProvision": (
+                "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
+                "kmipkit_client::ClientRequest::reprovision",
+            ),
+            "Recertify": (
+                "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+                "kmipkit_client::ClientRequest::Recertify",
+            ),
+            "Register": (
+                "KMIPKIT-ELEM-OP-C2S-REGISTER",
+                "kmipkit_client::ClientRequest::Register",
+            ),
+            "Rekey": (
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+                "kmipkit_client::ClientRequest::Rekey",
+            ),
+            "RekeyKeyPair": (
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+                "kmipkit_client::ClientRequest::RekeyKeyPair",
+            ),
+            "Revoke": (
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                "kmipkit_client::ClientRequest::Revoke",
+            ),
+        }
+        helpers = {
+            "certify": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+            "recertify": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+            "register": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+            "rekey": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+            "rekey_key_pair": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+            "revoke": "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        }
+        expected_exports = []
+        for variant, (operation_id, canonical_name) in variants.items():
+            for prefix in ("kmipkit_client", "kmipkit"):
+                expected_exports.append(
+                    (f"{prefix}::ClientRequest::{variant}::0", operation_id, canonical_name)
+                )
+        for method, operation_id in helpers.items():
+            for prefix in ("kmipkit_client", "kmipkit"):
+                expected_exports.append(
+                    (
+                        f"{prefix}::ClientRequest::{method}",
+                        operation_id,
+                        variants[next(name for name, value in variants.items() if value[0] == operation_id)][1],
+                    )
+                )
+
+        self.assertEqual(30, len(expected_exports))
+        for export_name, operation_id, canonical_name in expected_exports:
+            declaration = declarations[export_name]
+            operation = operations[operation_id]
+            canonical = declarations[canonical_name]
+            with self.subTest(export=export_name):
+                expected_mappings = {
+                    language: mapping.copy()
+                    for language, mapping in canonical["languageMappings"].items()
+                }
+                expected_mappings["rust"] = {
+                    "packageId": declaration["packageId"],
+                    "name": export_name,
+                }
+                self.assertEqual("verified", operation["apiState"])
+                self.assertEqual("KMIPKIT-0036", operation["featureSpecId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertNotIn("candidateSpecId", declaration)
+                self.assertEqual(operation_id, declaration["capabilityId"])
+                self.assertEqual(canonical["requirementIds"], declaration["requirementIds"])
+                self.assertEqual(operation["approvalEvidence"], declaration["approvalSource"])
+                self.assertEqual(expected_mappings, declaration["languageMappings"])
+                self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])
+
     def test_t091_discover_versions_response_view_maps_to_existing_version_accessor(
         self,
     ) -> None:
