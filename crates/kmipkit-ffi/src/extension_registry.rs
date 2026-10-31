@@ -2069,8 +2069,18 @@ pub extern "C" fn kmipkit_last_error_profile_validation_error_get_v1(
 }
 
 /// Copies safe profile validation details into a versioned view owned by the supplied handle.
+///
+/// # Safety
+///
+/// If `out_view` is non-null, it must be aligned and point to a valid,
+/// initialized `kmipkit_profile_validation_error_view_v1_t` that is exclusively
+/// accessible and writable for the duration of the call. The caller must set
+/// `struct_size` to the concrete record size and `abi_version` to `1` before
+/// calling. To obtain details, `error` must be a live profile-error handle
+/// returned by `kmipkit_last_error_profile_validation_error_get_v1` and must
+/// remain unreleased for the duration of the call.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_profile_validation_error_view_get_v1(
+pub unsafe extern "C" fn kmipkit_profile_validation_error_view_get_v1(
     error: *mut kmipkit_profile_validation_error_t,
     out_view: *mut kmipkit_profile_validation_error_view_v1_t,
 ) -> i32 {

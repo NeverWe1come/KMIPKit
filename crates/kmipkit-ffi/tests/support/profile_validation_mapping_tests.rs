@@ -121,8 +121,10 @@ fn profile_validation_details_remain_owned_after_last_error_changes() {
         source_locator_data: ptr::null(),
         source_locator_length: 0,
     };
+    // SAFETY: `handle` is the live detail snapshot returned above. `view` is aligned and
+    // initialized with the exact v1 size/version; this call has unique writable access to it.
     assert_eq!(
-        kmipkit_profile_validation_error_view_get_v1(handle, &raw mut view),
+        unsafe { kmipkit_profile_validation_error_view_get_v1(handle, &raw mut view) },
         SUCCESS
     );
     assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
@@ -372,8 +374,10 @@ fn last_profile_validation_view() -> (
     );
     assert!(!handle.is_null());
     let mut view = empty_profile_validation_view();
+    // SAFETY: `handle` is a live detail snapshot returned by the getter. `view` is aligned and
+    // initialized with the exact v1 size/version; this call has unique writable access to it.
     assert_eq!(
-        kmipkit_profile_validation_error_view_get_v1(handle, &raw mut view),
+        unsafe { kmipkit_profile_validation_error_view_get_v1(handle, &raw mut view) },
         SUCCESS
     );
     (handle, view)
