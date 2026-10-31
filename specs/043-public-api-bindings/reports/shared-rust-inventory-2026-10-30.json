@@ -2647,6 +2647,8 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-011",
         "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-010",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-011",
         "KMIPKIT-0043-FR-004",
@@ -2654,6 +2656,7 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
@@ -6460,6 +6463,8 @@
       "requirementIds": [
         "KMIPKIT-0006-FR-011",
         "KMIPKIT-0007-FR-010",
+        "KMIPKIT-0009-FR-008",
+        "KMIPKIT-0009-FR-010",
         "KMIPKIT-0012-FR-010",
         "KMIPKIT-0012-FR-011",
         "KMIPKIT-0043-FR-004",
@@ -6467,6 +6472,7 @@
         "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
