@@ -166,7 +166,16 @@ class NonceTests(unittest.TestCase):
             ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
             nonce.with_ttlv(read_structure),
         )
-        nonce.close()
+        restored = nonce.into_ttlv()
+        view = ttlv.ttlv_structure_view(restored)
+        try:
+            self.assertEqual(
+                ((NONCE_ID_TAG, NONCE_ID), (NONCE_VALUE_TAG, NONCE_VALUE)),
+                read_structure(view),
+            )
+        finally:
+            view.close()
+            restored.close()
 
 
 if __name__ == "__main__":
